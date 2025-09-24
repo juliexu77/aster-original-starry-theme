@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimePicker } from "./TimePicker";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { FirstTimeTooltip } from "./FirstTimeTooltip";
 
@@ -21,9 +20,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
-  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "">(""); // No default
+  const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "">(""); 
   const [time, setTime] = useState(() => {
-    // Default to current time
     const now = new Date();
     return now.toLocaleTimeString("en-US", { 
       hour: "numeric", 
@@ -31,31 +29,70 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
       hour12: true 
     });
   });
+  
+  // Feed state
+  const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
   const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState<"oz" | "ml">(() => {
-    // Remember last used unit
-    const lastUnit = localStorage.getItem('lastUsedUnit');
-    return (lastUnit as "oz" | "ml") || "oz";
-  });
-  const [diaperType, setDiaperType] = useState<"pee" | "poop" | "both">("pee");
+  const [unit, setUnit] = useState<"oz" | "ml">("oz");
+  const [reaction, setReaction] = useState<"happy" | "neutral" | "fussy" | "">("");
+  
+  // Diaper state
+  const [diaperType, setDiaperType] = useState<"wet" | "poopy" | "both">("wet");
+  const [hasLeak, setHasLeak] = useState(false);
+  const [hasCream, setHasCream] = useState(false);
+  
+  // Nap state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [timerStart, setTimerStart] = useState<Date | null>(null);
+  
+  // General
   const [note, setNote] = useState("");
+  const [photo, setPhoto] = useState<File | null>(null);
 
   const resetForm = () => {
-    // Reset to current time
     const now = new Date();
     setTime(now.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
     }));
+    setFeedType("bottle");
     setQuantity("");
-    // Keep the last used unit
-    setDiaperType("pee");
+    setReaction("");
+    setDiaperType("wet");
+    setHasLeak(false);
+    setHasCream(false);
     setStartTime("");
     setEndTime("");
+    setIsTimerActive(false);
+    setTimerStart(null);
     setNote("");
+    setPhoto(null);
+  };
+
+  const startNapTimer = () => {
+    setIsTimerActive(true);
+    setTimerStart(new Date());
+    setStartTime(new Date().toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    }));
+  };
+
+  const stopNapTimer = () => {
+    setIsTimerActive(false);
+    setEndTime(new Date().toLocaleTimeString("en-US", { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    }));
+  };
+
+  const handleQuantityShortcut = (value: string) => {
+    setQuantity(value);
   };
 
   const handleSubmit = () => {
@@ -90,15 +127,18 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     
     switch (activityType) {
       case "feed":
+        details.feedType = feedType;
         if (quantity) {
           details.quantity = quantity;
           details.unit = unit;
-          // Remember the unit for next time
-          localStorage.setItem('lastUsedUnit', unit);
         }
+        if (reaction) details.reaction = reaction;
+        localStorage.setItem('lastUsedUnit', unit);
         break;
       case "diaper":
         details.diaperType = diaperType;
+        details.hasLeak = hasLeak;
+        details.hasCream = hasCream;
         if (note) details.note = note;
         break;
       case "nap":
@@ -110,8 +150,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         break;
     }
 
+    if (photo) {
+      details.photo = photo;
+    }
+
     const newActivity: Omit<Activity, "id"> = {
-      type: activityType as "feed" | "diaper" | "nap" | "note", // Cast to exclude empty string
+      type: activityType as "feed" | "diaper" | "nap" | "note",
       time: activityType === "nap" ? startTime : time,
       details,
     };
@@ -161,90 +205,174 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Activity Type Selection - Big Buttons */}
             <div>
-              <Label htmlFor="activity-type">Activity Type</Label>
-              <Select value={activityType} onValueChange={(value: any) => setActivityType(value)}>
-                <SelectTrigger className={!activityType ? "border-red-200 bg-red-50" : ""}>
-                  <SelectValue placeholder="Select activity type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="feed">
-                    <div className="flex items-center gap-2">
-                      <Baby className="h-4 w-4" />
-                      Feed
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="diaper">
-                    <div className="flex items-center gap-2">
-                      <Palette className="h-4 w-4" />
-                      Diaper
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="nap">
-                    <div className="flex items-center gap-2">
-                      <Moon className="h-4 w-4" />
-                      Nap
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="note">
-                    <div className="flex items-center gap-2">
-                      <StickyNote className="h-4 w-4" />
-                      Note
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-medium mb-3 block">Activity Type</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { type: "feed", icon: Baby, label: "Feed" },
+                  { type: "diaper", icon: Palette, label: "Diaper" },
+                  { type: "nap", icon: Moon, label: "Nap" },
+                  { type: "note", icon: StickyNote, label: "Note" }
+                ].map(({ type, icon: Icon, label }) => (
+                  <Button
+                    key={type}
+                    variant={activityType === type ? "default" : "outline"}
+                    className={`h-16 flex-col gap-2 ${activityType === type ? 'bg-gradient-primary' : ''}`}
+                    onClick={() => setActivityType(type as any)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="text-sm">{label}</span>
+                  </Button>
+                ))}
+              </div>
             </div>
 
-            {activityType !== "nap" && (
+            {/* Time Picker - Only for non-nap activities */}
+            {activityType && activityType !== "nap" && (
               <TimePicker value={time} onChange={setTime} label="Time" />
             )}
 
+            {/* Feed Details */}
             {activityType === "feed" && (
-              <div className="space-y-3">
-                <Label htmlFor="quantity">Quantity (optional)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="quantity"
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    placeholder="4"
-                    className="flex-1"
-                    min="0"
-                    step="0.5"
-                  />
-                  <Select value={unit} onValueChange={(value: "oz" | "ml") => setUnit(value)}>
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="oz">oz</SelectItem>
-                      <SelectItem value="ml">ml</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Type</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { type: "bottle", icon: Coffee, label: "Bottle" },
+                      { type: "nursing", icon: Baby, label: "Nursing" },
+                      { type: "solid", icon: StickyNote, label: "Solid" }
+                    ].map(({ type, icon: Icon, label }) => (
+                      <Button
+                        key={type}
+                        variant={feedType === type ? "default" : "outline"}
+                        className={`h-12 flex-col gap-1 text-xs ${feedType === type ? 'bg-gradient-primary' : ''}`}
+                        onClick={() => setFeedType(type as any)}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Quantity (optional)</Label>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-4 gap-2">
+                      {["2", "4", "6", "8"].map((amount) => (
+                        <Button
+                          key={amount}
+                          variant={quantity === amount ? "default" : "outline"}
+                          className={`h-10 ${quantity === amount ? 'bg-gradient-primary' : ''}`}
+                          onClick={() => handleQuantityShortcut(amount)}
+                        >
+                          {amount}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        placeholder="Custom"
+                        className="flex-1"
+                        min="0"
+                        step="0.5"
+                      />
+                      <div className="flex gap-1">
+                        {["oz", "ml"].map((u) => (
+                          <Button
+                            key={u}
+                            variant={unit === u ? "default" : "outline"}
+                            size="sm"
+                            className={unit === u ? 'bg-gradient-primary' : ''}
+                            onClick={() => setUnit(u as any)}
+                          >
+                            {u}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium mb-3 block">Baby's Reaction</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { type: "happy", icon: Smile, label: "Happy" },
+                      { type: "neutral", icon: Meh, label: "Neutral" },
+                      { type: "fussy", icon: Frown, label: "Fussy" }
+                    ].map(({ type, icon: Icon, label }) => (
+                      <Button
+                        key={type}
+                        variant={reaction === type ? "default" : "outline"}
+                        className={`h-12 flex-col gap-1 text-xs ${reaction === type ? 'bg-gradient-primary' : ''}`}
+                        onClick={() => setReaction(type as any)}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
 
+            {/* Diaper Details */}
             {activityType === "diaper" && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="diaper-type">Type</Label>
-                  <Select value={diaperType} onValueChange={(value: any) => setDiaperType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pee">Pee</SelectItem>
-                      <SelectItem value="poop">Poop</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-sm font-medium mb-3 block">Type</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { type: "wet", label: "Wet" },
+                      { type: "poopy", label: "Poopy" },
+                      { type: "both", label: "Both" }
+                    ].map(({ type, label }) => (
+                      <Button
+                        key={type}
+                        variant={diaperType === type ? "default" : "outline"}
+                        className={`h-12 ${diaperType === type ? 'bg-gradient-primary' : ''}`}
+                        onClick={() => setDiaperType(type as any)}
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <Label className="text-sm">Leak</Label>
+                    <Button
+                      variant={hasLeak ? "default" : "outline"}
+                      size="sm"
+                      className={hasLeak ? 'bg-gradient-primary' : ''}
+                      onClick={() => setHasLeak(!hasLeak)}
+                    >
+                      {hasLeak ? "Yes" : "No"}
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <Label className="text-sm">Diaper Cream</Label>
+                    <Button
+                      variant={hasCream ? "default" : "outline"}
+                      size="sm"
+                      className={hasCream ? 'bg-gradient-primary' : ''}
+                      onClick={() => setHasCream(!hasCream)}
+                    >
+                      {hasCream ? "Yes" : "No"}
+                    </Button>
+                  </div>
+                </div>
+
                 <div>
-                  <Label htmlFor="diaper-note">Notes (optional)</Label>
+                  <Label htmlFor="diaper-note" className="text-sm font-medium mb-2 block">Notes (optional)</Label>
                   <Textarea
                     id="diaper-note"
                     value={note}
@@ -256,16 +384,30 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
               </div>
             )}
 
+            {/* Nap Details */}
             {activityType === "nap" && (
-              <div className="space-y-3">
-                <TimePicker value={startTime} onChange={setStartTime} label="Start Time" />
-                <TimePicker value={endTime} onChange={setEndTime} label="End Time" />
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button
+                    variant={isTimerActive ? "destructive" : "default"}
+                    className={!isTimerActive ? 'bg-gradient-primary' : ''}
+                    onClick={isTimerActive ? stopNapTimer : startNapTimer}
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    {isTimerActive ? "Stop Nap" : "Start Nap Timer"}
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  <TimePicker value={startTime} onChange={setStartTime} label="Start Time" />
+                  <TimePicker value={endTime} onChange={setEndTime} label="End Time" />
+                </div>
               </div>
             )}
 
+            {/* Note Details */}
             {activityType === "note" && (
               <div>
-                <Label htmlFor="note">Note</Label>
+                <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
                 <Textarea
                   id="note"
                   value={note}
@@ -273,6 +415,44 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                   placeholder="Enter your note here..."
                   rows={3}
                 />
+              </div>
+            )}
+
+            {/* Photo Attachment - For all types */}
+            {activityType && (
+              <div>
+                <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => document.getElementById('photo-input')?.click()}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    {photo ? "Change Photo" : "Add Photo"}
+                  </Button>
+                  {photo && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPhoto(null)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
+                <input
+                  id="photo-input"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+                />
+                {photo && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {photo.name}
+                  </p>
+                )}
               </div>
             )}
 
