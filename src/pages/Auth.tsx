@@ -276,6 +276,21 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            
+            {/* Guest Access Button */}
+            <div className="mt-6 pt-4 border-t">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => navigate("/onboarding")}
+                className="w-full text-muted-foreground hover:text-foreground"
+              >
+                Continue as Guest
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Your data won't be saved across devices
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
