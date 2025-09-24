@@ -47,6 +47,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        feed: "hsl(var(--feed-color))",
+        diaper: "hsl(var(--diaper-color))",
+        nap: "hsl(var(--nap-color))",
+        note: "hsl(var(--note-color))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -57,6 +61,17 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+      },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-feed': 'var(--gradient-feed)',
+        'gradient-diaper': 'var(--gradient-diaper)',
+        'gradient-nap': 'var(--gradient-nap)',
+        'gradient-note': 'var(--gradient-note)',
+      },
+      boxShadow: {
+        'soft': 'var(--shadow-soft)',
+        'card': 'var(--shadow-card)',
       },
       borderRadius: {
         lg: "var(--radius)",
