@@ -21,15 +21,15 @@ interface ActivityCardProps {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case "feed":
-      return <Baby className="h-5 w-5" />;
+      return <Baby className="h-4 w-4" />;
     case "diaper":
-      return <Palette className="h-5 w-5" />;
+      return <Palette className="h-4 w-4" />;
     case "nap":
-      return <Moon className="h-5 w-5" />;
+      return <Moon className="h-4 w-4" />;
     case "note":
-      return <StickyNote className="h-5 w-5" />;
+      return <StickyNote className="h-4 w-4" />;
     default:
-      return <Clock className="h-5 w-5" />;
+      return <Clock className="h-4 w-4" />;
   }
 };
 
@@ -70,12 +70,12 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
   const activityText = details ? `${activity.type} ${details}` : activity.type;
 
   return (
-    <div className="relative flex items-center gap-3 py-2 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+    <div className="relative flex items-center gap-3 py-1 group hover:bg-accent/30 rounded-md px-2 transition-colors">
       {/* Timeline line */}
-      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-border group-last:hidden"></div>
+      <div className="absolute left-3 top-5 bottom-0 w-0.5 bg-border group-last:hidden"></div>
       
       {/* Timeline marker */}
-      <div className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+      <div className={`relative z-10 flex-shrink-0 w-6 h-6 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
         {getActivityIcon(activity.type)}
       </div>
       

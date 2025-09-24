@@ -49,11 +49,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   useEffect(() => {
     // Check if this is the first time user is seeing the app
     const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
-    const isAuthenticated = localStorage.getItem('sb-nctqyatowgbfnqaowscv-auth-token'); // Check if user is logged in
     
-    if (!hasSeenTooltip && isAuthenticated && !isOpen) {
+    if (!hasSeenTooltip && !isOpen) {
       // Show tooltip after a short delay to ensure button is rendered
-      setTimeout(() => setShowTooltip(true), 1000);
+      setTimeout(() => setShowTooltip(true), 2000);
     }
   }, [isOpen]);
 

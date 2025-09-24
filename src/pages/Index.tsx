@@ -174,7 +174,7 @@ const Index = () => {
         return (
           <div className="space-y-4">
             {/* Activity Timeline - Priority above fold */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <h2 className="text-lg font-serif font-medium text-foreground">Today's Activities</h2>
               {sortedActivities.length === 0 ? (
                 <div className="text-center py-12">
@@ -183,7 +183,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Tap the + button to add your first activity</p>
                 </div>
               ) : (
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {sortedActivities.map((activity) => (
                     <ActivityCard key={activity.id} activity={activity} />
                   ))}
