@@ -18,14 +18,14 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/");
+        navigate("/app");
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/");
+        navigate("/app");
       }
     });
 
@@ -282,7 +282,10 @@ const Auth = () => {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => navigate("/onboarding")}
+                onClick={() => {
+                  localStorage.setItem('skipOnboarding', 'true');
+                  navigate("/app");
+                }}
                 className="w-full text-muted-foreground hover:text-foreground"
               >
                 Continue as Guest

@@ -28,9 +28,6 @@ const Onboarding = () => {
   const [children, setChildren] = useState<Child[]>([
     { name: "", birthDate: "", gender: "" }
   ]);
-  const [scheduleText, setScheduleText] = useState("");
-  const [parsedActivities, setParsedActivities] = useState<Activity[]>([]);
-  const [isParsingSchedule, setIsParsingSchedule] = useState(false);
 
   const addChild = () => {
     if (children.length < 2) {
@@ -50,37 +47,6 @@ const Onboarding = () => {
     setChildren(updated);
   };
 
-  const parseScheduleWithAI = async () => {
-    if (!scheduleText.trim()) return;
-    
-    setIsParsingSchedule(true);
-    try {
-      const response = await fetch('/functions/v1/parse-schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        },
-        body: JSON.stringify({ scheduleText })
-      });
-
-      if (!response.ok) throw new Error('Failed to parse schedule');
-      
-      const { activities } = await response.json();
-      setParsedActivities(activities);
-      setStep(3);
-    } catch (error) {
-      console.error('Error parsing schedule:', error);
-      toast({
-        title: "Parsing failed",
-        description: "Let's set up your schedule manually for now.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsParsingSchedule(false);
-    }
-  };
-
   const handleComplete = async () => {
     setIsLoading(true);
     try {
@@ -98,11 +64,6 @@ const Onboarding = () => {
         if (error) throw error;
       }
 
-      // Store activities in localStorage for now (could be saved to database if user is logged in)
-      if (parsedActivities.length > 0) {
-        localStorage.setItem('initialActivities', JSON.stringify(parsedActivities));
-      }
-
       // Mark onboarding as completed
       localStorage.setItem('onboardingCompleted', 'true');
 
@@ -111,7 +72,7 @@ const Onboarding = () => {
         description: "Your profile has been set up successfully.",
       });
 
-      navigate('/');
+      navigate('/app');
     } catch (error) {
       console.error('Error saving profile:', error);
       toast({
@@ -221,88 +182,15 @@ const Onboarding = () => {
           </Card>
         )}
 
-        {/* Step 2: Schedule Input */}
+        {/* Step 2: Ready to start */}
         {step === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                Tell us about your current routine
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground text-sm">
-                Describe your baby's current schedule in your own words. Our AI will help set up your first day!
-              </p>
-              
-              <div>
-                <Label htmlFor="schedule">Current Schedule</Label>
-                <Textarea
-                  id="schedule"
-                  value={scheduleText}
-                  onChange={(e) => setScheduleText(e.target.value)}
-                  placeholder="Example: My baby usually wakes up around 7am and has a bottle. Then around 9am we change diaper and have some playtime. She naps from 10-11:30am, then has another feeding..."
-                  rows={6}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={parseScheduleWithAI}
-                  disabled={!scheduleText.trim() || isParsingSchedule}
-                  className="flex-1"
-                >
-                  {isParsingSchedule ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      Parsing with AI...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Parse with AI
-                    </>
-                  )}
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setStep(3)}
-                >
-                  Skip for now
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 3: Preview */}
-        {step === 3 && (
           <Card>
             <CardHeader>
               <CardTitle>Ready to start tracking!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {parsedActivities.length > 0 && (
-                <div>
-                  <h3 className="font-medium mb-3">We've set up these activities for you:</h3>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {parsedActivities.map((activity, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <Badge variant="secondary">{activity.type}</Badge>
-                        <span className="text-sm">{activity.time}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {activity.details && Object.values(activity.details).join(', ')}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <p className="text-muted-foreground text-sm">
-                You can always add, edit, or remove activities once you start using the app.
+                You're all set! You can start adding activities and the app will learn your baby's patterns.
               </p>
 
               <Button
@@ -316,7 +204,7 @@ const Onboarding = () => {
                     Setting up...
                   </>
                 ) : (
-                  "Complete Setup"
+                  "Start Tracking"
                 )}
               </Button>
             </CardContent>

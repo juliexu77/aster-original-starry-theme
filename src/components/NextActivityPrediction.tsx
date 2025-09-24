@@ -24,11 +24,22 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     return totalMinutes;
   };
 
+  const addMinutesToTime = (timeString: string, minutes: number) => {
+    const timeInMinutes = getTimeInMinutes(timeString);
+    const newTimeInMinutes = (timeInMinutes + minutes) % (24 * 60);
+    const hours = Math.floor(newTimeInMinutes / 60);
+    const mins = newTimeInMinutes % 60;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
+  };
+
   const predictNextActivity = () => {
     if (activities.length === 0) {
       return {
         type: "feed",
         suggestedTime: getCurrentTime(),
+        anticipatedTime: getCurrentTime(),
         reason: "Start your day with a feeding"
       };
     }
@@ -43,6 +54,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       return {
         type: "feed",
         suggestedTime: getCurrentTime(),
+        anticipatedTime: getCurrentTime(),
         reason: "No previous data available"
       };
     }
@@ -72,6 +84,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       return {
         type: "feed",
         suggestedTime: getCurrentTime(),
+        anticipatedTime: getCurrentTime(),
         reason: "No activities logged today yet"
       };
     }
@@ -93,15 +106,19 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         : 60; // Default 1 hour
 
       if (timeSinceLastActivity >= avgFeedToNap - 15) {
+        const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedToNap);
         return {
           type: "nap",
           suggestedTime: getCurrentTime(),
+          anticipatedTime,
           reason: `Based on yesterday's pattern, nap usually comes ${Math.round(avgFeedToNap / 60 * 10) / 10}h after feeding`
         };
       } else if (timeSinceLastActivity >= avgFeedInterval - 30) {
+        const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedInterval);
         return {
           type: "feed",
           suggestedTime: getCurrentTime(),
+          anticipatedTime,
           reason: `Next feeding typically due (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h between feeds)`
         };
       }
@@ -111,6 +128,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       return {
         type: "feed",
         suggestedTime: getCurrentTime(),
+        anticipatedTime: getCurrentTime(),
         reason: "Feeding usually follows after nap time"
       };
     }
@@ -119,6 +137,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       return {
         type: "feed",
         suggestedTime: getCurrentTime(),
+        anticipatedTime: getCurrentTime(),
         reason: "Consider feeding after diaper change"
       };
     }
@@ -126,6 +145,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     return {
       type: "feed",
       suggestedTime: getCurrentTime(),
+      anticipatedTime: getCurrentTime(),
       reason: "Default suggestion based on baby's needs"
     };
   };
@@ -167,9 +187,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           <h4 className="font-medium text-foreground capitalize mb-1">
             {nextActivity.type}
           </h4>
-          <p className="text-sm text-muted-foreground mb-2">
+          <p className="text-sm text-muted-foreground mb-1">
             Suggested time: {nextActivity.suggestedTime}
           </p>
+          {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
+            <p className="text-sm text-muted-foreground mb-2">
+              Anticipated: {nextActivity.anticipatedTime}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             {nextActivity.reason}
           </p>

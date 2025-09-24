@@ -60,6 +60,13 @@ const Index = () => {
   // Check if user has completed onboarding
   useEffect(() => {
     const checkProfile = async () => {
+      const skipOnboarding = localStorage.getItem('skipOnboarding');
+      
+      if (skipOnboarding) {
+        setHasProfile(true);
+        return;
+      }
+      
       if (user) {
         const { data } = await supabase
           .from('profiles')
@@ -69,9 +76,13 @@ const Index = () => {
         
         setHasProfile(!!data?.baby_name);
       } else {
-        // For guest users, check if they've completed onboarding
-        const completed = localStorage.getItem('onboardingCompleted');
-        setHasProfile(!!completed);
+        // Guest users who haven't been through demo should be redirected
+        const hasSeenDemo = localStorage.getItem('onboardingCompleted');
+        if (!hasSeenDemo) {
+          navigate('/');
+          return;
+        }
+        setHasProfile(true);
       }
     };
 
