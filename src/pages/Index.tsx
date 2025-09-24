@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
+import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -60,6 +61,8 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // No more onboarding - just set profile as complete
   useEffect(() => {
@@ -67,6 +70,15 @@ const Index = () => {
       setHasProfile(true);
     }
   }, [user, loading]);
+
+  // First-time tooltip: show over + button after short delay
+  useEffect(() => {
+    const seen = localStorage.getItem('hasSeenAddActivityTooltip');
+    if (!seen) {
+      const t = setTimeout(() => setShowTooltip(true), 900);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   // Load initial activities from localStorage if available
   useEffect(() => {
@@ -269,11 +281,20 @@ const Index = () => {
         onToggle={() => setIsChatOpen(!isChatOpen)}
       />
 
+      {/* First-time tooltip overlay */}
+      {showTooltip && addButtonRef.current && (
+        <FirstTimeTooltip 
+          target={addButtonRef.current}
+          onDismiss={() => { setShowTooltip(false); localStorage.setItem('hasSeenAddActivityTooltip', 'true'); }}
+        />
+      )}
+
       {/* Bottom Navigation */}
       <BottomNavigation 
         activeTab={activeTab} 
         onTabChange={setActiveTab}
         onAddActivity={() => setIsAddModalOpen(true)}
+        addButtonRef={addButtonRef}
       />
     </div>
   );

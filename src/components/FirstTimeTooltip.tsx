@@ -37,11 +37,11 @@ export const FirstTimeTooltip = ({ target, onDismiss }: FirstTimeTooltipProps) =
   return (
     <>
       {/* Semi-transparent overlay */}
-      <div className="fixed inset-0 bg-black/40 z-40" onClick={onDismiss} />
+      <div className="fixed inset-0 bg-black/40 z-[60]" onClick={onDismiss} />
       
       {/* Circular highlight perfectly centered on button */}
       <div 
-        className="fixed z-50 pointer-events-none"
+        className="fixed z-[60] pointer-events-none"
         style={{
           top: position.top,
           left: position.left,

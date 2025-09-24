@@ -1,12 +1,14 @@
+import * as React from "react";
 import { Home, TrendingUp, Calendar, User, Plus } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onAddActivity: () => void;
+  addButtonRef?: React.Ref<HTMLButtonElement>;
 }
 
-export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity }: BottomNavigationProps) => {
+export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addButtonRef }: BottomNavigationProps) => {
   const leftTabs = [
     { id: "home", label: "Home", icon: Home },
     { id: "timeline", label: "Timeline", icon: TrendingUp },
@@ -46,6 +48,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity }: Bott
 
           {/* Central Add Button */}
           <button
+            ref={addButtonRef}
             onClick={onAddActivity}
             className="absolute left-1/2 transform -translate-x-1/2 -translate-y-2 
                      w-14 h-14 bg-gradient-primary rounded-full 
