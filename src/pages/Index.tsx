@@ -52,12 +52,6 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -67,10 +61,6 @@ const Index = () => {
         </div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
@@ -154,18 +144,37 @@ const Index = () => {
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
             <p className="text-muted-foreground font-medium mb-4">Profile & Settings</p>
             <div className="space-y-4 max-w-sm mx-auto">
-              <div className="p-4 bg-card rounded-lg">
-                <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
-                <p className="font-medium text-foreground">{user.email}</p>
-              </div>
-              <Button
-                onClick={signOut}
-                variant="outline"
-                className="w-full"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+              {user ? (
+                <>
+                  <div className="p-4 bg-card rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
+                    <p className="font-medium text-foreground">{user.email}</p>
+                  </div>
+                  <Button
+                    onClick={signOut}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="p-4 bg-card rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-2">Using as:</p>
+                    <p className="font-medium text-foreground">Guest User</p>
+                    <p className="text-xs text-muted-foreground mt-1">Sign in to save your data across devices</p>
+                  </div>
+                  <Button
+                    onClick={() => navigate("/auth")}
+                    className="w-full"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         );
@@ -189,7 +198,7 @@ const Index = () => {
           </div>
           {activeTab === "today" && (
             <>
-              <BabyAge />
+              {user && <BabyAge />}
               <div className="flex items-center gap-2 text-white/90">
                 <Calendar className="h-4 w-4" />
                 <p className="text-sm font-medium">{today}</p>
