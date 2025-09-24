@@ -146,6 +146,13 @@ const Index = () => {
       case "home":
         return (
           <div className="space-y-6">
+            <TrendChart activities={activities} />
+            <DailySummary activities={activities} date={today} />
+          </div>
+        );
+      case "timeline":
+        return (
+          <div className="space-y-6">
             {/* Summary Cards */}
             <SummaryCards activities={activities} />
 
@@ -166,13 +173,6 @@ const Index = () => {
                 </div>
               )}
             </div>
-          </div>
-        );
-      case "timeline":
-        return (
-          <div className="space-y-6">
-            <TrendChart activities={activities} />
-            <DailySummary activities={activities} date={today} />
           </div>
         );
       case "calendar":
