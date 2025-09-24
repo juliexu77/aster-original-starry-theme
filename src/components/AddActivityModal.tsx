@@ -50,6 +50,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     // Check if this is the first time user is seeing the app
     const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
     
+    // For testing - always show tooltip (remove this line in production)
+    localStorage.removeItem('hasSeenAddActivityTooltip');
+    
     if (!hasSeenTooltip && !isOpen) {
       // Show tooltip after a short delay to ensure button is rendered
       setTimeout(() => setShowTooltip(true), 2000);
