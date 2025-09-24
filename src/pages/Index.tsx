@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { ChatPanel } from "@/components/ChatPanel";
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [activities, setActivities] = useState<Activity[]>([
     {
       id: "1",
@@ -52,7 +54,44 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  if (loading) {
+  // Check if user has completed onboarding
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('baby_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        setHasProfile(!!data?.baby_name);
+      } else {
+        // For guest users, check if they've completed onboarding
+        const completed = localStorage.getItem('onboardingCompleted');
+        setHasProfile(!!completed);
+      }
+    };
+
+    if (!loading) {
+      checkProfile();
+    }
+  }, [user, loading]);
+
+  // Load initial activities from localStorage if available
+  useEffect(() => {
+    const initialActivities = localStorage.getItem('initialActivities');
+    if (initialActivities) {
+      try {
+        const parsed = JSON.parse(initialActivities);
+        setActivities(parsed);
+        localStorage.removeItem('initialActivities'); // Remove after loading
+      } catch (error) {
+        console.error('Error parsing initial activities:', error);
+      }
+    }
+  }, []);
+
+  if (loading || hasProfile === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -61,6 +100,12 @@ const Index = () => {
         </div>
       </div>
     );
+  }
+
+  // Redirect to onboarding if profile not complete
+  if (!hasProfile) {
+    navigate('/onboarding');
+    return null;
   }
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
