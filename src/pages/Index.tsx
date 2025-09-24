@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { ChatPanel } from "@/components/ChatPanel";
@@ -6,9 +7,13 @@ import { SummaryCards } from "@/components/SummaryCards";
 import { TrendChart } from "@/components/TrendChart";
 import { DailySummary } from "@/components/DailySummary";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { Calendar, BarChart3, TrendingUp, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([
     {
       id: "1",
@@ -44,6 +49,27 @@ const Index = () => {
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("today");
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
     const activity: Activity = {
@@ -124,8 +150,21 @@ const Index = () => {
         return (
           <div className="text-center py-16">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-            <p className="text-muted-foreground font-medium mb-1">Profile & Settings</p>
-            <p className="text-sm text-muted-foreground">Coming soon</p>
+            <p className="text-muted-foreground font-medium mb-4">Profile & Settings</p>
+            <div className="space-y-4 max-w-sm mx-auto">
+              <div className="p-4 bg-card rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">Signed in as:</p>
+                <p className="font-medium text-foreground">{user.email}</p>
+              </div>
+              <Button
+                onClick={signOut}
+                variant="outline"
+                className="w-full"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         );
       default:
