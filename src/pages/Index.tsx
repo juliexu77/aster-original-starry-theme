@@ -10,6 +10,7 @@ import { DailySummary } from "@/components/DailySummary";
 import { YesterdaysSummary } from "@/components/YesterdaysSummary";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { InviteCollaborator } from "@/components/InviteCollaborator";
+import { InlineInsights } from "@/components/InlineInsights";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
 import { useAuth } from "@/hooks/useAuth";
@@ -168,6 +169,9 @@ const Index = () => {
           <div className="space-y-6">
             {/* Next Activity Prediction */}
             <NextActivityPrediction activities={activities} />
+            
+            {/* Inline Insights */}
+            <InlineInsights activities={activities} />
             
             {/* Summary Cards */}
             <SummaryCards activities={activities} />
