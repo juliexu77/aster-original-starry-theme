@@ -32,9 +32,22 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
     };
 
     let feedTimes: string[] = [];
+    let allActivityTimes: string[] = [];
     let totalVolume = 0;
 
+    // Helper function to convert time string to minutes for proper sorting
+    const timeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let totalMinutes = (hours % 12) * 60 + minutes;
+      if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+      if (period === 'AM' && hours === 12) totalMinutes = minutes;
+      return totalMinutes;
+    };
+
     yesterdayActivities.forEach(activity => {
+      allActivityTimes.push(activity.time);
+      
       switch (activity.type) {
         case "feed":
           stats.feeds++;
@@ -60,8 +73,17 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
     });
 
     stats.totalFeedVolume = Math.round(totalVolume * 10) / 10;
-    stats.firstFeed = feedTimes.length > 0 ? feedTimes[0] : "";
-    stats.lastActivity = yesterdayActivities.length > 0 ? yesterdayActivities[yesterdayActivities.length - 1].time : "";
+    
+    // Sort times properly and get first feed and last activity
+    if (feedTimes.length > 0) {
+      feedTimes.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+      stats.firstFeed = feedTimes[0];
+    }
+    
+    if (allActivityTimes.length > 0) {
+      allActivityTimes.sort((a, b) => timeToMinutes(a) - timeToMinutes(b));
+      stats.lastActivity = allActivityTimes[allActivityTimes.length - 1];
+    }
 
     // Mock nap duration calculation
     stats.totalNapDuration = stats.naps * 1.5; // Average 1.5 hours per nap

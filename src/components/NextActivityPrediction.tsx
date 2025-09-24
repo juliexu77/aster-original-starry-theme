@@ -35,11 +35,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   const predictNextActivity = () => {
+    const currentTime = getCurrentTime();
+    const currentMinutes = getTimeInMinutes(currentTime);
+    
     if (activities.length === 0) {
       return {
         type: "feed",
-        suggestedTime: getCurrentTime(),
-        anticipatedTime: getCurrentTime(),
+        suggestedTime: currentTime,
+        anticipatedTime: currentTime,
         reason: "Start your day with a feeding"
       };
     }
@@ -90,8 +93,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
 
     const lastActivityTime = getTimeInMinutes(lastActivity.time);
-    const currentTime = getTimeInMinutes(getCurrentTime());
-    const timeSinceLastActivity = currentTime - lastActivityTime;
+    const currentTimeMinutes = getTimeInMinutes(getCurrentTime());
+    const timeSinceLastActivity = currentTimeMinutes - lastActivityTime;
 
     // Predict based on patterns
     if (lastActivity.type === "feed") {
@@ -107,28 +110,38 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
       if (timeSinceLastActivity >= avgFeedToNap - 15) {
         const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedToNap);
-        return {
-          type: "nap",
-          suggestedTime: getCurrentTime(),
-          anticipatedTime,
-          reason: `Based on yesterday's pattern, nap usually comes ${Math.round(avgFeedToNap / 60 * 10) / 10}h after feeding`
-        };
+        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+        
+        // Only suggest if anticipated time is in the future
+        if (anticipatedMinutes > currentMinutes) {
+          return {
+            type: "nap",
+            suggestedTime: currentTime,
+            anticipatedTime,
+            reason: `Based on yesterday's pattern, nap usually comes ${Math.round(avgFeedToNap / 60 * 10) / 10}h after feeding`
+          };
+        }
       } else if (timeSinceLastActivity >= avgFeedInterval - 30) {
         const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedInterval);
-        return {
-          type: "feed",
-          suggestedTime: getCurrentTime(),
-          anticipatedTime,
-          reason: `Next feeding typically due (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h between feeds)`
-        };
+        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+        
+        // Only suggest if anticipated time is in the future
+        if (anticipatedMinutes > currentMinutes) {
+          return {
+            type: "feed",
+            suggestedTime: currentTime,
+            anticipatedTime,
+            reason: `Next feeding typically due (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h between feeds)`
+          };
+        }
       }
     }
 
     if (lastActivity.type === "nap") {
       return {
         type: "feed",
-        suggestedTime: getCurrentTime(),
-        anticipatedTime: getCurrentTime(),
+        suggestedTime: currentTime,
+        anticipatedTime: currentTime,
         reason: "Feeding usually follows after nap time"
       };
     }
@@ -136,16 +149,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (lastActivity.type === "diaper") {
       return {
         type: "feed",
-        suggestedTime: getCurrentTime(),
-        anticipatedTime: getCurrentTime(),
+        suggestedTime: currentTime,
+        anticipatedTime: currentTime,
         reason: "Consider feeding after diaper change"
       };
     }
 
     return {
       type: "feed",
-      suggestedTime: getCurrentTime(),
-      anticipatedTime: getCurrentTime(),
+      suggestedTime: currentTime,
+      anticipatedTime: currentTime,
       reason: "Default suggestion based on baby's needs"
     };
   };

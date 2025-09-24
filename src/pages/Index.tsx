@@ -164,7 +164,20 @@ const Index = () => {
               ) : (
                 <div className="space-y-0.5">
                   {sortedActivities.map((activity) => (
-                    <ActivityCard key={activity.id} activity={activity} />
+                    <ActivityCard 
+                      key={activity.id} 
+                      activity={activity}
+                      onEdit={(activity) => {
+                        // TODO: Implement edit functionality
+                        console.log('Edit activity:', activity);
+                      }}
+                      onDelete={(activityId) => {
+                        const updatedActivities = activities.filter(a => a.id !== activityId);
+                        setActivities(updatedActivities);
+                        offlineSync.clearOfflineData();
+                        updatedActivities.forEach(act => offlineSync.storeOfflineActivity(act));
+                      }}
+                    />
                   ))}
                 </div>
               )}
@@ -243,7 +256,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans pb-20">
+    <div className="min-h-screen bg-background font-sans pb-20 overflow-y-auto">
       {/* Offline Indicator */}
       <OfflineIndicator />
       

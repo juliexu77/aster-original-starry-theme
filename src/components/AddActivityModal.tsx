@@ -99,6 +99,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         break;
       case "diaper":
         details.diaperType = diaperType;
+        if (note) details.note = note;
         break;
       case "nap":
         details.startTime = startTime;
@@ -228,18 +229,30 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             )}
 
             {activityType === "diaper" && (
-              <div>
-                <Label htmlFor="diaper-type">Type</Label>
-                <Select value={diaperType} onValueChange={(value: any) => setDiaperType(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pee">Pee</SelectItem>
-                    <SelectItem value="poop">Poop</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="diaper-type">Type</Label>
+                  <Select value={diaperType} onValueChange={(value: any) => setDiaperType(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pee">Pee</SelectItem>
+                      <SelectItem value="poop">Poop</SelectItem>
+                      <SelectItem value="both">Both</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="diaper-note">Notes (optional)</Label>
+                  <Textarea
+                    id="diaper-note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Color, consistency, rash notes..."
+                    rows={2}
+                  />
+                </div>
               </div>
             )}
 

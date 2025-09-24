@@ -1,5 +1,7 @@
-import { Clock, Baby, Palette, Moon, StickyNote } from "lucide-react";
+import { Clock, Baby, Palette, Moon, StickyNote, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 export interface Activity {
   id: string;
@@ -16,6 +18,8 @@ export interface Activity {
 
 interface ActivityCardProps {
   activity: Activity;
+  onEdit?: (activity: Activity) => void;
+  onDelete?: (activityId: string) => void;
 }
 
 const getActivityIcon = (type: string) => {
@@ -65,7 +69,7 @@ const getActivityDetails = (activity: Activity) => {
   }
 };
 
-export const ActivityCard = ({ activity }: ActivityCardProps) => {
+export const ActivityCard = ({ activity, onEdit, onDelete }: ActivityCardProps) => {
   const details = getActivityDetails(activity);
   const activityText = details ? `${activity.type} ${details}` : activity.type;
 
@@ -84,9 +88,37 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
         <p className="text-sm text-foreground font-medium capitalize truncate">
           {activityText}
         </p>
-        <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-          {activity.time}
-        </span>
+        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+          <span className="text-xs text-muted-foreground">
+            {activity.time}
+          </span>
+          {(onEdit || onDelete) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(activity)}>
+                    <Edit className="h-3 w-3 mr-2" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem 
+                    onClick={() => onDelete(activity.id)} 
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
     </div>
   );
