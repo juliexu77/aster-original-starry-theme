@@ -17,9 +17,9 @@ export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
       minute: "2-digit",
       hour12: true 
     });
-  }, []);
+  }, [value]);
 
-  const [inputValue, setInputValue] = useState(initialTime);
+  const [inputValue, setInputValue] = useState(() => value || initialTime);
 
   useEffect(() => {
     if (value) {

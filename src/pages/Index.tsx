@@ -151,7 +151,6 @@ const Index = () => {
               <InlineInsights activities={activities} />
               <NextActivityPrediction activities={activities} />
               <PatternInsights activities={activities} />
-              <SummaryCards activities={activities} />
             </div>
           </div>
         );

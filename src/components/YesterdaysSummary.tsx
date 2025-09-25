@@ -1,5 +1,6 @@
 import { Activity } from "./ActivityCard";
 import { Baby, Moon, Palette, StickyNote, TrendingDown } from "lucide-react";
+import { normalizeVolume } from "@/utils/unitConversion";
 
 interface YesterdaysSummaryProps {
   activities: Activity[];
@@ -52,13 +53,10 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
         case "feed":
           stats.feeds++;
           feedTimes.push(activity.time);
-        if (activity.details?.quantity) {
-          const quantity = parseFloat(activity.details.quantity);
-          if (!isNaN(quantity)) {
-            // Assume oz for now since unit info isn't in current interface
-            totalVolume += quantity;
+          if (activity.details?.quantity) {
+            const normalized = normalizeVolume(activity.details.quantity);
+            totalVolume += normalized.value;
           }
-        }
           break;
         case "nap":
           stats.naps++;
