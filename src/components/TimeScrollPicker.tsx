@@ -77,85 +77,58 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium text-muted-foreground">{label}</Label>}
-      <div className="flex gap-1 bg-muted/50 rounded-lg p-1">
+      <div className="flex gap-2 bg-muted/50 rounded-lg p-3 items-center justify-center">
         {/* Hours */}
-        <div className="flex-1 relative">
-          <div className="text-xs text-center py-1 text-muted-foreground font-medium">Hour</div>
-          <div 
-            ref={hourRef}
-            className="h-32 overflow-y-auto scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            onScroll={() => handleScroll(hourRef, hours, setSelectedHour)}
-          >
-            <div className="py-10">
-              {hours.map((hour) => (
-                <div
-                  key={hour}
-                  className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                    selectedHour === hour 
-                      ? 'text-primary font-semibold' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => {
-                    setSelectedHour(hour);
-                    scrollToValue(hourRef, hour, hours);
-                  }}
-                >
-                  {hour}
-                </div>
-              ))}
+        <div className="flex items-center">
+          {[selectedHour - 1, selectedHour, selectedHour + 1].filter(h => h >= 1 && h <= 12).map((hour) => (
+            <div
+              key={hour}
+              className={`w-10 h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
+                selectedHour === hour 
+                  ? 'text-primary font-bold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={() => setSelectedHour(hour)}
+            >
+              {hour}
             </div>
-          </div>
+          ))}
         </div>
 
+        <span className="text-muted-foreground font-medium">:</span>
+
         {/* Minutes */}
-        <div className="flex-1 relative">
-          <div className="text-xs text-center py-1 text-muted-foreground font-medium">Min</div>
-          <div 
-            ref={minuteRef}
-            className="h-32 overflow-y-auto scrollbar-hide"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute)}
-          >
-            <div className="py-10">
-              {minutes.map((minute) => (
-                <div
-                  key={minute}
-                  className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                    selectedMinute === minute 
-                      ? 'text-primary font-semibold' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  onClick={() => {
-                    setSelectedMinute(minute);
-                    scrollToValue(minuteRef, minute, minutes);
-                  }}
-                >
-                  {minute.toString().padStart(2, '0')}
-                </div>
-              ))}
+        <div className="flex items-center">
+          {[selectedMinute - 5, selectedMinute, selectedMinute + 5].filter(m => m >= 0 && m <= 55).map((minute) => (
+            <div
+              key={minute}
+              className={`w-10 h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
+                selectedMinute === minute 
+                  ? 'text-primary font-bold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              onClick={() => setSelectedMinute(minute)}
+            >
+              {minute.toString().padStart(2, '0')}
             </div>
-          </div>
+          ))}
         </div>
 
         {/* AM/PM */}
-        <div className="flex-1 relative">
-          <div className="text-xs text-center py-1 text-muted-foreground font-medium">Period</div>
-          <div className="h-32 flex flex-col justify-center">
-            {periods.map((period) => (
-              <div
-                key={period}
-                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                  selectedPeriod === period 
-                    ? 'text-primary font-semibold' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => setSelectedPeriod(period as "AM" | "PM")}
-              >
-                {period}
-              </div>
-            ))}
-          </div>
+        <div className="flex gap-1 ml-2">
+          {periods.map((period) => (
+            <div
+              key={period}
+              className={`px-3 py-2 rounded text-sm font-medium cursor-pointer transition-colors ${
+                selectedPeriod === period 
+                  ? 'text-primary font-bold bg-primary/10' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+              onClick={() => setSelectedPeriod(period as "AM" | "PM")}
+            >
+              {period}
+            </div>
+          ))}
         </div>
       </div>
     </div>

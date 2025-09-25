@@ -10,6 +10,7 @@ interface NumericKeypadProps {
   title?: string;
   unit?: string;
   initialValue?: string;
+  onUnitChange?: (unit: string) => void;
 }
 
 export const NumericKeypad = ({ 
@@ -18,7 +19,8 @@ export const NumericKeypad = ({
   onSubmit, 
   title = "Enter Amount",
   unit = "oz",
-  initialValue = ""
+  initialValue = "",
+  onUnitChange
 }: NumericKeypadProps) => {
   const [value, setValue] = useState(initialValue);
 
@@ -65,7 +67,12 @@ export const NumericKeypad = ({
           <div className="bg-muted/50 rounded-lg p-4 text-center">
             <div className="text-3xl font-bold text-foreground min-h-[40px] flex items-center justify-center">
               {value || "0"}
-              <span className="text-xl text-muted-foreground ml-2">{unit}</span>
+              <button
+                className="text-xl text-muted-foreground ml-2 hover:text-foreground transition-colors border border-muted-foreground/30 rounded px-2 py-1"
+                onClick={() => onUnitChange?.(unit === "oz" ? "ml" : "oz")}
+              >
+                {unit}
+              </button>
             </div>
           </div>
 

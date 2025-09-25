@@ -500,6 +500,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
         title="Enter Amount"
         unit={unit}
         initialValue={quantity}
+        onUnitChange={(newUnit) => setUnit(newUnit as "oz" | "ml")}
       />
     </>
   );
