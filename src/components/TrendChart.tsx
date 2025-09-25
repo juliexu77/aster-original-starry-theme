@@ -19,24 +19,29 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateStr = date.toDateString();
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this date - for now use today's data for all days since we don't have historical data
-      const dayFeeds = activities.filter(a => a.type === "feed");
+      // Filter activities for this specific date
+      const dayFeeds = activities.filter(a => {
+        if (a.type !== "feed") return false;
+        const activityDate = new Date().toISOString().split('T')[0]; // All current activities are today
+        return dateStr === activityDate; // Only show data for today, empty for other days
+      });
+      
       const totalOz = dayFeeds.reduce((sum, feed) => {
-        const normalized = normalizeVolume(feed.details.quantity || "0");
+        if (!feed.details.quantity) return sum;
+        const normalized = normalizeVolume(feed.details.quantity, "oz");
         return sum + normalized.value;
       }, 0);
       
-      // If no real data, use mock data
-      const value = totalOz > 0 ? Math.round(totalOz * 10) / 10 : Math.floor(Math.random() * 8) + 20;
-      const feedCount = dayFeeds.length > 0 ? dayFeeds.length : Math.floor(Math.random() * 3) + 5;
+      const value = Math.round(totalOz * 10) / 10;
+      const feedCount = dayFeeds.length;
       
       data.push({
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         value,
         feedCount,
-        detail: `${value} oz, ${feedCount} feeds`
+        detail: value > 0 ? `${value} oz, ${feedCount} feeds` : "No feeds"
       });
     }
     
@@ -52,29 +57,33 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this date
-      const dayNaps = activities.filter(a => a.type === "nap");
+      // Filter activities for this specific date
+      const dayNaps = activities.filter(a => {
+        if (a.type !== "nap") return false;
+        const activityDate = new Date().toISOString().split('T')[0]; // All current activities are today
+        return dateStr === activityDate; // Only show data for today, empty for other days
+      });
+      
       let totalHours = 0;
-      
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
           const start = new Date(`2000/01/01 ${nap.details.startTime}`);
           const end = new Date(`2000/01/01 ${nap.details.endTime}`);
           const diff = end.getTime() - start.getTime();
-          totalHours += diff / (1000 * 60 * 60);
+          if (diff > 0) totalHours += diff / (1000 * 60 * 60);
         }
       });
       
-      // If no real data, use mock data
-      const value = totalHours > 0 ? Math.round(totalHours * 10) / 10 : Math.floor(Math.random() * 3) + 2;
-      const napCount = dayNaps.length > 0 ? dayNaps.length : Math.floor(Math.random() * 2) + 3;
+      const value = Math.round(totalHours * 10) / 10;
+      const napCount = dayNaps.length;
       
       data.push({
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         value,
         napCount,
-        detail: `${value}h, ${napCount} naps`
+        detail: value > 0 ? `${value}h, ${napCount} naps` : "No naps"
       });
     }
     
@@ -124,11 +133,16 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
                 <div className="text-xs text-muted-foreground font-medium">
                   {day.date}
                 </div>
-                {selectedDetail === `feed-${index}` && (
-                  <div className="absolute z-10 bg-popover border border-border rounded-lg p-2 shadow-lg mt-16">
-                    <p className="text-xs font-medium">{day.detail}</p>
-                  </div>
-                )}
+                 {selectedDetail === `feed-${index}` && (
+                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2 shadow-lg pointer-events-none"
+                        style={{
+                          left: '50%',
+                          top: '50%',
+                          transform: 'translate(-50%, -50%)'
+                        }}>
+                     <p className="text-xs font-medium">{day.detail}</p>
+                   </div>
+                 )}
               </div>
             ))}
           </div>
@@ -171,11 +185,16 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
                 <div className="text-xs text-muted-foreground font-medium">
                   {day.date}
                 </div>
-                {selectedDetail === `nap-${index}` && (
-                  <div className="absolute z-10 bg-popover border border-border rounded-lg p-2 shadow-lg mt-16">
-                    <p className="text-xs font-medium">{day.detail}</p>
-                  </div>
-                )}
+                 {selectedDetail === `nap-${index}` && (
+                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2 shadow-lg pointer-events-none"
+                        style={{
+                          left: '50%',
+                          top: '50%',
+                          transform: 'translate(-50%, -50%)'
+                        }}>
+                     <p className="text-xs font-medium">{day.detail}</p>
+                   </div>
+                 )}
               </div>
             ))}
           </div>

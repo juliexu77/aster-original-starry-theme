@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TimePicker } from "./TimePicker";
+import { TimeScrollPicker } from "./TimeScrollPicker";
+import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -50,6 +51,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   // General
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
+  const [showKeypad, setShowKeypad] = useState(false);
 
   const resetForm = () => {
     const now = new Date();
@@ -70,6 +72,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
     setTimerStart(null);
     setNote("");
     setPhoto(null);
+    setShowKeypad(false);
   };
 
   const startNapTimer = () => {
@@ -197,16 +200,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader className="pb-4">
             <DialogTitle className="text-lg font-medium">
               Add Activity
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Activity Type Selection - Clean Grid */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {[
                 { type: "feed", icon: Baby, label: "Feed" },
                 { type: "diaper", icon: Palette, label: "Diaper" },
@@ -216,7 +219,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                 <Button
                   key={type}
                   variant={activityType === type ? "default" : "outline"}
-                  className={`h-14 flex-col gap-1.5 ${
+                  className={`h-12 flex-col gap-1 ${
                     activityType === type 
                       ? 'bg-primary text-primary-foreground' 
                       : 'hover:bg-muted'
@@ -224,22 +227,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                   onClick={() => setActivityType(type as any)}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-sm font-medium">{label}</span>
+                  <span className="text-xs font-medium">{label}</span>
                 </Button>
               ))}
             </div>
 
-            {/* Time Picker - Only for non-nap activities */}
-            {activityType && activityType !== "nap" && (
-              <div>
-                <Label className="text-sm font-medium mb-2 block text-muted-foreground">Time</Label>
-                <TimePicker value={time} onChange={setTime} />
-              </div>
-            )}
-
             {/* Feed Details */}
             {activityType === "feed" && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium mb-2 block text-muted-foreground">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
@@ -251,66 +246,52 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                       <Button
                         key={type}
                         variant={feedType === type ? "default" : "outline"}
-                        className={`h-12 flex-col gap-1 text-xs ${
+                        className={`h-10 flex-col gap-1 text-xs ${
                           feedType === type 
                             ? 'bg-primary text-primary-foreground' 
                             : 'hover:bg-muted'
                         }`}
                         onClick={() => setFeedType(type as any)}
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-3 w-3" />
                         {label}
                       </Button>
                     ))}
                   </div>
                 </div>
 
+                {/* Time Picker - Moved below feed type */}
+                <TimeScrollPicker value={time} onChange={setTime} label="Time" />
+
                 <div>
-                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Quantity</Label>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-4 gap-2">
-                      {["2", "4", "6", "8"].map((amount) => (
+                  <Label className="text-sm font-medium mb-2 block text-muted-foreground">Amount</Label>
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-left justify-between hover:bg-muted"
+                      onClick={() => setShowKeypad(true)}
+                    >
+                      <span className="text-foreground">
+                        {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
+                      </span>
+                      <span className="text-muted-foreground text-xs">Enter</span>
+                    </Button>
+                    <div className="flex gap-1">
+                      {["oz", "ml"].map((u) => (
                         <Button
-                          key={amount}
-                          variant={quantity === amount ? "default" : "outline"}
-                          className={`h-10 ${
-                            quantity === amount 
+                          key={u}
+                          variant={unit === u ? "default" : "outline"}
+                          size="sm"
+                          className={`flex-1 h-8 text-xs ${
+                            unit === u 
                               ? 'bg-primary text-primary-foreground' 
                               : 'hover:bg-muted'
                           }`}
-                          onClick={() => handleQuantityShortcut(amount)}
+                          onClick={() => setUnit(u as any)}
                         >
-                          {amount}
+                          {u}
                         </Button>
                       ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        placeholder="Custom amount"
-                        className="flex-1 h-10"
-                        min="0"
-                        step="0.5"
-                      />
-                      <div className="flex border rounded-md">
-                        {["oz", "ml"].map((u) => (
-                          <Button
-                            key={u}
-                            variant="ghost"
-                            size="sm"
-                            className={`h-10 px-3 rounded-none border-0 ${
-                              unit === u 
-                                ? 'bg-muted text-foreground' 
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                            onClick={() => setUnit(u as any)}
-                          >
-                            {u}
-                          </Button>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -326,14 +307,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                       <Button
                         key={type}
                         variant={reaction === type ? "default" : "outline"}
-                        className={`h-12 flex-col gap-1 text-xs ${
+                        className={`h-10 flex-col gap-1 text-xs ${
                           reaction === type 
                             ? 'bg-primary text-primary-foreground' 
                             : 'hover:bg-muted'
                         }`}
                         onClick={() => setReaction(type as any)}
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-3 w-3" />
                         {label}
                       </Button>
                     ))}
@@ -418,10 +399,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
 
             {/* Nap Details */}
             {activityType === "nap" && (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <Button
                   variant={isTimerActive ? "destructive" : "default"}
-                  className={`w-full h-12 ${
+                  className={`w-full h-10 ${
                     !isTimerActive 
                       ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
                       : ''
@@ -431,15 +412,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
                   <Clock className="h-4 w-4 mr-2" />
                   {isTimerActive ? "Stop Nap" : "Start Nap Timer"}
                 </Button>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block text-muted-foreground">Start Time</Label>
-                    <TimePicker value={startTime} onChange={setStartTime} />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium mb-2 block text-muted-foreground">End Time</Label>
-                    <TimePicker value={endTime} onChange={setEndTime} />
-                  </div>
+                <div className="space-y-3">
+                  <TimeScrollPicker value={startTime} onChange={setStartTime} label="Start Time" />
+                  <TimeScrollPicker value={endTime} onChange={setEndTime} label="End Time" />
                 </div>
               </div>
             )}
@@ -516,6 +491,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Numeric Keypad */}
+      <NumericKeypad
+        isOpen={showKeypad}
+        onClose={() => setShowKeypad(false)}
+        onSubmit={setQuantity}
+        title="Enter Amount"
+        unit={unit}
+        initialValue={quantity}
+      />
     </>
   );
 };
