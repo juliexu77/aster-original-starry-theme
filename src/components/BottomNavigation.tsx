@@ -20,7 +20,7 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
       <div className="max-w-md mx-auto px-6 py-4">
         <div className="flex justify-between items-center relative">
           {/* Left tabs */}
