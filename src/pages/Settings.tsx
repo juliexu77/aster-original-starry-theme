@@ -206,78 +206,87 @@ export const Settings = ({ onClose }: SettingsProps) => {
   };
 
   return (
-    <div className="space-y-4 pb-8">
-
-      {/* User Profile */}
-      {user ? (
-        <Card>
-          <CardContent className="space-y-4 pt-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="w-16 h-16">
-                <AvatarImage src="" alt={fullName || user.email || "User"} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                  {fullName ? getInitials(fullName) : getInitials(user.email || "U")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <Button variant="outline" size="sm">
-                  <Camera className="w-4 h-4 mr-2" />
-                  Change Photo
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid gap-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    value={user.email || ""}
-                    disabled
-                    className="pl-10"
-                  />
+    <div className="space-y-6 pb-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5" />
+            User Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {user ? (
+            <>
+              <div className="flex items-center gap-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src="" alt={fullName || user.email || "User"} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                    {fullName ? getInitials(fullName) : getInitials(user.email || "U")}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Button variant="outline" size="sm">
+                    <Camera className="w-4 h-4 mr-2" />
+                    Change Photo
+                  </Button>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
-                />
-              </div>
+              <div className="grid gap-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      value={user.email || ""}
+                      disabled
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
 
-              <Button 
-                onClick={handleChangePassword}
-                variant="outline"
-                className="w-full"
-              >
-                <Key className="w-4 h-4 mr-2" />
-                Change Password
+                <div>
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <Button 
+                  onClick={handleChangePassword}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Key className="w-4 h-4 mr-2" />
+                  Change Password
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Guest User</h3>
+              <Button onClick={() => navigate("/auth")} className="w-full">
+                <User className="w-4 h-4 mr-2" />
+                Sign In
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">Guest User</h3>
-            <Button onClick={() => navigate("/auth")} className="w-full">
-              <User className="w-4 h-4 mr-2" />
-              Sign In
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Baby Profile */}
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Baby className="w-5 h-5" />
+            Baby Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           {!showBabyEdit ? (
             <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
               <div>
@@ -346,22 +355,29 @@ export const Settings = ({ onClose }: SettingsProps) => {
 
       <SimpleInviteCollaborator />
 
-      {/* App Preferences */}
       <Card>
-        <CardContent className="space-y-4 pt-6">
+        <CardHeader>
+          <CardTitle>App Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <Palette className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              <span>Theme</span>
+            </div>
             <ThemeToggle />
           </div>
 
           <div className="flex items-center justify-between">
-            <Globe className="w-5 h-5 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              <span>Language</span>
+            </div>
             <LanguageToggle />
           </div>
         </CardContent>
       </Card>
 
-      {/* Sign Out */}
       {user && (
         <Card>
           <CardContent className="p-6">

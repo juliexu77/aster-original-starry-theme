@@ -113,12 +113,6 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
   if (yesterdayActivities.length === 0) {
     return (
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingDown className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-serif font-medium text-foreground">
-            Yesterday's Summary
-          </h3>
-        </div>
         <div className="text-center py-8">
           <p className="text-muted-foreground">No data available for yesterday</p>
         </div>

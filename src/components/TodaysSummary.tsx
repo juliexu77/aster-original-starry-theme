@@ -153,13 +153,7 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
   if (dayActivities.length === 0) {
     return (
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-muted-foreground" />
-            <h3 className="text-lg font-serif font-medium text-foreground">
-              Daily Summary
-            </h3>
-          </div>
+        <div className="flex justify-end mb-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -210,16 +204,6 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-        
-        <div className="mb-4">
-          <p className="text-muted-foreground text-sm">
-            {selectedDate.date.toLocaleDateString("en-US", { 
-              weekday: "long", 
-              month: "long", 
-              day: "numeric" 
-            })}
-          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
