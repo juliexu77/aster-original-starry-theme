@@ -10,10 +10,12 @@ export function ThemeToggle() {
       variant="outline"
       size="sm"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="h-10 px-6 bg-background/80 backdrop-blur-sm border-border/50 min-w-fit whitespace-nowrap"
+      className="h-10 px-6 bg-background/80 backdrop-blur-sm border-border/50 min-w-fit whitespace-nowrap inline-flex items-center gap-2"
     >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 mr-2" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 mr-2" />
+      <span className="relative inline-block w-5 h-5 mr-1">
+        <Sun className="absolute inset-0 h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <Moon className="absolute inset-0 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      </span>
       <span className="text-sm font-medium">
         {theme === "dark" ? "Dark" : "Light"}
       </span>
