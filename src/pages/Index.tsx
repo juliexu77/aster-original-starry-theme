@@ -23,11 +23,13 @@ import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { SubtleOnboarding } from "@/components/SubtleOnboarding";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const { t } = useLanguage();
+  const { babyProfile: dbBabyProfile, loading: profileLoading } = useBabyProfile();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
@@ -41,18 +43,32 @@ const Index = () => {
 
   // Check for baby profile - check completion status first
   useEffect(() => {
-    if (!loading) {
+    if (!loading && !profileLoading) {
       const profileCompleted = localStorage.getItem('babyProfileCompleted');
       const savedProfile = localStorage.getItem('babyProfile');
+      const isCollaborator = localStorage.getItem('isCollaborator');
       
-      if (profileCompleted && savedProfile) {
+      // If user is a collaborator with access to a DB profile, use that
+      if (isCollaborator && dbBabyProfile) {
+        setBabyProfile(dbBabyProfile);
+        setHasProfile(true);
+      }
+      // If they have a completed local profile, use that
+      else if (profileCompleted && savedProfile) {
         setBabyProfile(JSON.parse(savedProfile));
         setHasProfile(true);
-      } else {
+      }
+      // If they have a DB profile (they're the owner), use that
+      else if (dbBabyProfile) {
+        setBabyProfile(dbBabyProfile);
+        setHasProfile(true);
+      }
+      // Otherwise show the setup screen
+      else {
         setHasProfile(false);
       }
     }
-  }, [user, loading]);
+  }, [user, loading, profileLoading, dbBabyProfile]);
 
   const handleProfileComplete = (profile: { name: string; birthday: string }) => {
     setBabyProfile(profile);
@@ -85,7 +101,7 @@ const Index = () => {
     }
   }, []);
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -96,8 +112,8 @@ const Index = () => {
     );
   }
 
-  // Show baby profile setup if no profile exists
-  if (hasProfile === false) {
+  // Show baby profile setup if no profile exists and user is not a collaborator
+  if (hasProfile === false && !localStorage.getItem('isCollaborator')) {
     return <BabyProfileSetup onComplete={handleProfileComplete} />;
   }
 

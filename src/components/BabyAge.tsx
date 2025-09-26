@@ -1,24 +1,34 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
 
 export const BabyAge = () => {
   const { t } = useLanguage();
+  const { babyProfile: dbBabyProfile } = useBabyProfile();
   const [babyData, setBabyData] = useState<{
     name: string | null;
     birthDate: string | null;
   } | null>(null);
 
   useEffect(() => {
-    // Get baby profile from localStorage
-    const savedProfile = localStorage.getItem('babyProfile');
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
+    // Prioritize database profile (for authenticated users/collaborators)
+    if (dbBabyProfile) {
       setBabyData({
-        name: profile.name,
-        birthDate: profile.birthday,
+        name: dbBabyProfile.name,
+        birthDate: dbBabyProfile.birthday || null,
       });
+    } else {
+      // Fallback to localStorage (for guest users)
+      const savedProfile = localStorage.getItem('babyProfile');
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        setBabyData({
+          name: profile.name,
+          birthDate: profile.birthday,
+        });
+      }
     }
-  }, []);
+  }, [dbBabyProfile]);
 
   const calculateAge = (birthDate: string) => {
     const birth = new Date(birthDate);

@@ -30,6 +30,9 @@ const InviteAccept = () => {
     
     try {
       await acceptInvite(code);
+      // Mark user as collaborator to bypass baby profile setup
+      localStorage.setItem('isCollaborator', 'true');
+      localStorage.setItem('babyProfileCompleted', 'true');
       navigate("/app");
     } catch (err: any) {
       setError(err.message || "Failed to accept invite");
