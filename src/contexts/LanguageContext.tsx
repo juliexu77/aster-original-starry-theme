@@ -43,7 +43,7 @@ const translations = {
     
     // Baby profile
     babyName: "Baby's name",
-    babyBirthday: "Baby's birthday (optional)",
+    babyBirthday: "Baby's birthday",
     setupProfile: "Let's set up your baby's profile",
     
     // Activities
@@ -59,7 +59,8 @@ const translations = {
     // Profile
     language: "Language",
     theme: "Theme",
-    signOut: "Sign Out"
+    signOut: "Sign Out",
+    continue: "Continue"
   },
   zh: {
     // App name and core  
@@ -92,7 +93,7 @@ const translations = {
     
     // Baby profile
     babyName: "宝宝姓名",
-    babyBirthday: "宝宝生日（可选）",
+    babyBirthday: "宝宝生日",
     setupProfile: "让我们设置宝宝的资料",
     
     // Activities
@@ -108,7 +109,8 @@ const translations = {
     // Profile
     language: "语言",
     theme: "主题",
-    signOut: "退出登录"
+    signOut: "退出登录",
+    continue: "继续"
   }
 };
 

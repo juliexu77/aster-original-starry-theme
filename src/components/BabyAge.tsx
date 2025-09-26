@@ -1,34 +1,24 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const BabyAge = () => {
-  const { user } = useAuth();
+  const { t } = useLanguage();
   const [babyData, setBabyData] = useState<{
     name: string | null;
     birthDate: string | null;
   } | null>(null);
 
   useEffect(() => {
-    if (!user) return;
-
-    const fetchBabyProfile = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("baby_name, baby_birth_date")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (data && !error) {
-        setBabyData({
-          name: data.baby_name,
-          birthDate: data.baby_birth_date,
-        });
-      }
-    };
-
-    fetchBabyProfile();
-  }, [user]);
+    // Get baby profile from localStorage
+    const savedProfile = localStorage.getItem('babyProfile');
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile);
+      setBabyData({
+        name: profile.name,
+        birthDate: profile.birthday,
+      });
+    }
+  }, []);
 
   const calculateAge = (birthDate: string) => {
     const birth = new Date(birthDate);

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,13 +16,14 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
   const [birthday, setBirthday] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!babyName.trim()) {
       toast({
-        title: "Baby name required",
+        title: t('babyName'),
         description: "Please enter your baby's name to continue.",
         variant: "destructive",
       });
@@ -30,8 +32,8 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
 
     if (!birthday) {
       toast({
-        title: "Birthday required",
-        description: "Please enter your baby's birthday for personalized insights.",
+        title: t('babyBirthday'),
+        description: "Please select your baby's birthday to continue.",
         variant: "destructive",
       });
       return;
@@ -47,6 +49,9 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
     
     localStorage.setItem('babyProfile', JSON.stringify(profile));
     
+    // Mark profile as completed so setup won't show again
+    localStorage.setItem('babyProfileCompleted', 'true');
+    
     onComplete(profile);
     setIsLoading(false);
   };
@@ -60,7 +65,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
             <Baby className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-serif font-semibold text-foreground mb-2">
-            Tell us about your baby
+            {t('setupProfile')}
           </h1>
           <p className="text-muted-foreground text-sm">
             Let's personalize your tracking experience
@@ -81,12 +86,12 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="baby-name" className="text-sm font-medium">
-                  Baby's Name <span className="text-destructive">*</span>
+                  {t('babyName')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="baby-name"
                   type="text"
-                  placeholder="Enter your baby's name"
+                  placeholder={t('babyName')}
                   value={babyName}
                   onChange={(e) => setBabyName(e.target.value)}
                   required
@@ -97,7 +102,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
               
               <div className="space-y-2">
                 <Label htmlFor="birthday" className="text-sm font-medium">
-                  Birthday <span className="text-destructive">*</span>
+                  {t('babyBirthday')} <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -111,9 +116,6 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                     required
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Required for age-based insights and Huckleberry sleep recommendations
-                </p>
               </div>
 
               <Button 
@@ -121,7 +123,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                 className="w-full h-12 text-base" 
                 disabled={isLoading || !babyName.trim() || !birthday}
               >
-                {isLoading ? "Setting up..." : "Continue"}
+                {isLoading ? "Setting up..." : t('continue')}
               </Button>
             </form>
           </CardContent>

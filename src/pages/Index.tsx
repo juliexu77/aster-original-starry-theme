@@ -39,11 +39,13 @@ const Index = () => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Check for baby profile
+  // Check for baby profile - check completion status first
   useEffect(() => {
     if (!loading) {
+      const profileCompleted = localStorage.getItem('babyProfileCompleted');
       const savedProfile = localStorage.getItem('babyProfile');
-      if (savedProfile) {
+      
+      if (profileCompleted && savedProfile) {
         setBabyProfile(JSON.parse(savedProfile));
         setHasProfile(true);
       } else {
@@ -155,7 +157,7 @@ const Index = () => {
                     <ActivityCard 
                       key={activity.id} 
                       activity={activity}
-                      babyName={babyProfile?.name}
+                      babyName={babyProfile?.name || "Baby"}
                       onEdit={(activity) => {
                         // TODO: Implement edit functionality
                         console.log('Edit activity:', activity);
@@ -284,7 +286,7 @@ const Index = () => {
         <div className="max-w-md mx-auto">
           {activeTab === "home" && (
             <>
-              {user && <BabyAge />}
+              {(user || babyProfile) && <BabyAge />}
               <div className="flex items-center gap-2 text-white/90">
                 <Calendar className="h-4 w-4" />
                 <p className="text-sm font-medium">{today}</p>
