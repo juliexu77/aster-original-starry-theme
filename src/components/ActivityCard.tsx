@@ -12,6 +12,9 @@ export interface Activity {
     feedType?: "bottle" | "nursing" | "solid";
     quantity?: string;
     unit?: "oz" | "ml";
+    minutesLeft?: string;
+    minutesRight?: string;
+    solidDescription?: string;
     // Diaper details
     diaperType?: "wet" | "poopy" | "both";
     hasLeak?: boolean;
@@ -64,9 +67,24 @@ const getActivityGradient = (type: string) => {
 const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby") => {
   switch (activity.type) {
     case "feed":
-      const quantity = activity.details.quantity;
-      if (quantity) {
-        return `${babyName} drank ${quantity} oz`;
+      const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription } = activity.details;
+      
+      if (feedType === "bottle" && quantity && unit) {
+        return `${babyName} drank ${quantity} ${unit}`;
+      } else if (feedType === "nursing") {
+        const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
+        const rightTime = minutesRight ? parseInt(minutesRight) : 0;
+        const totalTime = leftTime + rightTime;
+        
+        if (totalTime > 0) {
+          return `${babyName} nursed ${totalTime} min total`;
+        }
+        return `${babyName} nursed`;
+      } else if (feedType === "solid") {
+        if (solidDescription) {
+          return `${babyName} ate ${solidDescription}`;
+        }
+        return `${babyName} had solids`;
       }
       return `${babyName} had a feeding`;
     case "diaper":

@@ -36,6 +36,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState<"oz" | "ml">("oz");
+  const [minutesLeft, setMinutesLeft] = useState("");
+  const [minutesRight, setMinutesRight] = useState("");
+  const [solidDescription, setSolidDescription] = useState("");
   const [reaction, setReaction] = useState<"happy" | "neutral" | "fussy" | "">("");
   
   // Diaper state
@@ -63,6 +66,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }));
     setFeedType("bottle");
     setQuantity("");
+    setMinutesLeft("");
+    setMinutesRight("");
+    setSolidDescription("");
     setReaction("");
     setDiaperType("wet");
     setHasLeak(false);
@@ -118,10 +124,19 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return;
     }
 
-    if (activityType === "feed" && !quantity) {
+    if (activityType === "feed" && feedType === "bottle" && !quantity) {
       toast({
         title: "Feed amount required",
         description: "Please enter the amount for this feeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (activityType === "feed" && feedType === "nursing" && (!minutesLeft && !minutesRight)) {
+      toast({
+        title: "Nursing time required",
+        description: "Please enter minutes for left, right, or both sides.",
         variant: "destructive",
       });
       return;
@@ -141,12 +156,17 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     switch (activityType) {
       case "feed":
         details.feedType = feedType;
-        if (quantity) {
+        if (feedType === "bottle" && quantity) {
           details.quantity = quantity;
           details.unit = unit;
+          localStorage.setItem('lastUsedUnit', unit);
+        } else if (feedType === "nursing") {
+          if (minutesLeft) details.minutesLeft = minutesLeft;
+          if (minutesRight) details.minutesRight = minutesRight;
+        } else if (feedType === "solid") {
+          if (solidDescription) details.solidDescription = solidDescription;
         }
         if (note) details.note = note;
-        localStorage.setItem('lastUsedUnit', unit);
         break;
       case "diaper":
         details.diaperType = diaperType;
@@ -273,19 +293,64 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {/* Time Picker - Moved below feed type */}
                 <TimeScrollPicker value={time} onChange={setTime} label="Time" />
 
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Amount</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 text-left justify-between"
-                    onClick={() => setShowKeypad(true)}
-                  >
-                    <span className="text-foreground">
-                      {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
-                    </span>
-                    <span className="text-muted-foreground text-xs">Enter</span>
-                  </Button>
-                </div>
+                {/* Dynamic amount/details based on feed type */}
+                {feedType === "bottle" && (
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">Amount</Label>
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-left justify-between"
+                      onClick={() => setShowKeypad(true)}
+                    >
+                      <span className="text-foreground">
+                        {quantity ? `${quantity} ${unit}` : "Tap to enter amount"}
+                      </span>
+                      <span className="text-muted-foreground text-xs">Enter</span>
+                    </Button>
+                  </div>
+                )}
+
+                {feedType === "nursing" && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Nursing Time</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Left Side (min)</Label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={minutesLeft}
+                          onChange={(e) => setMinutesLeft(e.target.value)}
+                          className="text-center"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Right Side (min)</Label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={minutesRight}
+                          onChange={(e) => setMinutesRight(e.target.value)}
+                          className="text-center"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {feedType === "solid" && (
+                  <div>
+                    <Label htmlFor="solid-description" className="text-sm font-medium mb-2 block">What did they eat?</Label>
+                    <Textarea
+                      id="solid-description"
+                      value={solidDescription}
+                      onChange={(e) => setSolidDescription(e.target.value)}
+                      placeholder="e.g., banana puree, rice cereal, cheerios..."
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">Notes</Label>
@@ -435,16 +500,18 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         </DialogContent>
       </Dialog>
       
-      {/* Numeric Keypad */}
-      <NumericKeypad
-        isOpen={showKeypad}
-        onClose={() => setShowKeypad(false)}
-        onSubmit={setQuantity}
-        title="Enter Amount"
-        unit={unit}
-        initialValue={quantity}
-        onUnitChange={(newUnit) => setUnit(newUnit as "oz" | "ml")}
-      />
+      {/* Numeric Keypad - Only for bottle feeds */}
+      {feedType === "bottle" && (
+        <NumericKeypad
+          isOpen={showKeypad}
+          onClose={() => setShowKeypad(false)}
+          onSubmit={setQuantity}
+          title="Enter Amount"
+          unit={unit}
+          initialValue={quantity}
+          onUnitChange={(newUnit) => setUnit(newUnit as "oz" | "ml")}
+        />
+      )}
     </>
   );
 };
