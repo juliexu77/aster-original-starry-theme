@@ -7,6 +7,7 @@ export interface BabyProfile {
   id: string;
   name: string;
   birthday?: string;
+  photo_url?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -147,7 +148,7 @@ export function useBabyProfile() {
     }
   };
 
-  const updateBabyProfile = async (updates: Partial<Pick<BabyProfile, 'name' | 'birthday'>>) => {
+  const updateBabyProfile = async (updates: Partial<Pick<BabyProfile, 'name' | 'birthday' | 'photo_url'>>) => {
     if (!user || !babyProfile) throw new Error('User not authenticated or no profile');
 
     try {

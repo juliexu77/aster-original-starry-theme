@@ -18,12 +18,15 @@ import {
   UserPlus,
   Share,
   Users,
-  Trash2
+  Trash2,
+  Baby
 } from "lucide-react";
+import { PhotoUpload } from "@/components/PhotoUpload";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { babyProfile, collaborators, removeCollaborator, updateBabyProfile } = useBabyProfile();
+  const { babyProfile, collaborators, removeCollaborator, updateBabyProfile, generateInviteLink } = useBabyProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -33,6 +36,7 @@ export const Settings = () => {
   const [copied, setCopied] = useState(false);
   const [babyName, setBabyName] = useState(babyProfile?.name || "");
   const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
+  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
 
   // Auto-save user profile changes
   useEffect(() => {
@@ -133,13 +137,9 @@ export const Settings = () => {
       return;
     }
 
-    // Generate a unique invite code
-    const inviteCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const baseUrl = window.location.origin;
-    const link = `${baseUrl}/invite?code=${inviteCode}`;
-    
     try {
-      await navigator.clipboard.writeText(link);
+      const inviteData = await generateInviteLink();
+      await navigator.clipboard.writeText(inviteData.link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       
@@ -149,10 +149,21 @@ export const Settings = () => {
       });
     } catch (err) {
       toast({
-        title: "Failed to copy",
+        title: "Failed to create invite",
         description: "Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleUserPhotoUpdate = async (photoUrl: string | null) => {
+    setUserPhotoUrl(photoUrl);
+    // You can also save to user profile if needed
+  };
+
+  const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
+    if (babyProfile) {
+      await updateBabyProfile({ photo_url: photoUrl });
     }
   };
 
@@ -180,8 +191,15 @@ export const Settings = () => {
         
         {/* Header with User Icon and Title */}
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-muted rounded-full mx-auto flex items-center justify-center">
-            <User className="w-10 h-10 text-muted-foreground" />
+          <div className="flex justify-center">
+            <PhotoUpload
+              currentPhotoUrl={userPhotoUrl}
+              bucketName="baby-photos"
+              folder={user?.id || "guest"}
+              fallbackIcon={<User className="w-10 h-10 text-muted-foreground" />}
+              onPhotoUpdate={handleUserPhotoUpdate}
+              size="lg"
+            />
           </div>
           <h1 className="text-xl font-serif font-medium text-foreground">
             Profile & Settings
@@ -259,14 +277,14 @@ export const Settings = () => {
             
             <div className="space-y-4">
               {/* Baby Photo */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center overflow-hidden">
-                  <User className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <Button variant="outline" size="sm">
-                  Change Photo
-                </Button>
-              </div>
+              <PhotoUpload
+                currentPhotoUrl={babyProfile?.photo_url}
+                bucketName="baby-photos"
+                folder={babyProfile?.id || "baby"}
+                fallbackIcon={<Baby className="w-6 h-6 text-muted-foreground" />}
+                onPhotoUpdate={handleBabyPhotoUpdate}
+                size="md"
+              />
 
               {/* Baby Name */}
               <div>
