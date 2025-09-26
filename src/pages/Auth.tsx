@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +15,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -120,6 +123,11 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md">
+        {/* Language Toggle */}
+        <div className="flex justify-end mb-6">
+          <LanguageToggle />
+        </div>
+        
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -129,7 +137,7 @@ const Auth = () => {
             <Heart className="w-5 h-5 text-accent/80" />
           </div>
           <h1 className="text-2xl md:text-3xl font-serif font-semibold text-foreground mb-2 tracking-tight leading-tight">
-            Baby Tracker
+            {t('appName')}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Track your little one's precious moments
@@ -140,7 +148,7 @@ const Auth = () => {
         <Card className="border-border bg-card/95 backdrop-blur-sm shadow-card">
           <CardHeader className="pb-4">
             <CardTitle className="text-center text-foreground text-xl font-sans font-medium">
-              Welcome
+              {t('welcome')}
             </CardTitle>
             <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
               Sign in to your account or create a new one
@@ -149,8 +157,8 @@ const Auth = () => {
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="signin">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="signin">{t('signIn')}</TabsTrigger>
+                <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="signin">
@@ -273,7 +281,7 @@ const Auth = () => {
                     className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    Continue with Google
+                    {t('signInWithGoogle')}
                   </Button>
                 </form>
               </TabsContent>
@@ -291,7 +299,7 @@ const Auth = () => {
                 }}
                 className="w-full text-muted-foreground hover:text-foreground text-sm font-normal"
               >
-                Continue as Guest
+                {t('continueAsGuest')}
               </Button>
               <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
                 Your data won't be saved across devices

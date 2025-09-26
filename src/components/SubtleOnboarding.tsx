@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus } from "lucide-react";
 
 interface SubtleOnboardingProps {
@@ -7,6 +8,7 @@ interface SubtleOnboardingProps {
 }
 
 export const SubtleOnboarding = ({ target, onDismiss }: SubtleOnboardingProps) => {
+  const { t } = useLanguage();
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [showHint, setShowHint] = useState(false);
 
@@ -80,7 +82,7 @@ export const SubtleOnboarding = ({ target, onDismiss }: SubtleOnboardingProps) =
           <div className="bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg text-sm font-medium animate-fade-in">
             <div className="flex items-center gap-2">
               <Plus className="h-3 w-3" />
-              <span>Tap to add your first activity</span>
+              <span>{t('tapToAddFirst')}</span>
             </div>
             
             {/* Arrow pointing down */}

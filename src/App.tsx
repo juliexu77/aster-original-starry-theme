@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RouteGuard } from "@/components/RouteGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -25,7 +26,8 @@ const App = () => (
       disableTransitionOnChange
     >
       <AuthProvider>
-        <TooltipProvider>
+        <LanguageProvider>
+          <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
@@ -43,7 +45,8 @@ const App = () => (
                 </Routes>
             </RouteGuard>
           </BrowserRouter>
-        </TooltipProvider>
+          </TooltipProvider>
+        </LanguageProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>

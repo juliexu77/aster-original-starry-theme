@@ -16,7 +16,9 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
@@ -25,6 +27,7 @@ import { SubtleOnboarding } from "@/components/SubtleOnboarding";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
@@ -139,12 +142,12 @@ const Index = () => {
           <div className="space-y-4">
             {/* Activity Timeline - Priority above fold */}
             <div className="space-y-2">
-              <h2 className="text-lg font-serif font-medium text-foreground">Today's Activities</h2>
+              <h2 className="text-lg font-serif font-medium text-foreground">{t('todaysActivities')}</h2>
               {sortedActivities.length === 0 ? (
                 <div className="text-center py-12">
                   <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-60" />
-                  <p className="text-muted-foreground font-medium mb-1">No activities yet today</p>
-                  <p className="text-sm text-muted-foreground">Tap the + button to add your first activity</p>
+                  <p className="text-muted-foreground font-medium mb-1">{t('noActivitiesYet')}</p>
+                  <p className="text-sm text-muted-foreground">{t('tapToAddFirst')}</p>
                 </div>
               ) : (
                 <div className="space-y-0.5">
@@ -193,8 +196,8 @@ const Index = () => {
         return (
           <div className="text-center py-16">
             <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-            <p className="text-muted-foreground font-medium mb-1">Calendar View</p>
-            <p className="text-sm text-muted-foreground">Coming soon</p>
+              <p className="text-muted-foreground font-medium mb-1">{t('calendar')}</p>
+              <p className="text-sm text-muted-foreground">Coming soon</p>
           </div>
         );
       case "profile":
@@ -202,7 +205,7 @@ const Index = () => {
           <div className="space-y-6">
             <div className="text-center py-8">
               <User className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-              <p className="text-muted-foreground font-medium mb-4">Profile & Settings</p>
+              <p className="text-muted-foreground font-medium mb-4">{t('profile')}</p>
               <div className="max-w-sm mx-auto mb-6">
                 {user ? (
                   <>
@@ -216,7 +219,7 @@ const Index = () => {
                       className="w-full mt-4"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
+                      {t('signOut')}
                     </Button>
                   </>
                 ) : (
@@ -231,7 +234,7 @@ const Index = () => {
                       className="w-full mt-4"
                     >
                       <User className="w-4 h-4 mr-2" />
-                      Sign In
+                      {t('signIn')}
                     </Button>
                   </>
                 )}
@@ -242,10 +245,23 @@ const Index = () => {
                 <div className="p-4 bg-card rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Theme</p>
+                      <p className="text-sm text-muted-foreground mb-1">{t('theme')}</p>
                       <p className="text-xs text-muted-foreground">Switch between light and dark mode</p>
                     </div>
                     <ThemeToggle />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Language Toggle */}
+              <div className="max-w-sm mx-auto mb-6">
+                <div className="p-4 bg-card rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">{t('language')}</p>
+                      <p className="text-xs text-muted-foreground">Switch between English and Chinese</p>
+                    </div>
+                    <LanguageToggle />
                   </div>
                 </div>
               </div>
