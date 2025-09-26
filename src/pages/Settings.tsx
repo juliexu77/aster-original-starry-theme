@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,16 +14,16 @@ import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  Settings as SettingsIcon, 
   User, 
   Baby, 
   LogOut, 
   Mail, 
   Camera, 
-  Save,
   Key,
   Calendar,
-  Edit3
+  Edit3,
+  Palette,
+  Globe
 } from "lucide-react";
 
 interface SettingsProps {
@@ -40,6 +40,38 @@ export const Settings = ({ onClose }: SettingsProps) => {
   // User profile state
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+
+  // Auto-save user profile changes
+  useEffect(() => {
+    if (!user || !fullName || fullName === user?.user_metadata?.full_name) return;
+    
+    const timeoutId = setTimeout(async () => {
+      setIsUpdatingProfile(true);
+      try {
+        const { error } = await supabase.auth.updateUser({
+          data: { full_name: fullName }
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Profile updated",
+          description: "Your name has been saved.",
+        });
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        toast({
+          title: "Error updating profile",
+          description: "Failed to update profile. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsUpdatingProfile(false);
+      }
+    }, 1000); // Auto-save after 1 second of no typing
+
+    return () => clearTimeout(timeoutId);
+  }, [fullName, user, toast]);
 
   // Baby profile state  
   const [babyName, setBabyName] = useState(() => {
@@ -71,35 +103,38 @@ export const Settings = ({ onClose }: SettingsProps) => {
   const [isUpdatingBaby, setIsUpdatingBaby] = useState(false);
   const [showBabyEdit, setShowBabyEdit] = useState(false);
 
-  const handleUpdateUserProfile = async () => {
-    if (!user) return;
+  // Auto-save baby profile changes
+  useEffect(() => {
+    if (!babyName.trim() || showBabyEdit) return;
     
-    setIsUpdatingProfile(true);
-    try {
-      // Update user metadata
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: fullName }
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully."
-      });
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Error updating profile",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUpdatingProfile(false);
-    }
-  };
+    const timeoutId = setTimeout(async () => {
+      setIsUpdatingBaby(true);
+      try {
+        const profileData = {
+          name: babyName.trim(),
+          birthday: babyBirthday || undefined
+        };
 
-  const handleUpdateBabyProfile = async () => {
+        if (babyProfile && user) {
+          await updateBabyProfile(profileData);
+        } else if (user) {
+          await createBabyProfile(profileData.name, profileData.birthday);
+        } else {
+          localStorage.setItem('babyProfile', JSON.stringify(profileData));
+          localStorage.setItem('babyProfileCompleted', 'true');
+        }
+      } catch (error) {
+        console.error('Error updating baby profile:', error);
+      } finally {
+        setIsUpdatingBaby(false);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [babyName, babyBirthday, babyProfile, user, updateBabyProfile, createBabyProfile, showBabyEdit]);
+
+
+  const handleSaveBabyProfile = async () => {
     if (!babyName.trim()) {
       toast({
         title: "Baby name required",
@@ -117,22 +152,19 @@ export const Settings = ({ onClose }: SettingsProps) => {
       };
 
       if (babyProfile && user) {
-        // Update existing profile in database
         await updateBabyProfile(profileData);
       } else if (user) {
-        // Create new profile in database
         await createBabyProfile(profileData.name, profileData.birthday);
       } else {
-        // Update localStorage for guest users
         localStorage.setItem('babyProfile', JSON.stringify(profileData));
         localStorage.setItem('babyProfileCompleted', 'true');
-        toast({
-          title: "Baby profile updated",
-          description: "Baby profile has been updated successfully."
-        });
       }
       
       setShowBabyEdit(false);
+      toast({
+        title: "Baby profile updated",
+        description: "Changes saved successfully."
+      });
     } catch (error) {
       console.error('Error updating baby profile:', error);
     } finally {
@@ -140,7 +172,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
     }
   };
 
-  const handlePasswordReset = async () => {
+  const handleChangePassword = async () => {
     if (!user?.email) return;
     
     try {
@@ -151,14 +183,14 @@ export const Settings = ({ onClose }: SettingsProps) => {
       if (error) throw error;
       
       toast({
-        title: "Password reset email sent",
-        description: "Check your email for password reset instructions."
+        title: "Password change email sent",
+        description: "Check your email for password change instructions."
       });
     } catch (error) {
-      console.error('Error sending password reset:', error);
+      console.error('Error sending password change email:', error);
       toast({
-        title: "Error sending reset email",
-        description: "Failed to send password reset email. Please try again.",
+        title: "Error sending email",
+        description: "Failed to send password change email. Please try again.",
         variant: "destructive"
       });
     }
@@ -174,18 +206,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
   };
 
   return (
-    <div className="space-y-6 pb-8">
-      <div className="text-center">
-        <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-          <SettingsIcon className="w-6 h-6 text-white" />
-        </div>
-        <h1 className="text-2xl font-serif font-semibold text-foreground mb-2">
-          Settings
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Manage your account and preferences
-        </p>
-      </div>
+    <div className="space-y-4 pb-8">
 
       {/* User Profile Section */}
       {user ? (
@@ -195,9 +216,6 @@ export const Settings = ({ onClose }: SettingsProps) => {
               <User className="w-5 h-5" />
               User Profile
             </CardTitle>
-            <CardDescription>
-              Manage your personal information
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
@@ -208,13 +226,10 @@ export const Settings = ({ onClose }: SettingsProps) => {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <Button variant="outline" size="sm" className="mb-2">
+                <Button variant="outline" size="sm">
                   <Camera className="w-4 h-4 mr-2" />
                   Change Photo
                 </Button>
-                <p className="text-sm text-muted-foreground">
-                  Upload a profile picture
-                </p>
               </div>
             </div>
 
@@ -242,24 +257,14 @@ export const Settings = ({ onClose }: SettingsProps) => {
                 />
               </div>
 
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleUpdateUserProfile}
-                  disabled={isUpdatingProfile}
-                  className="flex-1"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isUpdatingProfile ? "Saving..." : "Save Changes"}
-                </Button>
-                <Button 
-                  onClick={handlePasswordReset}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <Key className="w-4 h-4 mr-2" />
-                  Reset Password
-                </Button>
-              </div>
+              <Button 
+                onClick={handleChangePassword}
+                variant="outline"
+                className="w-full"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                Change Password
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -268,9 +273,6 @@ export const Settings = ({ onClose }: SettingsProps) => {
           <CardContent className="p-6 text-center">
             <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Guest User</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Sign in to save your data across devices and access more features
-            </p>
             <Button onClick={() => navigate("/auth")} className="w-full">
               <User className="w-4 h-4 mr-2" />
               Sign In
@@ -286,9 +288,6 @@ export const Settings = ({ onClose }: SettingsProps) => {
             <Baby className="w-5 h-5" />
             Baby Profile
           </CardTitle>
-          <CardDescription>
-            Manage your baby's information
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {!showBabyEdit ? (
@@ -340,12 +339,11 @@ export const Settings = ({ onClose }: SettingsProps) => {
 
               <div className="flex gap-2">
                 <Button 
-                  onClick={handleUpdateBabyProfile}
+                  onClick={handleSaveBabyProfile}
                   disabled={isUpdatingBaby}
                   className="flex-1"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isUpdatingBaby ? "Saving..." : "Save Changes"}
+                  {isUpdatingBaby ? "Saving..." : "Save"}
                 </Button>
                 <Button 
                   variant="outline"
@@ -367,27 +365,20 @@ export const Settings = ({ onClose }: SettingsProps) => {
       <Card>
         <CardHeader>
           <CardTitle>App Preferences</CardTitle>
-          <CardDescription>
-            Customize your app experience
-          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-            <div>
-              <p className="font-medium">{t('theme')}</p>
-              <p className="text-sm text-muted-foreground">
-                Switch between light and dark mode
-              </p>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Palette className="w-5 h-5 text-muted-foreground" />
+              <p className="font-medium">Theme</p>
             </div>
             <ThemeToggle />
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-            <div>
-              <p className="font-medium">{t('language')}</p>
-              <p className="text-sm text-muted-foreground">
-                Switch between English and Chinese
-              </p>
+          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Globe className="w-5 h-5 text-muted-foreground" />
+              <p className="font-medium">Language</p>
             </div>
             <LanguageToggle />
           </div>
