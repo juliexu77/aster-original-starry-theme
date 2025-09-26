@@ -21,7 +21,7 @@ import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
-import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
+import { SubtleOnboarding } from "@/components/SubtleOnboarding";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -54,8 +54,11 @@ const Index = () => {
     setHasProfile(true);
   };
 
-  // First-time tooltip: show over + button after short delay
+  // First-time tooltip: show over + button after short delay - clear for testing
   useEffect(() => {
+    // Clear the existing localStorage item to show new onboarding
+    localStorage.removeItem('hasSeenAddActivityTooltip');
+    
     const seen = localStorage.getItem('hasSeenAddActivityTooltip');
     if (!seen) {
       const t = setTimeout(() => setShowTooltip(true), 900);
@@ -294,9 +297,9 @@ const Index = () => {
         onToggle={() => setIsChatOpen(!isChatOpen)}
       />
 
-      {/* First-time tooltip overlay */}
+      {/* Subtle onboarding guidance */}
       {showTooltip && addButtonRef.current && (
-        <FirstTimeTooltip 
+        <SubtleOnboarding 
           target={addButtonRef.current}
           onDismiss={() => { setShowTooltip(false); localStorage.setItem('hasSeenAddActivityTooltip', 'true'); }}
         />
