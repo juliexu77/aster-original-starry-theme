@@ -49,7 +49,7 @@ const translations = {
     // Activities
     feeding: "Feeding",
     diaper: "Diaper",
-    sleep: "Sleep",
+    nap: "Nap",
     note: "Note",
     startTime: "Start time",
     duration: "Duration",
@@ -99,7 +99,7 @@ const translations = {
     // Activities
     feeding: "喂养",
     diaper: "尿布",
-    sleep: "睡觉",
+    nap: "睡觉",
     note: "笔记",
     startTime: "开始时间",
     duration: "持续时间",

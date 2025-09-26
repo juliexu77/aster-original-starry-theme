@@ -43,7 +43,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [hasLeak, setHasLeak] = useState(false);
   const [hasCream, setHasCream] = useState(false);
   
-  // Nap state
+  // Sleep state
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -129,8 +129,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
     if (activityType === "nap" && (!startTime || !endTime)) {
       toast({
-        title: "Nap times required",
-        description: "Please select both start and end times for the nap.",
+        title: "Sleep times required",
+        description: "Please select both start and end times for the sleep.",
         variant: "destructive",
       });
       return;
@@ -223,7 +223,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               {[
                 { type: "feed", icon: Baby, label: "Feed" },
                 { type: "diaper", icon: Palette, label: "Diaper" },
-                { type: "nap", icon: Moon, label: "Nap" },
+                { type: "nap", icon: Moon, label: "Sleep" },
                 { type: "note", icon: StickyNote, label: "Note" }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
@@ -378,7 +378,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               </div>
             )}
 
-            {/* Nap Details */}
+            {/* Sleep Details */}
             {activityType === "nap" && (
               <div className="space-y-4">
                 <Button
@@ -391,7 +391,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   onClick={isTimerActive ? stopNapTimer : startNapTimer}
                 >
                   <Clock className="h-4 w-4 mr-2" />
-                  {isTimerActive ? "Stop Nap" : "Start Nap Timer"}
+                  {isTimerActive ? "Stop Sleep" : "Start Sleep Timer"}
                 </Button>
                 <div className="space-y-3">
                   <TimeScrollPicker value={startTime} onChange={setStartTime} label="Start Time" />
