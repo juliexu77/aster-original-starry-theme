@@ -15,9 +15,10 @@ interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">) => void;
   isOpen?: boolean;
   onClose?: () => void;
+  showFixedButton?: boolean; // Add prop to control fixed button visibility
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false }: AddActivityModalProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
@@ -199,7 +200,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose }: AddActivity
   return (
     <>
       <Dialog open={open} onOpenChange={isOpen !== undefined ? (open) => !open && onClose?.() : setInternalOpen}>
-        {!isOpen && (
+        {!isOpen && showFixedButton && (
           <DialogTrigger asChild>
             <Button 
               className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-soft hover:shadow-lg hover:bg-primary/90 transition-all duration-300" 

@@ -52,7 +52,7 @@ const Onboarding = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      navigate("/auth");
+      navigate("/app"); // Go directly to app, which will show baby profile setup if needed
     }
   };
 
@@ -63,7 +63,7 @@ const Onboarding = () => {
   };
 
   const skipToAuth = () => {
-    navigate("/auth");
+    navigate("/app"); // Go directly to app
   };
 
   return (

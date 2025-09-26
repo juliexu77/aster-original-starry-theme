@@ -18,9 +18,10 @@ interface ChatPanelProps {
   activities: Activity[];
   isOpen: boolean;
   onToggle: () => void;
+  showFixedButton?: boolean; // Add prop to control fixed button visibility
 }
 
-export const ChatPanel = ({ activities, isOpen, onToggle }: ChatPanelProps) => {
+export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = false }: ChatPanelProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [insights, setInsights] = useState<PatternInsight[]>([]);
@@ -82,7 +83,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle }: ChatPanelProps) => {
     "How many diapers today?"
   ];
 
-  if (!isOpen) {
+  if (!isOpen && showFixedButton) {
     return (
       <Button
         onClick={onToggle}
@@ -92,6 +93,10 @@ export const ChatPanel = ({ activities, isOpen, onToggle }: ChatPanelProps) => {
         <MessageCircle className="h-6 w-6 text-white" />
       </Button>
     );
+  }
+
+  if (!isOpen) {
+    return null; // Don't render anything if closed and no fixed button needed
   }
 
   return (

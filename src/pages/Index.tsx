@@ -280,14 +280,14 @@ const Index = () => {
         {renderContent()}
       </div>
 
-      {/* Add Activity Modal */}
+      {/* Add Activity Modal - Don't show fixed button since we have bottom nav */}
       <AddActivityModal 
         onAddActivity={handleAddActivity} 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
       />
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Don't show fixed button since we have bottom nav */}
       <ChatPanel 
         activities={activities}
         isOpen={isChatOpen}
