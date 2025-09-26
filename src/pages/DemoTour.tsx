@@ -144,7 +144,7 @@ const DemoTour = () => {
             <div className="space-y-2">
               <h3 className="font-medium text-foreground">Today's Activities</h3>
               {demoActivities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} />
+                <ActivityCard key={activity.id} activity={activity} babyName="Demo Baby" />
               ))}
             </div>
           </div>

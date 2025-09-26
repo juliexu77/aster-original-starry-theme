@@ -26,6 +26,7 @@ export interface Activity {
 
 interface ActivityCardProps {
   activity: Activity;
+  babyName?: string;
   onEdit?: (activity: Activity) => void;
   onDelete?: (activityId: string) => void;
 }
@@ -60,9 +61,7 @@ const getActivityGradient = (type: string) => {
   }
 };
 
-const getPersonalizedActivityText = (activity: Activity) => {
-  const babyName = "Baby"; // Could be customizable later
-  
+const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby") => {
   switch (activity.type) {
     case "feed":
       const quantity = activity.details.quantity;
@@ -92,8 +91,8 @@ const getPersonalizedActivityText = (activity: Activity) => {
   }
 };
 
-export const ActivityCard = ({ activity, onEdit, onDelete }: ActivityCardProps) => {
-  const activityText = getPersonalizedActivityText(activity);
+export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
+  const activityText = getPersonalizedActivityText(activity, babyName);
 
   return (
     <div className="relative flex items-center gap-3 py-1 group hover:bg-accent/30 rounded-md px-2 transition-colors">

@@ -20,12 +20,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { offlineSync } from "@/utils/offlineSync";
+import { BabyProfileSetup } from "@/components/BabyProfileSetup";
 import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+  const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
 
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -34,12 +36,23 @@ const Index = () => {
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // No more onboarding - just set profile as complete
+  // Check for baby profile
   useEffect(() => {
     if (!loading) {
-      setHasProfile(true);
+      const savedProfile = localStorage.getItem('babyProfile');
+      if (savedProfile) {
+        setBabyProfile(JSON.parse(savedProfile));
+        setHasProfile(true);
+      } else {
+        setHasProfile(false);
+      }
     }
   }, [user, loading]);
+
+  const handleProfileComplete = (profile: { name: string; birthday?: string }) => {
+    setBabyProfile(profile);
+    setHasProfile(true);
+  };
 
   // First-time tooltip: show over + button after short delay
   useEffect(() => {
@@ -73,6 +86,11 @@ const Index = () => {
         </div>
       </div>
     );
+  }
+
+  // Show baby profile setup if no profile exists
+  if (hasProfile === false) {
+    return <BabyProfileSetup onComplete={handleProfileComplete} />;
   }
 
   const handleAddActivity = (newActivity: Omit<Activity, "id">) => {
@@ -131,6 +149,7 @@ const Index = () => {
                     <ActivityCard 
                       key={activity.id} 
                       activity={activity}
+                      babyName={babyProfile?.name}
                       onEdit={(activity) => {
                         // TODO: Implement edit functionality
                         console.log('Edit activity:', activity);

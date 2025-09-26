@@ -44,7 +44,7 @@ export const FirstTimeTooltip = ({ target, onDismiss }: FirstTimeTooltipProps) =
       <div
         className="fixed z-50 max-w-xs"
         style={{
-          top: position.top - 150,
+          top: Math.max(20, position.top - 160),
           left: position.left,
           transform: 'translateX(-50%)'
         }}
