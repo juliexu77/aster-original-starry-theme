@@ -15,7 +15,6 @@ import { PatternInsights } from "@/components/PatternInsights";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { BabyAge } from "@/components/BabyAge";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -233,11 +232,6 @@ const Index = () => {
       
       {/* Header */}
       <div className="bg-gradient-primary px-6 py-4 text-white relative">
-        {/* Theme toggle in top right */}
-        <div className="absolute top-4 right-6 z-10">
-          <ThemeToggle />
-        </div>
-        
         <div className="max-w-md mx-auto">
           {activeTab === "home" && (
             <>
