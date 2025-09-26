@@ -467,16 +467,61 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
             {/* Note Details */}
             {activityType === "note" && (
-              <div>
-                <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
-                <Textarea
-                  id="note"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Enter your note here..."
-                  rows={4}
-                  className="resize-none"
-                />
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
+                  <Textarea
+                    id="note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder="Enter your note here..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                {/* Photo Upload for Notes */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Photo (optional)</Label>
+                  <div className="border-2 border-dashed border-border rounded-lg p-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setPhoto(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="photo-input"
+                    />
+                    <label
+                      htmlFor="photo-input"
+                      className="flex flex-col items-center justify-center cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Camera className="h-8 w-8 mb-2" />
+                      {photo ? (
+                        <span className="text-sm font-medium">{photo.name}</span>
+                      ) : (
+                        <>
+                          <span className="text-sm font-medium">Tap to add photo</span>
+                          <span className="text-xs mt-1">JPG, PNG up to 20MB</span>
+                        </>
+                      )}
+                    </label>
+                    {photo && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPhoto(null)}
+                        className="mt-2 h-8"
+                      >
+                        Remove photo
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -493,7 +538,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 onClick={handleSubmit} 
                 className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Add Activity
+                Save
               </Button>
             </div>
           </div>
