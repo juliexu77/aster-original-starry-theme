@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ChevronRight, ChevronLeft, Baby, Clock, TrendingUp } from "lucide-react";
+import { ChevronRight, ChevronLeft, Baby, Clock, TrendingUp, UserPlus } from "lucide-react";
 
 const OnboardingStep = ({ 
   icon: Icon, 
@@ -45,6 +45,11 @@ const Onboarding = () => {
       icon: TrendingUp,
       title: "See Patterns",
       description: "Understand your baby's routines and get helpful insights over time."
+    },
+    {
+      icon: UserPlus,
+      title: "Share Tracking",
+      description: "Share tracking with someone so they can view and add activities too."
     }
   ];
 

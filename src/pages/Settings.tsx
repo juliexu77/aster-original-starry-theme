@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { InviteCollaborator } from "@/components/InviteCollaborator";
+import { SimpleInviteCollaborator } from "@/components/SimpleInviteCollaborator";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -361,7 +361,7 @@ export const Settings = ({ onClose }: SettingsProps) => {
       </Card>
 
       {/* Collaborators Section */}
-      {user && <InviteCollaborator />}
+      <SimpleInviteCollaborator />
 
       {/* App Preferences */}
       <Card>
