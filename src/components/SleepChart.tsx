@@ -1,13 +1,12 @@
 import { Activity } from "./ActivityCard";
 import { useState } from "react";
-import { getNextNapRecommendation, calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { getWakeWindowForAge, calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
 
 interface SleepChartProps {
   activities: Activity[];
 }
 
 export const SleepChart = ({ activities }: SleepChartProps) => {
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [showFullDay, setShowFullDay] = useState(false);
 
   // Get baby's age for recommendations
@@ -19,9 +18,9 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   const babyProfile = getBabyProfile();
   const ageInWeeks = babyProfile?.birthday ? calculateAgeInWeeks(babyProfile.birthday) : 0;
 
-  // Calculate sleep data for the past 4-7 days
+  // Calculate sleep data for the past 7 days
   const generateSleepData = () => {
-    const days = viewMode === 'week' ? 7 : 4;
+    const days = 7;
     const data = [];
     const today = new Date();
     
@@ -48,19 +47,22 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
-          const startHour = parseInt(nap.details.startTime.split(':')[0]);
-          const startMin = parseInt(nap.details.startTime.split(':')[1]);
-          const endHour = parseInt(nap.details.endTime.split(':')[0]);
-          const endMin = parseInt(nap.details.endTime.split(':')[1]);
+          const [startHour, startMin] = nap.details.startTime.split(':').map(Number);
+          const [endHour, endMin] = nap.details.endTime.split(':').map(Number);
           
-          const startBlock = Math.floor(startHour + startMin / 60);
-          const endBlock = Math.ceil(endHour + endMin / 60);
+          // Create precise time blocks for continuous sleep bars
+          const startTimeInMinutes = startHour * 60 + startMin;
+          const endTimeInMinutes = endHour * 60 + endMin;
+          const rangeStartInMinutes = (showFullDay ? 0 : 6) * 60;
+          const rangeEndInMinutes = (showFullDay ? 24 : 21) * 60;
           
-          // Map to our time range (starting from startHour)
-          for (let block = startBlock; block < endBlock; block++) {
-            const adjustedBlock = block - startHour;
-            if (adjustedBlock >= 0 && adjustedBlock < totalHours) {
-              sleepBlocks[adjustedBlock] = true;
+          // Map to hour blocks and fill all hours in the sleep period
+          for (let minute = startTimeInMinutes; minute < endTimeInMinutes; minute += 60) {
+            if (minute >= rangeStartInMinutes && minute < rangeEndInMinutes) {
+              const hourIndex = Math.floor((minute - rangeStartInMinutes) / 60);
+              if (hourIndex >= 0 && hourIndex < totalHours) {
+                sleepBlocks[hourIndex] = true;
+              }
             }
           }
         }
@@ -141,9 +143,8 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   };
 
   const sleepData = generateSleepData();
-  const averageWakeWindow = calculateAverageWakeWindow();
+  const wakeWindowData = getWakeWindowForAge(ageInWeeks);
   const todaysSummary = getTodaysSummary();
-  const nextNapRecommendation = getNextNapRecommendation(ageInWeeks);
   const hasAnyData = sleepData.some(day => day.hasData);
 
   // Generate time labels based on current view
@@ -175,28 +176,6 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-serif font-semibold text-foreground">Sleep</h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('week')}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'week' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Week
-            </button>
-            <button
-              onClick={() => setViewMode('month')}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                viewMode === 'month' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              4 Days
-            </button>
-          </div>
         </div>
 
         {/* Expand/Collapse Button */}
@@ -248,8 +227,8 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
                     key={hourIndex}
                     className={`w-full rounded-sm ${
                       isAsleep 
-                        ? 'bg-primary opacity-80' 
-                        : 'bg-muted/30'
+                        ? 'bg-primary' 
+                        : 'bg-background border border-border/20'
                     }`}
                   />
                 ))}
@@ -259,25 +238,32 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         </div>
       </div>
 
-      {/* Prediction Section - Only show if there's data */}
-      {hasAnyData && (
+      {/* Wake Windows Section */}
+      {wakeWindowData && (
         <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-          <h3 className="text-lg font-serif font-semibold text-foreground mb-4">Prediction</h3>
-          <div className="flex items-center justify-between">
+          <h3 className="text-lg font-serif font-semibold text-foreground mb-4">
+            Typical Wake Windows ({Math.floor(ageInWeeks)} weeks old)
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-sm text-muted-foreground">Next nap window: </span>
-              <span className="text-base font-medium text-foreground">
-                {nextNapRecommendation.nextNapTime || "No recommendation"}
-              </span>
+              <div className="text-sm text-muted-foreground">Wake Windows</div>
+              <div className="text-2xl font-medium text-foreground">
+                {wakeWindowData.wakeWindows.join(", ")}
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-sm text-muted-foreground">Avg wake window</div>
-              <div className="text-base font-medium text-foreground">{averageWakeWindow}</div>
+            <div>
+              <div className="text-sm text-muted-foreground">Expected Naps</div>
+              <div className="text-2xl font-medium text-foreground">
+                {wakeWindowData.napCount} per day
+              </div>
             </div>
           </div>
-          {nextNapRecommendation.reason && (
-            <p className="text-xs text-muted-foreground mt-2">{nextNapRecommendation.reason}</p>
-          )}
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-sm text-muted-foreground">Total Sleep Need</div>
+            <div className="text-lg font-medium text-foreground">
+              {wakeWindowData.totalSleep}
+            </div>
+          </div>
         </div>
       )}
 

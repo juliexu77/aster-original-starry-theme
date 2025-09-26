@@ -1,4 +1,45 @@
-// Based on Huckleberry's age-appropriate nap schedules
+// Based on Huckleberry's age-appropriate nap schedules with detailed wake windows
+
+export interface WakeWindowData {
+  ageStart: number; // weeks
+  ageEnd: number; // weeks  
+  wakeWindows: string[];
+  napCount: string;
+  totalSleep: string;
+}
+
+export const huckleberryWakeWindows: WakeWindowData[] = [
+  // 0-2 weeks
+  { ageStart: 0, ageEnd: 2, wakeWindows: ["45min-1hr"], napCount: "6-8", totalSleep: "16-20hrs" },
+  // 3-4 weeks  
+  { ageStart: 3, ageEnd: 4, wakeWindows: ["1-1.5hrs"], napCount: "5-7", totalSleep: "15-18hrs" },
+  // 5-8 weeks
+  { ageStart: 5, ageEnd: 8, wakeWindows: ["1.5-2hrs"], napCount: "4-6", totalSleep: "14-17hrs" },
+  // 9-12 weeks (3 months)
+  { ageStart: 9, ageEnd: 12, wakeWindows: ["1.5-2.5hrs"], napCount: "4-5", totalSleep: "14-16hrs" },
+  // 13-16 weeks (4 months)
+  { ageStart: 13, ageEnd: 16, wakeWindows: ["2-2.5hrs"], napCount: "3-4", totalSleep: "12-15hrs" },
+  // 17-20 weeks (5 months)
+  { ageStart: 17, ageEnd: 20, wakeWindows: ["2.5-3hrs"], napCount: "3", totalSleep: "12-15hrs" },
+  // 21-24 weeks (6 months)
+  { ageStart: 21, ageEnd: 24, wakeWindows: ["2.5-3.5hrs"], napCount: "3", totalSleep: "12-14hrs" },
+  // 25-35 weeks (6-8 months)
+  { ageStart: 25, ageEnd: 35, wakeWindows: ["3-3.5hrs"], napCount: "2", totalSleep: "12-14hrs" },
+  // 36-52 weeks (9-12 months)
+  { ageStart: 36, ageEnd: 52, wakeWindows: ["3.5-4hrs"], napCount: "2", totalSleep: "11-14hrs" },
+  // 53-65 weeks (13-15 months)
+  { ageStart: 53, ageEnd: 65, wakeWindows: ["4-5hrs"], napCount: "1-2", totalSleep: "11-13hrs" },
+  // 66-78 weeks (16-18 months)  
+  { ageStart: 66, ageEnd: 78, wakeWindows: ["5-6hrs"], napCount: "1", totalSleep: "11-13hrs" },
+  // 79-104 weeks (18-24 months)
+  { ageStart: 79, ageEnd: 104, wakeWindows: ["5-6hrs"], napCount: "1", totalSleep: "11-13hrs" },
+  // 105-156 weeks (2-3 years)
+  { ageStart: 105, ageEnd: 156, wakeWindows: ["6-7hrs"], napCount: "0-1", totalSleep: "10-12hrs" },
+  // 157-208 weeks (3-4 years)
+  { ageStart: 157, ageEnd: 208, wakeWindows: ["All day"], napCount: "0", totalSleep: "10-12hrs" },
+  // 209-260 weeks (4-5 years)
+  { ageStart: 209, ageEnd: 260, wakeWindows: ["All day"], napCount: "0", totalSleep: "10-12hrs" }
+];
 
 export interface NapSchedule {
   ageStart: number; // weeks
@@ -18,7 +59,7 @@ export const huckleberrySchedules: NapSchedule[] = [
   {
     ageStart: 0,
     ageEnd: 6,
-    totalNaps: 4-6,
+    totalNaps: 5,
     napWindows: [
       { start: "9:00 AM", end: "10:30 AM", duration: "30m-2h" },
       { start: "12:00 PM", end: "1:30 PM", duration: "30m-2h" },
@@ -32,7 +73,7 @@ export const huckleberrySchedules: NapSchedule[] = [
   {
     ageStart: 7,
     ageEnd: 15,
-    totalNaps: 3-4,
+    totalNaps: 3,
     napWindows: [
       { start: "9:00 AM", end: "10:30 AM", duration: "1-2h" },
       { start: "1:00 PM", end: "2:30 PM", duration: "1-2h" },
@@ -79,6 +120,12 @@ export const huckleberrySchedules: NapSchedule[] = [
 export function getScheduleForAge(ageInWeeks: number): NapSchedule | null {
   return huckleberrySchedules.find(
     schedule => ageInWeeks >= schedule.ageStart && ageInWeeks <= schedule.ageEnd
+  ) || null;
+}
+
+export function getWakeWindowForAge(ageInWeeks: number): WakeWindowData | null {
+  return huckleberryWakeWindows.find(
+    data => ageInWeeks >= data.ageStart && ageInWeeks <= data.ageEnd
   ) || null;
 }
 
