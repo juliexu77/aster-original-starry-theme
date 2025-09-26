@@ -303,7 +303,7 @@ export const Settings = () => {
         <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
-            <h3 className="text-lg font-medium text-foreground">Share Tracking</h3>
+            <h3 className="text-lg font-medium text-foreground">Invite Caretakers</h3>
           </div>
           
           <p className="text-sm text-muted-foreground">
