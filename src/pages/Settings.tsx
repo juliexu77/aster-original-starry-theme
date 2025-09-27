@@ -69,14 +69,14 @@ export const Settings = () => {
         if (error) throw error;
         
         toast({
-          title: "Profile updated",
-          description: "Your name has been saved.",
+          title: t('profileUpdated'),
+          description: t('nameHasBeenSaved'),
         });
       } catch (error) {
         console.error('Error updating profile:', error);
         toast({
-          title: "Error updating profile",
-          description: "Failed to update profile. Please try again.",
+          title: t('errorUpdatingProfile'),
+          description: t('failedToUpdateProfile'),
           variant: "destructive"
         });
       } finally {
@@ -102,8 +102,8 @@ export const Settings = () => {
         setTimeout(() => setUserRoleSaveStatus("unsaved"), 3000);
         
         toast({
-          title: "Role updated",
-          description: `Your role has been changed to ${userRole}`,
+          title: t('roleUpdated'),
+          description: `${t('roleChangedTo')} ${userRole}`,
         });
       } catch (error) {
         setUserRoleSaveStatus("error");
@@ -111,8 +111,8 @@ export const Settings = () => {
         // Revert the role change if it failed
         setUserRole(userProfile.role);
         toast({
-          title: "Error updating role",
-          description: "Failed to update your role. Please try again.",
+          title: t('errorUpdatingRole'),
+          description: t('failedToUpdateRole'),
           variant: "destructive"
         });
       }
@@ -189,14 +189,14 @@ export const Settings = () => {
       if (error) throw error;
       
       toast({
-        title: "Password change email sent",
-        description: "Check your email for password change instructions."
+        title: t('passwordChangeEmailSent'),
+        description: t('checkEmailForInstructions')
       });
     } catch (error) {
       console.error('Error sending password change email:', error);
       toast({
-        title: "Error sending email",
-        description: "Failed to send password change email. Please try again.",
+        title: t('errorSendingEmail'),
+        description: t('failedToSendEmail'),
         variant: "destructive"
       });
     }
@@ -216,8 +216,8 @@ export const Settings = () => {
         
         if (shared) {
           toast({
-            title: "Invite shared!",
-            description: "Share dialog opened successfully.",
+            title: t('inviteShared'),
+            description: t('shareDialogOpened'),
           });
         } else {
           // Fallback to clipboard copy
@@ -225,15 +225,15 @@ export const Settings = () => {
           setTimeout(() => setCopied(false), 2000);
           
           toast({
-            title: "Invite link copied!",
-            description: "Share this link with your partner or caregiver.",
+            title: t('inviteLinkCopied'),
+            description: t('shareWithPartner'),
           });
         }
       }
     } catch (err) {
       toast({
-        title: "Failed to create invite",
-        description: "Please try again.",
+        title: t('failedToCreateInvite'),
+        description: t('pleaseRetryInvite'),
         variant: "destructive",
       });
     }
@@ -292,20 +292,20 @@ export const Settings = () => {
             />
           </div>
           <h1 className="text-xl font-serif font-medium text-foreground">
-            Profile & Settings
+            {t('profileSettings')}
           </h1>
         </div>
 
         {/* User Status Section - No card */}
         <div className="text-center space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Using as:</p>
+            <p className="text-sm text-muted-foreground mb-1">{t('usingAs')}</p>
             <h2 className="text-xl font-medium text-foreground mb-2">
               {getUserDisplayName()}
             </h2>
             {!user && (
               <p className="text-sm text-muted-foreground mb-4">
-                Sign in to save your data across devices
+                {t('signInToSave')}
               </p>
             )}
           </div>
@@ -317,13 +317,13 @@ export const Settings = () => {
               className="w-full h-12 bg-primary/80 hover:bg-primary text-primary-foreground rounded-2xl"
             >
               <User className="w-4 h-4 mr-2" />
-              Sign In
+              {t('signIn')}
             </Button>
           ) : (
             <div className="space-y-4 p-4 bg-muted/30 rounded-2xl">
               <div>
                 <Label htmlFor="fullName" className="text-sm text-muted-foreground">
-                  Full Name
+                  {t('fullName')}
                 </Label>
                 <InputWithStatus
                   id="fullName"
@@ -332,12 +332,12 @@ export const Settings = () => {
                   placeholder="Enter your full name"
                   className="mt-2 border-none bg-background"
                   saveStatus={fullNameSaveStatus}
-                  errorMessage="Failed to save name"
+                  errorMessage={t('failedToSaveName')}
                 />
               </div>
               
               <div>
-                <Label className="text-sm text-muted-foreground">Email</Label>
+                <Label className="text-sm text-muted-foreground">{t('email')}</Label>
                 <Input
                   value={user.email || ""}
                   disabled
@@ -346,13 +346,13 @@ export const Settings = () => {
               </div>
 
               <div>
-                <Label className="text-sm text-muted-foreground">You are</Label>
+                <Label className="text-sm text-muted-foreground">{t('youAre')}</Label>
                 <div className="mt-2">
                   <UserRoleSelectorWithStatus
                     value={userRole} 
                     onChange={setUserRole}
                     saveStatus={userRoleSaveStatus}
-                    errorMessage="Failed to update role"
+                    errorMessage={t('failedToUpdateRole')}
                   />
                 </div>
               </div>
@@ -364,8 +364,8 @@ export const Settings = () => {
         <div className="p-6 bg-muted/30 rounded-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-foreground text-lg">Language</p>
-              <p className="text-sm text-muted-foreground">Switch app language</p>
+              <p className="font-medium text-foreground text-lg">{t('language')}</p>
+              <p className="text-sm text-muted-foreground">{t('switchAppLanguage')}</p>
             </div>
             <LanguageToggle />
           </div>
@@ -375,12 +375,12 @@ export const Settings = () => {
         <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
             <Baby className="w-5 h-5" />
-            <h3 className="text-lg font-medium text-foreground">Baby Details</h3>
+            <h3 className="text-lg font-medium text-foreground">{t('babyDetails')}</h3>
           </div>
           
           {!user && (
             <p className="text-sm text-muted-foreground">
-              Baby information is saved locally. Sign in to sync across devices.
+              {t('babyInfoSavedLocally')}
             </p>
           )}
           
@@ -400,23 +400,23 @@ export const Settings = () => {
             {/* Baby Name */}
             <div>
               <Label htmlFor="babyName" className="text-sm text-muted-foreground">
-                Baby's Name
+                {t('babyName')}
               </Label>
               <InputWithStatus
                 id="babyName"
                 value={babyName}
                 onValueChange={setBabyName}
-                placeholder="Enter baby's name"
+                placeholder={t('enterBabyName')}
                 className="mt-2 border-none bg-background"
                 saveStatus={babyNameSaveStatus}
-                errorMessage="Failed to save baby name"
+                errorMessage={t('failedToSaveBabyName')}
               />
             </div>
 
             {/* Baby Birthday */}
             <div>
               <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
-                Birthday
+                {t('birthday')}
               </Label>
               <div className="mt-2">
                 <DatePicker
@@ -432,7 +432,7 @@ export const Settings = () => {
                       setBabyBirthday("");
                     }
                   }}
-                  placeholder="Select birthday"
+                  placeholder={t('selectBirthday')}
                   className="border-none bg-background"
                 />
               </div>
@@ -444,11 +444,11 @@ export const Settings = () => {
         <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
-            <h3 className="text-lg font-medium text-foreground">Invite Caretakers</h3>
+            <h3 className="text-lg font-medium text-foreground">{t('inviteCaretakers')}</h3>
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Share tracking with someone so they can view and add activities too.
+            {t('shareTrackingWith')}
           </p>
 
           <div className="space-y-3">
@@ -458,7 +458,7 @@ export const Settings = () => {
               variant="outline"
             >
               <Share className="w-4 h-4 mr-2" />
-              {user ? (copied ? "Link Copied!" : "Share Invite Link") : "Sign In to Share"}
+              {user ? (copied ? t('linkCopied') : t('shareInviteLink')) : t('signInToShare')}
             </Button>
 
             {user && currentInviteLink && (
@@ -475,7 +475,7 @@ export const Settings = () => {
                 variant="outline"
               >
                 <Users className="w-4 h-4 mr-2" />
-                Manage Caregivers
+                {t('manageCaregivers')}
               </Button>
             )}
           </div>
@@ -485,7 +485,7 @@ export const Settings = () => {
             <div className="space-y-3 pt-4 border-t border-border/50">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">Caregivers</span>
+                <span className="text-sm font-medium text-foreground">{t('caregivers')}</span>
               </div>
               <div className="space-y-2">
                 {collaborators.map((collaborator) => (
