@@ -23,6 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Clear user data when signed out or user deleted
+        if (event === 'SIGNED_OUT' || !session) {
+          clearAllUserData();
+        }
       }
     );
 
@@ -38,6 +43,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clear all app-related localStorage data
+    clearAllUserData();
+  };
+
+  const clearAllUserData = () => {
+    // Clear all user-related localStorage items
+    const keysToRemove = [
+      'babyProfile',
+      'babyProfileCompleted', 
+      'babyProfileSkipped',
+      'isCollaborator',
+      'initialActivities',
+      'hasSeenAddActivityTooltip',
+      'hasSeenDemo',
+      'skipOnboarding',
+      'lastUsedUnit',
+      'lastFeedQuantity',
+      'language', // Keep this one as it's a user preference
+      'baby_tracker_offline_activities',
+      'baby_tracker_sync_status'
+    ];
+    
+    keysToRemove.forEach(key => {
+      if (key !== 'language') { // Keep language preference
+        localStorage.removeItem(key);
+      }
+    });
   };
 
   const value = {
