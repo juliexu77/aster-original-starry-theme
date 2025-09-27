@@ -120,6 +120,33 @@ export type Database = {
           },
         ]
       }
+      households: {
+        Row: {
+          baby_birthday: string | null
+          baby_name: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          baby_birthday?: string | null
+          baby_name?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          baby_birthday?: string | null
+          baby_name?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invite_links: {
         Row: {
           baby_profile_id: string
