@@ -63,6 +63,47 @@ const getActivityGradient = (type: string) => {
   }
 };
 
+const calculateNapDuration = (startTime: string, endTime: string): string => {
+  try {
+    // Parse time strings (assuming format like "2:30 PM")
+    const parseTime = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let totalMinutes = minutes;
+      let adjustedHours = hours;
+      
+      if (period === 'PM' && hours !== 12) {
+        adjustedHours += 12;
+      } else if (period === 'AM' && hours === 12) {
+        adjustedHours = 0;
+      }
+      
+      totalMinutes += adjustedHours * 60;
+      return totalMinutes;
+    };
+
+    const startMinutes = parseTime(startTime);
+    const endMinutes = parseTime(endTime);
+    
+    let durationMinutes = endMinutes - startMinutes;
+    
+    // Handle case where nap goes past midnight
+    if (durationMinutes < 0) {
+      durationMinutes += 24 * 60;
+    }
+    
+    if (durationMinutes >= 60) {
+      const hours = Math.floor(durationMinutes / 60);
+      const minutes = durationMinutes % 60;
+      return minutes > 0 ? `${hours}h ${minutes}min` : `${hours}h`;
+    }
+    
+    return `${durationMinutes}min`;
+  } catch (error) {
+    return 'unknown duration';
+  }
+};
+
 const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby") => {
   switch (activity.type) {
     case "feed":
@@ -98,7 +139,8 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
       return `${babyName} had a diaper change`;
     case "nap":
       if (activity.details.startTime && activity.details.endTime) {
-        return `${babyName} napped ${activity.details.startTime} - ${activity.details.endTime}`;
+        const duration = calculateNapDuration(activity.details.startTime, activity.details.endTime);
+        return `${babyName} slept ${duration}`;
       }
       return `${babyName} took a nap`;
     case "note":

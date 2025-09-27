@@ -37,16 +37,25 @@ const Index = () => {
 
   // Convert database activities to UI activities
   const activities: Activity[] = user && household && dbActivities 
-    ? dbActivities.map(dbActivity => ({
-        id: dbActivity.id,
-        type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
-        time: new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
+    ? dbActivities.map(dbActivity => {
+        let displayTime = new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
           hour: 'numeric', 
           minute: '2-digit', 
           hour12: true 
-        }),
-        details: dbActivity.details
-      }))
+        });
+
+        // For naps, show start-end time range
+        if (dbActivity.type === 'nap' && dbActivity.details.startTime && dbActivity.details.endTime) {
+          displayTime = `${dbActivity.details.startTime} - ${dbActivity.details.endTime}`;
+        }
+
+        return {
+          id: dbActivity.id,
+          type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
+          time: displayTime,
+          details: dbActivity.details
+        };
+      })
     : [];
 
   const [isChatOpen, setIsChatOpen] = useState(false);
