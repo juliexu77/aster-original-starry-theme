@@ -18,7 +18,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, MessageCircle, Home, TrendingUp, User, Baby } from "lucide-react";
+import { Plus, MessageCircle, Home, TrendingUp, User, Baby, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Index = () => {
@@ -140,40 +140,62 @@ const Index = () => {
       default:
         return (
           <>
-            <div className="px-4 py-2 space-y-4">
-              <TodaysSummary activities={activities} />
-              <YesterdaysSummary activities={activities} />
-              <NextActivityPrediction activities={activities} />
-              <DailySummary activities={activities} date={new Date().toISOString().split('T')[0]} />
-              <PatternInsights activities={activities} />
+            {/* Today's Activities Header */}
+            <div className="bg-primary text-primary-foreground py-4 px-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                <span className="font-medium">
+                  {new Date().toLocaleDateString("en-US", { 
+                    weekday: "long", 
+                    month: "long", 
+                    day: "numeric", 
+                    year: "numeric" 
+                  })}
+                </span>
+              </div>
             </div>
 
-            <div className="px-4 space-y-3 pb-20">
-              {activities.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No activities yet. Start by adding your first activity!</p>
+            {/* Activities Timeline */}
+            <div className="px-4 py-6">
+              <h2 className="text-xl font-serif font-medium text-foreground mb-4">
+                Today's Activities
+              </h2>
+              
+              <div className="space-y-3 pb-20">
+                {activities.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No activities yet. Start by adding your first activity!</p>
+                  </div>
+                ) : (
+                  activities.map((activity) => (
+                    <ActivityCard
+                      key={activity.id}
+                      activity={activity}
+                      babyName={babyProfile?.name}
+                      onEdit={(activity) => setSelectedActivity(activity)}
+                      onDelete={async (activityId) => {
+                        try {
+                          const { error } = await supabase
+                            .from('activities')
+                            .delete()
+                            .eq('id', activityId);
+                          
+                          if (error) throw error;
+                          refetchActivities();
+                        } catch (error) {
+                          console.error('Error deleting activity:', error);
+                        }
+                      }}
+                    />
+                  ))
+                )}
+              </div>
+
+              {/* Simple Summary Info */}
+              {activities.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  <NextActivityPrediction activities={activities} />
                 </div>
-              ) : (
-                activities.map((activity) => (
-                  <ActivityCard
-                    key={activity.id}
-                    activity={activity}
-                    onEdit={(activity) => setSelectedActivity(activity)}
-                    onDelete={async (activityId) => {
-                      try {
-                        const { error } = await supabase
-                          .from('activities')
-                          .delete()
-                          .eq('id', activityId);
-                        
-                        if (error) throw error;
-                        refetchActivities();
-                      } catch (error) {
-                        console.error('Error deleting activity:', error);
-                      }
-                    }}
-                  />
-                ))
               )}
             </div>
           </>
