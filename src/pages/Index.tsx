@@ -252,7 +252,24 @@ const Index = () => {
                                   activity={activity}
                                   babyName={babyProfile?.name}
                                   onEdit={(activity) => setEditingActivity(activity)}
-                                  onDelete={undefined}
+                                  onDelete={async (activityId) => {
+                                    try {
+                                      const { error } = await supabase
+                                        .from('activities')
+                                        .delete()
+                                        .eq('id', activityId);
+                                      
+                                      if (error) throw error;
+                                      refetchActivities();
+                                    } catch (error) {
+                                      console.error('Error deleting activity:', error);
+                                      toast({
+                                        title: "Error deleting activity",
+                                        description: "Please try again.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
                                 />
                               ))}
                             </div>
