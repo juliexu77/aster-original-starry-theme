@@ -127,6 +127,16 @@ export const MultiStepOnboarding = ({ onComplete }: MultiStepOnboardingProps) =>
       return;
     }
 
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create your household.",
+        variant: "destructive"
+      });
+      navigate('/auth');
+      return;
+    }
+
     setBabySaveStatus("saving");
     try {
       await createHousehold(
@@ -135,12 +145,12 @@ export const MultiStepOnboarding = ({ onComplete }: MultiStepOnboardingProps) =>
       );
       setBabySaveStatus("saved");
       setCurrentStep(2);
-    } catch (error) {
-      console.error('Error saving baby profile:', error);
+    } catch (error: any) {
+      console.error('Error saving household:', error);
       setBabySaveStatus("error");
       toast({
         title: "Error saving household",
-        description: "Please try again.",
+        description: error?.message || "Please try again.",
         variant: "destructive"
       });
     }
