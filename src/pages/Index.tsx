@@ -122,8 +122,7 @@ const Index = () => {
           .from('households')
           .insert({
             name: 'My Household',
-            baby_name: 'Baby',
-            created_by: user.id
+            baby_name: 'Baby'
           })
           .select()
           .single();
@@ -131,13 +130,14 @@ const Index = () => {
         if (householdError) throw householdError;
         householdId = newHousehold.id;
 
-        // Add user as collaborator
+        // Add user as collaborator with 'owner' role
         const { error: collaboratorError } = await supabase
           .from('collaborators')
           .insert({
+            household_id: householdId,
             invited_by: user.id,
             user_id: user.id,
-            role: 'parent'
+            role: 'owner'
           });
 
         if (collaboratorError) throw collaboratorError;
