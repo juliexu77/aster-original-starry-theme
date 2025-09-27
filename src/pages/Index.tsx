@@ -180,6 +180,13 @@ const Index = () => {
           <>
             {/* Activities Timeline */}
             <div className="px-4 py-6">
+              {/* Next Predicted Action - Collapsible at top */}
+              {activities.length > 0 && (
+                <div className="mb-6">
+                  <NextActivityPrediction activities={activities} />
+                </div>
+              )}
+              
               <div className="space-y-6 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -262,13 +269,6 @@ const Index = () => {
                 )}
               </div>
             </div>
-
-            {/* Next Predicted Action - Bottom Sticky */}
-            {activities.length > 0 && (
-              <div className="fixed bottom-16 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-40">
-                <NextActivityPrediction activities={activities} />
-              </div>
-            )}
           </>
         );
     }

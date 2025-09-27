@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Activity } from "./ActivityCard";
-import { Clock, Baby, Moon, Palette, Info } from "lucide-react";
+import { Clock, Baby, Moon, Palette, Info, ChevronDown, ChevronUp } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface NextActivityPredictionProps {
@@ -8,6 +8,7 @@ interface NextActivityPredictionProps {
 }
 
 export const NextActivityPrediction = ({ activities }: NextActivityPredictionProps) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const getCurrentTime = () => {
     const now = new Date();
     return now.toLocaleTimeString("en-US", { 
@@ -212,44 +213,81 @@ const getActivityColor = (type: string) => {
 
 return (
   <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-    <div className="flex items-center gap-2 mb-4">
-      <Clock className="w-5 h-5 text-muted-foreground" />
-      <h3 className="text-lg font-serif font-medium text-foreground">
-        Next Predicted Action
-      </h3>
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2">
+        <Clock className="w-5 h-5 text-muted-foreground" />
+        <h3 className="text-lg font-serif font-medium text-foreground">
+          Next Predicted Action
+        </h3>
+      </div>
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="p-1 hover:bg-accent rounded-md transition-colors"
+        aria-label={isCollapsed ? "Expand" : "Collapse"}
+      >
+        {isCollapsed ? (
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <ChevronUp className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
     </div>
     
-    <div
-      className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)} cursor-pointer`}
-      onClick={() => setOpen(true)}
-      role="button"
-      aria-label="See why this prediction was made"
-    >
-      <div className="flex-shrink-0">
-        {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
+    {isCollapsed ? (
+      // Collapsed state - single line
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          {nextActivity.type === "insufficient_data" ? <Clock className="h-4 w-4" /> : getActivityIcon(nextActivity.type)}
+          <span className="font-medium capitalize">
+            {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
+          </span>
+          {nextActivity.type !== "insufficient_data" && (
+            <span className="text-muted-foreground">
+              at {nextActivity.suggestedTime}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setOpen(true)}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Info className="h-4 w-4" />
+        </button>
       </div>
-      <div className="flex-1">
-        <h4 className="font-medium text-foreground capitalize mb-1">
-          {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
-        </h4>
-        {nextActivity.type !== "insufficient_data" && (
-          <>
-            <p className="text-sm text-muted-foreground mb-1">
-              Suggested time: {nextActivity.suggestedTime}
-            </p>
-            {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
-              <p className="text-sm text-muted-foreground mb-2">
-                Anticipated: {nextActivity.anticipatedTime}
+    ) : (
+      // Expanded state - full card
+      <div
+        className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)} cursor-pointer`}
+        onClick={() => setOpen(true)}
+        role="button"
+        aria-label="See why this prediction was made"
+      >
+        <div className="flex-shrink-0">
+          {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
+        </div>
+        <div className="flex-1">
+          <h4 className="font-medium text-foreground capitalize mb-1">
+            {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
+          </h4>
+          {nextActivity.type !== "insufficient_data" && (
+            <>
+              <p className="text-sm text-muted-foreground mb-1">
+                Suggested time: {nextActivity.suggestedTime}
               </p>
-            )}
-          </>
-        )}
-        <p className="text-xs text-muted-foreground">
-          {nextActivity.reason}
-        </p>
+              {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  Anticipated: {nextActivity.anticipatedTime}
+                </p>
+              )}
+            </>
+          )}
+          <p className="text-xs text-muted-foreground">
+            {nextActivity.reason}
+          </p>
+        </div>
+        <Info className="h-4 w-4 opacity-70" />
       </div>
-      <Info className="h-4 w-4 opacity-70" />
-    </div>
+    )}
 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>

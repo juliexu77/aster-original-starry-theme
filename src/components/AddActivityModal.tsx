@@ -7,8 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, Trash2 } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, MoreVertical, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => void;
@@ -304,20 +310,33 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               <DialogTitle className="text-lg font-medium">
                 {editingActivity ? "Edit Activity" : "Add Activity"}
               </DialogTitle>
-              {/* Delete icon - only show when editing */}
+              {/* Three-dot menu - only show when editing */}
               {editingActivity && onDeleteActivity && (
-                <button
-                  onClick={() => {
-                    if (editingActivity && onDeleteActivity) {
-                      onDeleteActivity(editingActivity.id);
-                      if (onClose) onClose();
-                    }
-                  }}
-                  className="p-2 hover:bg-destructive/10 rounded-full text-destructive hover:text-destructive/80 transition-colors"
-                  title="Delete activity"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={() => {
+                        if (editingActivity && onDeleteActivity) {
+                          onDeleteActivity(editingActivity.id);
+                          if (onClose) onClose();
+                        }
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Activity
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </DialogHeader>
