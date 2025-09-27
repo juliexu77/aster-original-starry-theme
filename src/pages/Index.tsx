@@ -130,9 +130,8 @@ const Index = () => {
             hours = 0;
           }
           
-          // Create a new date with the selected date and time
-          const combinedDateTime = new Date(activityDate);
-          combinedDateTime.setHours(hours, minutes, 0, 0);
+          // Create a new date with the selected date and time in LOCAL timezone
+          const combinedDateTime = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate(), hours, minutes, 0, 0);
           loggedAt = combinedDateTime.toISOString();
         } else {
           loggedAt = activityDate.toISOString();
