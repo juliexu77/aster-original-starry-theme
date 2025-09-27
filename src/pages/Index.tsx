@@ -178,14 +178,6 @@ const Index = () => {
       default:
         return (
           <>
-            {/* Activities Timeline Header */}
-            <div className="bg-primary text-primary-foreground py-4 px-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span className="font-medium">Recent Activities</span>
-              </div>
-            </div>
-
             {/* Activities Timeline */}
             <div className="px-4 py-6">
               <div className="space-y-6 pb-20">
