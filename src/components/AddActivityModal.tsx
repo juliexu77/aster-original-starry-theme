@@ -9,7 +9,6 @@ import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { FirstTimeTooltip } from "./FirstTimeTooltip";
 
 interface AddActivityModalProps {
   onAddActivity: (activity: Omit<Activity, "id">) => void;

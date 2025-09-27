@@ -9,7 +9,7 @@ import { YesterdaysSummary } from "@/components/YesterdaysSummary";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings } from "@/pages/Settings";
 import { ChatPanel } from "@/components/ChatPanel";
-import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
+
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { DailySummary } from "@/components/DailySummary";
 import { PatternInsights } from "@/components/PatternInsights";
@@ -55,7 +55,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [showAddActivity, setShowAddActivity] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  
 
   // Check user authentication and household status
   useEffect(() => {
@@ -94,18 +94,6 @@ const Index = () => {
     window.location.reload();
   };
 
-  // First-time tooltip: show over + button after short delay
-  useEffect(() => {
-    if (hasProfile && activities.length === 0) {
-      const timer = setTimeout(() => {
-        const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
-        if (!hasSeenTooltip) {
-          setShowTooltip(true);
-        }
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasProfile, activities.length]);
 
   const addActivity = async (type: string, details: any = {}) => {
     if (!user) {
