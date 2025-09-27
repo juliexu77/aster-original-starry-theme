@@ -96,7 +96,11 @@ const Index = () => {
     }
   }, [user]);
 
-  const handleProfileComplete = (profile: { name: string; birthday: string }) => {
+  const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
+    // This is a fallback handler - most users should go through /baby-setup
+    // Just store locally and set state
+    localStorage.setItem("babyProfile", JSON.stringify(profile));
+    localStorage.setItem("babyProfileCompleted", "true");
     setBabyProfile(profile);
     setHasProfile(true);
   };
@@ -164,6 +168,7 @@ const Index = () => {
   }
 
   // Show baby profile setup if no profile exists and user is not a collaborator
+  // This is a fallback - most users should go through /baby-setup route
   if (hasProfile === false && !localStorage.getItem('isCollaborator') && !localStorage.getItem('babyProfileSkipped')) {
     return <BabyProfileSetup onComplete={handleProfileComplete} />;
   }

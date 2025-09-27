@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { BabyProfileSetup } from "@/components/BabyProfileSetup";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { babyProfile, loading: profileLoading } = useBabyProfile();
+  const { babyProfile, loading: profileLoading, createBabyProfile } = useBabyProfile();
+  const { toast } = useToast();
 
   // Check if user already has baby profile, skip setup
   useEffect(() => {
@@ -32,13 +34,26 @@ const BabySetup = () => {
     // Otherwise show baby setup
   }, [user, babyProfile, authLoading, profileLoading, navigate]);
 
-  const handleProfileComplete = (profile: { name: string; birthday?: string }) => {
-    // Store baby profile locally
-    localStorage.setItem("babyProfile", JSON.stringify(profile));
-    localStorage.setItem("babyProfileCompleted", "true");
-    
-    // Navigate to main app
-    navigate("/app");
+  const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
+    try {
+      if (user) {
+        // For authenticated users, create database profile
+        await createBabyProfile(profile.name, profile.birthday);
+      } else {
+        // For guest users, store locally
+        localStorage.setItem("babyProfile", JSON.stringify(profile));
+        localStorage.setItem("babyProfileCompleted", "true");
+      }
+      
+      // Navigate to main app
+      navigate("/app");
+    } catch (error) {
+      console.error('Error creating baby profile:', error);
+      // Fallback to local storage even for authenticated users
+      localStorage.setItem("babyProfile", JSON.stringify(profile));
+      localStorage.setItem("babyProfileCompleted", "true");
+      navigate("/app");
+    }
   };
 
   if (authLoading || profileLoading) {
