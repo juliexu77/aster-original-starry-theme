@@ -99,7 +99,7 @@ const Index = () => {
   };
 
 
-  const addActivity = async (type: string, details: any = {}, activityDate?: Date) => {
+  const addActivity = async (type: string, details: any = {}, activityDate?: Date, activityTime?: string) => {
     if (!user) {
       console.error('User not available');
       return;
@@ -113,8 +113,33 @@ const Index = () => {
         throw new Error('No household found - please refresh the page');
       }
 
-      // Use the provided date or current date as fallback
-      const loggedAt = activityDate ? activityDate.toISOString() : new Date().toISOString();
+      // Combine selected date with selected time
+      let loggedAt: string;
+      if (activityDate && activityTime) {
+        // Parse the time string (e.g., "7:00 AM")
+        const timeMatch = activityTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (timeMatch) {
+          let hours = parseInt(timeMatch[1]);
+          const minutes = parseInt(timeMatch[2]);
+          const period = timeMatch[3].toUpperCase();
+          
+          // Convert to 24-hour format
+          if (period === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+          }
+          
+          // Create a new date with the selected date and time
+          const combinedDateTime = new Date(activityDate);
+          combinedDateTime.setHours(hours, minutes, 0, 0);
+          loggedAt = combinedDateTime.toISOString();
+        } else {
+          loggedAt = activityDate.toISOString();
+        }
+      } else {
+        loggedAt = new Date().toISOString();
+      }
 
       const { error } = await supabase.from('activities').insert({
         household_id: householdId,
@@ -256,8 +281,8 @@ const Index = () => {
           setEditingActivity(null);
         }}
         editingActivity={editingActivity}
-        onAddActivity={(activity, activityDate) => {
-          addActivity(activity.type, activity.details, activityDate);
+        onAddActivity={(activity, activityDate, activityTime) => {
+          addActivity(activity.type, activity.details, activityDate, activityTime);
           setShowAddActivity(false);
         }}
         onEditActivity={async (updatedActivity) => {

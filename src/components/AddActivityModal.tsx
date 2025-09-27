@@ -11,7 +11,7 @@ import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffe
 import { toast } from "@/hooks/use-toast";
 
 interface AddActivityModalProps {
-  onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date) => void;
+  onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => void;
   isOpen?: boolean;
   onClose?: () => void;
   showFixedButton?: boolean; // Add prop to control fixed button visibility
@@ -259,7 +259,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details,
       };
 
-      onAddActivity(newActivity, selectedDate);
+      onAddActivity(newActivity, selectedDate, time);
       toast({
         title: "Activity added!",
         description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been logged.`,

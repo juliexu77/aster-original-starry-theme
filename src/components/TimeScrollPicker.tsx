@@ -94,7 +94,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   const scrollToValue = (ref: React.RefObject<HTMLDivElement>, value: number, items: any[]) => {
     if (ref.current) {
-      const itemHeight = 40;
+      const itemHeight = 32;
       // Find the middle occurrence of the value for smooth infinite scrolling
       const middleIndex = 12 + items.slice(0, 12).indexOf(value);
       if (middleIndex >= 12) {
@@ -109,7 +109,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     
     // Scroll to selected date
     if (dateRef.current) {
-      const itemHeight = 40;
+      const itemHeight = 32;
       dateRef.current.scrollTop = selectedDateIndex * itemHeight;
     }
   }, []);
@@ -120,7 +120,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     setter: (value: any) => void
   ) => {
     if (ref.current) {
-      const itemHeight = 40;
+      const itemHeight = 32;
       const scrollTop = ref.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
       const totalItems = items.length;
@@ -170,14 +170,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       {label && <Label className="text-sm font-medium">{label}</Label>}
       
       {/* Combined Date and Time Selector */}
-      <div className="flex gap-2 border rounded-lg p-3 items-center justify-center bg-background">
+      <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
         {/* Date - Scrollable */}
         <div 
           ref={dateRef}
-          className="h-10 w-20 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-8 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
             if (dateRef.current) {
-              const itemHeight = 40;
+              const itemHeight = 32;
               const scrollTop = dateRef.current.scrollTop;
               const index = Math.round(scrollTop / itemHeight);
               const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
@@ -191,7 +191,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
                   selectedDateIndex === index 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -207,11 +207,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
 
-        <span className="text-foreground font-medium">-</span>
+        <span className="text-muted-foreground text-xs">-</span>
         {/* Hours - Scrollable */}
         <div 
           ref={hourRef}
-          className="h-10 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(hourRef, hours, setSelectedHour)}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -219,7 +219,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {hours.map((hour, index) => (
               <div
                 key={`hour-${index}`}
-                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
                   selectedHour === hour 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -235,12 +235,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
 
-        <span className="text-foreground font-medium">:</span>
+        <span className="text-muted-foreground text-xs">:</span>
 
         {/* Minutes - Scrollable */}
         <div 
           ref={minuteRef}
-          className="h-10 w-16 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute)}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -248,7 +248,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {minutes.map((minute, index) => (
               <div
                 key={`minute-${index}`}
-                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-xs font-medium cursor-pointer transition-colors snap-center ${
                   selectedMinute === minute 
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
@@ -265,11 +265,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         </div>
 
         {/* AM/PM */}
-        <div className="flex gap-1 ml-2">
+        <div className="flex gap-1">
           {periods.map((period) => (
             <div
               key={period}
-              className={`px-3 py-2 rounded text-sm font-medium cursor-pointer transition-colors ${
+              className={`px-2 py-1 rounded text-xs font-medium cursor-pointer transition-colors ${
                 selectedPeriod === period 
                   ? 'text-foreground font-bold bg-muted' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
