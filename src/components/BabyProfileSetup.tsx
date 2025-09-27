@@ -121,7 +121,17 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                 </Label>
                 <DatePicker
                   selected={birthday ? new Date(birthday) : undefined}
-                  onSelect={(date) => setBirthday(date ? format(date, "yyyy-MM-dd") : "")}
+                  onSelect={(date) => {
+                    if (date) {
+                      // Fix the date picker bug - use local date string to avoid timezone issues
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      setBirthday(`${year}-${month}-${day}`);
+                    } else {
+                      setBirthday("");
+                    }
+                  }}
                   disabled={isLoading}
                   placeholder="Select birthday"
                 />

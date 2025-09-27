@@ -166,39 +166,64 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     return `${hours}h ${minutes}m`;
   };
 
-  // Get today's summary data
-  const getTodaysSummary = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
+  // Get average daily summary data instead of today's data
+  const getAverageDailySummary = () => {
+    // Group activities by calendar date
+    const activityByDate: { [date: string]: Activity[] } = {};
     
-    const todayFeeds = activities.filter(a => {
-      if (a.type !== "feed") return false;
-      // Since activities don't have logged_at, assume they're all from today
-      return true;
-    });
-    
-    const todayDiapers = activities.filter(a => {
-      if (a.type !== "diaper") return false;
-      // Since activities don't have logged_at, assume they're all from today
-      return true;
-    });
-    
-    let totalFeeds = 0;
-    todayFeeds.forEach(feed => {
-      if (feed.details.quantity) {
-        totalFeeds += parseFloat(feed.details.quantity) || 0;
+    activities.forEach(activity => {
+      // For activities with logged_at (database activities), use that date
+      let activityDate;
+      if ('logged_at' in activity && typeof activity.logged_at === 'string') {
+        activityDate = new Date(activity.logged_at).toISOString().split('T')[0];
+      } else {
+        // For local activities, assume today
+        activityDate = new Date().toISOString().split('T')[0];
       }
+      
+      if (!activityByDate[activityDate]) {
+        activityByDate[activityDate] = [];
+      }
+      activityByDate[activityDate].push(activity);
     });
+    
+    const dates = Object.keys(activityByDate);
+    if (dates.length === 0) {
+      return { feeds: 0, feedUnit: 'oz', diapers: 0 };
+    }
+    
+    let totalFeedQuantity = 0;
+    let totalDiapers = 0;
+    let feedCount = 0;
+    
+    dates.forEach(date => {
+      const dayActivities = activityByDate[date];
+      
+      const dayFeeds = dayActivities.filter(a => a.type === "feed");
+      const dayDiapers = dayActivities.filter(a => a.type === "diaper");
+      
+      dayFeeds.forEach(feed => {
+        if (feed.details.quantity) {
+          totalFeedQuantity += parseFloat(feed.details.quantity) || 0;
+          feedCount++;
+        }
+      });
+      
+      totalDiapers += dayDiapers.length;
+    });
+    
+    const avgFeeds = dates.length > 0 ? Math.round(totalFeedQuantity / dates.length) : 0;
+    const avgDiapers = dates.length > 0 ? Math.round(totalDiapers / dates.length) : 0;
     
     return {
-      feeds: Math.round(totalFeeds),
-      feedUnit: totalFeeds > 50 ? 'ml' : 'oz',
-      diapers: todayDiapers.length
+      feeds: avgFeeds,
+      feedUnit: avgFeeds > 50 ? 'ml' : 'oz',
+      diapers: avgDiapers
     };
   };
 
   const sleepData = generateSleepData();
-  const wakeWindowData = getWakeWindowForAge(ageInWeeks);
-  const todaysSummary = getTodaysSummary();
+  const averageDailySummary = getAverageDailySummary();
   const hasAnyData = sleepData.some(day => day.hasData);
 
   // Generate time labels based on current view
@@ -406,48 +431,20 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
         </div>
       </div>
 
-      {/* Wake Windows Section */}
-      {wakeWindowData && (
-        <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-          <h3 className="text-lg font-serif font-semibold text-foreground mb-4">
-            Typical Wake Windows ({Math.floor(ageInWeeks)} weeks old)
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="text-sm text-muted-foreground">Wake Windows</div>
-              <div className="text-2xl font-medium text-foreground">
-                {wakeWindowData.wakeWindows.join(", ")}
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-muted-foreground">Expected Naps</div>
-              <div className="text-2xl font-medium text-foreground">
-                {wakeWindowData.napCount} per day
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t border-border">
-            <div className="text-sm text-muted-foreground">Total Sleep Need</div>
-            <div className="text-lg font-medium text-foreground">
-              {wakeWindowData.totalSleep}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Today's Summary */}
+      {/* Average Daily Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-          <h4 className="text-sm text-muted-foreground mb-2">Today's Feeds</h4>
+          <h4 className="text-sm text-muted-foreground mb-2">Avg Daily Feeds</h4>
           <div className="text-3xl font-serif font-bold text-foreground">
-            {todaysSummary.feeds}
-            <span className="text-lg text-muted-foreground ml-1">{todaysSummary.feedUnit}</span>
+            {averageDailySummary.feeds}
+            <span className="text-lg text-muted-foreground ml-1">{averageDailySummary.feedUnit}</span>
           </div>
         </div>
         <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-          <h4 className="text-sm text-muted-foreground mb-2">Today's Diapers</h4>
+          <h4 className="text-sm text-muted-foreground mb-2">Avg Daily Diapers</h4>
           <div className="text-3xl font-serif font-bold text-foreground">
-            {todaysSummary.diapers}
+            {averageDailySummary.diapers}
           </div>
         </div>
       </div>
