@@ -254,10 +254,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       };
       
       onEditActivity(updatedActivity);
-      toast({
-        title: "Activity updated!",
-        description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been updated.`,
-      });
     } else {
       // Create new activity
       const newActivity: Omit<Activity, "id"> = {
@@ -267,10 +263,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       };
 
       onAddActivity(newActivity, selectedDate, time);
-      toast({
-        title: "Activity added!",
-        description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been logged.`,
-      });
     }
     
     resetForm();
