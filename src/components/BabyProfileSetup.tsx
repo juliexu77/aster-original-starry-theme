@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format } from "date-fns";
 
 interface BabyProfileSetupProps {
   onComplete: (profile: { name: string; birthday: string }) => void;
@@ -117,18 +119,12 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
                 <Label htmlFor="birthday" className="text-sm font-medium">
                   {t('babyBirthday')} <span className="text-destructive">*</span>
                 </Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="birthday"
-                    type="date"
-                    value={birthday}
-                    onChange={(e) => setBirthday(e.target.value)}
-                    disabled={isLoading}
-                    className="h-12 pl-10"
-                    required
-                  />
-                </div>
+                <DatePicker
+                  selected={birthday ? new Date(birthday) : undefined}
+                  onSelect={(date) => setBirthday(date ? format(date, "yyyy-MM-dd") : "")}
+                  disabled={isLoading}
+                  placeholder="Select birthday"
+                />
               </div>
 
               <Button 

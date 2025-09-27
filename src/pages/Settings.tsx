@@ -23,6 +23,10 @@ import {
 } from "lucide-react";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DatePicker } from "@/components/ui/date-picker";
+import { UserRoleSelector } from "@/components/UserRoleSelector";
+import { CaregiverManagement } from "@/components/CaregiverManagement";
+import { format } from "date-fns";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
@@ -37,6 +41,8 @@ export const Settings = () => {
   const [babyName, setBabyName] = useState(babyProfile?.name || "");
   const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<"parent" | "nanny">("parent");
+  const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
 
   // Auto-save user profile changes
   useEffect(() => {
@@ -181,6 +187,10 @@ export const Settings = () => {
     return fullName || user.email?.split('@')[0] || "User";
   };
 
+  if (showCaregiverManagement) {
+    return <CaregiverManagement onClose={() => setShowCaregiverManagement(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto px-6 py-8 space-y-8 relative">
@@ -252,6 +262,16 @@ export const Settings = () => {
                   className="mt-2 border-none bg-muted"
                 />
               </div>
+
+              <div>
+                <Label className="text-sm text-muted-foreground">You are</Label>
+                <div className="mt-2">
+                  <UserRoleSelector 
+                    value={userRole} 
+                    onChange={setUserRole}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -312,13 +332,14 @@ export const Settings = () => {
               <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
                 Birthday
               </Label>
-              <Input
-                id="babyBirthday"
-                type="date"
-                value={babyBirthday}
-                onChange={(e) => setBabyBirthday(e.target.value)}
-                className="mt-2 border-none bg-background"
-              />
+              <div className="mt-2">
+                <DatePicker
+                  selected={babyBirthday ? new Date(babyBirthday) : undefined}
+                  onSelect={(date) => setBabyBirthday(date ? format(date, "yyyy-MM-dd") : "")}
+                  placeholder="Select birthday"
+                  className="border-none bg-background"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -334,14 +355,27 @@ export const Settings = () => {
             Share tracking with someone so they can view and add activities too.
           </p>
 
-          <Button 
-            onClick={handleInviteClick}
-            className="w-full h-12 rounded-2xl"
-            variant="outline"
-          >
-            <Share className="w-4 h-4 mr-2" />
-            {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleInviteClick}
+              className="w-full h-12 rounded-2xl"
+              variant="outline"
+            >
+              <Share className="w-4 h-4 mr-2" />
+              {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
+            </Button>
+
+            {user && (
+              <Button 
+                onClick={() => setShowCaregiverManagement(true)}
+                className="w-full h-12 rounded-2xl"
+                variant="outline"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Manage Caregivers
+              </Button>
+            )}
+          </div>
 
           {/* List of Caregivers */}
           {collaborators && collaborators.length > 0 && (
