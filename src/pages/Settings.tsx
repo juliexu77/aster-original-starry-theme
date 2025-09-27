@@ -9,6 +9,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -31,6 +32,7 @@ import { format } from "date-fns";
 export const Settings = () => {
   const { user, signOut } = useAuth();
   const { babyProfile, collaborators, removeCollaborator, updateBabyProfile, generateInviteLink } = useBabyProfile();
+  const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -40,7 +42,6 @@ export const Settings = () => {
   const [copied, setCopied] = useState(false);
   const [babyName, setBabyName] = useState(babyProfile?.name || "");
   const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
-  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<"parent" | "nanny">("parent");
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
 
@@ -75,6 +76,21 @@ export const Settings = () => {
 
     return () => clearTimeout(timeoutId);
   }, [fullName, user, toast]);
+
+  // Auto-save user role changes
+  useEffect(() => {
+    if (!userProfile || userRole === userProfile.role) return;
+    
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateUserProfile({ role: userRole });
+      } catch (error) {
+        console.error('Error updating user role:', error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [userRole, userProfile, updateUserProfile]);
 
   // Auto-save baby profile changes
   useEffect(() => {
@@ -112,6 +128,14 @@ export const Settings = () => {
       setBabyBirthday(babyProfile.birthday || "");
     }
   }, [babyProfile]);
+
+  // Update local state when userProfile changes
+  useEffect(() => {
+    if (userProfile) {
+      setUserRole(userProfile.role);
+      setFullName(userProfile.full_name || "");
+    }
+  }, [userProfile]);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -174,8 +198,11 @@ export const Settings = () => {
   };
 
   const handleUserPhotoUpdate = async (photoUrl: string | null) => {
-    setUserPhotoUrl(photoUrl);
-    // You can also save to user profile if needed
+    try {
+      await updateUserProfile({ photo_url: photoUrl });
+    } catch (error) {
+      console.error('Error updating user photo:', error);
+    }
   };
 
   const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
@@ -214,7 +241,7 @@ export const Settings = () => {
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <PhotoUpload
-              currentPhotoUrl={userPhotoUrl}
+              currentPhotoUrl={userProfile?.photo_url}
               bucketName="baby-photos"
               folder={user?.id || "guest"}
               fallbackIcon={<User className="w-10 h-10 text-muted-foreground" />}
