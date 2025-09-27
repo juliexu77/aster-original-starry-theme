@@ -3,11 +3,13 @@ import { Label } from "@/components/ui/label";
 
 interface TimeScrollPickerProps {
   value?: string;
+  selectedDate?: Date;
   onChange: (time: string) => void;
+  onDateChange?: (date: Date) => void;
   label?: string;
 }
 
-export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerProps) => {
+export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, label }: TimeScrollPickerProps) => {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   
   const [selectedHour, setSelectedHour] = useState(() => {
@@ -34,9 +36,33 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
     return new Date().getHours() >= 12 ? "PM" : "AM";
   });
 
+  // Generate dates array (past 7 days, today, next 3 days)
+  const generateDates = () => {
+    const dates = [];
+    const today = new Date();
+    for (let i = -7; i <= 3; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  };
+
+  const [dates] = useState(generateDates());
+  const [selectedDateIndex, setSelectedDateIndex] = useState(() => {
+    if (selectedDate) {
+      const index = dates.findIndex(date => 
+        date.toDateString() === selectedDate.toDateString()
+      );
+      return index >= 0 ? index : 7; // Default to today (index 7)
+    }
+    return 7; // Today is at index 7
+  });
+
   const hourRef = useRef<HTMLDivElement>(null);
   const minuteRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
+  const dateRef = useRef<HTMLDivElement>(null);
 
   // Create extended arrays for infinite scrolling
   const hours = [
@@ -59,6 +85,13 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
     }
   }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted, value]);
 
+  useEffect(() => {
+    // Update selected date when index changes
+    if (hasUserInteracted && onDateChange) {
+      onDateChange(dates[selectedDateIndex]);
+    }
+  }, [selectedDateIndex, dates, onDateChange, hasUserInteracted]);
+
   const scrollToValue = (ref: React.RefObject<HTMLDivElement>, value: number, items: any[]) => {
     if (ref.current) {
       const itemHeight = 40;
@@ -73,6 +106,12 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
   useEffect(() => {
     scrollToValue(hourRef, selectedHour, hours);
     scrollToValue(minuteRef, selectedMinute, minutes);
+    
+    // Scroll to selected date
+    if (dateRef.current) {
+      const itemHeight = 40;
+      dateRef.current.scrollTop = selectedDateIndex * itemHeight;
+    }
   }, []);
 
   const handleScroll = (
@@ -105,9 +144,71 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
     }
   };
 
+  const formatDateLabel = (date: Date) => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return "Tomorrow";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+  };
+
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
+      
+      {/* Date Selector */}
+      <div className="border rounded-lg p-3 bg-background">
+        <div className="text-xs text-muted-foreground mb-2 text-center">Date</div>
+        <div 
+          ref={dateRef}
+          className="h-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => {
+            if (dateRef.current) {
+              const itemHeight = 40;
+              const scrollTop = dateRef.current.scrollTop;
+              const index = Math.round(scrollTop / itemHeight);
+              const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
+              setHasUserInteracted(true);
+              setSelectedDateIndex(clampedIndex);
+            }
+          }}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {dates.map((date, index) => (
+              <div
+                key={index}
+                className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedDateIndex === index 
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedDateIndex(index);
+                }}
+              >
+                {formatDateLabel(date)}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Time Selector */}
       <div className="flex gap-2 border rounded-lg p-3 items-center justify-center bg-background">
         {/* Hours - Scrollable */}
         <div 

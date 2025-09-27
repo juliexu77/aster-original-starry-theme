@@ -98,7 +98,7 @@ const Index = () => {
   };
 
 
-  const addActivity = async (type: string, details: any = {}) => {
+  const addActivity = async (type: string, details: any = {}, activityDate?: Date) => {
     if (!user) {
       console.error('User not available');
       return;
@@ -112,10 +112,13 @@ const Index = () => {
         throw new Error('No household found - please refresh the page');
       }
 
+      // Use the provided date or current date as fallback
+      const loggedAt = activityDate ? activityDate.toISOString() : new Date().toISOString();
+
       const { error } = await supabase.from('activities').insert({
         household_id: householdId,
         type,
-        logged_at: new Date().toISOString(),
+        logged_at: loggedAt,
         details,
         created_by: user.id
       });
@@ -252,8 +255,8 @@ const Index = () => {
           setEditingActivity(null);
         }}
         editingActivity={editingActivity}
-        onAddActivity={(activity) => {
-          addActivity(activity.type, activity.details);
+        onAddActivity={(activity, activityDate) => {
+          addActivity(activity.type, activity.details, activityDate);
           setShowAddActivity(false);
         }}
         onEditActivity={async (updatedActivity) => {

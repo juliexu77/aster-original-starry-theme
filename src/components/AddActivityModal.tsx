@@ -11,7 +11,7 @@ import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffe
 import { toast } from "@/hooks/use-toast";
 
 interface AddActivityModalProps {
-  onAddActivity: (activity: Omit<Activity, "id">) => void;
+  onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date) => void;
   isOpen?: boolean;
   onClose?: () => void;
   showFixedButton?: boolean; // Add prop to control fixed button visibility
@@ -57,6 +57,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [showKeypad, setShowKeypad] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Load last used settings and handle editing
   useEffect(() => {
@@ -253,7 +254,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details,
       };
 
-      onAddActivity(newActivity);
+      onAddActivity(newActivity, selectedDate);
       toast({
         title: "Activity added!",
         description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been logged.`,
@@ -352,7 +353,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
 
                 {/* Time Picker - Moved below feed type */}
-                <TimeScrollPicker value={time} onChange={setTime} label="Time" />
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
 
                 {/* Dynamic amount/details based on feed type */}
                 {feedType === "bottle" && (
@@ -431,7 +438,13 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {activityType === "diaper" && (
               <div className="space-y-5">
                 {/* Time Picker for Diaper */}
-                <TimeScrollPicker value={time} onChange={setTime} label="Time" />
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
                 
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Type</Label>
@@ -520,8 +533,20 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   {isTimerActive ? "Stop Sleep" : "Start Sleep Timer"}
                 </Button>
                 <div className="space-y-3">
-                  <TimeScrollPicker value={startTime} onChange={setStartTime} label="Start Time" />
-                  <TimeScrollPicker value={endTime} onChange={setEndTime} label="End Time" />
+                  <TimeScrollPicker 
+                    value={startTime} 
+                    selectedDate={selectedDate}
+                    onChange={setStartTime} 
+                    onDateChange={setSelectedDate}
+                    label="Start Time" 
+                  />
+                  <TimeScrollPicker 
+                    value={endTime} 
+                    selectedDate={selectedDate}
+                    onChange={setEndTime} 
+                    onDateChange={setSelectedDate}
+                    label="End Time" 
+                  />
                 </div>
               </div>
             )}
