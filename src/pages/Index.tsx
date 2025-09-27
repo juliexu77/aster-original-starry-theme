@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
-import { ActivityDetailModal } from "@/components/ActivityDetailModal";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings } from "@/pages/Settings";
-import { ChatPanel } from "@/components/ChatPanel";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -16,8 +14,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, MessageCircle, Home, TrendingUp, User, Baby, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Calendar } from "lucide-react";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -58,10 +55,9 @@ const Index = () => {
       })
     : [];
 
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [showAddActivity, setShowAddActivity] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   
 
   // Check user authentication and household status
@@ -186,7 +182,7 @@ const Index = () => {
                       key={activity.id}
                       activity={activity}
                       babyName={babyProfile?.name}
-                      onEdit={(activity) => setSelectedActivity(activity)}
+                      onEdit={(activity) => setEditingActivity(activity)}
                       onDelete={async (activityId) => {
                         try {
                           const { error } = await supabase
@@ -236,12 +232,6 @@ const Index = () => {
           <h1 className="text-xl font-semibold">
             {babyProfile?.name ? `${babyProfile.name}'s Day` : "Baby Tracker"}
           </h1>
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <MessageCircle className="h-5 w-5" />
-          </button>
         </div>
       </div>
 
@@ -254,31 +244,38 @@ const Index = () => {
         onAddActivity={() => setShowAddActivity(true)}
       />
 
-      {/* Chat Panel */}
-      <ChatPanel
-        activities={activities}
-        isOpen={isChatOpen}
-        onToggle={() => setIsChatOpen(!isChatOpen)}
-      />
-
       {/* Add Activity Modal */}
       <AddActivityModal
-        isOpen={showAddActivity}
-        onClose={() => setShowAddActivity(false)}
+        isOpen={showAddActivity || !!editingActivity}
+        onClose={() => {
+          setShowAddActivity(false);
+          setEditingActivity(null);
+        }}
+        editingActivity={editingActivity}
         onAddActivity={(activity) => {
           addActivity(activity.type, activity.details);
           setShowAddActivity(false);
         }}
+        onEditActivity={async (updatedActivity) => {
+          try {
+            const { error } = await supabase
+              .from('activities')
+              .update({
+                type: updatedActivity.type,
+                details: updatedActivity.details,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', updatedActivity.id);
+            
+            if (error) throw error;
+            refetchActivities();
+            setEditingActivity(null);
+          } catch (error) {
+            console.error('Error updating activity:', error);
+          }
+        }}
       />
 
-      {/* Activity Detail Modal */}
-      {selectedActivity && (
-        <ActivityDetailModal
-          activity={selectedActivity}
-          isOpen={!!selectedActivity}
-          onClose={() => setSelectedActivity(null)}
-        />
-      )}
     </div>
   );
 };

@@ -10,7 +10,19 @@ interface InsightsTabProps {
 }
 
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
-  const { household } = useHousehold();
+  const { household, loading: householdLoading } = useHousehold();
+  
+  // Show loading state while household data is being fetched
+  if (householdLoading || !household) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading insights...</p>
+        </div>
+      </div>
+    );
+  }
   
   const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
   const wakeWindowData = getWakeWindowForAge(ageInWeeks);
