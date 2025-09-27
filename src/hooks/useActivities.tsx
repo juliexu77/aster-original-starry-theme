@@ -50,38 +50,45 @@ export function useActivities() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !household) {
+    if (!user) {
       setLoading(false);
       return;
     }
 
+    // Since households are auto-created on login, we should always have one
     fetchActivities();
     
-    // Set up real-time subscription
-    const activitiesChannel = supabase
-      .channel('activities-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'activities',
-          filter: `household_id=eq.${household.id}`
-        },
-        (payload) => {
-          console.log('Activity change:', payload);
-          fetchActivities();
-        }
-      )
-      .subscribe();
+    // Set up real-time subscription - household will exist by the time this runs
+    if (household) {
+      const activitiesChannel = supabase
+        .channel('activities-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'activities',
+            filter: `household_id=eq.${household.id}`
+          },
+          (payload) => {
+            console.log('Activity change:', payload);
+            fetchActivities();
+          }
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(activitiesChannel);
-    };
+      return () => {
+        supabase.removeChannel(activitiesChannel);
+      };
+    }
   }, [user, household]);
 
   const fetchActivities = async () => {
-    if (!household) return;
+    if (!household) {
+      // Household should exist, but if not, wait for it
+      setLoading(false);
+      return;
+    }
 
     try {
       const today = new Date();

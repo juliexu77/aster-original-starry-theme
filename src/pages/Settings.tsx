@@ -34,7 +34,7 @@ import { format } from "date-fns";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink, createHousehold } = useHousehold();
+  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -135,8 +135,8 @@ export const Settings = () => {
           // Update existing household
           await updateHousehold({ baby_name: babyName });
         } else {
-          // Create new household with baby name
-          await createHousehold(babyName);
+          // Household should exist since it's auto-created on login
+          console.warn('No household found - it should have been auto-created on login');
         }
         setBabyNameSaveStatus("saved");
         
@@ -149,7 +149,7 @@ export const Settings = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [babyName, household, updateHousehold, createHousehold, user]);
+  }, [babyName, household, updateHousehold, user]);
 
   useEffect(() => {
     if (!user || !household || babyBirthday === household.baby_birthday) return;

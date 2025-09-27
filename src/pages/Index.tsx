@@ -89,9 +89,9 @@ const Index = () => {
     }
   }, [user]);
 
-  const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
-    // This should not be used anymore - redirect to proper baby setup
-    navigate('/baby-setup');
+  const handleProfileComplete = async () => {
+    // Not needed anymore - household auto-created on login
+    window.location.reload();
   };
 
   // First-time tooltip: show over + button after short delay
