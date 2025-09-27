@@ -22,7 +22,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { createHousehold } = useHousehold();
+  const { updateHousehold } = useHousehold();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +57,12 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
         throw new Error('Authentication required to create household');
       }
 
-      // For authenticated users, create household
-      await createHousehold(profile.name, profile.birthday);
+      // For authenticated users, update existing household
+      await updateHousehold({
+        baby_name: profile.name,
+        baby_birthday: profile.birthday,
+        name: `${profile.name}'s Household`
+      });
       onComplete(profile);
     } catch (error) {
       console.error('Error creating household:', error);

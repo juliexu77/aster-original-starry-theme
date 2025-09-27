@@ -24,6 +24,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
         
+        // Create household for new users
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(() => {
+            ensureUserHasHousehold(session.user.id);
+          }, 0);
+        }
+        
         // Clear user data when signed out or user deleted
         if (event === 'SIGNED_OUT' || !session) {
           clearAllUserData();
@@ -36,6 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Ensure existing user has household
+      if (session?.user) {
+        setTimeout(() => {
+          ensureUserHasHousehold(session.user.id);
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -45,6 +59,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     // Clear all app-related localStorage data
     clearAllUserData();
+  };
+
+  const ensureUserHasHousehold = async (userId: string) => {
+    try {
+      // Check if user already has a household
+      const { data: collaboratorData } = await supabase
+        .from('collaborators')
+        .select('household_id')
+        .eq('user_id', userId)
+        .limit(1);
+
+      if (collaboratorData && collaboratorData.length > 0) {
+        // User already has a household
+        return;
+      }
+
+      // Create default household
+      const newHouseholdId = crypto.randomUUID();
+
+      const { error: householdError } = await supabase
+        .from('households')
+        .insert([{
+          id: newHouseholdId,
+          name: 'My Household',
+        }]);
+
+      if (householdError) {
+        console.error('Error creating default household:', householdError);
+        return;
+      }
+
+      // Add user as parent collaborator
+      const { error: collaboratorError } = await supabase
+        .from('collaborators')
+        .insert([{
+          household_id: newHouseholdId,
+          user_id: userId,
+          role: 'parent',
+          invited_by: userId,
+        }]);
+
+      if (collaboratorError) {
+        console.error('Error adding user as collaborator:', collaboratorError);
+      }
+    } catch (error) {
+      console.error('Error ensuring user has household:', error);
+    }
   };
 
   const clearAllUserData = () => {

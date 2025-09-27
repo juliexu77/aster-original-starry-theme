@@ -116,31 +116,9 @@ const Index = () => {
     try {
       let householdId = household?.id;
       
-      // If no household exists, create a default one
+      // Household should always exist now (created on login)
       if (!householdId) {
-        const { data: newHousehold, error: householdError } = await supabase
-          .from('households')
-          .insert({
-            name: 'My Household',
-            baby_name: 'Baby'
-          })
-          .select()
-          .single();
-
-        if (householdError) throw householdError;
-        householdId = newHousehold.id;
-
-        // Add user as collaborator with 'owner' role
-        const { error: collaboratorError } = await supabase
-          .from('collaborators')
-          .insert({
-            household_id: householdId,
-            invited_by: user.id,
-            user_id: user.id,
-            role: 'parent'
-          });
-
-        if (collaboratorError) throw collaboratorError;
+        throw new Error('No household found - please refresh the page');
       }
 
       const { error } = await supabase.from('activities').insert({
