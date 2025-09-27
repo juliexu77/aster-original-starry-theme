@@ -16,37 +16,59 @@ export const InlineInsights = ({ activities }: InlineInsightsProps) => {
     const feeds = todaysActivities.filter(a => a.type === "feed");
     const naps = todaysActivities.filter(a => a.type === "nap");
     
-    // Calculate total feed volume
-    let totalVolume = 0;
-    feeds.forEach(feed => {
-      if (feed.details?.quantity) {
-        const quantity = parseFloat(feed.details.quantity.replace(/[^\d.]/g, ''));
-        if (!isNaN(quantity)) {
-          totalVolume += quantity;
-        }
-      }
-    });
+// Calculate total feed volume
+let totalVolume = 0;
+feeds.forEach(feed => {
+  if (feed.details?.quantity) {
+    const quantity = parseFloat(String(feed.details.quantity).replace(/[^\d.]/g, ''));
+    if (!isNaN(quantity)) totalVolume += quantity;
+  }
+});
 
-    // Calculate total nap time (simplified)
-    const totalNapMinutes = naps.length * 90; // Assume 1.5h average per nap
-    const napHours = Math.floor(totalNapMinutes / 60);
-    const napMins = totalNapMinutes % 60;
+// Helper to parse time and compute minutes
+const timeToMinutes = (timeStr: string) => {
+  const [time, period] = timeStr.split(' ');
+  const [hours, minutes] = time.split(':').map(Number);
+  let m = (hours % 12) * 60 + minutes;
+  if (period === 'PM' && hours !== 12) m += 12 * 60;
+  if (period === 'AM' && hours === 12) m = minutes;
+  return m;
+};
 
-    // Time since last feed
-    const lastFeed = feeds[0]; // Assuming activities are sorted by time
-    let timeSinceLastFeed = "";
-    if (lastFeed) {
-      // This is simplified - in a real app you'd calculate actual time difference
-      timeSinceLastFeed = "2h 15m ago";
-    }
+// Calculate total nap time from actual start/end
+let totalNapMinutes = 0;
+naps.forEach(nap => {
+  const start = nap.details?.startTime;
+  const end = nap.details?.endTime;
+  if (start && end) {
+    let diff = timeToMinutes(end) - timeToMinutes(start);
+    if (diff < 0) diff += 24 * 60; // handle wrap
+    totalNapMinutes += diff;
+  }
+});
+const napHours = Math.floor(totalNapMinutes / 60);
+const napMins = totalNapMinutes % 60;
 
-    return {
-      totalFeeds: feeds.length,
-      totalVolume: totalVolume > 0 ? totalVolume : null,
-      totalNapTime: totalNapMinutes > 0 ? `${napHours}h${napMins > 0 ? ` ${napMins}m` : ''}` : null,
-      timeSinceLastFeed,
-      hasActivities: todaysActivities.length > 0
-    };
+// Time since last feed
+let timeSinceLastFeed = "";
+if (feeds.length > 0) {
+  const lastFeed = feeds.slice().sort((a, b) => timeToMinutes(b.time) - timeToMinutes(a.time))[0];
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  let diff = nowMinutes - timeToMinutes(lastFeed.time);
+  if (diff < 0) diff += 24 * 60;
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  timeSinceLastFeed = `${h > 0 ? `${h}h ` : ''}${m}m ago`;
+}
+
+return {
+  totalFeeds: feeds.length,
+  totalVolume: totalVolume > 0 ? Math.round(totalVolume * 10) / 10 : null,
+  totalNapTime: totalNapMinutes > 0 ? `${napHours}h${napMins > 0 ? ` ${napMins}m` : ''}` : null,
+  timeSinceLastFeed,
+  hasActivities: todaysActivities.length > 0
+};
   };
 
   const stats = getTodaysStats();

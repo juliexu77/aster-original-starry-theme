@@ -68,8 +68,17 @@ const Index = () => {
       else {
         setHasProfile(false);
       }
-    }
+}
   }, [user, loading, profileLoading, dbBabyProfile]);
+
+  // Clear stale local profile if no user
+  useEffect(() => {
+    if (!user) {
+      localStorage.removeItem('babyProfile');
+      localStorage.removeItem('babyProfileCompleted');
+      localStorage.removeItem('isCollaborator');
+    }
+  }, [user]);
 
   const handleProfileComplete = (profile: { name: string; birthday: string }) => {
     setBabyProfile(profile);
@@ -198,8 +207,8 @@ const Index = () => {
             </div>
           </div>
         );
-      case "timeline":
-        return <InsightsTab activities={activities} />;
+case "insights":
+  return <InsightsTab activities={activities} />;
       case "trends":
         return (
           <div className="space-y-6">

@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Activity } from "./ActivityCard";
-import { Clock, Baby, Moon, Palette } from "lucide-react";
+import { Clock, Baby, Moon, Palette, Info } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
@@ -186,61 +188,82 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     };
   };
 
-  const nextActivity = predictNextActivity();
+const nextActivity = predictNextActivity();
+const [open, setOpen] = useState(false);
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case "feed": return <Baby className="h-5 w-5" />;
-      case "nap": return <Moon className="h-5 w-5" />;
-      case "diaper": return <Palette className="h-5 w-5" />;
-      default: return <Clock className="h-5 w-5" />;
-    }
-  };
+const getActivityIcon = (type: string) => {
+  switch (type) {
+    case "feed": return <Baby className="h-5 w-5" />;
+    case "nap": return <Moon className="h-5 w-5" />;
+    case "diaper": return <Palette className="h-5 w-5" />;
+    default: return <Clock className="h-5 w-5" />;
+  }
+};
 
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case "feed": return "text-pink-600 bg-pink-50";
-      case "nap": return "text-blue-600 bg-blue-50";
-      case "diaper": return "text-amber-600 bg-amber-50";
-      case "insufficient_data": return "text-muted-foreground bg-muted/30";
-      default: return "text-gray-600 bg-gray-50";
-    }
-  };
+const getActivityColor = (type: string) => {
+  switch (type) {
+    case "feed": return "text-pink-600 bg-pink-50";
+    case "nap": return "text-blue-600 bg-blue-50";
+    case "diaper": return "text-amber-600 bg-amber-50";
+    case "insufficient_data": return "text-muted-foreground bg-muted/30";
+    default: return "text-gray-600 bg-gray-50";
+  }
+};
 
-  return (
-    <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-      <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-5 h-5 text-muted-foreground" />
-        <h3 className="text-lg font-serif font-medium text-foreground">
-          Next Action
-        </h3>
+return (
+  <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+    <div className="flex items-center gap-2 mb-4">
+      <Clock className="w-5 h-5 text-muted-foreground" />
+      <h3 className="text-lg font-serif font-medium text-foreground">
+        Next Action
+      </h3>
+    </div>
+    
+    <div
+      className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)} cursor-pointer`}
+      onClick={() => setOpen(true)}
+      role="button"
+      aria-label="See why this prediction was made"
+    >
+      <div className="flex-shrink-0">
+        {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
       </div>
-      
-      <div className={`flex items-center gap-4 p-4 rounded-lg ${getActivityColor(nextActivity.type)}`}>
-        <div className="flex-shrink-0">
-          {nextActivity.type === "insufficient_data" ? <Clock className="h-5 w-5" /> : getActivityIcon(nextActivity.type)}
-        </div>
-        <div className="flex-1">
-          <h4 className="font-medium text-foreground capitalize mb-1">
-            {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
-          </h4>
-          {nextActivity.type !== "insufficient_data" && (
-            <>
-              <p className="text-sm text-muted-foreground mb-1">
-                Suggested time: {nextActivity.suggestedTime}
+      <div className="flex-1">
+        <h4 className="font-medium text-foreground capitalize mb-1">
+          {nextActivity.type === "insufficient_data" ? "Gathering Data" : nextActivity.type}
+        </h4>
+        {nextActivity.type !== "insufficient_data" && (
+          <>
+            <p className="text-sm text-muted-foreground mb-1">
+              Suggested time: {nextActivity.suggestedTime}
+            </p>
+            {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
+              <p className="text-sm text-muted-foreground mb-2">
+                Anticipated: {nextActivity.anticipatedTime}
               </p>
-              {nextActivity.anticipatedTime && nextActivity.anticipatedTime !== nextActivity.suggestedTime && (
-                <p className="text-sm text-muted-foreground mb-2">
-                  Anticipated: {nextActivity.anticipatedTime}
-                </p>
-              )}
-            </>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {nextActivity.reason}
+            )}
+          </>
+        )}
+        <p className="text-xs text-muted-foreground">
+          {nextActivity.reason}
+        </p>
+      </div>
+      <Info className="h-4 w-4 opacity-70" />
+    </div>
+
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Why this prediction?</DialogTitle>
+        </DialogHeader>
+        <div className="text-sm text-muted-foreground space-y-2">
+          <p>{nextActivity.reason}</p>
+          <p>
+            We analyze recent feeds and naps to estimate average intervals and suggest the most likely next action and time. The more data you log, the more accurate it gets.
           </p>
         </div>
-      </div>
-    </div>
-  );
+      </DialogContent>
+    </Dialog>
+  </div>
+);
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Delete } from "lucide-react";
@@ -30,12 +30,17 @@ export const NumericKeypad = ({
     return lastQuantity || initialValue;
   };
 
-  // Set initial value when modal opens
-  useState(() => {
-    if (!initialValue) {
+// Set initial value when opened or when initial changes
+useEffect(() => {
+  if (isOpen) {
+    if (initialValue) {
+      setValue(initialValue);
+    } else {
       setValue(getLastFeedAmount());
     }
-  });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [isOpen, initialValue]);
 
   const handleNumber = (num: string) => {
     if (value.length < 6) { // Limit to reasonable length
@@ -82,7 +87,7 @@ export const NumericKeypad = ({
               {value || "0"}
               <button
                 className="text-xl text-muted-foreground ml-2 hover:text-foreground transition-colors border border-muted-foreground/30 rounded px-2 py-1"
-                onClick={() => onUnitChange?.(unit === "oz" ? "ml" : "oz")}
+                onClick={() => { const next = unit === "oz" ? "ml" : "oz"; onUnitChange?.(next); try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} }}
               >
                 {unit === "ml" ? "ml" : unit}
               </button>

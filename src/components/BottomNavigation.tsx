@@ -12,10 +12,10 @@ interface BottomNavigationProps {
 export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addButtonRef }: BottomNavigationProps) => {
   const { t } = useLanguage();
   
-  const leftTabs = [
-    { id: "home", label: t('home'), icon: Home },
-    { id: "timeline", label: t('timeline'), icon: TrendingUp },
-  ];
+const leftTabs = [
+  { id: "home", label: t('home'), icon: Home },
+  { id: "insights", label: "Insights", icon: TrendingUp },
+];
   
   const rightTabs = [
     { id: "trends", label: t('trends'), icon: Calendar },

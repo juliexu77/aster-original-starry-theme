@@ -119,8 +119,18 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
       stats.lastActivity = allActivityTimes[allActivityTimes.length - 1];
     }
 
-    // Mock nap duration calculation
-    stats.totalNapDuration = stats.naps * 1.5; // Average 1.5 hours per nap
+// Real nap duration calculation in hours
+let totalNapMinutes = 0;
+dayActivities.forEach(act => {
+  if (act.type === "nap" && act.details?.startTime && act.details?.endTime) {
+    const start = timeToMinutes(act.details.startTime);
+    const end = timeToMinutes(act.details.endTime);
+    let diff = end - start;
+    if (diff < 0) diff += 24 * 60;
+    totalNapMinutes += diff;
+  }
+});
+stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
 
     return stats;
   };
