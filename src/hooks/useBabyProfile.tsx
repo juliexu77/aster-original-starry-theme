@@ -186,14 +186,20 @@ export function useBabyProfile() {
   };
 
   const generateInviteLink = async (role: 'partner' | 'caregiver' | 'grandparent' = 'caregiver') => {
-    if (!user || !babyProfile) throw new Error('User not authenticated or no profile');
+    if (!user) throw new Error('User not authenticated');
+    
+    // Create baby profile if it doesn't exist
+    let profileToUse = babyProfile;
+    if (!profileToUse) {
+      profileToUse = await createBabyProfile('Baby', undefined);
+    }
 
     try {
       // Check for existing valid invite first
       const { data: existingInvites, error: checkError } = await supabase
         .from('invite_links')
         .select('*')
-        .eq('baby_profile_id', babyProfile.id)
+        .eq('baby_profile_id', profileToUse.id)
         .eq('role', role)
         .eq('created_by', user.id)
         .is('used_at', null)
@@ -229,7 +235,7 @@ export function useBabyProfile() {
       const { data, error } = await supabase
         .from('invite_links')
         .insert({
-          baby_profile_id: babyProfile.id,
+          baby_profile_id: profileToUse.id,
           code,
           role,
           expires_at: expiresAt.toISOString(),

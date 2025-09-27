@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { shareInviteLink, canShare } from "@/utils/nativeShare";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
@@ -27,6 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DatePicker } from "@/components/ui/date-picker";
 import { UserRoleSelector } from "@/components/UserRoleSelector";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
+import { EmailInvite } from "@/components/EmailInvite";
 import { format } from "date-fns";
 
 export const Settings = () => {
@@ -43,6 +45,7 @@ export const Settings = () => {
   const [babyName, setBabyName] = useState(babyProfile?.name || "");
   const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
   const [userRole, setUserRole] = useState<"parent" | "nanny">("parent");
+  const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
 
   // Auto-save user profile changes
@@ -170,14 +173,24 @@ export const Settings = () => {
     try {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
-        await navigator.clipboard.writeText(inviteData.link);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setCurrentInviteLink(inviteData.link);
+        const shared = await shareInviteLink(inviteData.link, babyProfile?.name);
         
-        toast({
-          title: "Invite link copied!",
-          description: "Share this link with your partner or caregiver.",
-        });
+        if (shared) {
+          toast({
+            title: "Invite shared!",
+            description: "Share dialog opened successfully.",
+          });
+        } else {
+          // Fallback to clipboard copy
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          
+          toast({
+            title: "Invite link copied!",
+            description: "Share this link with your partner or caregiver.",
+          });
+        }
       }
     } catch (err) {
       toast({
@@ -401,8 +414,15 @@ export const Settings = () => {
               variant="outline"
             >
               <Share className="w-4 h-4 mr-2" />
-              {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
+              {user ? (copied ? "Link Copied!" : "Share Invite Link") : "Sign In to Share"}
             </Button>
+
+            {user && currentInviteLink && (
+              <EmailInvite 
+                inviteLink={currentInviteLink}
+                babyName={babyProfile?.name}
+              />
+            )}
 
             {user && (
               <Button 
