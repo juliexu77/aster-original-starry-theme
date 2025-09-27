@@ -250,7 +250,10 @@ const Index = () => {
                                 key={activity.id}
                                 activity={activity}
                                 babyName={babyProfile?.name}
-                                onEdit={(activity) => setEditingActivity(activity)}
+                                onEdit={(activity) => {
+                                  console.log('ActivityCard onEdit called with:', activity);
+                                  setEditingActivity(activity);
+                                }}
                                 onDelete={async (activityId) => {
                                   try {
                                     const { error } = await supabase

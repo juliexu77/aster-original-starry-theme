@@ -155,6 +155,7 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   const activityText = getPersonalizedActivityText(activity, babyName);
 
   const handleClick = () => {
+    console.log('ActivityCard handleClick for activity:', activity);
     if (onEdit) {
       onEdit(activity);
     }

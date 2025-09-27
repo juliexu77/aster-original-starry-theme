@@ -61,6 +61,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   // Load last used settings and handle editing
   useEffect(() => {
+    console.log('AddActivityModal useEffect, editingActivity:', editingActivity);
     if (editingActivity) {
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
