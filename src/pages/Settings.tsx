@@ -225,7 +225,7 @@ export const Settings = () => {
   };
 
   const getUserDisplayName = () => {
-    if (!user) return "Guest User";
+    return fullName || user.email?.split('@')[0] || "Unknown User";
     return fullName || user.email?.split('@')[0] || "User";
   };
 
@@ -247,7 +247,7 @@ export const Settings = () => {
             <PhotoUpload
               currentPhotoUrl={userProfile?.photo_url}
               bucketName="baby-photos"
-              folder={user?.id || "guest"}
+              folder={user?.id || "unknown"}
               fallbackIcon={<User className="w-10 h-10 text-muted-foreground" />}
               onPhotoUpdate={handleUserPhotoUpdate}
               size="lg"

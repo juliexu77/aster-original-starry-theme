@@ -50,7 +50,7 @@ const DemoTour = () => {
     },
     {
       title: "Ready to Start?",
-      description: "Sign up to save your data across devices, or continue as a guest.",
+      description: "Sign up to save your data and track your baby's activities.",
       component: "signup",
       action: null
     }
@@ -199,14 +199,12 @@ const DemoTour = () => {
                     <Button 
                       variant="outline"
                       onClick={() => {
-                        localStorage.setItem('skipOnboarding', 'true');
-                        localStorage.setItem('hasSeenDemo', 'true');
-                        navigate('/app');
+                        navigate('/auth');
                       }}
                       className="w-full mb-3"
                     >
                       <Eye className="h-4 w-4 mr-2" />
-                      Continue as Guest
+                      Sign In to Continue
                     </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     Start tracking immediately (data stays on this device)

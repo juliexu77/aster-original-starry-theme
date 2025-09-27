@@ -1,43 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
+import { ActivityDetailModal } from "@/components/ActivityDetailModal";
 import { AddActivityModal } from "@/components/AddActivityModal";
-import { ChatPanel } from "@/components/ChatPanel";
-import { SummaryCards } from "@/components/SummaryCards";
-import { SleepChart } from "@/components/SleepChart";
-import { DailySummary } from "@/components/DailySummary";
-import { TodaysSummary } from "@/components/TodaysSummary";
-import { NextActivityPrediction } from "@/components/NextActivityPrediction";
-import { InviteCollaborator } from "@/components/InviteCollaborator";
-import { InlineInsights } from "@/components/InlineInsights";
-import { InsightsTab } from "@/components/InsightsTab";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { BabyAge } from "@/components/BabyAge";
-import { LanguageToggle } from "@/components/LanguageToggle";
-import { useAuth } from "@/hooks/useAuth";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Calendar, BarChart3, TrendingUp, User, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { offlineSync } from "@/utils/offlineSync";
-import { BabyProfileSetup } from "@/components/BabyProfileSetup";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
-import { useActivities } from "@/hooks/useActivities";
-import { SubtleOnboarding } from "@/components/SubtleOnboarding";
+import { TodaysSummary } from "@/components/TodaysSummary";
+import { YesterdaysSummary } from "@/components/YesterdaysSummary";
+import { InsightsTab } from "@/components/InsightsTab";
 import { Settings } from "@/pages/Settings";
+import { ChatPanel } from "@/components/ChatPanel";
+import { BabyProfileSetup } from "@/components/BabyProfileSetup";
+import { FirstTimeTooltip } from "@/components/FirstTimeTooltip";
+import { NextActivityPrediction } from "@/components/NextActivityPrediction";
+import { DailySummary } from "@/components/DailySummary";
+import { PatternInsights } from "@/components/PatternInsights";
+import { useActivities } from "@/hooks/useActivities";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Plus, MessageCircle, Home, TrendingUp, User } from "lucide-react";
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
-  const { t } = useLanguage();
-  const { babyProfile: dbBabyProfile, loading: profileLoading } = useBabyProfile();
-  const { activities: dbActivities, loading: activitiesLoading, addActivity, updateActivity, deleteActivity } = useActivities();
+  const { user, loading } = useAuth();
+  const { 
+    babyProfile: dbBabyProfile, 
+    loading: profileLoading, 
+    createBabyProfile,
+    refetch: refetchBabyProfile 
+  } = useBabyProfile();
+  const { 
+    activities: dbActivities, 
+    loading: activitiesLoading, 
+    refetch: refetchActivities 
+  } = useActivities();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
-  const [guestActivities, setGuestActivities] = useState<Activity[]>([]);
 
-  // Convert database activities to UI activities, or use guest activities
+  // Convert database activities to UI activities
   const activities: Activity[] = user && dbBabyProfile && dbActivities 
     ? dbActivities.map(dbActivity => ({
         id: dbActivity.id,
@@ -49,44 +51,36 @@ const Index = () => {
         }),
         details: dbActivity.details
       }))
-    : guestActivities;
+    : [];
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [showAddActivity, setShowAddActivity] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Check for baby profile - prioritize database for authenticated users
+  // Check user authentication and baby profile status
   useEffect(() => {
-    if (!loading && !profileLoading) {
-      if (user) {
-        // For authenticated users, always use database as source of truth
-        if (dbBabyProfile) {
-          setBabyProfile(dbBabyProfile);
-          setHasProfile(true);
-          // Clear any stale localStorage data
-          localStorage.removeItem('babyProfile');
-          localStorage.removeItem('babyProfileCompleted');
-        } else {
-          // No database profile exists, show setup
-          setHasProfile(false);
-        }
+    if (loading || profileLoading) return;
+
+    if (user) {
+      // For authenticated users, always use database as source of truth
+      if (dbBabyProfile) {
+        setBabyProfile(dbBabyProfile);
+        setHasProfile(true);
+        // Clear any stale localStorage data
+        localStorage.removeItem('babyProfile');
+        localStorage.removeItem('babyProfileCompleted');
       } else {
-        // For guest users, use localStorage
-        const profileCompleted = localStorage.getItem('babyProfileCompleted');
-        const savedProfile = localStorage.getItem('babyProfile');
-        
-        if (profileCompleted && savedProfile) {
-          setBabyProfile(JSON.parse(savedProfile));
-          setHasProfile(true);
-        } else {
-          setHasProfile(false);
-        }
+        // No database profile exists, show setup
+        setHasProfile(false);
       }
+    } else {
+      // Redirect unauthenticated users to auth
+      navigate('/auth');
+      return;
     }
-  }, [user, loading, profileLoading, dbBabyProfile]);
+  }, [user, loading, profileLoading, dbBabyProfile, navigate]);
 
   // Clear stale local profile if no user
   useEffect(() => {
@@ -98,297 +92,189 @@ const Index = () => {
   }, [user]);
 
   const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
-    // This is a fallback handler - most users should go through /baby-setup
-    // Just store locally and set state
-    localStorage.setItem("babyProfile", JSON.stringify(profile));
-    localStorage.setItem("babyProfileCompleted", "true");
-    setBabyProfile(profile);
-    setHasProfile(true);
+    // This should not be used anymore - redirect to proper baby setup
+    navigate('/baby-setup');
   };
 
-  // First-time tooltip: show over + button after short delay - clear for testing
+  // First-time tooltip: show over + button after short delay
   useEffect(() => {
-    // Clear the existing localStorage item to show new onboarding
-    localStorage.removeItem('hasSeenAddActivityTooltip');
-    
-    const seen = localStorage.getItem('hasSeenAddActivityTooltip');
-    if (!seen) {
-      const t = setTimeout(() => setShowTooltip(true), 900);
-      return () => clearTimeout(t);
+    if (hasProfile && activities.length === 0) {
+      const timer = setTimeout(() => {
+        const hasSeenTooltip = localStorage.getItem('hasSeenAddActivityTooltip');
+        if (!hasSeenTooltip) {
+          setShowTooltip(true);
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [hasProfile, activities.length]);
 
-  // Load guest activities from localStorage
-  useEffect(() => {
-    if (user && dbBabyProfile) return; // Don't load guest activities if authenticated
-    
-    const initialActivities = localStorage.getItem('initialActivities');
-    if (initialActivities) {
-      try {
-        const parsed = JSON.parse(initialActivities);
-        setGuestActivities(parsed);
-      } catch (error) {
-        console.error('Error parsing initial activities:', error);
-      }
+  const addActivity = async (type: string, details: any = {}) => {
+    if (!user || !babyProfile) {
+      console.error('User or baby profile not available');
+      return;
     }
-  }, [user, dbBabyProfile]);
 
-  // Migrate guest activities to database when user first logs in
-  useEffect(() => {
-    if (!user || !dbBabyProfile || dbActivities.length > 0) return;
-    
-    const initialActivities = localStorage.getItem('initialActivities');
-    if (initialActivities) {
-      try {
-        const parsed = JSON.parse(initialActivities);
-        // Migrate each activity to the database
-        parsed.forEach(async (activity: Activity) => {
-          await addActivity({
-            type: activity.type as 'feed' | 'diaper' | 'nap' | 'note',
-            time: activity.time,
-            details: activity.details
-          });
-        });
-        localStorage.removeItem('initialActivities'); // Remove after migrating
-        setGuestActivities([]); // Clear guest activities
-      } catch (error) {
-        console.error('Error migrating initial activities:', error);
-      }
+    try {
+      const { error } = await supabase.from('activities').insert({
+        baby_profile_id: (babyProfile as any).id,
+        type,
+        logged_at: new Date().toISOString(),
+        details,
+        created_by: user.id
+      });
+
+      if (error) throw error;
+
+      // Refetch activities to update the list
+      refetchActivities();
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      toast({
+        title: "Error adding activity",
+        description: "Please try again.",
+        variant: "destructive"
+      });
     }
-  }, [user, dbBabyProfile, dbActivities, addActivity]);
+  };
 
-  if (loading || profileLoading || activitiesLoading) {
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "insights":
+        return <InsightsTab activities={activities} />;
+      case "settings":
+        return <Settings />;
+      default:
+        return (
+          <>
+            <div className="px-4 py-2 space-y-4">
+              <TodaysSummary activities={activities} />
+              <YesterdaysSummary activities={activities} />
+              <NextActivityPrediction activities={activities} />
+              <DailySummary activities={activities} date={new Date().toISOString().split('T')[0]} />
+              <PatternInsights activities={activities} />
+            </div>
+
+            <div className="px-4 space-y-3 pb-20">
+              {activities.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No activities yet. Start by adding your first activity!</p>
+                </div>
+              ) : (
+                activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    onEdit={(activity) => setSelectedActivity(activity)}
+                    onDelete={async (activityId) => {
+                      try {
+                        const { error } = await supabase
+                          .from('activities')
+                          .delete()
+                          .eq('id', activityId);
+                        
+                        if (error) throw error;
+                        refetchActivities();
+                      } catch (error) {
+                        console.error('Error deleting activity:', error);
+                      }
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        );
+    }
+  };
+
+  if (loading || profileLoading || hasProfile === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Show baby profile setup if no profile exists and user is not a collaborator
-  // This is a fallback - most users should go through /baby-setup route
-  if (hasProfile === false && !localStorage.getItem('isCollaborator') && !localStorage.getItem('babyProfileSkipped')) {
-    return <BabyProfileSetup onComplete={handleProfileComplete} />;
+  if (!hasProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <BabyProfileSetup onComplete={handleProfileComplete} />
+      </div>
+    );
   }
 
-  const handleAddActivity = async (newActivity: Omit<Activity, "id">) => {
-    try {
-      // If user is authenticated and has a baby profile, save to database
-      if (user && dbBabyProfile) {
-        await addActivity({
-          type: newActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
-          time: newActivity.time,
-          details: newActivity.details
-        });
-      } else {
-        // For guest users, store locally
-        const activity: Activity = {
-          ...newActivity,
-          id: Date.now().toString(),
-        };
-        setGuestActivities(prev => [activity, ...prev]);
-        
-        // Also store in localStorage for persistence
-        const updatedActivities = [activity, ...guestActivities];
-        localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
-      }
-    } catch (error) {
-      console.error('Error adding activity:', error);
-      // Fallback to guest storage
-      const activity: Activity = {
-        ...newActivity,
-        id: Date.now().toString(),
-      };
-      setGuestActivities(prev => [activity, ...prev]);
-    }
-  };
-
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric", 
-    month: "long",
-    day: "numeric"
-  });
-
-  const getTimeValue = (timeString: string) => {
-    const [time, period] = timeString.split(" ");
-    const [hours, minutes] = time.split(":");
-    let hour24 = parseInt(hours);
-    
-    if (period === "PM" && hour24 !== 12) {
-      hour24 += 12;
-    } else if (period === "AM" && hour24 === 12) {
-      hour24 = 0;
-    }
-    
-    return hour24 * 60 + parseInt(minutes);
-  };
-
-  const sortedActivities = [...activities].sort((a, b) => {
-    return getTimeValue(b.time) - getTimeValue(a.time);
-  });
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "home":
-        return (
-          <div className="space-y-4">
-            {/* Activity Timeline - Priority above fold */}
-            <div className="space-y-2">
-              <h2 className="text-lg font-serif font-medium text-foreground">{t('todaysActivities')}</h2>
-              {sortedActivities.length === 0 ? (
-                <div className="text-center py-12">
-                  <BarChart3 className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-60" />
-                  <p className="text-muted-foreground font-medium mb-1">{t('noActivitiesYet')}</p>
-                  <p className="text-sm text-muted-foreground">{t('tapToAddFirst')}</p>
-                </div>
-              ) : (
-                <div className="space-y-0.5">
-                  {sortedActivities.map((activity) => (
-                    <ActivityCard 
-                      key={activity.id} 
-                      activity={activity}
-                      babyName={babyProfile?.name || "Baby"}
-                      onEdit={(activity) => {
-                        setEditingActivity(activity);
-                        setIsAddModalOpen(true);
-                      }}
-                      onDelete={async (activityId) => {
-                        try {
-                          if (user && dbBabyProfile) {
-                            await deleteActivity(activityId);
-                          } else {
-                            // For guest users, remove from local state and localStorage
-                            const updatedActivities = guestActivities.filter(a => a.id !== activityId);
-                            setGuestActivities(updatedActivities);
-                            localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
-                          }
-                        } catch (error) {
-                          console.error('Error deleting activity:', error);
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Insights and predictions below timeline */}
-            <div className="space-y-4 pt-2">
-              <InlineInsights activities={activities} />
-              <NextActivityPrediction activities={activities} />
-            </div>
-          </div>
-        );
-case "insights":
-  return <InsightsTab activities={activities} />;
-      case "trends":
-        return (
-          <div className="space-y-6">
-            <SleepChart activities={activities} />
-          </div>
-        );
-      case "calendar":
-        return (
-          <div className="text-center py-16">
-            <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-60" />
-              <p className="text-muted-foreground font-medium mb-1">{t('calendar')}</p>
-              <p className="text-sm text-muted-foreground">{t('comingSoon')}</p>
-          </div>
-        );
-      case "settings":
-        return <Settings />;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background font-sans pb-20 overflow-y-auto">
-      {/* Offline Indicator */}
-      <OfflineIndicator />
-      
-      {/* Header */}
-      <div className="bg-gradient-primary px-6 py-4 text-white relative">
-        <div className="max-w-md mx-auto">
-          {activeTab === "home" && (
-            <>
-              {(user || babyProfile) && <BabyAge />}
-              <div className="flex items-center gap-2 text-white/90">
-                <Calendar className="h-4 w-4" />
-                <p className="text-sm font-medium">{today}</p>
-              </div>
-            </>
-          )}
+    <div className="min-h-screen bg-background pb-16">
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-xl font-semibold">
+            {babyProfile?.name}'s Day
+          </h1>
+          <button
+            onClick={() => setIsChatOpen(true)}
+            className="p-2 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <MessageCircle className="h-5 w-5" />
+          </button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-md mx-auto px-6 py-8">
-        {renderContent()}
+      {renderTabContent()}
+
+      {/* Floating Add Button */}
+      <div className="fixed bottom-20 right-4 z-20">
+        <div className="relative">
+          <button
+            onClick={() => setShowAddActivity(true)}
+            className="w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-all duration-200 flex items-center justify-center hover:scale-110"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+          <FirstTimeTooltip 
+            target={null}
+            onDismiss={() => {
+              setShowTooltip(false);
+              localStorage.setItem('hasSeenAddActivityTooltip', 'true');
+            }}
+          />
+        </div>
       </div>
 
-      {/* Add Activity Modal - Don't show fixed button since we have bottom nav */}
-      <AddActivityModal 
-        onAddActivity={handleAddActivity} 
-        isOpen={isAddModalOpen} 
-        onClose={() => {
-          setIsAddModalOpen(false);
-          setEditingActivity(null);
-        }}
-        editingActivity={editingActivity}
-        onEditActivity={async (updatedActivity) => {
-          try {
-            if (user && dbBabyProfile) {
-              await updateActivity(updatedActivity.id, {
-                type: updatedActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
-                logged_at: new Date().toISOString(), // Use current time for simplicity
-                details: updatedActivity.details
-              });
-            } else {
-              // For guest users, update local state and localStorage
-              const updatedActivities = guestActivities.map(a => 
-                a.id === updatedActivity.id ? updatedActivity : a
-              );
-              setGuestActivities(updatedActivities);
-              localStorage.setItem('initialActivities', JSON.stringify(updatedActivities));
-            }
-            setEditingActivity(null);
-            setIsAddModalOpen(false);
-          } catch (error) {
-            console.error('Error updating activity:', error);
-          }
-        }}
+      <BottomNavigation 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+        onAddActivity={() => setShowAddActivity(true)}
       />
 
-      {/* Chat Panel - Don't show fixed button since we have bottom nav */}
-      <ChatPanel 
+      {/* Chat Panel */}
+      <ChatPanel
         activities={activities}
         isOpen={isChatOpen}
         onToggle={() => setIsChatOpen(!isChatOpen)}
       />
 
-      {/* Subtle onboarding guidance */}
-      {showTooltip && addButtonRef.current && (
-        <SubtleOnboarding 
-          target={addButtonRef.current}
-          onDismiss={() => { setShowTooltip(false); localStorage.setItem('hasSeenAddActivityTooltip', 'true'); }}
+      {/* Add Activity Modal */}
+      {showAddActivity && (
+        <AddActivityModal
+          onAddActivity={(activity) => {
+            addActivity(activity.type, activity.details);
+            setShowAddActivity(false);
+          }}
         />
       )}
 
-      {/* Bottom Navigation */}
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab}
-        onAddActivity={() => {
-          setEditingActivity(null);
-          setIsAddModalOpen(true);
-        }}
-        addButtonRef={addButtonRef}
-      />
+      {/* Activity Detail Modal */}
+      {selectedActivity && (
+        <ActivityDetailModal
+          activity={selectedActivity}
+          isOpen={!!selectedActivity}
+          onClose={() => setSelectedActivity(null)}
+        />
+      )}
     </div>
   );
 };

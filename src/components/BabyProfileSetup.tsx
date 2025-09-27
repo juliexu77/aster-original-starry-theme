@@ -62,14 +62,11 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
       onComplete(profile);
     } catch (error) {
       console.error('Error creating baby profile:', error);
-      // Fallback to local storage even for authenticated users
-      const profile = {
-        name: babyName.trim(),
-        birthday: birthday,
-      };
-      localStorage.setItem('babyProfile', JSON.stringify(profile));
-      localStorage.setItem('babyProfileCompleted', 'true');
-      onComplete(profile);
+      toast({
+        title: "Error creating profile",
+        description: "Please try again or contact support.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -89,19 +86,6 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
           <p className="text-muted-foreground text-sm">
             {t('personalizeExperience')}
           </p>
-          
-          {/* Skip option */}
-          <div className="text-center mt-4">
-            <button
-              onClick={() => {
-                localStorage.setItem('babyProfileSkipped', 'true');
-                onComplete({ name: 'Baby', birthday: '' });
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground underline"
-            >
-              {t('skipForNow')}
-            </button>
-          </div>
         </div>
 
         {/* Setup Form */}

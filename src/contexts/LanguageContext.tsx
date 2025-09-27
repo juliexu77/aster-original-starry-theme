@@ -27,7 +27,6 @@ const translations = {
     enterPassword: "Enter password",
     createAccount: "Create account",
     signInWithGoogle: "Sign in with Google",
-    continueAsGuest: "Continue as Guest",
     tagline: "Track your little one's precious moments",
     
     // Main app
@@ -118,7 +117,6 @@ const translations = {
     enterPassword: "输入密码",
     createAccount: "创建账户",
     signInWithGoogle: "使用Google登录",
-    continueAsGuest: "游客继续",
     tagline: "记录宝宝珍贵的每一刻",
     
     // Main app
