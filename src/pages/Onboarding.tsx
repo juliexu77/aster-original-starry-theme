@@ -30,10 +30,10 @@ const Onboarding = () => {
 
           {/* Mission Statement */}
           <div className="space-y-6">
-            <h1 className="text-3xl font-serif font-semibold text-foreground leading-tight">
+            <h1 className="text-2xl font-serif font-medium text-foreground leading-tight">
               {t('welcomeToApp')}
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed">
+            <p className="text-base text-muted-foreground leading-relaxed">
               Copilot for your baby's day. Track with all your household caregivers so you know how your baby is doing even when you aren't there.
             </p>
           </div>
