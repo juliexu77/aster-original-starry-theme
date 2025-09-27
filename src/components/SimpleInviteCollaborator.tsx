@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus, Share } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useNavigate } from "react-router-dom";
 
 export const SimpleInviteCollaborator = () => {
   const { user } = useAuth();
+  const { generateInviteLink } = useBabyProfile();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
@@ -18,13 +20,11 @@ export const SimpleInviteCollaborator = () => {
       return;
     }
 
-    // Generate a unique invite code
-    const inviteCode = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    const baseUrl = window.location.origin;
-    const link = `${baseUrl}/invite?code=${inviteCode}`;
-    
     try {
-      await navigator.clipboard.writeText(link);
+      // Use the proper generateInviteLink function from useBabyProfile
+      const inviteData = await generateInviteLink();
+      
+      await navigator.clipboard.writeText(inviteData.link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       
@@ -34,7 +34,7 @@ export const SimpleInviteCollaborator = () => {
       });
     } catch (err) {
       toast({
-        title: "Failed to copy",
+        title: "Failed to create invite",
         description: "Please try again.",
         variant: "destructive",
       });

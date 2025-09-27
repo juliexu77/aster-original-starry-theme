@@ -38,6 +38,7 @@ const Index = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -175,8 +176,8 @@ const Index = () => {
                       activity={activity}
                       babyName={babyProfile?.name || "Baby"}
                       onEdit={(activity) => {
-                        // TODO: Implement edit functionality
-                        console.log('Edit activity:', activity);
+                        setEditingActivity(activity);
+                        setIsAddModalOpen(true);
                       }}
                       onDelete={(activityId) => {
                         const updatedActivities = activities.filter(a => a.id !== activityId);
@@ -254,7 +255,21 @@ const Index = () => {
       <AddActivityModal 
         onAddActivity={handleAddActivity} 
         isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setEditingActivity(null);
+        }}
+        editingActivity={editingActivity}
+        onEditActivity={(updatedActivity) => {
+          const updatedActivities = activities.map(a => 
+            a.id === updatedActivity.id ? updatedActivity : a
+          );
+          setActivities(updatedActivities);
+          offlineSync.clearOfflineData();
+          updatedActivities.forEach(act => offlineSync.storeOfflineActivity(act));
+          setEditingActivity(null);
+          setIsAddModalOpen(false);
+        }}
       />
 
       {/* Chat Panel - Don't show fixed button since we have bottom nav */}
@@ -276,7 +291,10 @@ const Index = () => {
       <BottomNavigation 
         activeTab={activeTab} 
         onTabChange={setActiveTab}
-        onAddActivity={() => setIsAddModalOpen(true)}
+        onAddActivity={() => {
+          setEditingActivity(null);
+          setIsAddModalOpen(true);
+        }}
         addButtonRef={addButtonRef}
       />
     </div>

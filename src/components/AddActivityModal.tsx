@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { FirstTimeTooltip } from "./FirstTimeTooltip";
 
@@ -16,9 +16,11 @@ interface AddActivityModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   showFixedButton?: boolean; // Add prop to control fixed button visibility
+  editingActivity?: Activity | null; // Add editing support
+  onEditActivity?: (activity: Activity) => void;
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity }: AddActivityModalProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
@@ -56,6 +58,48 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [showKeypad, setShowKeypad] = useState(false);
+
+  // Load last used settings and handle editing
+  useEffect(() => {
+    if (editingActivity) {
+      // Populate form with editing activity data
+      setActivityType(editingActivity.type);
+      setTime(editingActivity.time);
+      
+      if (editingActivity.type === "feed") {
+        const details = editingActivity.details;
+        setFeedType(details.feedType || "bottle");
+        setQuantity(details.quantity || "");
+        setUnit(details.unit || "oz");
+        setMinutesLeft(details.minutesLeft || "");
+        setMinutesRight(details.minutesRight || "");
+        setSolidDescription(details.solidDescription || "");
+        setNote(details.note || "");
+      } else if (editingActivity.type === "diaper") {
+        const details = editingActivity.details;
+        setDiaperType(details.diaperType || "wet");
+        setHasLeak(details.hasLeak || false);
+        setHasCream(details.hasCream || false);
+        setNote(details.note || "");
+      } else if (editingActivity.type === "nap") {
+        const details = editingActivity.details;
+        setStartTime(details.startTime || "");
+        setEndTime(details.endTime || "");
+      } else if (editingActivity.type === "note") {
+        setNote(editingActivity.details.note || "");
+      }
+    } else {
+      // Load last used settings for new activities
+      const lastUnit = localStorage.getItem('lastUsedUnit') as "oz" | "ml";
+      const lastQuantity = localStorage.getItem('lastFeedQuantity');
+      if (lastUnit) {
+        setUnit(lastUnit);
+      }
+      if (lastQuantity && feedType === "bottle" && !editingActivity) {
+        setQuantity(lastQuantity);
+      }
+    }
+  }, [editingActivity, feedType]);
 
   const resetForm = () => {
     const now = new Date();
@@ -187,24 +231,41 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       details.photo = photo;
     }
 
-    const newActivity: Omit<Activity, "id"> = {
-      type: activityType as "feed" | "diaper" | "nap" | "note",
-      time: activityType === "nap" ? startTime : time,
-      details,
-    };
+    if (editingActivity && onEditActivity) {
+      // Update existing activity
+      const updatedActivity: Activity = {
+        ...editingActivity,
+        type: activityType as "feed" | "diaper" | "nap" | "note",
+        time: activityType === "nap" ? startTime : time,
+        details,
+      };
+      
+      onEditActivity(updatedActivity);
+      toast({
+        title: "Activity updated!",
+        description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been updated.`,
+      });
+    } else {
+      // Create new activity
+      const newActivity: Omit<Activity, "id"> = {
+        type: activityType as "feed" | "diaper" | "nap" | "note",
+        time: activityType === "nap" ? startTime : time,
+        details,
+      };
 
-    onAddActivity(newActivity);
+      onAddActivity(newActivity);
+      toast({
+        title: "Activity added!",
+        description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been logged.`,
+      });
+    }
+    
     resetForm();
     if (onClose) {
       onClose();
     } else {
       setInternalOpen(false);
     }
-
-    toast({
-      title: "Activity added!",
-      description: `${activityType.charAt(0).toUpperCase() + activityType.slice(1)} has been logged.`,
-    });
   };
 
   const getActivityIcon = (type: string) => {
@@ -233,7 +294,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader className="pb-4">
             <DialogTitle className="text-lg font-medium">
-              Add Activity
+              {editingActivity ? "Edit Activity" : "Add Activity"}
             </DialogTitle>
           </DialogHeader>
           
@@ -269,9 +330,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   <Label className="text-sm font-medium mb-2 block">Type</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { type: "bottle", icon: Coffee, label: "Bottle" },
+                     { type: "bottle", icon: Milk, label: "Bottle" },
                       { type: "nursing", icon: Baby, label: "Nursing" },
-                      { type: "solid", icon: StickyNote, label: "Solid" }
+                      { type: "solid", icon: Carrot, label: "Solid" }
                     ].map(({ type, icon: Icon, label }) => (
                       <Button
                         key={type}

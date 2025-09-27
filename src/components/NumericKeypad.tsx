@@ -71,7 +71,7 @@ export const NumericKeypad = ({
                 className="text-xl text-muted-foreground ml-2 hover:text-foreground transition-colors border border-muted-foreground/30 rounded px-2 py-1"
                 onClick={() => onUnitChange?.(unit === "oz" ? "ml" : "oz")}
               >
-                {unit}
+                {unit === "ml" ? "ml" : unit}
               </button>
             </div>
           </div>

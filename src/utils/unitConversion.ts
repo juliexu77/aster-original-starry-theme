@@ -31,3 +31,7 @@ export const normalizeVolume = (amount: string | number, unit?: 'ml' | 'oz'): { 
 export const formatVolume = (oz: number): string => {
   return `${oz} oz`;
 };
+
+export const formatVolumeUnit = (unit: "ml" | "oz"): string => {
+  return unit === "ml" ? "ml" : "oz";
+};
