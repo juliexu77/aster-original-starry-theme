@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { InputWithStatus } from "@/components/ui/input-with-status";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -26,7 +27,7 @@ import {
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DatePicker } from "@/components/ui/date-picker";
-import { UserRoleSelector } from "@/components/UserRoleSelector";
+import { UserRoleSelectorWithStatus } from "@/components/ui/user-role-selector-with-status";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
 import { format } from "date-fns";
@@ -47,6 +48,12 @@ export const Settings = () => {
   const [userRole, setUserRole] = useState<"parent" | "nanny">("parent");
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
+  
+  // Save status states
+  const [fullNameSaveStatus, setFullNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
+  const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
+  const [babyBirthdaySaveStatus, setBabyBirthdaySaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
+  const [userRoleSaveStatus, setUserRoleSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
 
   // Auto-save user profile changes
   useEffect(() => {
@@ -84,17 +91,22 @@ export const Settings = () => {
   useEffect(() => {
     if (!userProfile || userRole === userProfile.role) return;
     
+    setUserRoleSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         console.log('Updating user role to:', userRole);
         await updateUserProfile({ role: userRole });
+        setUserRoleSaveStatus("saved");
         
-        // Don't redirect or reset anything - just update the role
+        // Clear saved status after 3 seconds
+        setTimeout(() => setUserRoleSaveStatus("unsaved"), 3000);
+        
         toast({
           title: "Role updated",
           description: `Your role has been changed to ${userRole}`,
         });
       } catch (error) {
+        setUserRoleSaveStatus("error");
         console.error('Error updating user role:', error);
         // Revert the role change if it failed
         setUserRole(userProfile.role);
@@ -113,10 +125,16 @@ export const Settings = () => {
   useEffect(() => {
     if (!babyProfile || !babyName || babyName === babyProfile.name) return;
     
+    setBabyNameSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateBabyProfile({ name: babyName });
+        setBabyNameSaveStatus("saved");
+        
+        // Clear saved status after 3 seconds
+        setTimeout(() => setBabyNameSaveStatus("unsaved"), 3000);
       } catch (error) {
+        setBabyNameSaveStatus("error");
         console.error('Error updating baby name:', error);
       }
     }, 1000);
@@ -127,10 +145,16 @@ export const Settings = () => {
   useEffect(() => {
     if (!babyProfile || babyBirthday === babyProfile.birthday) return;
     
+    setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateBabyProfile({ birthday: babyBirthday });
+        setBabyBirthdaySaveStatus("saved");
+        
+        // Clear saved status after 3 seconds
+        setTimeout(() => setBabyBirthdaySaveStatus("unsaved"), 3000);
       } catch (error) {
+        setBabyBirthdaySaveStatus("error");
         console.error('Error updating baby birthday:', error);
       }
     }, 1000);
@@ -301,12 +325,14 @@ export const Settings = () => {
                 <Label htmlFor="fullName" className="text-sm text-muted-foreground">
                   Full Name
                 </Label>
-                <Input
+                <InputWithStatus
                   id="fullName"
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onValueChange={setFullName}
                   placeholder="Enter your full name"
                   className="mt-2 border-none bg-background"
+                  saveStatus={fullNameSaveStatus}
+                  errorMessage="Failed to save name"
                 />
               </div>
               
@@ -322,9 +348,11 @@ export const Settings = () => {
               <div>
                 <Label className="text-sm text-muted-foreground">You are</Label>
                 <div className="mt-2">
-                  <UserRoleSelector 
+                  <UserRoleSelectorWithStatus
                     value={userRole} 
                     onChange={setUserRole}
+                    saveStatus={userRoleSaveStatus}
+                    errorMessage="Failed to update role"
                   />
                 </div>
               </div>
@@ -374,12 +402,14 @@ export const Settings = () => {
               <Label htmlFor="babyName" className="text-sm text-muted-foreground">
                 Baby's Name
               </Label>
-              <Input
+              <InputWithStatus
                 id="babyName"
                 value={babyName}
-                onChange={(e) => setBabyName(e.target.value)}
+                onValueChange={setBabyName}
                 placeholder="Enter baby's name"
                 className="mt-2 border-none bg-background"
+                saveStatus={babyNameSaveStatus}
+                errorMessage="Failed to save baby name"
               />
             </div>
 

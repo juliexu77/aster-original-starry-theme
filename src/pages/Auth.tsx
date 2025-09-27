@@ -27,7 +27,7 @@ const Auth = () => {
         if (redirectTo) {
           navigate(redirectTo);
         } else {
-          navigate("/baby-setup");
+          navigate("/baby-setup"); // This will handle the multi-step onboarding
         }
       }
     });
@@ -38,7 +38,7 @@ const Auth = () => {
         if (redirectTo) {
           navigate(redirectTo);
         } else {
-          navigate("/baby-setup");
+          navigate("/baby-setup"); // This will handle the multi-step onboarding
         }
       }
     });

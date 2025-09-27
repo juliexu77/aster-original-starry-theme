@@ -1,15 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { BabyProfileSetup } from "@/components/BabyProfileSetup";
+import { MultiStepOnboarding } from "@/components/MultiStepOnboarding";
 import { useBabyProfile } from "@/hooks/useBabyProfile";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { babyProfile, loading: profileLoading, createBabyProfile } = useBabyProfile();
-  const { toast } = useToast();
+  const { babyProfile, loading: profileLoading } = useBabyProfile();
 
   // Check if user already has baby profile, skip setup
   useEffect(() => {
@@ -30,25 +28,9 @@ const BabySetup = () => {
     // Otherwise show baby setup
   }, [user, babyProfile, authLoading, profileLoading, navigate]);
 
-  const handleProfileComplete = async (profile: { name: string; birthday?: string }) => {
-    try {
-      if (!user) {
-        throw new Error('Authentication required to create baby profile');
-      }
-
-      // For authenticated users, create database profile
-      await createBabyProfile(profile.name, profile.birthday);
-      
-      // Navigate to main app
-      navigate("/app");
-    } catch (error) {
-      console.error('Error creating baby profile:', error);
-      toast({
-        title: "Error creating profile",
-        description: "Please try again or contact support.",
-        variant: "destructive"
-      });
-    }
+  const handleOnboardingComplete = () => {
+    // Navigate to main app after completion
+    navigate("/app");
   };
 
   if (authLoading || profileLoading) {
@@ -63,10 +45,8 @@ const BabySetup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <BabyProfileSetup onComplete={handleProfileComplete} />
-      </div>
+    <div className="min-h-screen bg-background">
+      <MultiStepOnboarding onComplete={handleOnboardingComplete} />
     </div>
   );
 };
