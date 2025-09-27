@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot } from "lucide-react";
+import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Coffee, Clock, Milk, Carrot, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface AddActivityModalProps {
@@ -300,9 +300,26 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         )}
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader className="pb-4">
-            <DialogTitle className="text-lg font-medium">
-              {editingActivity ? "Edit Activity" : "Add Activity"}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-lg font-medium">
+                {editingActivity ? "Edit Activity" : "Add Activity"}
+              </DialogTitle>
+              {/* Delete icon - only show when editing */}
+              {editingActivity && onDeleteActivity && (
+                <button
+                  onClick={() => {
+                    if (editingActivity && onDeleteActivity) {
+                      onDeleteActivity(editingActivity.id);
+                      if (onClose) onClose();
+                    }
+                  }}
+                  className="p-2 hover:bg-destructive/10 rounded-full text-destructive hover:text-destructive/80 transition-colors"
+                  title="Delete activity"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -626,22 +643,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               >
                 Cancel
               </Button>
-              
-              {/* Delete button - only show when editing */}
-              {editingActivity && onDeleteActivity && (
-                <Button 
-                  variant="destructive"
-                  onClick={() => {
-                    if (editingActivity && onDeleteActivity) {
-                      onDeleteActivity(editingActivity.id);
-                      if (onClose) onClose();
-                    }
-                  }}
-                  className="h-12 px-6"
-                >
-                  Delete
-                </Button>
-              )}
               
               <Button 
                 onClick={handleSubmit} 
