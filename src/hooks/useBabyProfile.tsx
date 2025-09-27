@@ -184,7 +184,34 @@ export function useBabyProfile() {
     if (!user || !babyProfile) throw new Error('User not authenticated or no profile');
 
     try {
-      // Generate invite code
+      // Check for existing valid invite first
+      const { data: existingInvites, error: checkError } = await supabase
+        .from('invite_links')
+        .select('*')
+        .eq('baby_profile_id', babyProfile.id)
+        .eq('role', role)
+        .eq('created_by', user.id)
+        .is('used_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (checkError) throw checkError;
+
+      // If valid invite exists, return it
+      if (existingInvites && existingInvites.length > 0) {
+        const existingInvite = existingInvites[0];
+        const inviteLink = `${window.location.origin}/invite/${existingInvite.code}`;
+        
+        toast({
+          title: "Existing invite link copied!",
+          description: "Using your previously created invite link."
+        });
+
+        return { ...existingInvite, link: inviteLink };
+      }
+
+      // Generate new invite code if none exists
       const { data: codeData, error: codeError } = await supabase
         .rpc('generate_invite_code');
 

@@ -12,6 +12,7 @@ export const SimpleInviteCollaborator = () => {
   const { generateInviteLink } = useBabyProfile();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleInviteClick = async () => {
     if (!user) {
@@ -20,6 +21,9 @@ export const SimpleInviteCollaborator = () => {
       return;
     }
 
+    if (loading) return; // Prevent multiple clicks
+
+    setLoading(true);
     try {
       // Use the proper generateInviteLink function from useBabyProfile
       const inviteData = await generateInviteLink();
@@ -38,6 +42,8 @@ export const SimpleInviteCollaborator = () => {
         description: "Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,10 +62,11 @@ export const SimpleInviteCollaborator = () => {
 
         <Button 
           onClick={handleInviteClick}
+          disabled={loading}
           className="w-full"
         >
           <Share className="h-4 w-4 mr-2" />
-          {user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
+          {loading ? "Generating..." : user ? (copied ? "Link Copied!" : "Copy Invite Link") : "Sign In to Share"}
         </Button>
       </CardContent>
     </Card>
