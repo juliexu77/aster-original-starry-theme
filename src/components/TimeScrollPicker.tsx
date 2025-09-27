@@ -169,12 +169,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
       
-      {/* Date Selector */}
-      <div className="border rounded-lg p-3 bg-background">
-        <div className="text-xs text-muted-foreground mb-2 text-center">Date</div>
+      {/* Combined Date and Time Selector */}
+      <div className="flex gap-2 border rounded-lg p-3 items-center justify-center bg-background">
+        {/* Date - Scrollable */}
         <div 
           ref={dateRef}
-          className="h-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-10 w-20 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
             if (dateRef.current) {
               const itemHeight = 40;
@@ -206,10 +206,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Time Selector */}
-      <div className="flex gap-2 border rounded-lg p-3 items-center justify-center bg-background">
+        <span className="text-foreground font-medium">-</span>
         {/* Hours - Scrollable */}
         <div 
           ref={hourRef}
