@@ -207,6 +207,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_accessible_baby_profile_ids: {
+        Args: { _user_id: string }
+        Returns: {
+          baby_profile_id: string
+        }[]
+      }
+      user_has_baby_profile_access: {
+        Args: { _baby_profile_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
