@@ -21,14 +21,14 @@ const Auth = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/app");
+        navigate("/baby-setup");
       }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/app");
+        navigate("/baby-setup");
       }
     });
 
@@ -44,7 +44,7 @@ const Auth = () => {
     const password = formData.get("signup-password") as string;
     const fullName = formData.get("full-name") as string;
 
-    const redirectUrl = `${window.location.origin}/app`;
+    const redirectUrl = `${window.location.origin}/baby-setup`;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -76,7 +76,7 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     
-    const redirectUrl = `${window.location.origin}/app`;
+    const redirectUrl = `${window.location.origin}/baby-setup`;
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -295,7 +295,7 @@ const Auth = () => {
                 onClick={() => {
                   localStorage.setItem('skipOnboarding', 'true');
                   localStorage.setItem('hasSeenDemo', 'true');
-                  navigate("/app");
+                  navigate("/baby-setup");
                 }}
                 className="w-full text-muted-foreground hover:text-foreground text-sm font-normal"
               >

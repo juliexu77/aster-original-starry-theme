@@ -12,31 +12,15 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
 
     const isGuest = localStorage.getItem('skipOnboarding') === 'true';
 
-    // If authenticated, keep user in the app
-    if (user) {
-      if (location.pathname === "/" || location.pathname.startsWith("/onboarding") || location.pathname.startsWith("/auth")) {
-        navigate("/app", { replace: true });
-      }
-      return;
+    // Don't interfere with the natural onboarding flow
+    // Just protect /app route for non-authenticated, non-guest users
+    if (!user && !isGuest && location.pathname.startsWith("/app")) {
+      navigate("/", { replace: true });
     }
 
-    // If not authenticated but is guest, allow app access
-    if (!user && isGuest) {
-      if (location.pathname.startsWith("/auth") || location.pathname.startsWith("/onboarding")) {
-        navigate("/app", { replace: true });
-      }
-      return;
-    }
-
-    // If not authenticated and not guest, block app routes
-    if (!user && !isGuest) {
-      if (location.pathname.startsWith("/app") || location.pathname.startsWith("/baby-setup")) {
-        navigate("/auth", { replace: true });
-      }
-      // Mark demo seen only on true landing page
-      if (location.pathname === "/" && !localStorage.getItem("hasSeenDemo")) {
-        localStorage.setItem("hasSeenDemo", "true");
-      }
+    // Mark demo seen only on true landing page
+    if (location.pathname === "/" && !localStorage.getItem("hasSeenDemo")) {
+      localStorage.setItem("hasSeenDemo", "true");
     }
   }, [user, loading, location.pathname, navigate]);
 
