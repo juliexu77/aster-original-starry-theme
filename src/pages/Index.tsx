@@ -108,14 +108,43 @@ const Index = () => {
   }, [hasProfile, activities.length]);
 
   const addActivity = async (type: string, details: any = {}) => {
-    if (!user || !household) {
-      console.error('User or household not available');
+    if (!user) {
+      console.error('User not available');
       return;
     }
 
     try {
+      let householdId = household?.id;
+      
+      // If no household exists, create a default one
+      if (!householdId) {
+        const { data: newHousehold, error: householdError } = await supabase
+          .from('households')
+          .insert({
+            name: 'My Household',
+            baby_name: 'Baby',
+            created_by: user.id
+          })
+          .select()
+          .single();
+
+        if (householdError) throw householdError;
+        householdId = newHousehold.id;
+
+        // Add user as collaborator
+        const { error: collaboratorError } = await supabase
+          .from('collaborators')
+          .insert({
+            invited_by: user.id,
+            user_id: user.id,
+            role: 'parent'
+          });
+
+        if (collaboratorError) throw collaboratorError;
+      }
+
       const { error } = await supabase.from('activities').insert({
-        household_id: household.id,
+        household_id: householdId,
         type,
         logged_at: new Date().toISOString(),
         details,
@@ -197,35 +226,13 @@ const Index = () => {
     );
   }
 
-  if (!hasProfile) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="text-center space-y-6 max-w-md">
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold text-foreground">Welcome!</h1>
-            <p className="text-muted-foreground">
-              Let's set up your baby's profile to get started with tracking.
-            </p>
-          </div>
-          <Button 
-            onClick={() => navigate('/app?tab=settings')}
-            size="lg"
-            className="w-full"
-          >
-            <Baby className="w-4 h-4 mr-2" />
-            Set up baby profile
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-16">
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4">
           <h1 className="text-xl font-semibold">
-            {babyProfile?.name}'s Day
+            {babyProfile?.name ? `${babyProfile.name}'s Day` : "Baby Tracker"}
           </h1>
           <button
             onClick={() => setIsChatOpen(true)}
