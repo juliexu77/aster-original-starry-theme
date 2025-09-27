@@ -31,7 +31,7 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
       });
     } else {
       // Fallback for browsers without Web Share API
-      navigator.clipboard.writeText(
+      (navigator as any).clipboard.writeText(
         `Baby's Daily Summary - ${date}\nFeeds: ${feedActivities.length} (${totalOunces}oz)\nNaps: ${napActivities.length}\nDiapers: ${diaperActivities.length}`
       );
     }

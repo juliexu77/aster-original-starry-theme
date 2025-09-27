@@ -28,7 +28,7 @@ export const SimpleInviteCollaborator = () => {
       // Use the proper generateInviteLink function from useBabyProfile
       const inviteData = await generateInviteLink();
       
-      await navigator.clipboard.writeText(inviteData.link);
+      await (navigator as any).clipboard.writeText(inviteData.link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       

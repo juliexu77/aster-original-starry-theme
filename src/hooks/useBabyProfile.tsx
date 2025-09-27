@@ -188,13 +188,13 @@ export function useBabyProfile() {
   const generateInviteLink = async (role: 'partner' | 'caregiver' | 'grandparent' = 'caregiver') => {
     if (!user) throw new Error('User not authenticated');
     
-    // Create baby profile if it doesn't exist
-    let profileToUse = babyProfile;
-    if (!profileToUse) {
-      profileToUse = await createBabyProfile('Baby', undefined);
-    }
-
     try {
+      // Create baby profile if it doesn't exist
+      let profileToUse = babyProfile;
+      if (!profileToUse) {
+        profileToUse = await createBabyProfile('Baby', undefined);
+      }
+
       // Check for existing valid invite first
       const { data: existingInvites, error: checkError } = await supabase
         .from('invite_links')

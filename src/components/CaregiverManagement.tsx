@@ -50,7 +50,7 @@ const handleAddCaregiver = async () => {
     try {
       const inviteData = await generateInviteLink();
       if (inviteData?.link) {
-        await navigator.clipboard.writeText(inviteData.link);
+        await (navigator as any).clipboard.writeText(inviteData.link);
         toast({
           title: "Invite link copied!",
           description: "Share this link with your caregiver."
@@ -87,7 +87,7 @@ const handleAddCaregiver = async () => {
         // In a real app, you'd send this via email service
         // For now, we'll copy and show instructions
         const message = `Hi! You've been invited to help track ${babyProfile?.name || "a baby"}'s activities. Click this link to join: ${inviteData.link}`;
-        await navigator.clipboard.writeText(message);
+        await (navigator as any).clipboard.writeText(message);
         
         toast({
           title: "Invite message copied!",

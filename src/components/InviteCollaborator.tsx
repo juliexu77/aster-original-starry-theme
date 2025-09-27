@@ -17,7 +17,7 @@ export const InviteCollaborator = () => {
     const link = `${baseUrl}/invite?code=${inviteCode}`;
     
     try {
-      await navigator.clipboard.writeText(link);
+      await (navigator as any).clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       
@@ -46,7 +46,7 @@ export const InviteCollaborator = () => {
       } catch (err) {
         // User cancelled or sharing failed
         try {
-          await navigator.clipboard.writeText(inviteLink);
+          await (navigator as any).clipboard.writeText(inviteLink);
           toast({
             title: "Link copied!",
             description: "The invite link has been copied to your clipboard.",
@@ -61,7 +61,7 @@ export const InviteCollaborator = () => {
       }
     } else {
       try {
-        await navigator.clipboard.writeText(inviteLink);
+        await (navigator as any).clipboard.writeText(inviteLink);
         toast({
           title: "Link copied!",
           description: "The invite link has been copied to your clipboard.",
@@ -110,7 +110,7 @@ export const InviteCollaborator = () => {
                     className="text-xs"
                   />
                   <Button
-                    onClick={() => navigator.clipboard.writeText(inviteLink)}
+                    onClick={() => (navigator as any).clipboard.writeText(inviteLink)}
                     size="icon"
                     variant="outline"
                   >
