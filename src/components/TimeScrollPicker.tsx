@@ -8,6 +8,8 @@ interface TimeScrollPickerProps {
 }
 
 export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerProps) => {
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  
   const [selectedHour, setSelectedHour] = useState(() => {
     if (value) {
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -50,9 +52,12 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
   const periods = ["AM", "PM"];
 
   useEffect(() => {
-    const timeString = `${selectedHour}:${selectedMinute.toString().padStart(2, '0')} ${selectedPeriod}`;
-    onChange(timeString);
-  }, [selectedHour, selectedMinute, selectedPeriod, onChange]);
+    // Only update the time if user has interacted or if there's no existing value
+    if (hasUserInteracted || !value) {
+      const timeString = `${selectedHour}:${selectedMinute.toString().padStart(2, '0')} ${selectedPeriod}`;
+      onChange(timeString);
+    }
+  }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted, value]);
 
   const scrollToValue = (ref: React.RefObject<HTMLDivElement>, value: number, items: any[]) => {
     if (ref.current) {
@@ -95,6 +100,7 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
       
       const clampedIndex = Math.max(0, Math.min(index, totalItems - 1));
       const actualValue = items[clampedIndex % sectionSize];
+      setHasUserInteracted(true);
       setter(actualValue);
     }
   };
@@ -119,7 +125,10 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                onClick={() => setSelectedHour(hour)}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedHour(hour);
+                }}
               >
                 {hour}
               </div>
@@ -145,7 +154,10 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
                     ? 'text-foreground font-bold' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
-                onClick={() => setSelectedMinute(minute)}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedMinute(minute);
+                }}
               >
                 {minute.toString().padStart(2, '0')}
               </div>
@@ -163,7 +175,10 @@ export const TimeScrollPicker = ({ value, onChange, label }: TimeScrollPickerPro
                   ? 'text-foreground font-bold bg-muted' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               }`}
-              onClick={() => setSelectedPeriod(period as "AM" | "PM")}
+              onClick={() => {
+                setHasUserInteracted(true);
+                setSelectedPeriod(period as "AM" | "PM");
+              }}
             >
               {period}
             </div>
