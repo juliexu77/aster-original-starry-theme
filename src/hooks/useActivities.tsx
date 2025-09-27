@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
-import { useBabyProfile } from "./useBabyProfile";
+import { useHousehold } from "./useHousehold";
 import { useToast } from "./use-toast";
 
 export interface DatabaseActivity {
   id: string;
-  baby_profile_id: string;
+  household_id: string;
   type: 'feed' | 'diaper' | 'nap' | 'note';
   logged_at: string;
   details: {
@@ -44,13 +44,13 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => ({
 
 export function useActivities() {
   const { user } = useAuth();
-  const { babyProfile } = useBabyProfile();
+  const { household } = useHousehold();
   const { toast } = useToast();
   const [activities, setActivities] = useState<DatabaseActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !babyProfile) {
+    if (!user || !household) {
       setLoading(false);
       return;
     }
@@ -66,7 +66,7 @@ export function useActivities() {
           event: '*',
           schema: 'public',
           table: 'activities',
-          filter: `baby_profile_id=eq.${babyProfile.id}`
+          filter: `household_id=eq.${household.id}`
         },
         (payload) => {
           console.log('Activity change:', payload);
@@ -78,10 +78,10 @@ export function useActivities() {
     return () => {
       supabase.removeChannel(activitiesChannel);
     };
-  }, [user, babyProfile]);
+  }, [user, household]);
 
   const fetchActivities = async () => {
-    if (!babyProfile) return;
+    if (!household) return;
 
     try {
       const today = new Date();
@@ -90,7 +90,7 @@ export function useActivities() {
       const { data, error } = await supabase
         .from('activities')
         .select('*')
-        .eq('baby_profile_id', babyProfile.id)
+        .eq('household_id', household.id)
         .gte('logged_at', today.toISOString())
         .order('logged_at', { ascending: false });
 
@@ -114,7 +114,7 @@ export function useActivities() {
     time: string;
     details: any;
   }) => {
-    if (!user || !babyProfile) throw new Error('User not authenticated or no profile');
+    if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
       // Convert time string to timestamp
@@ -131,7 +131,7 @@ export function useActivities() {
       const { data, error } = await supabase
         .from('activities')
         .insert({
-          baby_profile_id: babyProfile.id,
+          household_id: household.id,
           type: activity.type,
           logged_at: loggedAt.toISOString(),
           details: activity.details,

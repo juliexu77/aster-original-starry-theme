@@ -1,78 +1,43 @@
-import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 
 export const BabyAge = () => {
   const { t } = useLanguage();
-  const { babyProfile: dbBabyProfile } = useBabyProfile();
-  const [babyData, setBabyData] = useState<{
-    name: string | null;
-    birthDate: string | null;
-  } | null>(null);
+  const { household } = useHousehold();
 
-  useEffect(() => {
-    // Prioritize database profile (for authenticated users/collaborators)
-    if (dbBabyProfile) {
-      setBabyData({
-        name: dbBabyProfile.name,
-        birthDate: dbBabyProfile.birthday || null,
-      });
-    } else {
-      // Fallback to localStorage (for guest users)
-      const savedProfile = localStorage.getItem('babyProfile');
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        setBabyData({
-          name: profile.name,
-          birthDate: profile.birthday,
-        });
-      }
-    }
-  }, [dbBabyProfile]);
-
-  const calculateAge = (birthDate: string) => {
-    const birth = new Date(birthDate);
+  // Calculate age if birthday exists
+  const calculateAge = (birthday: string) => {
+    const birth = new Date(birthday);
     const today = new Date();
-    const diffTime = Math.abs(today.getTime() - birth.getTime());
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const ageInMs = today.getTime() - birth.getTime();
+    const ageInDays = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 7) {
-      return `${diffDays} day${diffDays !== 1 ? 's' : ''} old`;
-    } else if (diffDays < 30) {
-      const weeks = Math.floor(diffDays / 7);
-      const remainingDays = diffDays % 7;
-      if (remainingDays === 0) {
-        return `${weeks} week${weeks !== 1 ? 's' : ''} old`;
-      }
-      return `${weeks}w ${remainingDays}d old`;
-    } else if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30);
-      const remainingDays = diffDays % 30;
-      if (remainingDays < 7) {
-        return `${months} month${months !== 1 ? 's' : ''} old`;
-      }
-      const weeks = Math.floor(remainingDays / 7);
-      return `${months}m ${weeks}w old`;
+    if (ageInDays < 30) {
+      return `${ageInDays} days old`;
+    } else if (ageInDays < 365) {
+      const months = Math.floor(ageInDays / 30);
+      return `${months} month${months !== 1 ? 's' : ''} old`;
     } else {
-      const years = Math.floor(diffDays / 365);
-      const remainingMonths = Math.floor((diffDays % 365) / 30);
-      if (remainingMonths === 0) {
-        return `${years} year${years !== 1 ? 's' : ''} old`;
-      }
-      return `${years}y ${remainingMonths}m old`;
+      const years = Math.floor(ageInDays / 365);
+      const months = Math.floor((ageInDays % 365) / 30);
+      return `${years} year${years !== 1 ? 's' : ''} ${months > 0 ? `${months} month${months !== 1 ? 's' : ''}` : ''} old`.trim();
     }
   };
 
-  if (!babyData?.birthDate) return null;
+  if (!household || !household.baby_name) {
+    return null;
+  }
 
   return (
-    <div className="text-center mb-4">
-      <h2 className="text-lg font-medium text-white/95 mb-1">
-        {babyData.name || "Baby"}
-      </h2>
-      <p className="text-sm text-white/80 font-medium">
-        {calculateAge(babyData.birthDate)}
-      </p>
+    <div className="text-center">
+      <h1 className="text-2xl font-bold text-foreground mb-1">
+        {household.baby_name}
+      </h1>
+      {household.baby_birthday && (
+        <p className="text-sm text-muted-foreground">
+          {calculateAge(household.baby_birthday)}
+        </p>
+      )}
     </div>
   );
 };

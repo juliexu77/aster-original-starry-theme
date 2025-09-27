@@ -6,7 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useBabyProfile, Collaborator } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
+
+interface Collaborator {
+  id: string;
+  household_id: string;
+  user_id: string;
+  role: string;
+  invited_by: string;
+  created_at: string;
+}
 import { UserPlus, Trash2, Mail, Volume2, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,7 +24,7 @@ interface CaregiverManagementProps {
 }
 
 export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
-  const { babyProfile, collaborators, removeCollaborator, generateInviteLink } = useBabyProfile();
+  const { household, collaborators, removeCollaborator, generateInviteLink } = useHousehold();
   const [isActive, setIsActive] = useState(true);
   const [emailInvite, setEmailInvite] = useState("");
   const [isInviting, setIsInviting] = useState(false);

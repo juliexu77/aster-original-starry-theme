@@ -16,7 +16,6 @@ export type Database = {
     Tables: {
       activities: {
         Row: {
-          baby_profile_id: string
           created_at: string
           created_by: string
           details: Json
@@ -27,7 +26,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          baby_profile_id: string
           created_at?: string
           created_by: string
           details?: Json
@@ -38,7 +36,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          baby_profile_id?: string
           created_at?: string
           created_by?: string
           details?: Json
@@ -50,10 +47,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "activities_baby_profile_id_fkey"
-            columns: ["baby_profile_id"]
+            foreignKeyName: "activities_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "baby_profiles"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -90,7 +87,6 @@ export type Database = {
       }
       collaborators: {
         Row: {
-          baby_profile_id: string
           created_at: string
           household_id: string | null
           id: string
@@ -99,7 +95,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          baby_profile_id: string
           created_at?: string
           household_id?: string | null
           id?: string
@@ -108,7 +103,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          baby_profile_id?: string
           created_at?: string
           household_id?: string | null
           id?: string
@@ -118,10 +112,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "collaborators_baby_profile_id_fkey"
-            columns: ["baby_profile_id"]
+            foreignKeyName: "collaborators_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "baby_profiles"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]
@@ -155,7 +149,6 @@ export type Database = {
       }
       invite_links: {
         Row: {
-          baby_profile_id: string
           code: string
           created_at: string
           created_by: string
@@ -167,7 +160,6 @@ export type Database = {
           used_by: string | null
         }
         Insert: {
-          baby_profile_id: string
           code: string
           created_at?: string
           created_by: string
@@ -179,7 +171,6 @@ export type Database = {
           used_by?: string | null
         }
         Update: {
-          baby_profile_id?: string
           code?: string
           created_at?: string
           created_by?: string
@@ -192,10 +183,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "invite_links_baby_profile_id_fkey"
-            columns: ["baby_profile_id"]
+            foreignKeyName: "invite_links_household_id_fkey"
+            columns: ["household_id"]
             isOneToOne: false
-            referencedRelation: "baby_profiles"
+            referencedRelation: "households"
             referencedColumns: ["id"]
           },
         ]

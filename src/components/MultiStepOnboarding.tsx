@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Check, Users, ChevronRight, ChevronLeft, Baby, User, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { SimpleInviteCollaborator } from "@/components/SimpleInviteCollaborator";
@@ -57,7 +57,7 @@ export const MultiStepOnboarding = ({ onComplete }: MultiStepOnboardingProps) =>
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
-  const { createBabyProfile } = useBabyProfile();
+  const { createHousehold } = useHousehold();
   const { createUserProfile, updateUserProfile } = useUserProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -129,7 +129,7 @@ export const MultiStepOnboarding = ({ onComplete }: MultiStepOnboardingProps) =>
 
     setBabySaveStatus("saving");
     try {
-      await createBabyProfile(
+      await createHousehold(
         babyName.trim(),
         babyBirthday ? format(babyBirthday, "yyyy-MM-dd") : undefined
       );
@@ -139,7 +139,7 @@ export const MultiStepOnboarding = ({ onComplete }: MultiStepOnboardingProps) =>
       console.error('Error saving baby profile:', error);
       setBabySaveStatus("error");
       toast({
-        title: "Error saving baby profile",
+        title: "Error saving household",
         description: "Please try again.",
         variant: "destructive"
       });

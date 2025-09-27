@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MultiStepOnboarding } from "@/components/MultiStepOnboarding";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { babyProfile, loading: profileLoading } = useBabyProfile();
+  const { household, loading: profileLoading } = useHousehold();
 
   // Check if user already has baby profile, skip setup
   useEffect(() => {
@@ -19,14 +19,14 @@ const BabySetup = () => {
       return;
     }
 
-    // If user has a database profile, redirect to main app
-    if (babyProfile) {
+    // If user has a household, redirect to main app
+    if (household) {
       navigate("/app");
       return;
     }
 
     // Otherwise show baby setup
-  }, [user, babyProfile, authLoading, profileLoading, navigate]);
+  }, [user, household, authLoading, profileLoading, navigate]);
 
   const handleOnboardingComplete = () => {
     // Navigate to main app after completion

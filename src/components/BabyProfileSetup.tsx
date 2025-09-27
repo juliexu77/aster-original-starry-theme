@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 
 interface BabyProfileSetupProps {
   onComplete: (profile: { name: string; birthday?: string }) => void;
@@ -22,7 +22,7 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { createBabyProfile } = useBabyProfile();
+  const { createHousehold } = useHousehold();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,14 +54,14 @@ export const BabyProfileSetup = ({ onComplete }: BabyProfileSetupProps) => {
       };
 
       if (!user) {
-        throw new Error('Authentication required to create baby profile');
+        throw new Error('Authentication required to create household');
       }
 
-      // For authenticated users, create database profile
-      await createBabyProfile(profile.name, profile.birthday);
+      // For authenticated users, create household
+      await createHousehold(profile.name, profile.birthday);
       onComplete(profile);
     } catch (error) {
-      console.error('Error creating baby profile:', error);
+      console.error('Error creating household:', error);
       toast({
         title: "Error creating profile",
         description: "Please try again or contact support.",

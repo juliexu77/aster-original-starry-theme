@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { useBabyProfile } from "@/hooks/useBabyProfile";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { shareInviteLink, canShare } from "@/utils/nativeShare";
@@ -34,7 +34,7 @@ import { format } from "date-fns";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { babyProfile, collaborators, removeCollaborator, updateBabyProfile, generateInviteLink } = useBabyProfile();
+  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink } = useHousehold();
   const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -43,8 +43,8 @@ export const Settings = () => {
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [babyName, setBabyName] = useState(babyProfile?.name || "");
-  const [babyBirthday, setBabyBirthday] = useState(babyProfile?.birthday || "");
+  const [babyName, setBabyName] = useState(household?.baby_name || "");
+  const [babyBirthday, setBabyBirthday] = useState(household?.baby_birthday || "");
   const [userRole, setUserRole] = useState<"parent" | "nanny">("parent");
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
