@@ -1,7 +1,6 @@
-import { Clock, Baby, Palette, Moon, StickyNote, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Clock, Baby, Palette, Moon, StickyNote } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 export interface Activity {
   id: string;
@@ -112,6 +111,18 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
 export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
   const activityText = getPersonalizedActivityText(activity, babyName);
 
+  const handleClick = () => {
+    if (onEdit) {
+      onEdit(activity);
+    }
+  };
+
+  const handleLongPress = () => {
+    if (onDelete) {
+      onDelete(activity.id);
+    }
+  };
+
   return (
     <div className="relative flex items-center gap-3 py-1 group hover:bg-accent/30 rounded-md px-2 transition-colors">
       {/* Timeline line */}
@@ -122,41 +133,39 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
         {getActivityIcon(activity.type)}
       </div>
       
-      {/* Content - single line */}
+      {/* Content - clickable single line */}
       <div className="flex-1 flex items-center justify-between min-w-0">
-        <p className="text-sm text-foreground font-medium capitalize truncate">
-          {activityText}
-        </p>
+        <button
+          onClick={handleClick}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            handleLongPress();
+          }}
+          onTouchStart={(e) => {
+            const touchTimer = setTimeout(() => {
+              handleLongPress();
+            }, 500); // 500ms for long press
+            
+            const clearTimer = () => {
+              clearTimeout(touchTimer);
+              document.removeEventListener('touchend', clearTimer);
+              document.removeEventListener('touchmove', clearTimer);
+            };
+            
+            document.addEventListener('touchend', clearTimer);
+            document.addEventListener('touchmove', clearTimer);
+          }}
+          className="flex-1 text-left"
+          disabled={!onEdit && !onDelete}
+        >
+          <p className="text-sm text-foreground font-medium capitalize truncate hover:text-primary transition-colors">
+            {activityText}
+          </p>
+        </button>
         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
           <span className="text-xs text-muted-foreground">
             {activity.time}
           </span>
-          {(onEdit || onDelete) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(activity)}>
-                    <Edit className="h-3 w-3 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem 
-                    onClick={() => onDelete(activity.id)} 
-                    className="text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="h-3 w-3 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </div>
     </div>
