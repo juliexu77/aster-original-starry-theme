@@ -1,191 +1,43 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { InputWithStatus } from "@/components/ui/input-with-status";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { shareInviteLink, canShare } from "@/utils/nativeShare";
+import { shareInviteLink } from "@/utils/nativeShare";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   LogOut, 
   Key,
-  UserPlus,
   Share,
   Users,
-  Trash2,
-  Baby
+  Baby,
+  Globe
 } from "lucide-react";
-import { PhotoUpload } from "@/components/PhotoUpload";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DatePicker } from "@/components/ui/date-picker";
-import { UserRoleSelectorWithStatus } from "@/components/ui/user-role-selector-with-status";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
-import { format } from "date-fns";
+import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
+import { BabyEditModal } from "@/components/settings/BabyEditModal";
+import { SettingsRow } from "@/components/settings/SettingsRow";
+import { SettingsSection } from "@/components/settings/SettingsSection";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, collaborators, removeCollaborator, updateHousehold, generateInviteLink } = useHousehold();
-  const { userProfile, updateUserProfile } = useUserProfile();
+  const { household, generateInviteLink } = useHousehold();
+  const { userProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "");
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [babyName, setBabyName] = useState(household?.baby_name || "");
-  const [babyBirthday, setBabyBirthday] = useState(household?.baby_birthday || "");
-  const [userRole, setUserRole] = useState<"parent" | "caregiver">("parent");
   const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
   const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
-  
-  // Save status states
-  const [fullNameSaveStatus, setFullNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-  const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-  const [babyBirthdaySaveStatus, setBabyBirthdaySaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-  const [userRoleSaveStatus, setUserRoleSaveStatus] = useState<"unsaved" | "saving" | "saved" | "error">("unsaved");
-
-  // Auto-save user profile changes
-  useEffect(() => {
-    if (!user || !fullName || fullName === user?.user_metadata?.full_name) return;
-    
-    const timeoutId = setTimeout(async () => {
-      setIsUpdatingProfile(true);
-      try {
-        const { error } = await supabase.auth.updateUser({
-          data: { full_name: fullName }
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: t('profileUpdated'),
-          description: t('nameHasBeenSaved'),
-        });
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        toast({
-          title: t('errorUpdatingProfile'),
-          description: t('failedToUpdateProfile'),
-          variant: "destructive"
-        });
-      } finally {
-        setIsUpdatingProfile(false);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [fullName, user, toast]);
-
-  // Auto-save user role changes
-  useEffect(() => {
-    if (!userProfile || userRole === userProfile.role) return;
-    
-    setUserRoleSaveStatus("saving");
-    const timeoutId = setTimeout(async () => {
-      try {
-        console.log('Updating user role to:', userRole);
-        await updateUserProfile({ role: userRole });
-        setUserRoleSaveStatus("saved");
-        
-        // Clear saved status after 3 seconds
-        setTimeout(() => setUserRoleSaveStatus("unsaved"), 3000);
-        
-        toast({
-          title: t('roleUpdated'),
-          description: `${t('roleChangedTo')} ${userRole}`,
-        });
-      } catch (error) {
-        setUserRoleSaveStatus("error");
-        console.error('Error updating user role:', error);
-        // Revert the role change if it failed
-        setUserRole(userProfile.role);
-        toast({
-          title: t('errorUpdatingRole'),
-          description: t('failedToUpdateRole'),
-          variant: "destructive"
-        });
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [userRole, userProfile, updateUserProfile, toast]);
-
-  // Auto-save baby profile changes
-  useEffect(() => {
-    if (!user || !babyName) return;
-    
-    // Skip if baby name hasn't changed from existing household
-    if (household && babyName === household.baby_name) return;
-    
-    setBabyNameSaveStatus("saving");
-    const timeoutId = setTimeout(async () => {
-      try {
-        if (household) {
-          // Update existing household
-          await updateHousehold({ baby_name: babyName });
-        } else {
-          // Household should exist since it's auto-created on login
-          console.warn('No household found - it should have been auto-created on login');
-        }
-        setBabyNameSaveStatus("saved");
-        
-        // Clear saved status after 3 seconds
-        setTimeout(() => setBabyNameSaveStatus("unsaved"), 3000);
-      } catch (error) {
-        setBabyNameSaveStatus("error");
-        console.error('Error saving baby name:', error);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [babyName, household, updateHousehold, user]);
-
-  useEffect(() => {
-    if (!user || !household || babyBirthday === household.baby_birthday) return;
-    
-    setBabyBirthdaySaveStatus("saving");
-    const timeoutId = setTimeout(async () => {
-      try {
-        await updateHousehold({ baby_birthday: babyBirthday });
-        setBabyBirthdaySaveStatus("saved");
-        
-        // Clear saved status after 3 seconds
-        setTimeout(() => setBabyBirthdaySaveStatus("unsaved"), 3000);
-      } catch (error) {
-        setBabyBirthdaySaveStatus("error");
-        console.error('Error updating baby birthday:', error);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [babyBirthday, household, updateHousehold, user]);
-
-  // Update local state when household changes
-  useEffect(() => {
-    if (household) {
-      setBabyName(household.baby_name || "");
-      setBabyBirthday(household.baby_birthday || "");
-    }
-  }, [household]);
-
-  // Update local state when userProfile changes
-  useEffect(() => {
-    if (userProfile) {
-      setUserRole(userProfile.role || 'parent');
-      setFullName(userProfile.full_name || "");
-    }
-  }, [userProfile]);
+  const [showProfileEdit, setShowProfileEdit] = useState(false);
+  const [showBabyEdit, setShowBabyEdit] = useState(false);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -248,31 +100,32 @@ export const Settings = () => {
     }
   };
 
-  const handleUserPhotoUpdate = async (photoUrl: string | null) => {
-    try {
-      await updateUserProfile({ photo_url: photoUrl });
-    } catch (error) {
-      console.error('Error updating user photo:', error);
-    }
-  };
-
-  const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
-    // Baby photos are not supported in household model yet
-    console.log('Baby photo update not implemented in household model');
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   const getUserDisplayName = () => {
-    return fullName || user.email?.split('@')[0] || "Unknown User";
-    return fullName || user.email?.split('@')[0] || "User";
+    const name = userProfile?.full_name || user?.user_metadata?.full_name;
+    return name || user?.email?.split('@')[0] || "User";
+  };
+
+  const getBabyDisplayName = () => {
+    return household?.baby_name || t('enterBabyName');
+  };
+
+  const getBabyAge = () => {
+    if (!household?.baby_birthday) return "";
+    
+    const birthDate = new Date(household.baby_birthday);
+    const today = new Date();
+    const diffTime = today.getTime() - birthDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 30) {
+      return `${diffDays} days old`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months} ${months === 1 ? 'month' : 'months'} old`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      return `${years} ${years === 1 ? 'year' : 'years'} old`;
+    }
   };
 
   if (showCaregiverManagement) {
@@ -280,280 +133,114 @@ export const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-6 py-8 space-y-8 relative">
-        {/* Theme Toggle - Top Right */}
-        <div className="absolute top-8 right-6">
-          <ThemeToggle showText={false} />
-        </div>
-        
-        {/* Header with User Icon and Title */}
-        <div className="text-center space-y-4">
-          <div className="flex justify-center">
-            <PhotoUpload
-              currentPhotoUrl={userProfile?.photo_url}
-              bucketName="baby-photos"
-              folder={user?.id || "unknown"}
-              fallbackIcon={<User className="w-10 h-10 text-muted-foreground" />}
-              onPhotoUpdate={handleUserPhotoUpdate}
-              size="lg"
-            />
-          </div>
-          <h1 className="text-xl font-serif font-medium text-foreground">
-            {t('profileSettings')}
-          </h1>
-        </div>
-
-        {/* User Status Section - No card */}
-        <div className="text-center space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">{t('usingAs')}</p>
-            <h2 className="text-xl font-medium text-foreground mb-2">
-              {getUserDisplayName()}
-            </h2>
-            {!user && (
-              <p className="text-sm text-muted-foreground mb-4">
-                {t('signInToSave')}
-              </p>
-            )}
-          </div>
-
-          {!user ? (
-            <Button 
-              onClick={() => navigate("/auth")}
-              size="lg"
-              className="w-full h-12 bg-primary/80 hover:bg-primary text-primary-foreground rounded-2xl"
-            >
-              <User className="w-4 h-4 mr-2" />
-              {t('signIn')}
-            </Button>
-          ) : (
-            <div className="space-y-4 p-4 bg-muted/30 rounded-2xl">
-              <div>
-                <Label htmlFor="fullName" className="text-sm text-muted-foreground">
-                  {t('fullName')}
-                </Label>
-                <InputWithStatus
-                  id="fullName"
-                  value={fullName}
-                  onValueChange={setFullName}
-                  placeholder="Enter your full name"
-                  className="mt-2 border-none bg-background"
-                  saveStatus={fullNameSaveStatus}
-                  errorMessage={t('failedToSaveName')}
-                />
-              </div>
-              
-              <div>
-                <Label className="text-sm text-muted-foreground">{t('email')}</Label>
-                <Input
-                  value={user.email || ""}
-                  disabled
-                  className="mt-2 border-none bg-muted"
-                />
-              </div>
-
-              <div>
-                <Label className="text-sm text-muted-foreground">{t('youAre')}</Label>
-                <div className="mt-2">
-                  <UserRoleSelectorWithStatus
-                    value={userRole} 
-                    onChange={setUserRole}
-                    saveStatus={userRoleSaveStatus}
-                    errorMessage={t('failedToUpdateRole')}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Language Section - Minimal card */}
-        <div className="p-6 bg-muted/30 rounded-2xl">
+    <>
+      <div className="min-h-screen bg-background">
+        <div className="max-w-md mx-auto px-4 py-8 space-y-6">
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground text-lg">{t('language')}</p>
-              <p className="text-sm text-muted-foreground">{t('switchAppLanguage')}</p>
-            </div>
-            <LanguageToggle />
+            <h1 className="text-2xl font-semibold text-foreground">
+              {t('profileSettings')}
+            </h1>
+            <ThemeToggle showText={false} />
           </div>
-        </div>
 
-        {/* Baby Profile Section - Always visible */}
-        <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2">
-            <Baby className="w-5 h-5" />
-            <h3 className="text-lg font-medium text-foreground">{t('babyDetails')}</h3>
-          </div>
-          
-          {!user && (
-            <p className="text-sm text-muted-foreground">
-              {t('babyInfoSavedLocally')}
-            </p>
+          {/* User Profile Section */}
+          {user ? (
+            <SettingsSection>
+              <SettingsRow
+                icon={<User className="w-5 h-5" />}
+                title={getUserDisplayName()}
+                subtitle={user.email}
+                onClick={() => setShowProfileEdit(true)}
+              />
+            </SettingsSection>
+          ) : (
+            <SettingsSection>
+              <SettingsRow
+                icon={<User className="w-5 h-5" />}
+                title={t('signIn')}
+                subtitle={t('signInToSave')}
+                onClick={() => navigate("/auth")}
+              />
+            </SettingsSection>
           )}
-          
-          <div className="space-y-4">
-            {/* Baby Photo - Centered */}
-            <div className="flex justify-center">
-              <PhotoUpload
-                currentPhotoUrl={undefined}
-                bucketName="baby-photos"
-                folder={household?.id || "baby"}
-                fallbackIcon={<Baby className="w-6 h-6 text-muted-foreground" />}
-                onPhotoUpdate={handleBabyPhotoUpdate}
-                size="md"
+
+          {/* Baby Details Section */}
+          <SettingsSection title={t('babyDetails')}>
+            <SettingsRow
+              icon={<Baby className="w-5 h-5" />}
+              title={getBabyDisplayName()}
+              subtitle={getBabyAge()}
+              onClick={() => setShowBabyEdit(true)}
+            />
+          </SettingsSection>
+
+          {/* Caregivers Section */}
+          {user && (
+            <SettingsSection title={t('caregivers')}>
+              <SettingsRow
+                icon={<Share className="w-5 h-5" />}
+                title={t('shareInviteLink')}
+                subtitle={t('shareTrackingWith')}
+                onClick={handleInviteClick}
               />
-            </div>
-
-            {/* Baby Name */}
-            <div>
-              <Label htmlFor="babyName" className="text-sm text-muted-foreground">
-                {t('babyName')}
-              </Label>
-              <InputWithStatus
-                id="babyName"
-                value={babyName}
-                onValueChange={setBabyName}
-                placeholder={t('enterBabyName')}
-                className="mt-2 border-none bg-background"
-                saveStatus={babyNameSaveStatus}
-                errorMessage={t('failedToSaveBabyName')}
+              <SettingsRow
+                icon={<Users className="w-5 h-5" />}
+                title={t('manageCaregivers')}
+                onClick={() => setShowCaregiverManagement(true)}
               />
-            </div>
+            </SettingsSection>
+          )}
 
-            {/* Baby Birthday */}
-            <div>
-              <Label htmlFor="babyBirthday" className="text-sm text-muted-foreground">
-                {t('birthday')}
-              </Label>
-              <div className="mt-2">
-                <DatePicker
-                  selected={babyBirthday ? (() => { const [y,m,d] = babyBirthday.split('-').map(Number); return new Date(y, m-1, d); })() : undefined}
-                  onSelect={(date) => {
-                    if (date) {
-                      // Convert to local date string to avoid timezone issues
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setBabyBirthday(`${year}-${month}-${day}`);
-                    } else {
-                      setBabyBirthday("");
-                    }
-                  }}
-                  placeholder={t('selectBirthday')}
-                  className="border-none bg-background"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Share Tracking Section - Minimal card */}
-        <div className="p-6 bg-muted/30 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
-            <h3 className="text-lg font-medium text-foreground">{t('inviteCaretakers')}</h3>
-          </div>
-          
-          <p className="text-sm text-muted-foreground">
-            {t('shareTrackingWith')}
-          </p>
-
-          <div className="space-y-3">
-            <Button 
-              onClick={handleInviteClick}
-              className="w-full h-12 rounded-2xl"
-              variant="outline"
+          {/* App Preferences Section */}
+          <SettingsSection title={t('appPreferences')}>
+            <SettingsRow
+              icon={<Globe className="w-5 h-5" />}
+              title={t('language')}
+              showChevron={false}
             >
-              <Share className="w-4 h-4 mr-2" />
-              {user ? (copied ? t('linkCopied') : t('shareInviteLink')) : t('signInToShare')}
-            </Button>
+              <LanguageToggle />
+            </SettingsRow>
+          </SettingsSection>
 
-            {user && currentInviteLink && (
+          {/* Account Section */}
+          {user && (
+            <SettingsSection title={t('account')}>
+              <SettingsRow
+                icon={<Key className="w-5 h-5" />}
+                title={t('changePassword')}
+                onClick={handleChangePassword}
+              />
+              <SettingsRow
+                icon={<LogOut className="w-5 h-5" />}
+                title={t('signOut')}
+                onClick={signOut}
+              />
+            </SettingsSection>
+          )}
+
+          {/* Invite Link Actions */}
+          {user && currentInviteLink && (
+            <div className="mt-4">
               <EmailInvite 
                 inviteLink={currentInviteLink}
                 babyName={household?.baby_name}
               />
-            )}
-
-            {user && (
-              <Button 
-                onClick={() => setShowCaregiverManagement(true)}
-                className="w-full h-12 rounded-2xl"
-                variant="outline"
-              >
-                <Users className="w-4 h-4 mr-2" />
-                {t('manageCaregivers')}
-              </Button>
-            )}
-          </div>
-
-          {/* List of Caregivers */}
-          {collaborators && collaborators.length > 0 && (
-            <div className="space-y-3 pt-4 border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-foreground">{t('caregivers')}</span>
-              </div>
-              <div className="space-y-2">
-                {collaborators.map((collaborator) => (
-                  <div 
-                    key={collaborator.id}
-                    className="flex items-center justify-between p-3 bg-background rounded-xl"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-xs font-medium text-primary">
-                          {getInitials(collaborator.user_id)}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {collaborator.user_id}
-                        </p>
-                        <p className="text-xs text-muted-foreground capitalize">
-                          {collaborator.role}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCollaborator(collaborator.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>
-
-        {/* User Actions - No cards, clean buttons */}
-        {user && (
-          <div className="space-y-3 pt-4">
-            <Button
-              onClick={handleChangePassword}
-              variant="outline"
-              className="w-full h-12 rounded-2xl"
-            >
-              <Key className="w-4 h-4 mr-2" />
-              Change Password
-            </Button>
-
-            <Button
-              onClick={signOut}
-              variant="outline"
-              className="w-full h-12 rounded-2xl text-destructive hover:text-destructive border-destructive/20 hover:border-destructive/40"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('signOut')}
-            </Button>
-          </div>
-        )}
       </div>
-    </div>
+
+      {/* Modals */}
+      <ProfileEditModal 
+        open={showProfileEdit} 
+        onOpenChange={setShowProfileEdit} 
+      />
+      <BabyEditModal 
+        open={showBabyEdit} 
+        onOpenChange={setShowBabyEdit} 
+      />
+    </>
   );
 };
 

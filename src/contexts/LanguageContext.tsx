@@ -1,19 +1,18 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 type Language = 'en' | 'zh';
 
 interface LanguageContextType {
   language: Language;
-  setLanguage: (lang: Language) => void;
+  setLanguage: (language: Language) => void;
   t: (key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Translation data
 const translations = {
   en: {
-    // App name and core
+    // App name and core  
     appName: "Baby Tracker",
     welcome: "Welcome back",
     
@@ -36,15 +35,15 @@ const translations = {
     
     // Navigation
     home: "Home",
-    insights: "Insights", 
+    insights: "Insights",
     trends: "Trends",
     calendar: "Calendar",
     profile: "Profile",
     settings: "Settings",
     
     // Baby profile
-    babyName: "Baby's name",
-    babyBirthday: "Baby's birthday",
+    babyName: "Baby Name",
+    babyBirthday: "Birthday",
     setupProfile: "Let's set up your baby's profile",
     
     // Activities
@@ -52,7 +51,7 @@ const translations = {
     diaper: "Diaper",
     nap: "Nap",
     note: "Note",
-    startTime: "Start time",
+    startTime: "Start Time",
     duration: "Duration",
     amount: "Amount",
     type: "Type",
@@ -68,18 +67,12 @@ const translations = {
     simplestWay: "The simplest way to track your baby's daily activities and patterns.",
     trackEverything: "Track Everything",
     logFeeds: "Log feeds, diaper changes, naps, and notes with just a few taps.",
-    seePatterns: "See Patterns",
-    understandRoutines: "Understand your baby's routines and get helpful insights over time.",
-    collaborateWith: "Collaborate with Caretakers",
-    shareTracking: "Share tracking with anyone you share caregiving responsibilities with, real time sync so you can see all the details even when you're not there",
+    shareWithCaregivers: "Share with Caregivers",
+    invitePartners: "Invite partners and babysitters to stay updated on your baby's activities.",
     getStarted: "Get Started",
-    next: "Next",
-    back: "Back",
-    skip: "Skip",
     
-    // Common UI
-    comingSoon: "Coming soon",
-    loading: "Loading...",
+    // Common actions
+    add: "Add",
     edit: "Edit",
     delete: "Delete",
     save: "Save",
@@ -93,16 +86,15 @@ const translations = {
     // Baby setup
     personalizeExperience: "Let's personalize your tracking experience",
     skipForNow: "Skip for now (you can add this later in settings)",
-    babyProfile: "Baby Profile",
-    useThisInfo: "We'll use this information to personalize your experience",
-    settingUp: "Setting up...",
+    birthday: "Birthday",
+    selectBirthdate: "Select birthdate",
     
     // Average daily
     avgDailyFeeds: "Avg Daily Feeds",
     avgDailyDiapers: "Avg Daily Diapers",
     
     // Settings page
-    profileSettings: "Profile & Settings",
+    profileSettings: "Profile Settings",
     usingAs: "Using as:",
     signInToSave: "Sign in to save your data across devices",
     changePassword: "Change Password",
@@ -115,7 +107,7 @@ const translations = {
     babyInfoSavedLocally: "Baby information is saved locally. Sign in to sync across devices.",
     enterBabyName: "Enter baby's name",
     inviteCaretakers: "Invite Caretakers",
-    shareTrackingWith: "Share tracking with someone so they can view and add activities too.",
+    shareTrackingWith: "Share tracking with family and caregivers",
     shareInviteLink: "Share Invite Link",
     signInToShare: "Sign In to Share",
     linkCopied: "Link Copied!",
@@ -137,7 +129,13 @@ const translations = {
     failedToUpdateRole: "Failed to update your role. Please try again.",
     failedToSaveBabyName: "Failed to save baby name",
     failedToUpdateBabyName: "Failed to update baby name",
-    failedToSaveName: "Failed to save name"
+    failedToSaveName: "Failed to save name",
+    appPreferences: "App Preferences",
+    account: "Account",
+    done: "Done",
+    currentCaregivers: "Current Caregivers",
+    selectBirthday: "Select birthday",
+    youAre: "You are"
   },
   zh: {
     // App name and core  
@@ -195,18 +193,12 @@ const translations = {
     simplestWay: "追踪宝宝日常活动和模式的最简单方法。",
     trackEverything: "记录所有活动",
     logFeeds: "只需几次点击即可记录喂养、换尿布、睡觉和笔记。",
-    seePatterns: "查看模式",
-    understandRoutines: "了解宝宝的日常规律，并随时间获得有用的见解。",
-    collaborateWith: "与看护者协作",
-    shareTracking: "与任何与您分享照顾责任的人分享追踪，实时同步，即使您不在现场也能看到所有详细信息",
+    shareWithCaregivers: "与照护者分享",
+    invitePartners: "邀请伴侣和保姆了解宝宝的活动情况。",
     getStarted: "开始使用",
-    next: "下一步",
-    back: "返回",
-    skip: "跳过",
     
-    // Common UI
-    comingSoon: "即将推出",
-    loading: "加载中...",
+    // Common actions
+    add: "添加",
     edit: "编辑",
     delete: "删除",
     save: "保存",
@@ -220,16 +212,15 @@ const translations = {
     // Baby setup
     personalizeExperience: "让我们个性化您的追踪体验",
     skipForNow: "暂时跳过（您可以稍后在设置中添加）",
-    babyProfile: "宝宝资料",
-    useThisInfo: "我们将使用此信息来个性化您的体验",
-    settingUp: "设置中...",
+    birthday: "生日",
+    selectBirthdate: "选择出生日期",
     
     // Average daily
     avgDailyFeeds: "日均喂养",
     avgDailyDiapers: "日均尿布",
     
     // Settings page
-    profileSettings: "个人资料与设置",
+    profileSettings: "个人设置",
     usingAs: "当前身份：",
     signInToSave: "登录以在设备间保存您的数据",
     changePassword: "更改密码",
@@ -239,10 +230,10 @@ const translations = {
     failedToSendEmail: "发送密码更改邮件失败。请重试。",
     switchAppLanguage: "切换应用语言",
     babyDetails: "宝宝详情",
-    babyInfoSavedLocally: "宝宝信息已本地保存。登录以在设备间同步。",
+    babyInfoSavedLocally: "宝宝信息仅本地保存。登录以在设备间同步。",
     enterBabyName: "输入宝宝姓名",
     inviteCaretakers: "邀请看护者",
-    shareTrackingWith: "与他人分享追踪功能，让他们也能查看和添加活动。",
+    shareTrackingWith: "与家人和照护者分享追踪",
     shareInviteLink: "分享邀请链接",
     signInToShare: "登录以分享",
     linkCopied: "链接已复制！",
@@ -261,10 +252,16 @@ const translations = {
     roleUpdated: "角色已更新",
     roleChangedTo: "您的角色已更改为",
     errorUpdatingRole: "更新角色出错",
-    failedToUpdateRole: "更新您的角色失败。请重试。",
+    failedToUpdateRole: "更新角色失败。请重试。",
     failedToSaveBabyName: "保存宝宝姓名失败",
     failedToUpdateBabyName: "更新宝宝姓名失败",
-    failedToSaveName: "保存姓名失败"
+    failedToSaveName: "保存姓名失败",
+    appPreferences: "应用偏好",
+    account: "账户",
+    done: "完成",
+    currentCaregivers: "当前看护者",
+    selectBirthday: "选择生日",
+    youAre: "您是"
   }
 };
 
