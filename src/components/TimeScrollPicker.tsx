@@ -33,7 +33,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (match) return match[3].toUpperCase() as "AM" | "PM";
     }
-    return new Date().getHours() >= 12 ? "PM" : "AM";
+    // Try to get last used period from localStorage, default to current time
+    const lastUsedPeriod = localStorage.getItem('lastUsedPeriod') as "AM" | "PM";
+    return lastUsedPeriod || (new Date().getHours() >= 12 ? "PM" : "AM");
   });
 
   // Generate dates array (past 7 days, today, next 3 days)
@@ -264,24 +266,22 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
 
-        {/* AM/PM */}
-        <div className="flex gap-1">
-          {periods.map((period) => (
-            <div
-              key={period}
-              className={`px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors ${
-                selectedPeriod === period 
-                  ? 'text-foreground font-bold bg-muted' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-              onClick={() => {
-                setHasUserInteracted(true);
-                setSelectedPeriod(period as "AM" | "PM");
-              }}
-            >
-              {period}
-            </div>
-          ))}
+        {/* AM/PM - Single toggle button */}
+        <div className="flex">
+          <button
+            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
+            onClick={() => {
+              const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
+              setHasUserInteracted(true);
+              setSelectedPeriod(newPeriod);
+              // Save last used period
+              try { 
+                localStorage.setItem('lastUsedPeriod', newPeriod); 
+              } catch (e) {}
+            }}
+          >
+            {selectedPeriod}
+          </button>
         </div>
       </div>
     </div>
