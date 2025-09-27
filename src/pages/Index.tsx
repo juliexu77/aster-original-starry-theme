@@ -4,15 +4,13 @@ import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { ActivityDetailModal } from "@/components/ActivityDetailModal";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { TodaysSummary } from "@/components/TodaysSummary";
-import { YesterdaysSummary } from "@/components/YesterdaysSummary";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings } from "@/pages/Settings";
 import { ChatPanel } from "@/components/ChatPanel";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
-import { DailySummary } from "@/components/DailySummary";
-import { PatternInsights } from "@/components/PatternInsights";
+import { TrendChart } from "@/components/TrendChart";
+import { SleepChart } from "@/components/SleepChart";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -135,6 +133,13 @@ const Index = () => {
     switch (activeTab) {
       case "insights":
         return <InsightsTab activities={activities} />;
+      case "trends":
+        return (
+          <div className="px-4 py-6 space-y-6">
+            <TrendChart activities={activities} />
+            <SleepChart activities={activities} />
+          </div>
+        );
       case "settings":
         return <Settings />;
       default:
