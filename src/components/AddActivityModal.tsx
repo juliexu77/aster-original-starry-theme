@@ -17,9 +17,10 @@ interface AddActivityModalProps {
   showFixedButton?: boolean; // Add prop to control fixed button visibility
   editingActivity?: Activity | null; // Add editing support
   onEditActivity?: (activity: Activity) => void;
+  onDeleteActivity?: (activityId: string) => void; // Add delete support
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity }: AddActivityModalProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
@@ -61,7 +62,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   // Load last used settings and handle editing
   useEffect(() => {
-    console.log('AddActivityModal useEffect, editingActivity:', editingActivity);
     if (editingActivity) {
       // Populate form with editing activity data
       setActivityType(editingActivity.type);
@@ -626,11 +626,28 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               >
                 Cancel
               </Button>
+              
+              {/* Delete button - only show when editing */}
+              {editingActivity && onDeleteActivity && (
+                <Button 
+                  variant="destructive"
+                  onClick={() => {
+                    if (editingActivity && onDeleteActivity) {
+                      onDeleteActivity(editingActivity.id);
+                      if (onClose) onClose();
+                    }
+                  }}
+                  className="h-12 px-6"
+                >
+                  Delete
+                </Button>
+              )}
+              
               <Button 
                 onClick={handleSubmit} 
                 className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
               >
-                Save
+                {editingActivity ? 'Update' : 'Save'}
               </Button>
             </div>
           </div>

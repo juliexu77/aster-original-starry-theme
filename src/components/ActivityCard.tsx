@@ -1,4 +1,4 @@
-import { Clock, Baby, Palette, Moon, StickyNote, Trash2 } from "lucide-react";
+import { Clock, Baby, Palette, Moon, StickyNote } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -155,7 +155,6 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   const activityText = getPersonalizedActivityText(activity, babyName);
 
   const handleClick = () => {
-    console.log('ActivityCard handleClick for activity:', activity);
     if (onEdit) {
       onEdit(activity);
     }
@@ -183,7 +182,6 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
         <button
           onClick={handleClick}
           className="flex-1 text-left"
-          disabled={!onEdit && !onDelete}
         >
           <p className="text-sm text-foreground font-medium truncate hover:text-primary transition-colors">
             {activityText}
@@ -193,16 +191,6 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           <span className="text-xs text-muted-foreground">
             {activity.time}
           </span>
-          {/* Delete button - appears on hover */}
-          {onDelete && (
-            <button
-              onClick={handleDelete}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-destructive/10 rounded text-destructive hover:text-destructive/80"
-              title="Delete activity"
-            >
-              <Trash2 className="h-3 w-3" />
-            </button>
-          )}
         </div>
       </div>
     </div>

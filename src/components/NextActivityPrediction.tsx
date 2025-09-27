@@ -215,7 +215,7 @@ return (
     <div className="flex items-center gap-2 mb-4">
       <Clock className="w-5 h-5 text-muted-foreground" />
       <h3 className="text-lg font-serif font-medium text-foreground">
-        Next Action
+        Next Predicted Action
       </h3>
     </div>
     

@@ -180,6 +180,13 @@ const Index = () => {
           <>
             {/* Activities Timeline */}
             <div className="px-4 py-6">
+              {/* Next Predicted Action - Always visible at top */}
+              {activities.length > 0 && (
+                <div className="mb-6">
+                  <NextActivityPrediction activities={activities} />
+                </div>
+              )}
+              
               <div className="space-y-6 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
@@ -250,23 +257,8 @@ const Index = () => {
                                 key={activity.id}
                                 activity={activity}
                                 babyName={babyProfile?.name}
-                                onEdit={(activity) => {
-                                  console.log('ActivityCard onEdit called with:', activity);
-                                  setEditingActivity(activity);
-                                }}
-                                onDelete={async (activityId) => {
-                                  try {
-                                    const { error } = await supabase
-                                      .from('activities')
-                                      .delete()
-                                      .eq('id', activityId);
-                                    
-                                    if (error) throw error;
-                                    refetchActivities();
-                                  } catch (error) {
-                                    console.error('Error deleting activity:', error);
-                                  }
-                                }}
+                                onEdit={(activity) => setEditingActivity(activity)}
+                                onDelete={undefined}
                               />
                             ))}
                           </div>
@@ -276,13 +268,6 @@ const Index = () => {
                   })()
                 )}
               </div>
-
-              {/* Simple Summary Info */}
-              {activities.length > 0 && (
-                <div className="mt-6 space-y-4">
-                  <NextActivityPrediction activities={activities} />
-                </div>
-              )}
             </div>
           </>
         );
@@ -332,22 +317,18 @@ const Index = () => {
           addActivity(activity.type, activity.details, activityDate, activityTime);
           setShowAddActivity(false);
         }}
-        onEditActivity={async (updatedActivity) => {
+        onDeleteActivity={async (activityId) => {
           try {
             const { error } = await supabase
               .from('activities')
-              .update({
-                type: updatedActivity.type,
-                details: updatedActivity.details,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', updatedActivity.id);
+              .delete()
+              .eq('id', activityId);
             
             if (error) throw error;
             refetchActivities();
             setEditingActivity(null);
           } catch (error) {
-            console.error('Error updating activity:', error);
+            console.error('Error deleting activity:', error);
           }
         }}
       />
