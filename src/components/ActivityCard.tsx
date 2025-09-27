@@ -184,7 +184,7 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           className="flex-1 text-left"
           disabled={!onEdit && !onDelete}
         >
-          <p className="text-sm text-foreground font-medium capitalize truncate hover:text-primary transition-colors">
+          <p className="text-sm text-foreground font-medium truncate hover:text-primary transition-colors">
             {activityText}
           </p>
         </button>
