@@ -97,7 +97,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto p-0">
+      <DialogContent className="max-w-md mx-auto p-0 [&>button[data-state]]:hidden">
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="text-center text-lg font-medium">
             {t('babyDetails')}

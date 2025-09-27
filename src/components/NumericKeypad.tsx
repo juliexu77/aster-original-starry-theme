@@ -73,7 +73,7 @@ useEffect(() => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-sm [&>button[data-state]]:hidden">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-lg font-medium text-center">
             {title}

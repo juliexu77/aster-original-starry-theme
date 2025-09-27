@@ -163,7 +163,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md [&>button[data-state]]:hidden">
         <DialogHeader>
           <DialogTitle>Activity Details</DialogTitle>
         </DialogHeader>
