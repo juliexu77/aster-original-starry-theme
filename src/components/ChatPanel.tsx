@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, MessageCircle, Bot, User, Lightbulb } from "lucide-react";
 import { Activity } from "./ActivityCard";
-import { usePatternAnalysis, PatternInsight } from "@/hooks/usePatternAnalysis";
+import { answerQuestion, analyzePatterns, PatternInsight } from "@/utils/patternAnalysis";
 
 interface Message {
   id: string;
@@ -26,47 +26,6 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
   const [inputValue, setInputValue] = useState("");
   const [insights, setInsights] = useState<PatternInsight[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const { analyzePatterns } = usePatternAnalysis();
-
-  const answerQuestion = (question: string, activities: Activity[]): string => {
-    const q = question.toLowerCase();
-    
-    // Total intake questions
-    if (q.includes("total") && (q.includes("drink") || q.includes("intake") || q.includes("milk"))) {
-      const feedActivities = activities.filter(a => a.type === "feed");
-      const totalIntake = feedActivities.reduce((sum, feed) => {
-        const qty = parseFloat(feed.details.quantity || "0");
-        return sum + (isNaN(qty) ? 0 : qty);
-      }, 0);
-      
-      if (totalIntake > 0) {
-        return `Today baby has consumed ${totalIntake} oz across ${feedActivities.length} feeds.`;
-      }
-      return "No feeding data recorded yet today.";
-    }
-
-    // Last wake up questions
-    if (q.includes("last") && (q.includes("wake") || q.includes("awake"))) {
-      const napActivities = activities.filter(a => a.type === "nap");
-      if (napActivities.length > 0) {
-        const lastNap = napActivities[0];
-        const endTime = lastNap.details.endTime;
-        if (endTime) {
-          return `Baby last woke up at ${endTime}.`;
-        }
-        return `Last nap started at ${lastNap.time}, but end time wasn't recorded.`;
-      }
-      return "No nap data recorded yet today.";
-    }
-
-    // Diaper count
-    if (q.includes("diaper") && (q.includes("many") || q.includes("count") || q.includes("total"))) {
-      const diapers = activities.filter(a => a.type === "diaper");
-      return `${diapers.length} diaper changes recorded today.`;
-    }
-
-    return "I can help you with questions about feeding totals, sleep patterns, diaper changes, and predictions for next activities. Try asking 'How much did baby drink today?' or 'When is the next nap?'";
-  };
 
   useEffect(() => {
     const newInsights = analyzePatterns(activities);
@@ -167,7 +126,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
           <div className="space-y-1">
             {insights.slice(0, 2).map((insight, index) => (
               <div key={`insight-${insight.type}-${index}`} className="text-xs text-muted-foreground bg-background/50 rounded p-2">
-                {insight.text}
+                {insight.message}
               </div>
             ))}
           </div>
