@@ -73,8 +73,9 @@ export const useHousehold = () => {
       // Get household through collaborator relationship
       const { data: collaboratorData, error: collaboratorError } = await supabase
         .from('collaborators')
-        .select('household_id')
+        .select('household_id, created_at')
         .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
         .limit(1);
 
       if (collaboratorError) {
@@ -281,9 +282,28 @@ export const useHousehold = () => {
         throw error;
       }
 
-      // Refresh household data
-      await fetchHousehold();
-      return data;
+      const householdId = data as string;
+
+      // Remember this as the active household
+      try {
+        localStorage.setItem('active_household_id', householdId);
+      } catch {}
+
+      // Fetch and set the accepted household as current
+      const { data: householdData, error: householdError } = await supabase
+        .from('households')
+        .select('*')
+        .eq('id', householdId)
+        .single();
+
+      if (householdError) {
+        console.error('Error fetching accepted household:', householdError);
+        throw householdError;
+      }
+
+      setHousehold(householdData);
+      await fetchCollaborators(householdId);
+      return householdId;
     } catch (error) {
       console.error('Error in acceptInvite:', error);
       throw error;
