@@ -50,8 +50,12 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   const predictNextActivity = () => {
+    console.log('🚀 NextActivityPrediction running with', activities.length, 'activities');
+    
     const currentTime = getCurrentTime();
     const currentMinutes = getTimeInMinutes(currentTime);
+    
+    console.log('⏰ Time check:', { currentTime, currentMinutes });
     
     // Check if we have minimum required data for predictions
     const feedActivities = activities.filter(a => a.type === "feed");
@@ -63,11 +67,28 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     // Detect if baby is currently napping (robust: prefer details.startTime)
     const currentlyNapping = napActivities.find(nap => {
       const noEnd = !nap.details.endTime || nap.details.endTime === "";
+      console.log('🛌 Checking nap for current status:', {
+        napId: nap.id,
+        napTime: nap.time,
+        startTime: nap.details.startTime,
+        endTime: nap.details.endTime,
+        noEnd
+      });
+      
       if (!noEnd) return false;
       const startStr = nap.details.startTime || (nap.time.includes(' - ') ? nap.time.split(' - ')[0] : nap.time);
       const napStartMinutes = getTimeInMinutes(startStr);
       let timeSinceNapStart = currentMinutes - napStartMinutes;
       if (timeSinceNapStart < 0) timeSinceNapStart += (24 * 60);
+      
+      console.log('🛌 Nap timing details:', {
+        startStr,
+        napStartMinutes,
+        currentMinutes,
+        timeSinceNapStart,
+        withinWindow: timeSinceNapStart <= 6 * 60
+      });
+      
       // Consider napping if started within 6 hours and no end time
       return timeSinceNapStart <= 6 * 60;
     });
