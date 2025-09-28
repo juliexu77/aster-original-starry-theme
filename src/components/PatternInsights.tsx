@@ -183,8 +183,13 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
-    // Analyze daily totals
-    const dailyFeeds = feeds.length;
+    // Analyze daily totals - filter to today only
+    const today = new Date().toDateString();
+    const todaysFeeds = feeds.filter(feed => {
+      const feedDate = new Date(`${today} ${feed.time}`).toDateString();
+      return feedDate === today;
+    });
+    const dailyFeeds = todaysFeeds.length;
     if (dailyFeeds >= 6 && dailyFeeds <= 8) {
       insights.push({
         icon: Baby,
@@ -193,12 +198,12 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         type: 'general',
         details: {
           description: `${dailyFeeds} feeds today falls within the typical range of 6-8 feeds for healthy babies.`,
-          data: feeds.map(feed => ({
+          data: todaysFeeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
               ? `${feed.details.quantity}${feed.details.unit}`
               : feed.details.feedType || 'Feed',
-            calculation: `Feed #${feeds.indexOf(feed) + 1}`
+            calculation: `Feed #${todaysFeeds.indexOf(feed) + 1}`
           }))
         }
       });
@@ -210,12 +215,12 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         type: 'general',
         details: {
           description: `${dailyFeeds} feeds today is above typical range, which could indicate growth spurts or increased appetite.`,
-          data: feeds.map(feed => ({
+          data: todaysFeeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
               ? `${feed.details.quantity}${feed.details.unit}`
               : feed.details.feedType || 'Feed',
-            calculation: `Feed #${feeds.indexOf(feed) + 1} at ${feed.time}`
+            calculation: `Feed #${todaysFeeds.indexOf(feed) + 1} at ${feed.time}`
           }))
         }
       });
