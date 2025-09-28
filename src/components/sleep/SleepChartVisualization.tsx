@@ -1,11 +1,4 @@
-interface SleepDataDay {
-  date: string;
-  fullDate: Date;
-  sleepBlocks: boolean[];
-  hasData: boolean;
-  startHour: number;
-  totalHours: number;
-}
+import { SleepDataDay } from "@/types/sleep";
 
 interface SleepChartVisualizationProps {
   sleepData: SleepDataDay[];
@@ -20,7 +13,7 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
         <div></div>
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${sleepData.length}, 1fr)` }}>
           {sleepData.map((day, index) => (
-            <div key={index} className="text-center text-sm font-medium text-foreground">
+            <div key={day.fullDate.getTime()} className="text-center text-caption font-medium text-foreground">
               {day.date}
             </div>
           ))}
@@ -40,7 +33,7 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
             else timeLabel = `${hour - 12}pm`;
             
             return (
-              <div key={i} className="text-xs text-muted-foreground text-right">
+              <div key={`hour-${hour}`} className="text-label text-muted-foreground text-right">
                 {timeLabel}
               </div>
             );
@@ -59,32 +52,37 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
           {/* Sleep blocks */}
           <div className="grid gap-2 h-full" style={{ gridTemplateColumns: `repeat(${sleepData.length}, 1fr)` }}>
             {sleepData.map((day, dayIndex) => (
-              <div key={dayIndex} className="relative">
-                {/* Sleep bars */}
+              <div key={day.fullDate.getTime()} className="relative">
+                {/* Sleep bars - render continuous blocks */}
                 {day.sleepBlocks.map((isAsleep, hourIndex) => {
                   if (!isAsleep) return null;
                   
-                  // Find continuous sleep blocks
+                  // Find continuous sleep blocks to avoid overlapping bars
                   let blockStart = hourIndex;
                   let blockEnd = hourIndex;
+                  
+                  // Find the end of this sleep block
                   while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1]) {
                     blockEnd++;
                   }
                   
-                  // Only render if this is the start of a block
+                  // Only render if this is the start of a block (prevents duplicates)
                   if (blockStart !== hourIndex) return null;
                   
-                  const blockHeight = ((blockEnd - blockStart + 1) / day.totalHours) * 100;
-                  const blockTop = (blockStart / day.totalHours) * 100;
+                  const blockLength = blockEnd - blockStart + 1;
+                  const blockHeight = (blockLength / (showFullDay ? 24 : 15)) * 100;
+                  const blockTop = (blockStart / (showFullDay ? 24 : 15)) * 100;
                   
                   return (
                     <div
-                      key={`${hourIndex}-block`}
-                      className="absolute w-full bg-primary rounded-sm"
+                      key={`sleep-block-${blockStart}-${blockEnd}`}
+                      className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20"
                       style={{
                         top: `${blockTop}%`,
                         height: `${blockHeight}%`,
+                        minHeight: '2px', // Ensure visibility of short naps
                       }}
+                      title={`Sleep: ${blockLength} hour${blockLength > 1 ? 's' : ''}`}
                     />
                   );
                 })}

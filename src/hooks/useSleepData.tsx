@@ -1,14 +1,15 @@
 import { Activity } from "@/components/ActivityCard";
 import { useHousehold } from "./useHousehold";
 import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { SleepDataDay, AverageDailySummary } from "@/types/sleep";
 
 export const useSleepData = (activities: Activity[], showFullDay: boolean, currentWeekOffset: number) => {
   const { household } = useHousehold();
   const ageInWeeks = household?.baby_birthday ? calculateAgeInWeeks(household.baby_birthday) : 0;
 
-  const generateSleepData = () => {
+  const generateSleepData = (): SleepDataDay[] => {
     const days = 7;
-    const data = [];
+    const data: SleepDataDay[] = [];
     const today = new Date();
     today.setDate(today.getDate() - (currentWeekOffset * 7));
     
@@ -89,22 +90,24 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
         }
       });
       
-      data.push({
+      const dayData: SleepDataDay = {
         date: date.toLocaleDateString("en-US", { weekday: "short" }),
         fullDate: date,
         sleepBlocks,
         hasData: dayNaps.length > 0,
         startHour,
         totalHours
-      });
+      };
+      
+      data.push(dayData);
     }
     
     return data;
   };
 
-  const getAverageDailySummary = () => {
+  const getAverageDailySummary = (): AverageDailySummary => {
     // Group activities by calendar date
-    const activityByDate: { [date: string]: Activity[] } = {};
+    const activityByDate: Record<string, Activity[]> = {};
     
     activities.forEach(activity => {
       if (!activity.loggedAt) return; // Skip activities without loggedAt timestamp

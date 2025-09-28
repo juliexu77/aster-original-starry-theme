@@ -1,8 +1,7 @@
+import { AverageDailySummary } from "@/types/sleep";
+
 interface SleepStatsProps {
-  averageDailySummary: {
-    feeds: number;
-    diapers: number;
-  };
+  averageDailySummary: AverageDailySummary;
 }
 
 export const SleepStats = ({ averageDailySummary }: SleepStatsProps) => {

@@ -49,7 +49,7 @@ export const SleepChartControls = ({
     <div className="space-y-4">
       {/* Header with Sleep title and toggles */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-sans font-semibold text-foreground dark:font-bold">Sleep</h2>
+        <h2 className="text-h2 text-foreground">Sleep</h2>
         
         <div className="flex items-center gap-2">
           {/* This Week / Last Week buttons */}
@@ -103,7 +103,7 @@ export const SleepChartControls = ({
           variant="ghost"
           size="sm"
           onClick={() => setShowFullDay(!showFullDay)}
-          className="text-muted-foreground text-sm hover:text-foreground"
+          className="text-muted-foreground text-caption hover:text-foreground"
         >
           {showFullDay ? "Show condensed (6am-9pm)" : "Show full day (12am-12am)"}
         </Button>
