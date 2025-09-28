@@ -123,21 +123,36 @@ export function useActivities() {
 
       if (error) throw error;
 
-      // Sort activities by actual activity time (endTime for naps when available, startTime otherwise, logged_at for others)
+      // Sort activities by actual activity time (endTime for overnight naps, startTime for others, logged_at for non-naps)
       const sortedData = (data || []).sort((a, b) => {
         const getActivityTime = (activity: any) => {
-          // For naps, use endTime if available (so overnight sleep appears after dream feeds)
-          // Otherwise use startTime, otherwise logged_at
+          const activityDate = new Date(activity.logged_at);
+          
+          // For naps with endTime, use endTime for sorting but keep in original day context
           if (activity.type === 'nap' && activity.details.endTime) {
-            const today = new Date().toDateString();
-            const activityDate = new Date(activity.logged_at).toDateString();
-            // Combine the date from logged_at with the time from endTime
-            return new Date(`${activityDate} ${activity.details.endTime}`).getTime();
+            const endTime = activity.details.endTime;
+            const [time, period] = endTime.split(' ');
+            const [hours, minutes] = time.split(':').map(Number);
+            let endHour = hours;
+            if (period === 'PM' && hours !== 12) endHour += 12;
+            if (period === 'AM' && hours === 12) endHour = 0;
+            
+            // If end time is early morning (before 12 PM), it's likely next day
+            // Add 24 hours to sort it after other activities from the same logged day
+            if (endHour < 12) {
+              const nextDay = new Date(activityDate);
+              nextDay.setDate(nextDay.getDate() + 1);
+              nextDay.setHours(endHour, minutes, 0, 0);
+              return nextDay.getTime();
+            } else {
+              // Same day end time
+              const sameDay = new Date(activityDate);
+              sameDay.setHours(endHour, minutes, 0, 0);
+              return sameDay.getTime();
+            }
           } else if (activity.type === 'nap' && activity.details.startTime) {
-            const today = new Date().toDateString();
-            const activityDate = new Date(activity.logged_at).toDateString();
-            // Combine the date from logged_at with the time from startTime
-            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
+            const activityDateStr = activityDate.toDateString();
+            return new Date(`${activityDateStr} ${activity.details.startTime}`).getTime();
           }
           return new Date(activity.logged_at).getTime();
         };
