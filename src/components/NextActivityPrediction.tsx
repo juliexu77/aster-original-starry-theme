@@ -21,7 +21,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   const getTimeInMinutes = (timeString: string) => {
-    const [time, period] = timeString.split(' ');
+    // Handle time ranges (e.g., "2:30 PM - 3:30 PM") by extracting start time
+    const startTime = timeString.includes(' - ') ? timeString.split(' - ')[0] : timeString;
+    
+    const [time, period] = startTime.split(' ');
     const [hours, minutes] = time.split(':').map(Number);
     let totalMinutes = (hours % 12) * 60 + minutes;
     if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
@@ -44,12 +47,27 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const currentTime = getCurrentTime();
     const currentMinutes = getTimeInMinutes(currentTime);
     
+    console.log('🕒 Prediction Debug - Starting:', {
+      currentTime,
+      currentMinutes,
+      activitiesCount: activities.length,
+      activities: activities.slice(0, 3).map(a => ({ type: a.type, time: a.time, loggedAt: a.loggedAt }))
+    });
+    
     // Check if we have minimum required data for predictions
     const feedActivities = activities.filter(a => a.type === "feed");
     const napActivities = activities.filter(a => a.type === "nap");
     
     const canPredictFeeds = feedActivities.length >= 2;
     const canPredictNaps = napActivities.length >= 2;
+    
+    console.log('🔍 Activities Filter:', {
+      totalActivities: activities.length,
+      feedActivities: feedActivities.length,
+      napActivities: napActivities.length,
+      canPredictFeeds,
+      canPredictNaps
+    });
     
     if (!canPredictFeeds && !canPredictNaps) {
       return {
@@ -322,13 +340,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       let napDelta = napTime - currentMinutes;
       if (napDelta < 0) napDelta += (24 * 60); // Handle day boundary
       
-      console.log('Prediction comparison:', {
+      console.log('🎯 Prediction comparison:', {
+        currentTime,
         feedPrediction: nextFeedPrediction.anticipatedTime,
         napPrediction: nextNapPrediction.anticipatedTime,
         feedDeltaMinutes: feedDelta,
         napDeltaMinutes: napDelta,
         currentMinutes,
-        selectedPrediction: feedDelta <= napDelta ? 'feed' : 'nap'
+        selectedPrediction: feedDelta <= napDelta ? 'feed' : 'nap',
+        feedTimeRaw: feedTime,
+        napTimeRaw: napTime
       });
       
       return feedDelta <= napDelta ? nextFeedPrediction : nextNapPrediction;
