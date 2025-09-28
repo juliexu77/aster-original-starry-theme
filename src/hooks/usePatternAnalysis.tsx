@@ -105,17 +105,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    // Analyze nap patterns - filter for today's daytime naps only
-    const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const todayEnd = new Date(todayStart);
-    todayEnd.setDate(todayEnd.getDate() + 1);
+    // Analyze nap patterns - use recent week's worth of daytime naps for better pattern detection
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
     
     const naps = activities.filter(a => {
       if (a.type !== 'nap') return false;
       if (!a.loggedAt) return true; // Include if no timestamp (fallback)
       const activityDate = new Date(a.loggedAt);
-      if (!(activityDate >= todayStart && activityDate < todayEnd)) return false;
+      if (activityDate < weekAgo) return false; // Only include last 7 days
       
       // Only count daytime naps (exclude overnight sleep)
       const napTime = getTimeInMinutes(a.time);
@@ -126,29 +124,39 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     });
     
     if (naps.length >= 2) {
+      const todayNaps = naps.filter(n => {
+        if (!n.loggedAt) return false;
+        const activityDate = new Date(n.loggedAt);
+        const today = new Date();
+        return activityDate.toDateString() === today.toDateString();
+      });
+      
       insights.push({
         icon: Moon,
-        text: `Taking ${naps.length} naps today`,
+        text: `Taking ${todayNaps.length} naps today (${naps.length} this week)`,
         confidence: 'medium',
         type: 'sleep',
         details: {
-          description: `Recorded ${naps.length} nap activities today. Here are the nap times:`,
-          data: naps.map(nap => ({
-            activity: nap,
-            value: nap.details.startTime && nap.details.endTime 
-              ? `${nap.details.startTime} - ${nap.details.endTime}`
-              : nap.time,
-            calculation: nap.details.startTime && nap.details.endTime 
-              ? (() => {
-                  const start = new Date(`2000/01/01 ${nap.details.startTime}`);
-                  const end = new Date(`2000/01/01 ${nap.details.endTime}`);
-                  const diffMs = end.getTime() - start.getTime();
-                  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                  const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                  return `Duration: ${hours}h ${minutes}m`;
-                })()
-              : 'Single time logged'
-          }))
+          description: `Recorded ${todayNaps.length} nap activities today, with ${naps.length} total naps this week. Here are recent nap patterns:`,
+          data: naps.slice(0, 5).map(nap => {
+            const napDate = nap.loggedAt ? new Date(nap.loggedAt).toLocaleDateString() : 'Today';
+            return {
+              activity: nap,
+              value: nap.details.startTime && nap.details.endTime 
+                ? `${nap.details.startTime} - ${nap.details.endTime}`
+                : nap.time,
+              calculation: nap.details.startTime && nap.details.endTime 
+                ? (() => {
+                    const start = new Date(`2000/01/01 ${nap.details.startTime}`);
+                    const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+                    const diffMs = end.getTime() - start.getTime();
+                    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                    return `${napDate}: Duration ${hours}h ${minutes}m`;
+                  })()
+                : `${napDate}: Single time logged`
+            };
+          })
         }
       });
 
@@ -195,7 +203,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    // Analyze wake windows (time between daytime naps only)
+    // Analyze wake windows using recent week's nap data for better pattern detection across days
     const completedDaytimeNaps = naps.filter(nap => {
       if (!nap.details.startTime || !nap.details.endTime) return false;
       
@@ -215,32 +223,71 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     
     if (completedDaytimeNaps.length >= 2) {
       const wakeWindows: Array<{ duration: number; afterNap: Activity; beforeNap: Activity }> = [];
-      
-      // Sort daytime naps by start time to get chronological order
-      const sortedNaps = [...completedDaytimeNaps].sort((a, b) => {
-        const aTime = getTimeInMinutes(a.details.startTime!);
-        const bTime = getTimeInMinutes(b.details.startTime!);
-        return aTime - bTime;
+      // Group naps by day to handle cross-day wake windows properly
+      const napsByDay = new Map<string, typeof completedDaytimeNaps>();
+      completedDaytimeNaps.forEach(nap => {
+        if (!nap.loggedAt) return;
+        const dateKey = new Date(nap.loggedAt).toDateString();
+        if (!napsByDay.has(dateKey)) {
+          napsByDay.set(dateKey, []);
+        }
+        napsByDay.get(dateKey)!.push(nap);
       });
 
-      for (let i = 1; i < sortedNaps.length; i++) {
-        const prevNapEnd = getTimeInMinutes(sortedNaps[i-1].details.endTime!);
-        const currentNapStart = getTimeInMinutes(sortedNaps[i].details.startTime!);
+      // Sort days and calculate wake windows within each day and across days
+      const sortedDays = Array.from(napsByDay.keys()).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+      
+      for (let dayIndex = 0; dayIndex < sortedDays.length; dayIndex++) {
+        const dayNaps = napsByDay.get(sortedDays[dayIndex])!.sort((a, b) => {
+          const aTime = getTimeInMinutes(a.details.startTime!);
+          const bTime = getTimeInMinutes(b.details.startTime!);
+          return aTime - bTime;
+        });
         
-        let wakeTime = currentNapStart - prevNapEnd;
-        
-        // Handle case where next nap is next day (add 24 hours)
-        if (wakeTime < 0) {
-          wakeTime += 24 * 60;
+        // Calculate wake windows within the same day
+        for (let i = 1; i < dayNaps.length; i++) {
+          const prevNapEnd = getTimeInMinutes(dayNaps[i-1].details.endTime!);
+          const currentNapStart = getTimeInMinutes(dayNaps[i].details.startTime!);
+          
+          let wakeTime = currentNapStart - prevNapEnd;
+          
+          // Only include reasonable wake windows (30 min to 6 hours)
+          if (wakeTime >= 30 && wakeTime <= 360) {
+            wakeWindows.push({
+              duration: wakeTime,
+              afterNap: dayNaps[i-1],
+              beforeNap: dayNaps[i]
+            });
+          }
         }
         
-        // Only include reasonable wake windows (30 min to 6 hours)
-        if (wakeTime >= 30 && wakeTime <= 360) {
-          wakeWindows.push({
-            duration: wakeTime,
-            afterNap: sortedNaps[i-1],
-            beforeNap: sortedNaps[i]
+        // Calculate wake window from last nap of previous day to first nap of current day
+        if (dayIndex > 0) {
+          const prevDayNaps = napsByDay.get(sortedDays[dayIndex - 1])!.sort((a, b) => {
+            const aTime = getTimeInMinutes(a.details.startTime!);
+            const bTime = getTimeInMinutes(b.details.startTime!);
+            return aTime - bTime;
           });
+          
+          if (prevDayNaps.length > 0 && dayNaps.length > 0) {
+            const lastNapPrevDay = prevDayNaps[prevDayNaps.length - 1];
+            const firstNapCurrentDay = dayNaps[0];
+            
+            const prevDayNapEnd = getTimeInMinutes(lastNapPrevDay.details.endTime!);
+            const currentDayNapStart = getTimeInMinutes(firstNapCurrentDay.details.startTime!);
+            
+            // Calculate cross-day wake window (add 24 hours for next day)
+            let crossDayWakeTime = (24 * 60) - prevDayNapEnd + currentDayNapStart;
+            
+            // Only include reasonable cross-day wake windows (4 to 18 hours)
+            if (crossDayWakeTime >= 240 && crossDayWakeTime <= 1080) {
+              wakeWindows.push({
+                duration: crossDayWakeTime,
+                afterNap: lastNapPrevDay,
+                beforeNap: firstNapCurrentDay
+              });
+            }
+          }
         }
       }
 
@@ -256,15 +303,22 @@ export const usePatternAnalysis = (activities: Activity[]) => {
           confidence: wakeWindows.length >= 3 ? 'high' : 'medium',
           type: 'sleep',
           details: {
-            description: `Based on ${wakeWindows.length} wake windows between daytime naps today, your baby typically stays awake for ${timeText} between naps. This is a good indicator of their natural rhythm.`,
+            description: `Based on ${wakeWindows.length} wake windows between naps over the past week, your baby typically stays awake for ${timeText} between naps. This pattern helps predict optimal nap timing across days.`,
             data: wakeWindows.map(({ duration, afterNap, beforeNap }) => {
               const wHours = Math.floor(duration / 60);
               const wMinutes = Math.round(duration % 60);
               const wTimeText = wHours > 0 ? `${wHours}h ${wMinutes}m` : `${wMinutes}m`;
+              
+              const afterDate = afterNap.loggedAt ? new Date(afterNap.loggedAt).toLocaleDateString() : 'Recent';
+              const beforeDate = beforeNap.loggedAt ? new Date(beforeNap.loggedAt).toLocaleDateString() : 'Recent';
+              const isCrossDay = afterDate !== beforeDate;
+              
               return {
                 activity: beforeNap,
                 value: wTimeText,
-                calculation: `Awake from ${afterNap.details.endTime} to ${beforeNap.details.startTime}`
+                calculation: isCrossDay 
+                  ? `Cross-day: ${afterDate} ${afterNap.details.endTime} to ${beforeDate} ${beforeNap.details.startTime}`
+                  : `Same day: ${afterNap.details.endTime} to ${beforeNap.details.startTime}`
               };
             }),
             calculation: `Average: ${wakeWindows.map(w => {
