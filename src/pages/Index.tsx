@@ -61,6 +61,7 @@ const Index = () => {
     : [];
 
   const [activeTab, setActiveTab] = useState("home");
+  const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
@@ -369,7 +370,16 @@ const Index = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => setActiveTab("settings")}
+            onClick={() => {
+              if (activeTab === "settings") {
+                // If we're already in settings, go back to previous tab
+                setActiveTab(previousTab);
+              } else {
+                // Going to settings, save current tab as previous
+                setPreviousTab(activeTab);
+                setActiveTab("settings");
+              }
+            }}
             className="p-2"
           >
             <Settings className="h-5 w-5" />
@@ -382,7 +392,13 @@ const Index = () => {
 
       <BottomNavigation 
         activeTab={activeTab} 
-        onTabChange={setActiveTab}
+        onTabChange={(newTab) => {
+          // When changing tabs via bottom nav, save previous tab (unless going to settings)
+          if (newTab !== "settings") {
+            setPreviousTab(activeTab);
+          }
+          setActiveTab(newTab);
+        }}
         onAddActivity={() => setShowAddActivity(true)}
       />
 

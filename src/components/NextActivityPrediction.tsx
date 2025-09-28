@@ -52,8 +52,27 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   
   // Use the new prediction engine but adapt to old UI format
   const predictNextActivity = () => {
+    console.log('🚀 NextActivityPrediction called with activities:', activities.length);
+    console.log('📊 Sample activities:', activities.slice(0, 2).map(a => ({
+      type: a.type,
+      time: a.time,
+      loggedAt: a.loggedAt,
+      details: a.details
+    })));
+    
     const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
     const prediction = engine.getNextAction();
+    
+    console.log('🔮 Prediction result:', {
+      action: prediction.next_action,
+      confidence: prediction.confidence,
+      rationale: {
+        feedMinutes: prediction.rationale.t_since_last_feed_min,
+        awakeMinutes: prediction.rationale.t_awake_now_min,
+        daySleep: prediction.rationale.cumulative_day_sleep_min,
+        scores: prediction.rationale.scores
+      }
+    });
     
     const currentTime = getCurrentTime();
     
