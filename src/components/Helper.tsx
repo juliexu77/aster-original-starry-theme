@@ -26,6 +26,8 @@ interface HelperCard {
 }
 
 export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
+  console.log('Helper component received activities:', activities.length, activities.slice(0, 3));
+  
   const getAllInsights = (): HelperCard[] => {
     const today = new Date();
     const todayStart = startOfDay(today);
@@ -72,9 +74,32 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       return insights;
     }
 
-    // Current day summary
-    const totalIntakeToday = todayFeeds.reduce((sum, f) => sum + (f.details?.amount || 0), 0);
-    const totalNapTimeToday = todayNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0);
+    // Current day summary - fix field mapping
+    const totalIntakeToday = todayFeeds.reduce((sum, f) => {
+      const quantity = f.details?.quantity || f.details?.amount || 0;
+      return sum + (parseFloat(quantity) || 0);
+    }, 0);
+    
+    // Calculate total nap time properly
+    const totalNapTimeToday = todayNaps.reduce((sum, n) => {
+      if (n.details?.duration) {
+        // Parse duration string like "1h 30m" or "45m"
+        const duration = n.details.duration;
+        if (typeof duration === 'string') {
+          const hours = duration.match(/(\d+)h/)?.[1] || '0';
+          const minutes = duration.match(/(\d+)m/)?.[1] || '0';
+          return sum + (parseInt(hours) * 60) + parseInt(minutes);
+        }
+        return sum + parseInt(duration) || 0;
+      }
+      // Fallback: calculate from start/end times
+      if (n.details?.startTime && n.details?.endTime) {
+        const start = new Date(`1970-01-01 ${n.details.startTime}`);
+        const end = new Date(`1970-01-01 ${n.details.endTime}`);
+        return sum + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+      }
+      return sum;
+    }, 0);
     
     let todayStatus = "tracking well";
     const currentHour = new Date().getHours();
@@ -89,8 +114,8 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       title: "Today's Progress",
       summary: `${todayFeeds.length} feeds • ${Math.round(totalNapTimeToday / 60)}h sleep • ${todayDiapers.length} diapers`,
       bullets: [
-        totalIntakeToday > 0 ? `Total intake: ${totalIntakeToday}ml` : "No intake tracked yet today",
-        todayNaps.length > 0 ? `Nap time: ${totalNapTimeToday} minutes` : "No naps logged yet",
+        totalIntakeToday > 0 ? `Total intake: ${totalIntakeToday}${todayFeeds.some(f => f.details?.unit === 'ml') ? 'ml' : 'oz'}` : "No intake tracked yet today",
+        todayNaps.length > 0 ? `Nap time: ${Math.floor(totalNapTimeToday / 60)}h ${totalNapTimeToday % 60}m` : "No naps logged yet",
         `Status: ${todayStatus}`
       ].filter(Boolean),
       icon: Clock,
@@ -149,9 +174,42 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       }
 
       const weeklyNaps = weekActivities.filter(a => a.type === "nap");
-      const avgNapDuration = weeklyNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0) / weeklyNaps.length;
+      const avgNapDuration = weeklyNaps.reduce((sum, n) => {
+        if (n.details?.duration) {
+          const duration = n.details.duration;
+          if (typeof duration === 'string') {
+            const hours = duration.match(/(\d+)h/)?.[1] || '0';
+            const minutes = duration.match(/(\d+)m/)?.[1] || '0';
+            return sum + (parseInt(hours) * 60) + parseInt(minutes);
+          }
+          return sum + parseInt(duration) || 0;
+        }
+        if (n.details?.startTime && n.details?.endTime) {
+          const start = new Date(`1970-01-01 ${n.details.startTime}`);
+          const end = new Date(`1970-01-01 ${n.details.endTime}`);
+          return sum + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+        }
+        return sum;
+      }, 0) / Math.max(weeklyNaps.length, 1);
+      
       const yesterdayNaps = yesterdayActivities.filter(a => a.type === "nap");
-      const yesterdayAvgNap = yesterdayNaps.reduce((sum, n) => sum + (n.details?.duration || 0), 0) / Math.max(yesterdayNaps.length, 1);
+      const yesterdayAvgNap = yesterdayNaps.reduce((sum, n) => {
+        if (n.details?.duration) {
+          const duration = n.details.duration;
+          if (typeof duration === 'string') {
+            const hours = duration.match(/(\d+)h/)?.[1] || '0';
+            const minutes = duration.match(/(\d+)m/)?.[1] || '0';
+            return sum + (parseInt(hours) * 60) + parseInt(minutes);
+          }
+          return sum + parseInt(duration) || 0;
+        }
+        if (n.details?.startTime && n.details?.endTime) {
+          const start = new Date(`1970-01-01 ${n.details.startTime}`);
+          const end = new Date(`1970-01-01 ${n.details.endTime}`);
+          return sum + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
+        }
+        return sum;
+      }, 0) / Math.max(yesterdayNaps.length, 1);
       
       if (yesterdayAvgNap < avgNapDuration * 0.7) {
         anomalies.push("😴 Shorter naps than usual yesterday");
@@ -276,11 +334,6 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Icon className="h-5 w-5 text-primary" />
                   {card.title}
-                  {card.confidence && card.confidence >= 0.7 && (
-                    <Badge variant="secondary" className="text-xs">
-                      {Math.round(card.confidence * 100)}% confident
-                    </Badge>
-                  )}
                 </CardTitle>
                 <p className="text-sm font-medium text-muted-foreground">{card.summary}</p>
               </CardHeader>
