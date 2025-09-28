@@ -87,9 +87,20 @@ export const TimePicker = ({ value, onChange, label }: TimePickerProps) => {
         return `${hour}:${minute.toString().padStart(2, '0')} ${period}`;
       }
     } else if (timeStr.length === 4) {
-      // "1045" -> "10:45"
-      const hour = parseInt(timeStr.substring(0, 2));
-      const minute = parseInt(timeStr.substring(2, 4));
+      // Handle both "1045" -> "10:45" and "950" -> "9:50"
+      let hour, minute;
+      
+      // Try parsing as two-digit hour first (e.g., "1045")
+      const twoDigitHour = parseInt(timeStr.substring(0, 2));
+      if (twoDigitHour >= 1 && twoDigitHour <= 12) {
+        hour = twoDigitHour;
+        minute = parseInt(timeStr.substring(2, 4));
+      } else {
+        // Parse as single-digit hour (e.g., "950" -> "9:50")
+        hour = parseInt(timeStr.substring(0, 1));
+        minute = parseInt(timeStr.substring(1, 4));
+      }
+      
       if (hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59) {
         if (!period) {
           const now = new Date();
