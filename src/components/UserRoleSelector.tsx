@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface UserRoleSelectorProps {
   value: "parent" | "caregiver";
@@ -9,6 +10,7 @@ interface UserRoleSelectorProps {
 }
 
 export function UserRoleSelector({ value, onChange, className }: UserRoleSelectorProps) {
+  const { t } = useLanguage();
   return (
     <div className={cn("flex gap-1 p-1 bg-muted rounded-xl", className)}>
       <Button
@@ -22,7 +24,7 @@ export function UserRoleSelector({ value, onChange, className }: UserRoleSelecto
             : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
         )}
       >
-        Parent / Family
+        {t('parentFamily')}
       </Button>
       <Button
         variant={value === "caregiver" ? "default" : "ghost"}
@@ -35,7 +37,7 @@ export function UserRoleSelector({ value, onChange, className }: UserRoleSelecto
             : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background"
         )}
       >
-        Caregiver / Nanny
+        {t('caregiverNanny')}
       </Button>
     </div>
   );

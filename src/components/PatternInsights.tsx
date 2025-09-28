@@ -3,12 +3,14 @@ import { Brain, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PatternInsightsProps {
   activities: Activity[];
 }
 
 export const PatternInsights = ({ activities }: PatternInsightsProps) => {
+  const { t } = useLanguage();
   const [expandedInsight, setExpandedInsight] = useState<number | null>(null);
   const { insights } = usePatternAnalysis(activities);
 
@@ -27,7 +29,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
             <Brain className="h-5 w-5 text-primary" />
-            Pattern Insights
+            {t('patternInsights')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -50,7 +52,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
           <Brain className="h-5 w-5 text-primary" />
-          Pattern Insights
+          {t('patternInsights')}
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Activity } from "./ActivityCard";
 import { Clock, Baby, Moon, Palette, ChevronDown, ChevronUp } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface NextActivityPredictionProps {
   activities: Activity[];
 }
 
 export const NextActivityPrediction = ({ activities }: NextActivityPredictionProps) => {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   
   const getCurrentTime = () => {
@@ -292,7 +294,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-muted-foreground" />
           <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
-            Next Predicted Action
+            {t('nextPredictedAction')}
           </h3>
         </div>
         <button

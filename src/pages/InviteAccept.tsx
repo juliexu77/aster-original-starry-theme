@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Baby, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface InviteDetails {
   household_id: string;
@@ -20,6 +21,7 @@ const InviteAccept = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { acceptInvite } = useHousehold();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteDetails, setInviteDetails] = useState<InviteDetails | null>(null);
@@ -98,14 +100,14 @@ const InviteAccept = () => {
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
               <Baby className="w-8 h-8 text-white" />
             </div>
-            <CardTitle>Join Baby Tracking</CardTitle>
+            <CardTitle>{t('joinBabyTracking')}</CardTitle>
             <CardDescription>
-              Sign in to accept this invitation
+              {t('signInToAcceptInvite')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-center text-muted-foreground">
-              Redirecting to sign in...
+              {t('redirectingToSignIn')}
             </p>
           </CardContent>
         </Card>
@@ -120,9 +122,9 @@ const InviteAccept = () => {
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
             <Baby className="w-8 h-8 text-white" />
           </div>
-          <CardTitle>You've been invited!</CardTitle>
+          <CardTitle>{t('youveBeenInvited')}</CardTitle>
           <CardDescription>
-            {inviteDetails?.inviter_name || 'Someone'} has invited you to help track {inviteDetails?.baby_name || 'their baby'}'s activities
+            {inviteDetails?.inviter_name || 'Someone'} {t('inviteDescription')} {inviteDetails?.baby_name || 'their baby'}{t('activitiesText')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -138,7 +140,7 @@ const InviteAccept = () => {
             className="w-full"
           >
             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Accept Invitation
+            {t('acceptInvitation')}
           </Button>
           
           <Button 
@@ -146,7 +148,7 @@ const InviteAccept = () => {
             onClick={() => navigate("/")}
             className="w-full"
           >
-            Skip for now
+            {t('skipInviteForNow')}
           </Button>
         </CardContent>
       </Card>

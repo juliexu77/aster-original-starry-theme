@@ -4,12 +4,14 @@ import { useSleepData } from "@/hooks/useSleepData";
 import { SleepChartVisualization } from "./sleep/SleepChartVisualization";
 import { SleepStats } from "./sleep/SleepStats";
 import { SleepChartControls } from "./sleep/SleepChartControls";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SleepChartProps {
   activities: Activity[];
 }
 
 export const SleepChart = ({ activities }: SleepChartProps) => {
+  const { t } = useLanguage();
   const [showFullDay, setShowFullDay] = useState(false);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
   
@@ -19,6 +21,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     <div className="space-y-6">
       {/* Daily Sleep Totals */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+        <h3 className="text-lg font-semibold mb-4">{t('dailySleepTotals')}</h3>
         <SleepChartControls
           currentWeekOffset={currentWeekOffset}
           setCurrentWeekOffset={setCurrentWeekOffset}

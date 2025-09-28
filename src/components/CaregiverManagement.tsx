@@ -22,6 +22,7 @@ interface Collaborator {
 }
 import { UserPlus, Trash2, Mail, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CaregiverManagementProps {
   onClose: () => void;
@@ -29,6 +30,7 @@ interface CaregiverManagementProps {
 
 export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const { household, collaborators, removeCollaborator, updateCollaboratorRole, generateInviteLink } = useHousehold();
+  const { t } = useLanguage();
   const [isActive, setIsActive] = useState(true);
   const [emailInvite, setEmailInvite] = useState("");
   const [isInviting, setIsInviting] = useState(false);
@@ -161,20 +163,20 @@ const handleAddCaregiver = async () => {
         {/* Parents / Caregivers Section */}
         <div className="px-4 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Parents / Caregivers</h3>
+            <h3 className="text-lg font-medium">{t('parentsCaregiversTitle')}</h3>
           </div>
           
           <p className="text-sm text-muted-foreground mb-4">
-            Each caregiver will be able to view and save entries for {household?.baby_name || "Baby"}
+            {t('eachCaregiverDescription')} {household?.baby_name || "Baby"}
           </p>
 
           {/* Collaborators List */}
           <div className="space-y-3">
             {collaborators.length === 0 ? (
               <div className="text-center p-4 bg-muted/30 rounded-lg">
-                <p className="text-sm text-muted-foreground">No collaborators found yet.</p>
+                <p className="text-sm text-muted-foreground">{t('noCollaboratorsFound')}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Invite someone using the link below!
+                  {t('inviteSomeoneBelow')}
                 </p>
               </div>
             ) : (
@@ -226,12 +228,12 @@ const handleAddCaregiver = async () => {
           <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-primary" />
-              <Label className="font-medium">Invite by Email</Label>
+              <Label className="font-medium">{t('inviteByEmail')}</Label>
             </div>
             <div className="flex gap-2">
               <Input
                 type="email"
-                placeholder="Enter email address"
+                placeholder={t('enterEmailAddress')}
                 value={emailInvite}
                 onChange={(e) => setEmailInvite(e.target.value)}
                 className="flex-1"
@@ -245,7 +247,7 @@ const handleAddCaregiver = async () => {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              We'll copy an invite message for you to send
+              {t('wellCopyInviteMessage')}
             </p>
           </div>
 
@@ -256,7 +258,7 @@ const handleAddCaregiver = async () => {
             className="w-full h-12 border-dashed border-primary text-primary hover:bg-primary/5"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Copy Invite Link
+            {t('copyInviteLink')}
           </Button>
 
           {/* Profile Status Section */}

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -146,6 +147,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     }
   };
 
+  const { t } = useLanguage();
+  
   const formatDateLabel = (date: Date) => {
     const today = new Date();
     const tomorrow = new Date(today);
@@ -154,11 +157,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     yesterday.setDate(today.getDate() - 1);
     
     if (date.toDateString() === today.toDateString()) {
-      return "Today";
+      return t('today');
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return "Tomorrow";
+      return t('tomorrow');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return "Yesterday";
+      return t('yesterday');
     } else {
       return date.toLocaleDateString('en-US', { 
         month: 'short', 

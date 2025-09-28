@@ -85,7 +85,6 @@ const translations = {
     
     // Baby setup
     personalizeExperience: "Let's personalize your tracking experience",
-    skipForNow: "Skip for now (you can add this later in settings)",
     birthday: "Birthday",
     selectBirthdate: "Select birthdate",
     
@@ -135,7 +134,57 @@ const translations = {
     done: "Done",
     currentCaregivers: "Current Caregivers",
     selectBirthday: "Select birthday",
-    youAre: "You are"
+    youAre: "You are",
+    
+    // Time-related
+    today: "Today",
+    yesterday: "Yesterday",
+    tomorrow: "Tomorrow",
+    
+    // Chart and insights
+    nextPredictedAction: "Next Predicted Action",
+    patternInsights: "Pattern Insights",
+    dailySleepTotals: "Daily Sleep Totals",
+    wakeWindows: "Wake Windows",
+    sleepPatterns: "Sleep Patterns",
+    feedingPatterns: "Feeding Patterns",
+    avgDailySleep: "Avg Daily Sleep",
+    
+    // Invite page
+    youveBeenInvited: "You've been invited!",
+    inviteDescription: "has invited you to help track",
+    activitiesText: "'s activities",
+    acceptInvitation: "Accept Invitation",
+    skipInviteForNow: "Skip for now",
+    signInToAcceptInvite: "Sign in to accept this invitation",
+    redirectingToSignIn: "Redirecting to sign in...",
+    joinBabyTracking: "Join Baby Tracking",
+    
+    // Caregiver management
+    parentsCaregiversTitle: "Parents / Caregivers",
+    eachCaregiverDescription: "Each caregiver will be able to view and save entries for",
+    noCollaboratorsFound: "No collaborators found yet.",
+    inviteSomeoneBelow: "Invite someone using the link below!",
+    parentFamily: "Parent / Family",
+    caregiverNanny: "Caregiver / Nanny",
+    inviteByEmail: "Invite by Email",
+    enterEmailAddress: "Enter email address",
+    copyInviteLink: "Copy Invite Link",
+    wellCopyInviteMessage: "We'll copy an invite message for you to send",
+    
+    // Role types
+    parent: "Parent",
+    caregiver: "Caregiver",
+    grandparent: "Grandparent",
+    partner: "Partner",
+    
+    // Timeline
+    showMoreDays: "Show",
+    moreDays: "more days",
+    showLess: "Show less",
+    
+    // Activities
+    noActivitiesStartAdding: "No activities yet. Start by adding your first activity!"
   },
   zh: {
     // App name and core  
@@ -211,7 +260,7 @@ const translations = {
     
     // Baby setup
     personalizeExperience: "让我们个性化您的追踪体验",
-    skipForNow: "暂时跳过（您可以稍后在设置中添加）",
+    
     birthday: "生日",
     selectBirthdate: "选择出生日期",
     
@@ -261,7 +310,57 @@ const translations = {
     done: "完成",
     currentCaregivers: "当前看护者",
     selectBirthday: "选择生日",
-    youAre: "您是"
+    youAre: "您是",
+    
+    // Time-related
+    today: "今天",
+    yesterday: "昨天",
+    tomorrow: "明天",
+    
+    // Chart and insights
+    nextPredictedAction: "下一个预测活动",
+    patternInsights: "模式洞察",
+    dailySleepTotals: "每日睡眠总计",
+    wakeWindows: "清醒时间窗口",
+    sleepPatterns: "睡眠模式",
+    feedingPatterns: "喂养模式",
+    avgDailySleep: "日均睡眠",
+    
+    // Invite page
+    youveBeenInvited: "您受到邀请！",
+    inviteDescription: "邀请您帮助追踪",
+    activitiesText: "的活动",
+    acceptInvitation: "接受邀请",
+    skipInviteForNow: "暂时跳过",
+    signInToAcceptInvite: "登录以接受此邀请",
+    redirectingToSignIn: "正在重定向到登录...",
+    joinBabyTracking: "加入宝宝追踪",
+    
+    // Caregiver management
+    parentsCaregiversTitle: "父母 / 看护者",
+    eachCaregiverDescription: "每位看护者都能查看和保存",
+    noCollaboratorsFound: "尚未找到协作者。",
+    inviteSomeoneBelow: "使用下面的链接邀请某人！",
+    parentFamily: "父母 / 家庭",
+    caregiverNanny: "看护者 / 保姆",
+    inviteByEmail: "通过邮箱邀请",
+    enterEmailAddress: "输入邮箱地址",
+    copyInviteLink: "复制邀请链接",
+    wellCopyInviteMessage: "我们将为您复制邀请消息以发送",
+    
+    // Role types
+    parent: "父母",
+    caregiver: "看护者",
+    grandparent: "祖父母",
+    partner: "伴侣",
+    
+    // Timeline
+    showMoreDays: "显示",
+    moreDays: "更多天",
+    showLess: "显示更少",
+    
+    // Activities
+    
   }
 };
 

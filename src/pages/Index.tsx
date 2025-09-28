@@ -15,9 +15,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { t } = useLanguage();
   const { 
     household, 
     loading: householdLoading
@@ -194,7 +196,7 @@ const Index = () => {
               <div className="space-y-4 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <p>No activities yet. Start by adding your first activity!</p>
+                    <p>{t('noActivitiesStartAdding')}</p>
                   </div>
                 ) : (
                   (() => {
@@ -256,9 +258,9 @@ const Index = () => {
                           
                           let displayDate;
                           if (dateKey === todayKey) {
-                            displayDate = "Today";
+                            displayDate = t('today');
                           } else if (dateKey === yesterdayKey) {
-                            displayDate = "Yesterday";
+                            displayDate = t('yesterday');
                           } else {
                             displayDate = date.toLocaleDateString("en-US", { 
                               weekday: "long", 
@@ -323,7 +325,7 @@ const Index = () => {
                               onClick={() => setShowFullTimeline(!showFullTimeline)}
                               className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
                             >
-                              {showFullTimeline ? "Show less" : `Show ${sortedDates.length - visibleDates.length} more days`}
+                              {showFullTimeline ? t('showLess') : `${t('showMoreDays')} ${sortedDates.length - visibleDates.length} ${t('moreDays')}`}
                             </button>
                           </div>
                         )}
