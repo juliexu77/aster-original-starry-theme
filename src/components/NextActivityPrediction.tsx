@@ -108,28 +108,9 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     else if (prediction.confidence >= 0.6) confidence = "medium";
     else confidence = "low";
 
-    // Create details object for expanded view
-    const rationale = prediction.rationale;
+    // Keep details minimal for UI
     details = {
-      description: `Based on recent patterns and current state`,
-      data: [
-        {
-          activity: { type: "analysis", time: currentTime },
-          value: `Feed pressure: ${Math.round(rationale.scores.feed * 100)}%`,
-          calculation: "Based on time since last feed and patterns"
-        },
-        {
-          activity: { type: "analysis", time: currentTime },
-          value: `Sleep pressure: ${Math.round(rationale.scores.sleep * 100)}%`,
-          calculation: "Based on wake windows and sleep needs"
-        },
-        {
-          activity: { type: "analysis", time: currentTime },
-          value: `Day sleep: ${Math.round(rationale.cumulative_day_sleep_min / 60 * 10) / 10}h`,
-          calculation: `Target: ${Math.round(rationale.day_sleep_target_min / 60 * 10) / 10}h`
-        }
-      ],
-      calculation: `${prediction.next_action} with ${Math.round(prediction.confidence * 100)}% confidence`
+      description: `Based on recent patterns and current state`
     };
 
     return { type, anticipatedTime, confidence, reason, details };
@@ -178,28 +159,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
             {getIcon(prediction.type)}
             <span className="font-medium text-foreground">{getPredictionText()}</span>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
-          
-          <div className="p-3 bg-muted rounded-lg">
-            <h4 className="font-medium text-sm mb-2 text-foreground">Prediction Analysis:</h4>
-            <p className="text-sm text-muted-foreground mb-2">{prediction.details.description}</p>
-            
-            {prediction.details.data.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Recent patterns:</p>
-                {prediction.details.data.slice(0, 3).map((item: any, index: number) => (
-                  <div key={index} className="text-xs text-muted-foreground">
-                    • {item.value} ({item.calculation})
-                  </div>
-                ))}
-                {prediction.details.calculation && (
-                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
-                    <strong>Calculation:</strong> {prediction.details.calculation}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <p className="text-sm text-muted-foreground">{prediction.reason}</p>
         </div>
       )}
     </div>
