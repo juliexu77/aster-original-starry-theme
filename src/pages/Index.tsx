@@ -336,19 +336,18 @@ const Index = () => {
           addActivity(activity.type, activity.details, activityDate, activityTime);
           setShowAddActivity(false);
         }}
-        onEditActivity={async (updatedActivity) => {
+        onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
           try {
             // Convert time string to timestamp for database update
-            const [time, period] = updatedActivity.time.split(' ');
+            const [time, period] = activityTime.split(' ');
             const [hours, minutes] = time.split(':').map(Number);
             
             let hour24 = hours;
             if (period === 'PM' && hours !== 12) hour24 += 12;
             if (period === 'AM' && hours === 12) hour24 = 0;
             
-            // Preserve the original date, only update the time
-            const originalActivity = activities.find(a => a.id === updatedActivity.id);
-            const loggedAt = new Date(originalActivity?.loggedAt || updatedActivity.loggedAt);
+            // Use the selected date from the modal, not the original date
+            const loggedAt = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hour24, minutes, 0, 0);
             loggedAt.setHours(hour24, minutes, 0, 0);
 
             const { error } = await supabase

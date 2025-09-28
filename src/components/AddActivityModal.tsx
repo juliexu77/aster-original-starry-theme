@@ -24,7 +24,7 @@ interface AddActivityModalProps {
   onClose?: () => void;
   showFixedButton?: boolean; // Add prop to control fixed button visibility
   editingActivity?: Activity | null; // Add editing support
-  onEditActivity?: (activity: Activity) => void;
+  onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => void;
   onDeleteActivity?: (activityId: string) => void; // Add delete support
 }
 
@@ -333,7 +333,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         details,
       };
       
-      onEditActivity(updatedActivity);
+      onEditActivity(updatedActivity, selectedDate, activityType === "nap" ? startTime : time);
     } else {
       // Create new activity
       const newActivity: Omit<Activity, "id"> = {
