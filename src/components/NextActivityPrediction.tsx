@@ -99,8 +99,17 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       activitiesCount: activities.length,
       currentlyNapping: !!currentlyNapping,
       napStartTime: currentlyNapping?.time,
+      napDetails: currentlyNapping?.details,
       activities: activities.slice(0, 3).map(a => ({ type: a.type, time: a.time, loggedAt: a.loggedAt }))
     });
+    
+    // CRITICAL: If baby is currently napping, NEVER predict another nap
+    if (currentlyNapping) {
+      console.log('🛌 BLOCKING nap prediction - baby is currently napping:', {
+        currentNap: currentlyNapping.time,
+        napDetails: currentlyNapping.details
+      });
+    }
     
     console.log('🔍 Activities Filter:', {
       totalActivities: activities.length,
@@ -342,8 +351,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         };
       }
       
-      // Time-of-day nap prediction
-      if (!nextNapPrediction && sleepTimes.length > 0) {
+      // Time-of-day nap prediction - but not if currently napping
+      if (!nextNapPrediction && !currentlyNapping && sleepTimes.length > 0) {
         const lastNap = napActivities[0];
         const lastNapTime = getTimeInMinutes(lastNap.time);
         let timeSinceLastNap = currentMinutes - lastNapTime;
@@ -431,7 +440,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (nextFeedPrediction) return nextFeedPrediction;
     if (nextNapPrediction) return nextNapPrediction;
 
-    // Fallback predictions
+    // Fallback predictions - but NEVER predict nap if currently napping
     if (lastActivity.type === "nap") {
       return {
         type: "feed",
@@ -446,15 +455,31 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       };
     }
 
+    // Only suggest nap if not currently napping
+    if (!currentlyNapping) {
+      return {
+        type: "nap",
+        anticipatedTime: undefined,
+        confidence: 'medium' as const,
+        reason: "Consider sleep time after feeding",
+        details: {
+          description: "After a feeding, babies often need some time to settle before their next sleep period.",
+          data: [{ activity: lastActivity, value: lastActivity.time, calculation: "Last activity was feeding" }],
+          calculation: "Based on typical feed-sleep cycles"
+        }
+      };
+    }
+    
+    // If currently napping, suggest feed as next activity
     return {
-      type: "nap",
+      type: "feed",
       anticipatedTime: undefined,
       confidence: 'medium' as const,
-      reason: "Consider sleep time after feeding",
+      reason: "Feeding will be needed after current nap",
       details: {
-        description: "After a feeding, babies often need some time to settle before their next sleep period.",
-        data: [{ activity: lastActivity, value: lastActivity.time, calculation: "Last activity was feeding" }],
-        calculation: "Based on typical feed-sleep cycles"
+        description: "Your baby is currently napping. The next activity will likely be a feeding when they wake up.",
+        data: [{ activity: currentlyNapping, value: currentlyNapping.time, calculation: "Currently napping" }],
+        calculation: "Based on typical nap-feed cycles"
       }
     };
   };
