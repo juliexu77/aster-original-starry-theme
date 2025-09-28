@@ -138,7 +138,7 @@ export const Settings = () => {
         <div className="max-w-md mx-auto px-4 py-8 space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-foreground">
+            <h1 className="text-h2 text-foreground">
               {t('profileSettings')}
             </h1>
             <ThemeToggle showText={false} />

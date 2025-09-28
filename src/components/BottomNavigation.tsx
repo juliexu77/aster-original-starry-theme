@@ -43,7 +43,7 @@ const leftTabs = [
                   }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{tab.label}</span>
+                  <span className="text-label font-medium">{tab.label}</span>
                 </button>
               );
             })}
@@ -78,7 +78,7 @@ const leftTabs = [
                   }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{tab.label}</span>
+                  <span className="text-label font-medium">{tab.label}</span>
                 </button>
               );
             })}
