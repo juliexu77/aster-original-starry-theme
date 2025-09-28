@@ -61,22 +61,24 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
             return (
               <div 
                 key={index}
-                className={`border rounded-lg p-4 transition-all cursor-pointer hover:shadow-sm ${getConfidenceColor(insight.confidence)}`}
+                className={`rounded-lg p-4 transition-all cursor-pointer hover:opacity-90 ${getConfidenceColor(insight.confidence)}`}
                 onClick={() => setExpandedInsight(expandedInsight === index ? null : index)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <IconComponent className="h-5 w-5" />
-                    <div>
+                    <div className="flex-1">
                       <h4 className="font-medium">{insight.text}</h4>
-                      <span className="text-xs opacity-75 capitalize">{insight.confidence} confidence</span>
                     </div>
                   </div>
-                  {expandedInsight === index ? (
-                    <ChevronUp className="h-4 w-4 opacity-50" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm opacity-75 capitalize">{insight.confidence} confidence</span>
+                    {expandedInsight === index ? (
+                      <ChevronUp className="h-4 w-4 opacity-50" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    )}
+                  </div>
                 </div>
                 
                 {expandedInsight === index && (
