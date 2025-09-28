@@ -34,10 +34,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
   const addMinutesToTime = (timeString: string, minutes: number) => {
     const timeInMinutes = getTimeInMinutes(timeString);
-    const totalMinutes = Math.round(timeInMinutes + minutes);
-    const newTimeInMinutes = totalMinutes % (24 * 60);
-    const hours = Math.floor(newTimeInMinutes / 60);
-    const mins = Math.round(newTimeInMinutes % 60);
+    let totalMinutes = timeInMinutes + minutes;
+    
+    // Handle day boundary properly - ensure positive result
+    while (totalMinutes < 0) {
+      totalMinutes += (24 * 60);
+    }
+    totalMinutes = totalMinutes % (24 * 60);
+    
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = Math.round(totalMinutes % 60);
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
@@ -47,19 +53,34 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const currentTime = getCurrentTime();
     const currentMinutes = getTimeInMinutes(currentTime);
     
-    console.log('🕒 Prediction Debug - Starting:', {
-      currentTime,
-      currentMinutes,
-      activitiesCount: activities.length,
-      activities: activities.slice(0, 3).map(a => ({ type: a.type, time: a.time, loggedAt: a.loggedAt }))
-    });
-    
     // Check if we have minimum required data for predictions
     const feedActivities = activities.filter(a => a.type === "feed");
     const napActivities = activities.filter(a => a.type === "nap");
     
     const canPredictFeeds = feedActivities.length >= 2;
     const canPredictNaps = napActivities.length >= 2;
+    
+    // Detect if baby is currently napping
+    const currentlyNapping = napActivities.find(nap => {
+      // Check if nap doesn't have end time (ongoing) and started within reasonable time
+      if (!nap.details.endTime) {
+        const napStartMinutes = getTimeInMinutes(nap.time);
+        let timeSinceNapStart = currentMinutes - napStartMinutes;
+        if (timeSinceNapStart < 0) timeSinceNapStart += (24 * 60);
+        // Consider napping if started within 4 hours and no end time
+        return timeSinceNapStart <= 4 * 60;
+      }
+      return false;
+    });
+    
+    console.log('🕒 Prediction Debug - Starting:', {
+      currentTime,
+      currentMinutes,
+      activitiesCount: activities.length,
+      currentlyNapping: !!currentlyNapping,
+      napStartTime: currentlyNapping?.time,
+      activities: activities.slice(0, 3).map(a => ({ type: a.type, time: a.time, loggedAt: a.loggedAt }))
+    });
     
     console.log('🔍 Activities Filter:', {
       totalActivities: activities.length,
@@ -214,12 +235,28 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
       
       const lastNap = napActivities[0];
-      const lastNapEndTime = lastNap.details.endTime ? 
-        getTimeInMinutes(lastNap.details.endTime) : 
-        getTimeInMinutes(lastNap.time);
+      let lastNapEndTime: number;
+      let timeSinceLastNapEnded: number;
       
-      let timeSinceLastNapEnded = currentMinutes - lastNapEndTime;
-      if (timeSinceLastNapEnded < 0) timeSinceLastNapEnded += (24 * 60);
+      if (currentlyNapping && lastNap.id === currentlyNapping.id) {
+        // Baby is currently napping - use current time as reference
+        lastNapEndTime = currentMinutes;
+        timeSinceLastNapEnded = 0; // Currently in nap
+        
+        console.log('🛌 Currently napping detected:', {
+          napStartTime: lastNap.time,
+          currentTime,
+          napDuration: currentMinutes - getTimeInMinutes(lastNap.time)
+        });
+      } else {
+        // Use actual end time or start time as fallback
+        lastNapEndTime = lastNap.details.endTime ? 
+          getTimeInMinutes(lastNap.details.endTime) : 
+          getTimeInMinutes(lastNap.time);
+        
+        timeSinceLastNapEnded = currentMinutes - lastNapEndTime;
+        if (timeSinceLastNapEnded < 0) timeSinceLastNapEnded += (24 * 60);
+      }
       
       if (wakeWindows.length > 0) {
         const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
@@ -234,27 +271,31 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           isAfternoon
         });
         
-        // Always show nap prediction when we have wake window data
-        const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
-        const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
         const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
         const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
         
-        nextNapPrediction = {
-          type: "nap",
-          anticipatedTime,
-          confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
-          reason: `${timeContext} wake window (~${hours}h awake)`,
-          details: {
-            description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
-            data: wakeWindows.map((window, index) => ({
-              activity: relevantNaps[index],
-              value: `${Math.round(window / 60 * 10) / 10}h`,
-              calculation: `Wake window before ${timeContext} nap`
-            })),
-            calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
-          }
-        };
+        // Only predict nap if not currently napping
+        if (!currentlyNapping) {
+          // Calculate from the appropriate reference point
+          const referenceTime = currentlyNapping ? currentTime : (lastNap.details.endTime || lastNap.time);
+          const anticipatedTime = addMinutesToTime(referenceTime, Math.round(avgWakeWindow));
+          
+          nextNapPrediction = {
+            type: "nap",
+            anticipatedTime,
+            confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
+            reason: `${timeContext} wake window (~${hours}h awake)`,
+            details: {
+              description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
+              data: wakeWindows.map((window, index) => ({
+                activity: relevantNaps[index],
+                value: `${Math.round(window / 60 * 10) / 10}h`,
+                calculation: `Wake window before ${timeContext} nap`
+              })),
+              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
+            }
+          };
+        }
       } else if (sleepIntervals.length > 0) {
         // Fallback to general sleep intervals if no wake window data
         const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
@@ -328,7 +369,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Return earliest prediction that makes logical sense
+    // Return prediction with context awareness
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
@@ -340,19 +381,24 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       let napDelta = napTime - currentMinutes;
       if (napDelta < 0) napDelta += (24 * 60); // Handle day boundary
       
+      // Context-aware decision: if currently napping, strongly prefer feed predictions
+      const shouldPreferFeed = currentlyNapping || feedDelta <= napDelta;
+      
       console.log('🎯 Prediction comparison:', {
         currentTime,
+        currentlyNapping: !!currentlyNapping,
         feedPrediction: nextFeedPrediction.anticipatedTime,
         napPrediction: nextNapPrediction.anticipatedTime,
         feedDeltaMinutes: feedDelta,
         napDeltaMinutes: napDelta,
         currentMinutes,
-        selectedPrediction: feedDelta <= napDelta ? 'feed' : 'nap',
+        selectedPrediction: shouldPreferFeed ? 'feed' : 'nap',
         feedTimeRaw: feedTime,
-        napTimeRaw: napTime
+        napTimeRaw: napTime,
+        reasonForSelection: currentlyNapping ? 'currently napping' : 'time-based'
       });
       
-      return feedDelta <= napDelta ? nextFeedPrediction : nextNapPrediction;
+      return shouldPreferFeed ? nextFeedPrediction : nextNapPrediction;
     }
 
     console.log('Single prediction available:', {
