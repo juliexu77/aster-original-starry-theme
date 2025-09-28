@@ -142,22 +142,41 @@ function median(values: number[]): number {
 function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
   return activities
     .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
-    .map(activity => ({
-      id: activity.id,
-      type: activity.type,
-      timestamp: new Date(activity.time),
-      startTime: activity.details.startTime ? new Date(activity.details.startTime) : undefined,
-      endTime: activity.details.endTime ? new Date(activity.details.endTime) : undefined,
-      details: activity.details
-    }))
+    .map(activity => {
+      // Use precise loggedAt when available, fallback to now (avoids ambiguous time-only strings)
+      const baseDate = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
+      const dateStr = baseDate.toDateString();
+
+      // Build start/end using the same local day as loggedAt
+      let startTime: Date | undefined = undefined;
+      let endTime: Date | undefined = undefined;
+      if (activity.details?.startTime) {
+        startTime = new Date(`${dateStr} ${activity.details.startTime}`);
+      }
+      if (activity.details?.endTime) {
+        endTime = new Date(`${dateStr} ${activity.details.endTime}`);
+        // Handle naps that cross midnight (end earlier than start => add 1 day)
+        if (startTime && endTime < startTime) {
+          endTime = new Date(endTime.getTime() + 24 * 60 * 60 * 1000);
+        }
+      }
+
+      return {
+        id: activity.id,
+        type: activity.type,
+        timestamp: baseDate,
+        startTime,
+        endTime,
+        details: activity.details
+      } as PredictionEvent;
+    })
     .filter(event => event.timestamp <= new Date()) // Remove future events
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Most recent first
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
   const sleepEvents = events.filter(e => e.type === 'nap');
-  const wakeEvents = events.filter(e => e.type === 'wake_up');
-  
+
   const sleepSegments = sleepEvents
     .map(e => ({
       start: e.startTime || e.timestamp,
@@ -166,19 +185,17 @@ function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
     }))
     .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
     
-  // For sleep segments without end times, check if there's a wake_up event after them
+  // Try to infer an end time for open sleeps using the next event after the start
+  const eventsAsc = [...events].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   sleepSegments.forEach(segment => {
     if (!segment.end) {
-      const wakeUpAfter = wakeEvents.find(wake => 
-        wake.timestamp > segment.start && 
-        wake.timestamp <= new Date() // Only consider past wake-ups
-      );
-      if (wakeUpAfter) {
-        segment.end = wakeUpAfter.timestamp;
+      const nextAfter = eventsAsc.find(e => e.timestamp > segment.start);
+      if (nextAfter) {
+        segment.end = nextAfter.timestamp;
       }
     }
   });
-    
+  
   // Add duration for completed segments, but keep ongoing ones too
   return sleepSegments.map(s => ({
     ...s,
