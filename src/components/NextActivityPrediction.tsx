@@ -146,7 +146,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Calculate next nap prediction considering time of day patterns
+    // Calculate next nap prediction using wake windows (time from nap end to next nap start)
     if (canPredictNaps) {
       const currentHour = Math.floor(currentMinutes / 60);
       const isEarlyMorning = currentHour >= 6 && currentHour < 12;
@@ -163,53 +163,68 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         return napHour >= 12 && napHour < 18;
       });
       
-      // Calculate intervals for current time period
+      // Calculate wake windows (time from end of last nap to start of next nap)
       const relevantNaps = isEarlyMorning ? morningNaps : isAfternoon ? afternoonNaps : napActivities;
-      const relevantIntervals: number[] = [];
+      const wakeWindows: number[] = [];
       
       for (let i = 0; i < relevantNaps.length - 1; i++) {
-        const newer = getTimeInMinutes(relevantNaps[i].time);
-        const older = getTimeInMinutes(relevantNaps[i + 1].time);
-        let interval = newer - older;
-        if (interval < 0) interval = (24 * 60) + interval;
-        if (interval > 0 && interval < 8 * 60) { // More reasonable nap interval
-          relevantIntervals.push(interval);
+        const currentNap = relevantNaps[i];
+        const previousNap = relevantNaps[i + 1];
+        
+        // Use end time of previous nap if available, otherwise use start time
+        const previousNapEndTime = previousNap.details.endTime ? 
+          getTimeInMinutes(previousNap.details.endTime) : 
+          getTimeInMinutes(previousNap.time);
+        
+        const currentNapStartTime = getTimeInMinutes(currentNap.time);
+        
+        let wakeWindow = currentNapStartTime - previousNapEndTime;
+        if (wakeWindow < 0) wakeWindow = (24 * 60) + wakeWindow;
+        
+        // Only include reasonable wake windows (30 minutes to 6 hours)
+        if (wakeWindow >= 30 && wakeWindow <= 6 * 60) {
+          wakeWindows.push(wakeWindow);
         }
       }
       
-      if (relevantIntervals.length > 0) {
-        const lastNap = napActivities[0];
-        const avgSleepInterval = relevantIntervals.reduce((a, b) => a + b, 0) / relevantIntervals.length;
-        const lastNapTime = getTimeInMinutes(lastNap.time);
-        let timeSinceLastNap = currentMinutes - lastNapTime;
-        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
+      const lastNap = napActivities[0];
+      const lastNapEndTime = lastNap.details.endTime ? 
+        getTimeInMinutes(lastNap.details.endTime) : 
+        getTimeInMinutes(lastNap.time);
+      
+      let timeSinceLastNapEnded = currentMinutes - lastNapEndTime;
+      if (timeSinceLastNapEnded < 0) timeSinceLastNapEnded += (24 * 60);
+      
+      if (wakeWindows.length > 0) {
+        const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
         
-        if (timeSinceLastNap >= avgSleepInterval - 60) {
-          const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
-          const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
+        // Predict next nap if we're approaching the average wake window
+        if (timeSinceLastNapEnded >= avgWakeWindow - 30) {
+          const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
+          const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
+          const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
           const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
+          
           nextNapPrediction = {
             type: "nap",
             anticipatedTime,
-            confidence: relevantIntervals.length >= 3 ? 'high' : relevantIntervals.length >= 2 ? 'medium' : 'low',
-            reason: `Typical ${timeContext} nap time (every ${hours}h)`,
+            confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
+            reason: `${timeContext} wake window (~${hours}h awake)`,
             details: {
-              description: `Based on ${relevantIntervals.length} recent ${timeContext} nap intervals, your baby typically naps every ${hours} hours during this time of day.`,
-              data: relevantIntervals.map((interval, index) => ({
+              description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
+              data: wakeWindows.map((window, index) => ({
                 activity: relevantNaps[index],
-                value: `${Math.round(interval / 60 * 10) / 10}h`,
-                calculation: `Time between ${timeContext} naps`
+                value: `${Math.round(window / 60 * 10) / 10}h`,
+                calculation: `Wake window before ${timeContext} nap`
               })),
-              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} average: ${relevantIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${relevantIntervals.length} = ${hours}h`
+              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
             }
           };
         }
       } else if (sleepIntervals.length > 0) {
-        // Fallback to general sleep intervals if no time-specific data
-        const lastNap = napActivities[0];
+        // Fallback to general sleep intervals if no wake window data
         const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
-        const lastNapTime = getTimeInMinutes(lastNap.time);
-        let timeSinceLastNap = currentMinutes - lastNapTime;
+        let timeSinceLastNap = currentMinutes - getTimeInMinutes(lastNap.time);
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
         if (timeSinceLastNap >= avgSleepInterval - 60) {
