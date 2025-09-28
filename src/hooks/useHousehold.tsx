@@ -7,6 +7,7 @@ interface Household {
   name: string;
   baby_name: string | null;
   baby_birthday: string | null; // Date as string in YYYY-MM-DD format
+  baby_photo_url: string | null; // Added baby photo URL
   created_at: string;
   updated_at: string;
 }
@@ -200,7 +201,7 @@ export const useHousehold = () => {
     }
   };
 
-  const updateHousehold = async (updates: Partial<Pick<Household, 'name' | 'baby_name' | 'baby_birthday'>>) => {
+  const updateHousehold = async (updates: Partial<Pick<Household, 'name' | 'baby_name' | 'baby_birthday' | 'baby_photo_url'>>) => {
     if (!household) {
       throw new Error('No household to update');
     }
@@ -218,6 +219,7 @@ export const useHousehold = () => {
         throw error;
       }
 
+      console.log('Updated household data:', data);
       setHousehold(data);
       return data;
     } catch (error) {

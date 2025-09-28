@@ -79,8 +79,9 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
     try {
       if (!household) return;
       
-      // Update household with photo_url - note: this field may need to be added to schema
-      console.log('Baby photo upload completed:', photoUrl);
+      // Update household with baby photo URL
+      await updateHousehold({ baby_photo_url: photoUrl });
+      console.log('Baby photo updated:', photoUrl);
       toast({
         title: "Photo uploaded",
         description: "Baby photo has been updated.",
@@ -108,7 +109,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
           {/* Baby Photo */}
           <div className="flex justify-center">
             <PhotoUpload
-              currentPhotoUrl={undefined}
+              currentPhotoUrl={household?.baby_photo_url}
               bucketName="baby-photos"
               folder={household?.id || "baby"}
               fallbackIcon={<Baby className="w-6 h-6 text-muted-foreground" />}

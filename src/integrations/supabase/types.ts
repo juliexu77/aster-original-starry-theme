@@ -124,6 +124,7 @@ export type Database = {
         Row: {
           baby_birthday: string | null
           baby_name: string | null
+          baby_photo_url: string | null
           created_at: string
           id: string
           name: string
@@ -132,6 +133,7 @@ export type Database = {
         Insert: {
           baby_birthday?: string | null
           baby_name?: string | null
+          baby_photo_url?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -140,6 +142,7 @@ export type Database = {
         Update: {
           baby_birthday?: string | null
           baby_name?: string | null
+          baby_photo_url?: string | null
           created_at?: string
           id?: string
           name?: string
