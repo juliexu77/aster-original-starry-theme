@@ -311,7 +311,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       <div className="space-y-3">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 p-2 rounded-lg bg-accent/50">
-            <IconComponent className={`h-4 w-4 ${getConfidenceColor(nextActivity.confidence)}`} />
+            <IconComponent className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
