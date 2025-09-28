@@ -206,6 +206,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (wakeWindows.length > 0) {
         const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
         
+        console.log('Nap prediction debug:', {
+          wakeWindowsLength: wakeWindows.length,
+          avgWakeWindow: Math.round(avgWakeWindow),
+          timeSinceLastNapEnded: Math.round(timeSinceLastNapEnded),
+          lastNapEndTime,
+          currentMinutes,
+          isEarlyMorning,
+          isAfternoon
+        });
+        
         // Always show nap prediction when we have wake window data
         const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
         const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
@@ -300,40 +310,32 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Prioritize based on baby's current needs, not just time
+    // Return earliest prediction
     if (nextFeedPrediction && nextNapPrediction) {
-      // Calculate time since last nap ended (wake window)
-      const lastNap = napActivities[0];
-      const lastNapEndTime = lastNap?.details.endTime ? 
-        getTimeInMinutes(lastNap.details.endTime) : 
-        getTimeInMinutes(lastNap?.time || "");
-      
-      let timeSinceNapEnded = currentMinutes - lastNapEndTime;
-      if (timeSinceNapEnded < 0) timeSinceNapEnded += (24 * 60);
-      
-      // Calculate time since last feed
-      const lastFeed = feedActivities[0];
-      const lastFeedTime = getTimeInMinutes(lastFeed?.time || "");
-      let timeSinceLastFeed = currentMinutes - lastFeedTime;
-      if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
-      
-      // Prioritize nap if baby has been awake for 90+ minutes and it's been less than 3.5 hours since last feed
-      const WAKE_WINDOW_PRIORITY = 90; // 1.5 hours
-      const FEED_INTERVAL_THRESHOLD = 210; // 3.5 hours
-      
-      if (timeSinceNapEnded >= WAKE_WINDOW_PRIORITY && timeSinceLastFeed < FEED_INTERVAL_THRESHOLD) {
-        return nextNapPrediction;
-      }
-      
-      // Otherwise, return the earlier prediction
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
       const adjustedFeedTime = feedTime < currentMinutes ? feedTime + (24 * 60) : feedTime;
       const adjustedNapTime = napTime < currentMinutes ? napTime + (24 * 60) : napTime;
       
+      console.log('Prediction comparison:', {
+        feedPrediction: nextFeedPrediction.anticipatedTime,
+        napPrediction: nextNapPrediction.anticipatedTime,
+        feedTimeMinutes: adjustedFeedTime,
+        napTimeMinutes: adjustedNapTime,
+        currentMinutes,
+        selectedPrediction: adjustedFeedTime <= adjustedNapTime ? 'feed' : 'nap'
+      });
+      
       return adjustedFeedTime <= adjustedNapTime ? nextFeedPrediction : nextNapPrediction;
     }
+
+    console.log('Single prediction available:', {
+      hasFeedPrediction: !!nextFeedPrediction,
+      hasNapPrediction: !!nextNapPrediction,
+      feedPrediction: nextFeedPrediction?.anticipatedTime,
+      napPrediction: nextNapPrediction?.anticipatedTime
+    });
 
     if (nextFeedPrediction) return nextFeedPrediction;
     if (nextNapPrediction) return nextNapPrediction;
