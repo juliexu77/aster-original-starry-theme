@@ -134,26 +134,24 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         shouldPredict: timeSinceLastFeed >= avgFeedInterval - 30
       });
       
-      // Suggest feed 30 minutes before average interval (more proactive)
-      if (timeSinceLastFeed >= avgFeedInterval - 30) {
-        const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
-        const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
-        nextFeedPrediction = {
-          type: "feed",
-          anticipatedTime,
-          confidence: feedIntervals.length >= 5 ? 'high' : feedIntervals.length >= 3 ? 'medium' : 'low',
-          reason: `Usually feeds every ${hours}h`,
-          details: {
-            description: `Based on ${feedIntervals.length} recent feeding intervals, your baby typically feeds every ${hours} hours.`,
-            data: feedIntervals.map((interval, index) => ({
-              activity: feedActivities[index],
-              value: `${Math.round(interval / 60 * 10) / 10}h`,
-              calculation: `Time between feeds`
-            })),
-            calculation: `Average: ${feedIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${feedIntervals.length} = ${hours}h`
-          }
-        };
-      }
+      // Always show feed prediction when we have interval data
+      const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
+      const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
+      nextFeedPrediction = {
+        type: "feed",
+        anticipatedTime,
+        confidence: feedIntervals.length >= 5 ? 'high' : feedIntervals.length >= 3 ? 'medium' : 'low',
+        reason: `Usually feeds every ${hours}h`,
+        details: {
+          description: `Based on ${feedIntervals.length} recent feeding intervals, your baby typically feeds every ${hours} hours.`,
+          data: feedIntervals.map((interval, index) => ({
+            activity: feedActivities[index],
+            value: `${Math.round(interval / 60 * 10) / 10}h`,
+            calculation: `Time between feeds`
+          })),
+          calculation: `Average: ${feedIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${feedIntervals.length} = ${hours}h`
+        }
+      };
     }
 
     // Calculate next nap prediction using wake windows (time from nap end to next nap start)
@@ -208,54 +206,51 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (wakeWindows.length > 0) {
         const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
         
-        // Predict next nap if we're approaching or past the average wake window
-        if (timeSinceLastNapEnded >= avgWakeWindow - 15) {
-          const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
-          const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
-          const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
-          const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
-          
-          nextNapPrediction = {
-            type: "nap",
-            anticipatedTime,
-            confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
-            reason: `${timeContext} wake window (~${hours}h awake)`,
-            details: {
-              description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
-              data: wakeWindows.map((window, index) => ({
-                activity: relevantNaps[index],
-                value: `${Math.round(window / 60 * 10) / 10}h`,
-                calculation: `Wake window before ${timeContext} nap`
-              })),
-              calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
-            }
-          };
-        }
+        // Always show nap prediction when we have wake window data
+        const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
+        const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
+        const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
+        const timeContext = isEarlyMorning ? "morning" : isAfternoon ? "afternoon" : "";
+        
+        nextNapPrediction = {
+          type: "nap",
+          anticipatedTime,
+          confidence: wakeWindows.length >= 3 ? 'high' : wakeWindows.length >= 2 ? 'medium' : 'low',
+          reason: `${timeContext} wake window (~${hours}h awake)`,
+          details: {
+            description: `Based on ${wakeWindows.length} recent ${timeContext} wake windows, your baby typically needs a nap after ${hours} hours awake.`,
+            data: wakeWindows.map((window, index) => ({
+              activity: relevantNaps[index],
+              value: `${Math.round(window / 60 * 10) / 10}h`,
+              calculation: `Wake window before ${timeContext} nap`
+            })),
+            calculation: `${timeContext.charAt(0).toUpperCase() + timeContext.slice(1)} wake window average: ${wakeWindows.map(w => Math.round(w / 60 * 10) / 10).join(' + ')} ÷ ${wakeWindows.length} = ${hours}h`
+          }
+        };
       } else if (sleepIntervals.length > 0) {
         // Fallback to general sleep intervals if no wake window data
         const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
         let timeSinceLastNap = currentMinutes - getTimeInMinutes(lastNap.time);
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
-        if (timeSinceLastNap >= avgSleepInterval - 60) {
-          const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
-          const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
-          nextNapPrediction = {
-            type: "nap",
-            anticipatedTime,
-            confidence: sleepIntervals.length >= 5 ? 'high' : sleepIntervals.length >= 3 ? 'medium' : 'low',
-            reason: `Usually naps every ${hours}h`,
-            details: {
-              description: `Based on ${sleepIntervals.length} recent sleep intervals, your baby typically naps every ${hours} hours.`,
-              data: sleepIntervals.map((interval, index) => ({
-                activity: napActivities[index],
-                value: `${Math.round(interval / 60 * 10) / 10}h`,
-                calculation: `Time between naps`
-              })),
-              calculation: `Average: ${sleepIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${sleepIntervals.length} = ${hours}h`
-            }
-          };
-        }
+        // Always show nap prediction based on sleep intervals
+        const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
+        const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
+        nextNapPrediction = {
+          type: "nap",
+          anticipatedTime,
+          confidence: sleepIntervals.length >= 5 ? 'high' : sleepIntervals.length >= 3 ? 'medium' : 'low',
+          reason: `Usually naps every ${hours}h`,
+          details: {
+            description: `Based on ${sleepIntervals.length} recent sleep intervals, your baby typically naps every ${hours} hours.`,
+            data: sleepIntervals.map((interval, index) => ({
+              activity: napActivities[index],
+              value: `${Math.round(interval / 60 * 10) / 10}h`,
+              calculation: `Time between naps`
+            })),
+            calculation: `Average: ${sleepIntervals.map(i => Math.round(i / 60 * 10) / 10).join(' + ')} ÷ ${sleepIntervals.length} = ${hours}h`
+          }
+        };
       }
       
       // Time-of-day nap prediction
@@ -265,43 +260,42 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         let timeSinceLastNap = currentMinutes - lastNapTime;
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
-        if (timeSinceLastNap >= 120) {
-          const currentHour = Math.floor(currentMinutes / 60);
-          const isTypicalNapTime = sleepTimes.some(sleepTime => {
+        // Always check for typical nap times without time restrictions
+        const currentHour = Math.floor(currentMinutes / 60);
+        const isTypicalNapTime = sleepTimes.some(sleepTime => {
+          const sleepHour = Math.floor(sleepTime / 60);
+          return Math.abs(currentHour - sleepHour) <= 1;
+        });
+        
+        if (isTypicalNapTime) {
+          const candidateTimes = sleepTimes.filter(sleepTime => {
             const sleepHour = Math.floor(sleepTime / 60);
             return Math.abs(currentHour - sleepHour) <= 1;
           });
-          
-          if (isTypicalNapTime) {
-            const candidateTimes = sleepTimes.filter(sleepTime => {
-              const sleepHour = Math.floor(sleepTime / 60);
-              return Math.abs(currentHour - sleepHour) <= 1;
-            });
-            const typicalMinutes = Math.round(candidateTimes.reduce((a, b) => a + b, 0) / candidateTimes.length);
-            const delta = ((typicalMinutes - currentMinutes) % (24 * 60) + (24 * 60)) % (24 * 60);
-            const safeDelta = delta === 0 ? 30 : Math.round(delta);
-            const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
-            nextNapPrediction = {
-              type: "nap",
-              anticipatedTime,
-              confidence: 'medium' as const,
-              reason: "Typical sleep time approaching",
-              details: {
-                description: "Based on historical nap times, this is typically when your baby sleeps.",
-                data: candidateTimes.map((time, index) => {
-                  const h = Math.floor(time / 60);
-                  const m = time % 60;
-                  const timeStr = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
-                  return {
-                    activity: napActivities[index],
-                    value: timeStr,
-                    calculation: "Historical nap time"
-                  };
-                }),
-                calculation: "Pattern matches current time window"
-              }
-            };
-          }
+          const typicalMinutes = Math.round(candidateTimes.reduce((a, b) => a + b, 0) / candidateTimes.length);
+          const delta = ((typicalMinutes - currentMinutes) % (24 * 60) + (24 * 60)) % (24 * 60);
+          const safeDelta = delta === 0 ? 30 : Math.round(delta);
+          const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
+          nextNapPrediction = {
+            type: "nap",
+            anticipatedTime,
+            confidence: 'medium' as const,
+            reason: "Typical sleep time approaching",
+            details: {
+              description: "Based on historical nap times, this is typically when your baby sleeps.",
+              data: candidateTimes.map((time, index) => {
+                const h = Math.floor(time / 60);
+                const m = time % 60;
+                const timeStr = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+                return {
+                  activity: napActivities[index],
+                  value: timeStr,
+                  calculation: "Historical nap time"
+                };
+              }),
+              calculation: "Pattern matches current time window"
+            }
+          };
         }
       }
     }
