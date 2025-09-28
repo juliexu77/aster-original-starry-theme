@@ -76,60 +76,67 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Black and muted teal dark theme with improved readability */
-    --background: 0 0% 0%; /* Pure black background */
-    --foreground: 0 0% 82%; /* #D1D1D1 - softer light gray for less glare */
+    /* Dark Mode - "Confident & Data-Driven" (for dads tracking performance) */
+    --background: 0 0% 7%; /* Near-black #121212 for softer eyes */
+    --foreground: 0 0% 100%; /* White #FFFFFF - primary text */
 
-    --card: 0 0% 3%; /* Very dark card background */
-    --card-foreground: 0 0% 82%;
+    --card: 0 0% 10%; /* Flat dark cards */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 82%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
 
-    /* Rich teal primary matching reference */
-    --primary: 180 75% 42%; /* Rich teal like reference image */
+    /* Bright teal primary accent #1DE9B6 */
+    --primary: 164 82% 51%; /* Bright teal for data highlights, active state */
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 8%; /* Very dark gray secondary */
-    --secondary-foreground: 0 0% 82%;
+    /* Electric blue secondary accent #2979FF */
+    --secondary: 214 100% 59%; /* Electric blue for secondary highlights */
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 10%; /* Muted dark */
-    --muted-foreground: 0 0% 70%;
+    --muted: 0 0% 15%; /* Darker muted areas */
+    --muted-foreground: 0 0% 62%; /* Cool gray #9E9E9E - secondary text */
 
-    /* Rich teal accent */
-    --accent: 180 75% 42%; /* Rich teal accent matching primary */
-    --accent-foreground: 0 0% 0%;
+    /* Electric blue accent for highlights */
+    --accent: 214 100% 59%; /* Electric blue accent */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 55%;
-    --destructive-foreground: 0 0% 82%;
+    /* Bold red for errors #FF5252 */
+    --destructive: 4 100% 66%; /* Bold red for alerts */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 15%; /* Dark borders */
-    --input: 0 0% 8%; /* Very dark inputs */
-    --ring: 180 75% 42%; /* Rich teal focus ring */
+    --border: 0 0% 20%; /* Sharp, defined borders */
+    --input: 0 0% 15%; /* Dark inputs with contrast */
+    --ring: 164 82% 51%; /* Bright teal focus ring */
 
-    /* Activity colors for dark mode - rich teal theme */
-    --feed-color: 180 75% 42%; /* Rich teal for feeding */
-    --diaper-color: 180 65% 48%; /* Lighter rich teal for diapers */
-    --nap-color: 200 70% 48%; /* Blue-teal for naps */
-    --note-color: 160 70% 48%; /* Green-teal for notes */
-    --chat-color: 180 75% 42%; /* Rich teal for chat */
+    /* Activity colors - bright, data-driven palette */
+    --feed-color: 164 82% 51%; /* Bright teal for feeding */
+    --diaper-color: 214 100% 59%; /* Electric blue for diapers */
+    --nap-color: 245 100% 65%; /* Bright purple for naps */
+    --note-color: 190 100% 55%; /* Cyan for notes */
+    --chat-color: 164 82% 51%; /* Bright teal for chat */
 
-    /* Dark gradients with rich teal */
-    --gradient-primary: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
-    --gradient-feed: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
-    --gradient-diaper: linear-gradient(135deg, hsl(180 65% 48%), hsl(180 55% 58%));
-    --gradient-nap: linear-gradient(135deg, hsl(200 70% 48%), hsl(200 60% 58%));
-    --gradient-note: linear-gradient(135deg, hsl(160 70% 48%), hsl(160 60% 58%));
-    --gradient-chat: linear-gradient(135deg, hsl(180 75% 42%), hsl(180 65% 52%));
+    /* High contrast gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
+    --gradient-feed: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
+    --gradient-diaper: linear-gradient(135deg, hsl(214 100% 59%), hsl(214 90% 68%));
+    --gradient-nap: linear-gradient(135deg, hsl(245 100% 65%), hsl(245 90% 72%));
+    --gradient-note: linear-gradient(135deg, hsl(190 100% 55%), hsl(190 90% 65%));
+    --gradient-chat: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
 
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 0 0% 82%;
-    --sidebar-primary: 180 75% 42%;
+    /* Sidebar with performance dashboard feel */
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 164 82% 51%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 8%;
-    --sidebar-accent-foreground: 0 0% 82%;
-    --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 180 75% 42%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 164 82% 51%;
+
+    /* Performance dashboard shadows - flat design */
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -140,5 +147,25 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans;
+    font-variant-numeric: tabular-nums; /* Tabular lining for dark mode */
+  }
+}
+
+@layer utilities {
+  /* Performance dashboard utilities for dark mode */
+  .data-highlight {
+    @apply dark:animate-flash dark:text-primary;
+  }
+  
+  .prediction-glow {
+    @apply dark:animate-glow;
+  }
+  
+  .performance-card {
+    @apply dark:rounded-sharp dark:border-2 dark:border-primary/20 dark:bg-card/80 dark:backdrop-blur-sm;
+  }
+  
+  .metric-text {
+    @apply dark:font-bold dark:text-primary;
   }
 }

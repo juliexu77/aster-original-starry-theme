@@ -81,8 +81,9 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
+        md: "calc(var(--radius) - 2px)", 
         sm: "calc(var(--radius) - 4px)",
+        sharp: "8px", // Sharp edges for dark mode performance dashboard
       },
       keyframes: {
         "accordion-down": {
@@ -110,12 +111,45 @@ export default {
             opacity: "1",
             transform: "translateY(0)"
           }
+        },
+        "bounce-in": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)"
+          },
+          "50%": {
+            opacity: "0.8",
+            transform: "scale(1.02)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)"
+          }
+        },
+        "flash": {
+          "0%, 100%": {
+            opacity: "1"
+          },
+          "50%": {
+            opacity: "0.7"
+          }
+        },
+        "glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 5px hsl(var(--primary))"
+          },
+          "50%": {
+            boxShadow: "0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary))"
+          }
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out"
+        "fade-in": "fade-in 0.3s ease-out",
+        "bounce-in": "bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+        "flash": "flash 0.5s ease-in-out",
+        "glow": "glow 1s ease-in-out infinite",
       },
     },
   },
