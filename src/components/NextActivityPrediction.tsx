@@ -60,17 +60,16 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const canPredictFeeds = feedActivities.length >= 2;
     const canPredictNaps = napActivities.length >= 2;
     
-    // Detect if baby is currently napping
+    // Detect if baby is currently napping (robust: prefer details.startTime)
     const currentlyNapping = napActivities.find(nap => {
-      // Check if nap doesn't have end time (ongoing) and started within reasonable time
-      if (!nap.details.endTime) {
-        const napStartMinutes = getTimeInMinutes(nap.time);
-        let timeSinceNapStart = currentMinutes - napStartMinutes;
-        if (timeSinceNapStart < 0) timeSinceNapStart += (24 * 60);
-        // Consider napping if started within 4 hours and no end time
-        return timeSinceNapStart <= 4 * 60;
-      }
-      return false;
+      const noEnd = !nap.details.endTime || nap.details.endTime === "";
+      if (!noEnd) return false;
+      const startStr = nap.details.startTime || (nap.time.includes(' - ') ? nap.time.split(' - ')[0] : nap.time);
+      const napStartMinutes = getTimeInMinutes(startStr);
+      let timeSinceNapStart = currentMinutes - napStartMinutes;
+      if (timeSinceNapStart < 0) timeSinceNapStart += (24 * 60);
+      // Consider napping if started within 6 hours and no end time
+      return timeSinceNapStart <= 6 * 60;
     });
     
     console.log('🕒 Prediction Debug - Starting:', {
@@ -194,7 +193,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
 
     // Calculate next nap prediction using wake windows (time from nap end to next nap start)
-    if (canPredictNaps) {
+    if (canPredictNaps && !currentlyNapping) {
       const currentHour = Math.floor(currentMinutes / 60);
       const isEarlyMorning = currentHour >= 6 && currentHour < 12;
       const isAfternoon = currentHour >= 12 && currentHour < 18;
