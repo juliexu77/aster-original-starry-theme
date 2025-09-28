@@ -709,6 +709,15 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             {/* Note Details */}
             {activityType === "note" && (
               <div className="space-y-4">
+                {/* Time Picker */}
+                <TimeScrollPicker 
+                  value={time} 
+                  selectedDate={selectedDate}
+                  onChange={setTime} 
+                  onDateChange={setSelectedDate}
+                  label="Time" 
+                />
+
                 <div>
                   <Label htmlFor="note" className="text-sm font-medium mb-2 block">Note</Label>
                   <Textarea
