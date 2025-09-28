@@ -275,32 +275,40 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       activitiesByDate.get(dateKey)!.push(activity);
     });
 
-    // Find last activity of each day (potential bedtime indicator)
+    // Find last sleep activity of each day (potential bedtime indicator)
     activitiesByDate.forEach((dayActivities, dateKey) => {
-      // Sort by time and get the latest activity that's after 6 PM
-      const eveningActivities = dayActivities.filter(activity => {
+      // Filter for sleep activities after 6 PM and exclude dream feeds
+      const eveningSleepActivities = dayActivities.filter(activity => {
+        if (activity.type !== 'nap') return false; // Only consider sleep activities
+        
         const activityTime = getTimeInMinutes(activity.time);
-        return activityTime >= 18 * 60; // After 6 PM
+        if (activityTime < 18 * 60) return false; // Only after 6 PM
+        
+        // Exclude dream feeds since baby is already asleep
+        if (activity.details.isDreamFeed) return false;
+        
+        return true;
       });
       
-      if (eveningActivities.length > 0) {
-        // Get the latest evening activity
-        const latestActivity = eveningActivities.reduce((latest, current) => {
+      if (eveningSleepActivities.length > 0) {
+        // Get the latest evening sleep activity
+        const latestSleepActivity = eveningSleepActivities.reduce((latest, current) => {
           const latestTime = getTimeInMinutes(latest.time);
           const currentTime = getTimeInMinutes(current.time);
           return currentTime > latestTime ? current : latest;
         });
         
-        const bedtimeMinutes = getTimeInMinutes(latestActivity.time);
+        const bedtimeMinutes = getTimeInMinutes(latestSleepActivity.time);
         // Only consider reasonable bedtimes (6 PM to 11 PM)
         if (bedtimeMinutes >= 18 * 60 && bedtimeMinutes <= 23 * 60) {
           bedtimes.push({
             time: bedtimeMinutes,
-            activity: latestActivity,
+            activity: latestSleepActivity,
             date: dateKey
           });
         }
       }
+      // If no evening sleep activities found, we don't add anything (null value - user forgot to log)
     });
 
     if (bedtimes.length >= 3) {
