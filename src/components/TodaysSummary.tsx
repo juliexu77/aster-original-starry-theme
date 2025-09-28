@@ -145,16 +145,16 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
     activityType: string
   }) => (
     <div 
-      className="bg-card rounded-xl p-6 shadow-card border border-border cursor-pointer hover:shadow-soft transition-all duration-300"
+      className="bg-card rounded-lg p-4 border border-border cursor-pointer hover:bg-accent/50 transition-colors"
       onClick={() => handleCardClick(activityType)}
     >
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="h-5 w-5 text-primary" />
-        <h3 className="font-medium text-foreground">{label}</h3>
-      </div>
-      <div className="space-y-2">
-        <div className="text-3xl font-serif font-semibold text-foreground">
-          {value}
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${color}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
         </div>
       </div>
     </div>
@@ -219,30 +219,30 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
         <div className="grid grid-cols-2 gap-4 mb-6">
           <StatCard 
             icon={Baby}
-            label="Total Feeds"
+            label="Feeds"
             value={stats.feeds}
-            color=""
+            color="bg-pink-50 text-pink-600"
             activityType="feed"
           />
           <StatCard 
             icon={Moon}
-            label="Total Naps"
+            label="Naps"
             value={stats.naps}
-            color=""
+            color="bg-blue-50 text-blue-600"
             activityType="nap"
           />
           <StatCard 
             icon={Palette}
             label="Diapers"
             value={stats.diapers}
-            color=""
+            color="bg-amber-50 text-amber-600"
             activityType="diaper"
           />
           <StatCard 
             icon={StickyNote}
             label="Notes"
             value={stats.notes}
-            color=""
+            color="bg-green-50 text-green-600"
             activityType="note"
           />
         </div>

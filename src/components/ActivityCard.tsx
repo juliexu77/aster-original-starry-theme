@@ -178,12 +178,12 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center gap-2 py-0.5 group hover:bg-muted/30 rounded-lg px-2 transition-all duration-300">
+    <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
       {/* Timeline line */}
       <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
       
       {/* Timeline marker */}
-      <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white shadow-subtle`}>
+      <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
         {getActivityIcon(activity.type)}
       </div>
       

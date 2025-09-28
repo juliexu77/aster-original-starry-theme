@@ -56,15 +56,14 @@ All colors MUST be HSL.
     --gradient-note: linear-gradient(135deg, hsl(300 35% 85%), hsl(300 40% 90%));
     --gradient-chat: linear-gradient(135deg, hsl(172 66% 46%), hsl(172 60% 60%));
 
-    /* Modern shadows like patterns tab */
-    --shadow-soft: 0 8px 25px rgba(0, 0, 0, 0.08);
-    --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.04);
-    --shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.02);
+    /* Sophisticated shadows */
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.1); /* floating shadow */
+    --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.05); /* card shadow */
 
     /* Refined animations */
     --transition-smooth: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    --radius: 0.75rem; /* 12px - modern rounded corners */
+    --radius: 0.75rem; /* 12px - medium border radius */
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
