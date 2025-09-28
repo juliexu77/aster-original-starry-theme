@@ -121,11 +121,11 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   const getIcon = (type: string) => {
     switch (type) {
       case "feed":
-        return <Baby className="h-5 w-5 text-blue-600" />;
+        return <Baby className="h-5 w-5" style={{ color: "hsl(var(--feed-color))" }} />;
       case "nap":
-        return <Moon className="h-5 w-5 text-purple-600" />;
+        return <Moon className="h-5 w-5" style={{ color: "hsl(var(--nap-color))" }} />;
       default:
-        return <Clock className="h-5 w-5 text-gray-600" />;
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
@@ -137,17 +137,17 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
   };
 
   return (
-    <div className="next-action-card bg-white rounded-lg border border-gray-200 p-4">
+    <div className="next-action-card bg-card rounded-lg border border-border p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Clock className="h-5 w-5 text-gray-600" />
+          <Clock className="h-5 w-5 text-muted-foreground" />
           <div>
-            <h3 className="font-semibold text-lg">Next Predicted Action</h3>
+            <h3 className="font-semibold text-lg text-foreground">Next Predicted Action</h3>
           </div>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="p-1 hover:bg-muted rounded"
         >
           {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
         </button>
@@ -157,24 +157,24 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         <div className="mt-4">
           <div className="flex items-center gap-2 mb-2">
             {getIcon(prediction.type)}
-            <span className="font-medium">{getPredictionText()}</span>
+            <span className="font-medium text-foreground">{getPredictionText()}</span>
           </div>
           <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
           
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Prediction Analysis:</h4>
+          <div className="p-3 bg-muted rounded-lg">
+            <h4 className="font-medium text-sm mb-2 text-foreground">Prediction Analysis:</h4>
             <p className="text-sm text-muted-foreground mb-2">{prediction.details.description}</p>
             
             {prediction.details.data.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-gray-700">Recent patterns:</p>
+                <p className="text-xs font-medium text-foreground">Recent patterns:</p>
                 {prediction.details.data.slice(0, 3).map((item: any, index: number) => (
                   <div key={index} className="text-xs text-muted-foreground">
                     • {item.value} ({item.calculation})
                   </div>
                 ))}
                 {prediction.details.calculation && (
-                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-gray-200">
+                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
                     <strong>Calculation:</strong> {prediction.details.calculation}
                   </div>
                 )}
