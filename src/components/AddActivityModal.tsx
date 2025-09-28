@@ -50,6 +50,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [minutesRight, setMinutesRight] = useState("");
   const [solidDescription, setSolidDescription] = useState("");
   const [reaction, setReaction] = useState<"happy" | "neutral" | "fussy" | "">("");
+  const [isDreamFeed, setIsDreamFeed] = useState(false);
   
   // Diaper state
   const [diaperType, setDiaperType] = useState<"wet" | "poopy" | "both">("wet");
@@ -91,6 +92,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         setMinutesLeft(details.minutesLeft || "");
         setMinutesRight(details.minutesRight || "");
         setSolidDescription(details.solidDescription || "");
+        setIsDreamFeed(details.isDreamFeed || false);
         setNote(details.note || "");
       } else if (editingActivity.type === "diaper") {
         const details = editingActivity.details;
@@ -132,6 +134,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setMinutesLeft("");
     setMinutesRight("");
     setSolidDescription("");
+    setIsDreamFeed(false);
     setReaction("");
     setDiaperType("wet");
     setHasLeak(false);
@@ -290,6 +293,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         } else if (feedType === "solid") {
           if (solidDescription) details.solidDescription = solidDescription;
         }
+        details.isDreamFeed = isDreamFeed;
         if (note) details.note = note;
         break;
       case "diaper":
@@ -532,7 +536,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       className="resize-none"
                     />
                   </div>
-                )}
+                 )}
+
+                {/* Dream Feed Checkbox */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="dream-feed"
+                    checked={isDreamFeed}
+                    onCheckedChange={(checked) => setIsDreamFeed(checked === true)}
+                  />
+                  <Label 
+                    htmlFor="dream-feed" 
+                    className="text-sm font-medium cursor-pointer"
+                  >
+                    Dream feed (baby stayed asleep)
+                  </Label>
+                </div>
 
                 <div>
                   <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">Notes</Label>

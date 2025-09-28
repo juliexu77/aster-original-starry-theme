@@ -15,6 +15,7 @@ export interface Activity {
     minutesLeft?: string;
     minutesRight?: string;
     solidDescription?: string;
+    isDreamFeed?: boolean;
     // Diaper details
     diaperType?: "wet" | "poopy" | "both";
     hasLeak?: boolean;
@@ -108,26 +109,33 @@ const calculateNapDuration = (startTime: string, endTime: string): string => {
 const getPersonalizedActivityText = (activity: Activity, babyName: string = "Baby") => {
   switch (activity.type) {
     case "feed":
-      const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription } = activity.details;
+      const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription, isDreamFeed } = activity.details;
+      let feedText = "";
       
       if (feedType === "bottle" && quantity && unit) {
-        return `${babyName} drank ${quantity} ${unit}`;
+        feedText = `${babyName} drank ${quantity} ${unit}`;
       } else if (feedType === "nursing") {
         const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
         const rightTime = minutesRight ? parseInt(minutesRight) : 0;
         const totalTime = leftTime + rightTime;
         
         if (totalTime > 0) {
-          return `${babyName} nursed ${totalTime} min total`;
+          feedText = `${babyName} nursed ${totalTime} min total`;
+        } else {
+          feedText = `${babyName} nursed`;
         }
-        return `${babyName} nursed`;
       } else if (feedType === "solid") {
         if (solidDescription) {
-          return `${babyName} ate ${solidDescription}`;
+          feedText = `${babyName} ate ${solidDescription}`;
+        } else {
+          feedText = `${babyName} had solids`;
         }
-        return `${babyName} had solids`;
+      } else {
+        feedText = `${babyName} had a feeding`;
       }
-      return `${babyName} had a feeding`;
+      
+      // Add dream feed indicator
+      return isDreamFeed ? `${feedText} (dream feed)` : feedText;
     case "diaper":
       const type = activity.details.diaperType;
       if (type === "wet") {
