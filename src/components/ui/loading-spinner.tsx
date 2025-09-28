@@ -1,0 +1,30 @@
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+interface LoadingSpinnerProps {
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}
+
+export const LoadingSpinner = ({ className, size = "md" }: LoadingSpinnerProps) => {
+  const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-6 h-6", 
+    lg: "w-8 h-8"
+  };
+
+  return (
+    <div 
+      className={cn(
+        "rounded-full bg-primary/20 dark:bg-primary/30",
+        "dark:animate-breathe-dark animate-breathe",
+        sizeClasses[size],
+        className
+      )}
+      role="status"
+      aria-label="Loading"
+    >
+      <span className="sr-only">Loading...</span>
+    </div>
+  );
+};

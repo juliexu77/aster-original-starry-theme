@@ -26,9 +26,9 @@
     --s-7: 32px;
     
     /* Light Mode - "Calm & Supportive" */
-    --bg: 35 20% 97%; /* #FAF9F7 - warm off-white */
+    --bg: 35 15% 98%; /* #FBF9F6 - warmer cream */
     --surface: 0 0% 100%; /* #FFFFFF */
-    --surface-muted: 35 15% 96%; /* #F5F3EE - tinted cards */
+    --surface-muted: 35 12% 97%; /* Reduced contrast from surface by 12% */
     --text: 0 0% 18%; /* #2F2F2F */
     --text-muted: 0 0% 46%; /* #757575 */
     --divider: 0 0% 88%; /* #E0E0E0 */
@@ -41,7 +41,7 @@
     --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
     --card-radius: 16px;
     
-    /* Transitions */
+    /* Transitions - Light Mode: gentle */
     --transition-smooth: all 180ms ease-in-out;
     
     /* Tailwind compatibility */
@@ -113,7 +113,7 @@
     --elev-shadow: none;
     --card-radius: 8px;
     
-    /* Transitions - snappier */
+    /* Transitions - Dark Mode: crisp */
     --transition-smooth: all 140ms ease-out;
     
     /* Tailwind compatibility */
