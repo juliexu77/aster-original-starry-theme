@@ -115,25 +115,119 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       timeSinceLastActivity = (24 * 60) + timeSinceLastActivity;
     }
 
-    // Predict next feed based on feed-to-feed patterns
-    if (lastActivity.type === "feed" && canPredictFeeds) {
-      const avgFeedInterval = feedIntervals.length > 0 
-        ? feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length 
-        : 180; // Default 3 hours
+    // Calculate both next feed and next nap predictions, then pick the earliest
+    let nextFeedPrediction = null;
+    let nextNapPrediction = null;
+
+    // Calculate next feed prediction based on feed-to-feed patterns
+    if (canPredictFeeds && feedIntervals.length > 0) {
+      const lastFeed = feedActivities[0]; // Most recent feed
+      const avgFeedInterval = feedIntervals.reduce((a, b) => a + b, 0) / feedIntervals.length;
+      const lastFeedTime = getTimeInMinutes(lastFeed.time);
+      let timeSinceLastFeed = currentMinutes - lastFeedTime;
+      if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
-      if (timeSinceLastActivity >= avgFeedInterval - 30) {
-        const anticipatedTime = addMinutesToTime(lastActivity.time, avgFeedInterval);
-        return {
+      if (timeSinceLastFeed >= avgFeedInterval - 60) { // Within 1 hour of expected time
+        const anticipatedTime = addMinutesToTime(lastFeed.time, avgFeedInterval);
+        const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+        
+        nextFeedPrediction = {
           type: "feed",
-          suggestedTime: currentTime,
           anticipatedTime,
-          reason: `Next feeding due based on feed-to-feed pattern (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h)`
+          anticipatedMinutes: anticipatedMinutes > currentMinutes ? anticipatedMinutes : anticipatedMinutes + (24 * 60),
+          reason: `Next feeding due based on feed pattern (avg ${Math.round(avgFeedInterval / 60 * 10) / 10}h)`,
+          confidence: feedIntervals.length >= 3 ? "high" : "medium"
         };
       }
     }
 
-    // If last activity was a nap, typically suggest feeding next
-    if (lastActivity.type === "nap" && canPredictFeeds) {
+    // Calculate next nap prediction based on sleep patterns and time-of-day
+    if (canPredictNaps) {
+      // Method 1: Sleep-to-sleep interval prediction
+      if (sleepIntervals.length > 0) {
+        const lastNap = napActivities[0]; // Most recent nap
+        const avgSleepInterval = sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length;
+        const lastNapTime = getTimeInMinutes(lastNap.time);
+        let timeSinceLastNap = currentMinutes - lastNapTime;
+        if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
+        
+        if (timeSinceLastNap >= avgSleepInterval - 60) { // Within 1 hour of expected time
+          const anticipatedTime = addMinutesToTime(lastNap.time, avgSleepInterval);
+          const anticipatedMinutes = getTimeInMinutes(anticipatedTime);
+          
+          nextNapPrediction = {
+            type: "nap",
+            anticipatedTime,
+            anticipatedMinutes: anticipatedMinutes > currentMinutes ? anticipatedMinutes : anticipatedMinutes + (24 * 60),
+            reason: `Next nap due based on sleep pattern (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`,
+            confidence: sleepIntervals.length >= 3 ? "high" : "medium"
+          };
+        }
+      }
+      
+      // Method 2: Time-of-day nap prediction (if no sleep-to-sleep prediction or it's a typical nap time)
+      if (!nextNapPrediction && sleepTimes.length > 0) {
+        const currentHour = Math.floor(currentMinutes / 60);
+        const isTypicalNapTime = sleepTimes.some(sleepTime => {
+          const sleepHour = Math.floor(sleepTime / 60);
+          return Math.abs(currentHour - sleepHour) <= 1; // Within 1 hour
+        });
+        
+        if (isTypicalNapTime) {
+          nextNapPrediction = {
+            type: "nap",
+            anticipatedTime: currentTime,
+            anticipatedMinutes: currentMinutes,
+            reason: "Typical nap time based on historical patterns",
+            confidence: "medium"
+          };
+        }
+      }
+    }
+
+    // Compare predictions and return the earliest one
+    if (nextFeedPrediction && nextNapPrediction) {
+      const feedDistance = Math.abs(nextFeedPrediction.anticipatedMinutes - currentMinutes);
+      const napDistance = Math.abs(nextNapPrediction.anticipatedMinutes - currentMinutes);
+      
+      if (feedDistance <= napDistance) {
+        return {
+          type: nextFeedPrediction.type,
+          suggestedTime: currentTime,
+          anticipatedTime: nextFeedPrediction.anticipatedTime,
+          reason: nextFeedPrediction.reason
+        };
+      } else {
+        return {
+          type: nextNapPrediction.type,
+          suggestedTime: currentTime,
+          anticipatedTime: nextNapPrediction.anticipatedTime,
+          reason: nextNapPrediction.reason
+        };
+      }
+    }
+
+    // Return single prediction if only one is available
+    if (nextFeedPrediction) {
+      return {
+        type: nextFeedPrediction.type,
+        suggestedTime: currentTime,
+        anticipatedTime: nextFeedPrediction.anticipatedTime,
+        reason: nextFeedPrediction.reason
+      };
+    }
+
+    if (nextNapPrediction) {
+      return {
+        type: nextNapPrediction.type,
+        suggestedTime: currentTime,
+        anticipatedTime: nextNapPrediction.anticipatedTime,
+        reason: nextNapPrediction.reason
+      };
+    }
+
+    // Fallback based on last activity when no patterns are established
+    if (lastActivity.type === "nap") {
       return {
         type: "feed",
         suggestedTime: currentTime,
@@ -142,46 +236,21 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       };
     }
 
-    // Predict next sleep based on sleep-to-sleep patterns and time-of-day
-    if (lastActivity.type === "nap" && canPredictNaps) {
-      const avgSleepInterval = sleepIntervals.length > 0
-        ? sleepIntervals.reduce((a, b) => a + b, 0) / sleepIntervals.length
-        : 180; // Default 3 hours
-
-      // Consider time-of-day patterns for sleep
-      const currentHour = Math.floor(currentMinutes / 60);
-      const isNapTime = sleepTimes.some(sleepTime => {
-        const sleepHour = Math.floor(sleepTime / 60);
-        return Math.abs(currentHour - sleepHour) <= 1; // Within 1 hour of historical nap times
-      });
-
-      if (timeSinceLastActivity >= avgSleepInterval - 30 || isNapTime) {
-        const anticipatedTime = addMinutesToTime(lastActivity.time, avgSleepInterval);
-        const timeReason = isNapTime ? "typical nap time" : "sleep-to-sleep pattern";
-        return {
-          type: "nap",
-          suggestedTime: currentTime,
-          anticipatedTime,
-          reason: `Next nap due based on ${timeReason} (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`
-        };
-      }
-    }
-
-    // Fallback to feed prediction if we have feed data
-    if (canPredictFeeds) {
+    if (lastActivity.type === "feed") {
       return {
-        type: "feed",
+        type: "nap",
         suggestedTime: currentTime,
         anticipatedTime: currentTime,
-        reason: "Next activity likely to be feeding"
+        reason: "Consider nap time after feeding"
       };
     }
 
+    // Final fallback
     return {
       type: "feed",
       suggestedTime: currentTime,
       anticipatedTime: currentTime,
-      reason: "Default suggestion - keep logging for better predictions"
+      reason: "Next activity likely to be feeding"
     };
   };
 
