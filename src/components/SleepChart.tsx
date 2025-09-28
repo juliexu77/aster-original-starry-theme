@@ -156,19 +156,15 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
     const activityByDate: { [date: string]: Activity[] } = {};
     
     activities.forEach(activity => {
-      // For activities with logged_at (database activities), use that date
-      let activityDate;
-      if ('logged_at' in activity && typeof activity.logged_at === 'string') {
-        activityDate = new Date(activity.logged_at).toISOString().split('T')[0];
-      } else {
-        // For local activities, assume today
-        activityDate = new Date().toISOString().split('T')[0];
-      }
+      if (!activity.loggedAt) return; // Skip activities without loggedAt timestamp
       
-      if (!activityByDate[activityDate]) {
-        activityByDate[activityDate] = [];
+      const activityDate = new Date(activity.loggedAt);
+      const dateKey = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+      
+      if (!activityByDate[dateKey]) {
+        activityByDate[dateKey] = [];
       }
-      activityByDate[activityDate].push(activity);
+      activityByDate[dateKey].push(activity);
     });
     
     const dates = Object.keys(activityByDate);

@@ -35,12 +35,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this specific date
+      // Filter activities for this specific date using loggedAt timestamp
       const dayFeeds = activities.filter(a => {
-        if (a.type !== "feed") return false;
-        if (!a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
-        return dateStr === activityDate;
+        if (a.type !== "feed" || !a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt);
+        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+        const targetDateStr = date.toLocaleDateString('en-CA');
+        return activityDateStr === targetDateStr;
       });
       
       let totalValue = 0;
@@ -48,19 +49,22 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       dayFeeds.forEach(feed => {
         if (!feed.details.quantity) return;
         const quantity = parseFloat(feed.details.quantity);
+        const feedUnit = feed.details.unit || (quantity > 50 ? "ml" : "oz");
         
         if (preferredUnit === "ml") {
-          // If user prefers ml, convert oz to ml when needed
-          const detectedUnit = quantity > 50 ? "ml" : "oz";
-          if (detectedUnit === "oz") {
+          // Convert to ml if needed
+          if (feedUnit === "oz") {
             totalValue += quantity * 29.5735; // Convert oz to ml
           } else {
             totalValue += quantity;
           }
         } else {
-          // If user prefers oz, convert ml to oz when needed
-          const normalized = normalizeVolume(quantity);
-          totalValue += normalized.value;
+          // Convert to oz if needed  
+          if (feedUnit === "ml") {
+            totalValue += quantity / 29.5735; // Convert ml to oz
+          } else {
+            totalValue += quantity;
+          }
         }
       });
       
@@ -91,12 +95,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      // Filter activities for this specific date
+      // Filter activities for this specific date using loggedAt timestamp
       const dayNaps = activities.filter(a => {
-        if (a.type !== "nap") return false;
-        if (!a.loggedAt) return false;
-        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
-        return dateStr === activityDate;
+        if (a.type !== "nap" || !a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt);
+        const activityDateStr = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+        const targetDateStr = date.toLocaleDateString('en-CA');
+        return activityDateStr === targetDateStr;
       });
       
       let totalHours = 0;
@@ -104,7 +109,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         if (nap.details.startTime && nap.details.endTime) {
           const start = new Date(`2000/01/01 ${nap.details.startTime}`);
           const end = new Date(`2000/01/01 ${nap.details.endTime}`);
-          const diff = end.getTime() - start.getTime();
+          let diff = end.getTime() - start.getTime();
+          
+          // Handle overnight naps (end time is next day)
+          if (diff < 0) {
+            diff = diff + (24 * 60 * 60 * 1000); // Add 24 hours
+          }
+          
           if (diff > 0) totalHours += diff / (1000 * 60 * 60);
         }
       });
