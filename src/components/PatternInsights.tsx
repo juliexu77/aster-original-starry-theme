@@ -508,11 +508,6 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                       {insight.details.description}
                     </p>
                     
-                    {insight.details.calculation && (
-                      <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-                        <strong>Calculation:</strong> {insight.details.calculation}
-                      </div>
-                    )}
                     
                     <div className="space-y-2">
                       <h4 className="text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -530,9 +525,6 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                             </div>
                             <div className="text-right">
                               <div className="font-medium">{item.value}</div>
-                              {item.calculation && (
-                                <div className="text-gray-500 text-xs">{item.calculation}</div>
-                              )}
                             </div>
                           </div>
                         ))}
