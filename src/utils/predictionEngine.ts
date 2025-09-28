@@ -155,18 +155,20 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
-  return events
+  const sleepSegments = events
     .filter(e => e.type === 'nap')
     .map(e => ({
       start: e.startTime || e.timestamp,
       end: e.endTime || null,
       type: (isNightTime(e.startTime || e.timestamp) ? 'night' : 'nap') as 'nap' | 'night'
     }))
-    .filter(s => s.end) // Only complete sleep segments
-    .map(s => ({
-      ...s,
-      duration: s.end ? Math.round((s.end.getTime() - s.start.getTime()) / 60000) : undefined
-    }));
+    .sort((a, b) => b.start.getTime() - a.start.getTime()); // Most recent first
+    
+  // Add duration for completed segments, but keep ongoing ones too
+  return sleepSegments.map(s => ({
+    ...s,
+    duration: s.end ? Math.round((s.end.getTime() - s.start.getTime()) / 60000) : undefined
+  }));
 }
 
 function extractFeedEvents(events: PredictionEvent[]): FeedEvent[] {
@@ -280,31 +282,114 @@ export class BabyCarePredictionEngine {
   }
 
   private getTimeAwakeNow(now: Date): number | null {
+    // Check if baby is currently sleeping (ongoing nap without end time)
+    const ongoingSleep = this.sleepSegments.find(s => !s.end && s.start <= now);
+    if (ongoingSleep) {
+      console.log('😴 Currently sleeping since:', ongoingSleep.start.toISOString());
+      return null; // Currently asleep
+    }
+    
     const completeSleepSegments = this.sleepSegments.filter(s => s.end);
     if (completeSleepSegments.length === 0) return null;
     
     const lastSleep = completeSleepSegments[0];
     if (!lastSleep.end) return null;
     
-    // Check if baby is currently sleeping
-    const ongoingSleep = this.sleepSegments.find(s => !s.end && s.start <= now);
-    if (ongoingSleep) return null; // Currently asleep
+    const awakeMinutes = Math.round((now.getTime() - lastSleep.end.getTime()) / 60000);
+    console.log('⏰ Time awake:', {
+      lastSleepEnd: lastSleep.end.toISOString(),
+      awakeMinutes,
+      awakeHours: Math.round(awakeMinutes / 60 * 10) / 10
+    });
     
-    return Math.round((now.getTime() - lastSleep.end.getTime()) / 60000);
+    return awakeMinutes;
   }
 
   private getCumulativeDaySleep(now: Date): number {
+    // Use local day boundaries (not UTC)
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
     
-    return this.sleepSegments
-      .filter(s => s.type === 'nap' && s.start >= todayStart && s.duration)
-      .reduce((total, s) => total + (s.duration || 0), 0);
+    console.log('📅 Day boundaries:', {
+      start: todayStart.toISOString(),
+      end: todayEnd.toISOString(),
+      now: now.toISOString()
+    });
+    
+    let totalDaySleep = 0;
+    
+    for (const segment of this.sleepSegments) {
+      // Skip night sleep for day calculations (only count naps)
+      if (segment.type === 'night') continue;
+      
+      const segmentStart = segment.start;
+      let segmentEnd = segment.end;
+      
+      // For ongoing sleep (no end time), use current time
+      if (!segmentEnd) {
+        // Only count as ongoing if it started today and is still active
+        if (segmentStart >= todayStart && segmentStart <= now) {
+          segmentEnd = now;
+          console.log('🔄 Including ongoing nap:', {
+            start: segmentStart.toISOString(),
+            end: segmentEnd.toISOString(),
+            duration: Math.round((segmentEnd.getTime() - segmentStart.getTime()) / 60000)
+          });
+        } else {
+          continue; // Skip ongoing naps from previous days
+        }
+      }
+      
+      // Calculate overlap with today's boundaries
+      const overlapStart = new Date(Math.max(segmentStart.getTime(), todayStart.getTime()));
+      const overlapEnd = new Date(Math.min(segmentEnd.getTime(), todayEnd.getTime()));
+      
+      // Only count if there's actual overlap
+      if (overlapStart < overlapEnd) {
+        const overlapMinutes = Math.round((overlapEnd.getTime() - overlapStart.getTime()) / 60000);
+        totalDaySleep += overlapMinutes;
+        
+        console.log('💤 Counting sleep segment:', {
+          segmentStart: segmentStart.toISOString(),
+          segmentEnd: segmentEnd.toISOString(),
+          overlapStart: overlapStart.toISOString(),
+          overlapEnd: overlapEnd.toISOString(),
+          overlapMinutes,
+          totalSoFar: totalDaySleep
+        });
+      }
+    }
+    
+    console.log('📊 Final day sleep total:', {
+      totalMinutes: totalDaySleep,
+      totalHours: Math.round(totalDaySleep / 60 * 10) / 10,
+      segmentsCount: this.sleepSegments.length
+    });
+    
+    return totalDaySleep;
   }
 
   private getLastNapDuration(): number | null {
-    const dayNaps = this.sleepSegments.filter(s => s.type === 'nap' && s.duration);
-    return dayNaps.length > 0 ? dayNaps[0].duration || null : null;
+    const dayNaps = this.sleepSegments.filter(s => s.type === 'nap');
+    if (dayNaps.length === 0) return null;
+    
+    const lastNap = dayNaps[0];
+    
+    // For ongoing naps, calculate current duration
+    if (!lastNap.end) {
+      const ongoingDuration = Math.round((new Date().getTime() - lastNap.start.getTime()) / 60000);
+      console.log('🔄 Ongoing nap duration:', ongoingDuration, 'minutes');
+      return ongoingDuration;
+    }
+    
+    // For completed naps, use stored duration or calculate
+    const duration = lastNap.duration || 
+      Math.round((lastNap.end.getTime() - lastNap.start.getTime()) / 60000);
+    
+    console.log('💤 Last completed nap duration:', duration, 'minutes');
+    return duration;
   }
 
   private isClusterFeeding(): boolean {
