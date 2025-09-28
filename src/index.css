@@ -2,142 +2,170 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ParentingPartner Design System - Brand colors: Lavender (#9B89B3) and Mint (#4CAF7D) */
 
 @layer base {
   :root {
-    /* Light Mode - "Calm & Supportive" (for overwhelmed moms) */
-    --background: 35 20% 97%; /* #FAF9F7 - warm off-white/light beige */
-    --foreground: 0 0% 18%; /* #2F2F2F - charcoal gray primary text */
-
-    --card: 0 0% 100%; /* Pure white cards with subtle shadows */
-    --card-foreground: 0 0% 18%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 18%;
-
-    /* Muted green primary accent #4CAF7D */
-    --primary: 153 39% 55%; /* Muted green for "all good" signals */
+    /* Font stacks */
+    --font-ui-light: "Nunito Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-ui-dark: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-num: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    
+    /* Brand colors */
+    --pp-mint: 153 39% 55%; /* #4CAF7D */
+    --pp-lavender: 264 21% 63%; /* #9B89B3 */
+    --pp-coral: 6 77% 73%; /* #F28B82 */
+    
+    /* Spacing scale (8pt grid) */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-7: 32px;
+    
+    /* Light Mode - "Calm & Supportive" */
+    --bg: 35 20% 97%; /* #FAF9F7 - warm off-white */
+    --surface: 0 0% 100%; /* #FFFFFF */
+    --surface-muted: 35 15% 96%; /* #F5F3EE - tinted cards */
+    --text: 0 0% 18%; /* #2F2F2F */
+    --text-muted: 0 0% 46%; /* #757575 */
+    --divider: 0 0% 88%; /* #E0E0E0 */
+    --accent-1: var(--pp-mint); /* feeding */
+    --accent-2: var(--pp-lavender); /* sleep/insights */
+    --chart-feed: 153 45% 75%; /* #7ED9B5 - mint tint 60% */
+    --chart-sleep: 264 30% 84%; /* #C1B2D7 - lavender tint 60% */
+    
+    /* Card elevation */
+    --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+    --card-radius: 16px;
+    
+    /* Transitions */
+    --transition-smooth: all 180ms ease-in-out;
+    
+    /* Tailwind compatibility */
+    --background: var(--bg);
+    --foreground: var(--text);
+    --card: var(--surface);
+    --card-foreground: var(--text);
+    --popover: var(--surface);
+    --popover-foreground: var(--text);
+    --primary: var(--pp-mint);
     --primary-foreground: 0 0% 100%;
-
-    /* Soft lavender secondary #9B89B3 */
-    --secondary: 264 21% 63%; /* Soft lavender for insights and reminders */
+    --secondary: var(--pp-lavender);
     --secondary-foreground: 0 0% 100%;
-
-    --muted: 35 15% 95%; /* Soft muted background */
-    --muted-foreground: 0 0% 46%; /* #757575 - medium gray secondary text */
-
-    /* Soft lavender accent for gentle highlights */
-    --accent: 264 21% 63%; /* Soft lavender accent */
+    --muted: var(--surface-muted);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--pp-lavender);
     --accent-foreground: 0 0% 100%;
-
-    /* Gentle coral for errors #F28B82 */
-    --destructive: 6 77% 73%; /* Gentle coral for alerts */
+    --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
-
-    --border: 35 10% 88%; /* Soft borders */
-    --input: 35 15% 96%; /* Light input backgrounds */
-    --ring: 153 39% 55%; /* Muted green focus ring */
-
-    /* Activity colors - soft, nurturing palette */
-    --feed-color: 153 39% 55%; /* Muted green for feeding */
-    --diaper-color: 264 21% 63%; /* Soft lavender for diapers */
-    --nap-color: 220 25% 75%; /* Gentle blue for naps */
-    --note-color: 45 35% 80%; /* Warm peachy for notes */
-    --chat-color: 153 39% 55%; /* Muted green for chat */
-
-    /* Gentle, reassuring gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(153 39% 55%), hsl(153 35% 65%));
-    --gradient-feed: linear-gradient(135deg, hsl(153 45% 75%), hsl(153 40% 85%)); /* Light green tint */
-    --gradient-diaper: linear-gradient(135deg, hsl(264 25% 85%), hsl(264 20% 90%)); /* Light lavender tint */
-    --gradient-nap: linear-gradient(135deg, hsl(220 30% 85%), hsl(220 25% 90%)); /* Light blue tint */
-    --gradient-note: linear-gradient(135deg, hsl(45 40% 85%), hsl(45 35% 90%)); /* Light peachy tint */
-    --gradient-chat: linear-gradient(135deg, hsl(153 39% 55%), hsl(153 35% 65%));
-
-    /* Gentle, supportive shadows */
-    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08); /* Subtle floating shadow */
-    --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04); /* Very gentle card shadow */
-
-    /* Gentle animations */
-    --transition-smooth: all 350ms cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Ease-out for calming effect */
-
-    --radius: 0.875rem; /* 14px - friendly rounded corners */
-
-    /* Sidebar with calm, supportive feel */
-    --sidebar-background: 35 20% 98%;
-    --sidebar-foreground: 0 0% 18%;
-    --sidebar-primary: 153 39% 55%;
+    --border: var(--divider);
+    --input: var(--surface-muted);
+    --ring: var(--pp-mint);
+    --radius: 16px;
+    
+    /* Activity colors */
+    --feed-color: var(--pp-mint);
+    --diaper-color: var(--pp-lavender);
+    --nap-color: var(--pp-lavender);
+    --note-color: 45 35% 80%;
+    --chat-color: var(--pp-mint);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(153 40% 85%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
+    --gradient-note: linear-gradient(135deg, hsl(45 40% 85%), hsl(45 35% 90%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
+    
+    /* Shadows */
+    --shadow-soft: var(--elev-shadow);
+    --shadow-card: var(--elev-shadow);
+    
+    /* Sidebar */
+    --sidebar-background: var(--bg);
+    --sidebar-foreground: var(--text);
+    --sidebar-primary: var(--pp-mint);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 35 15% 95%;
-    --sidebar-accent-foreground: 0 0% 18%;
-    --sidebar-border: 35 10% 88%;
-    --sidebar-ring: 153 39% 55%;
+    --sidebar-accent: var(--surface-muted);
+    --sidebar-accent-foreground: var(--text);
+    --sidebar-border: var(--divider);
+    --sidebar-ring: var(--pp-mint);
   }
 
   .dark {
-    /* Dark Mode - "Confident & Data-Driven" (for dads tracking performance) */
-    --background: 0 0% 7%; /* Near-black #121212 for softer eyes */
-    --foreground: 0 0% 100%; /* White #FFFFFF - primary text */
-
-    --card: 0 0% 10%; /* Flat dark cards */
-    --card-foreground: 0 0% 100%;
-
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 100%;
-
-    /* Bright teal primary accent #1DE9B6 */
-    --primary: 164 82% 51%; /* Bright teal for data highlights, active state */
+    /* Dark Mode - "Confident & Data-Driven" */
+    --bg: 0 0% 7%; /* #121212 */
+    --surface: 0 0% 12%; /* #1E1E1E */
+    --surface-muted: 0 0% 9%; /* #161616 */
+    --text: 0 0% 100%; /* #FFFFFF */
+    --text-muted: 0 0% 62%; /* #9E9E9E */
+    --divider: 0 0% 20%; /* #333333 */
+    --accent-1: var(--pp-mint); /* feeding */
+    --accent-2: var(--pp-lavender); /* sleep/insights */
+    --chart-feed: 164 82% 68%; /* #36E2AE - brighter mint */
+    --chart-sleep: 264 40% 75%; /* #B095D1 - brighter lavender */
+    
+    /* Card elevation - flat design */
+    --elev-shadow: none;
+    --card-radius: 8px;
+    
+    /* Transitions - snappier */
+    --transition-smooth: all 140ms ease-out;
+    
+    /* Tailwind compatibility */
+    --background: var(--bg);
+    --foreground: var(--text);
+    --card: var(--surface);
+    --card-foreground: var(--text);
+    --popover: var(--surface);
+    --popover-foreground: var(--text);
+    --primary: var(--pp-mint);
     --primary-foreground: 0 0% 0%;
-
-    /* Electric blue secondary accent #2979FF */
-    --secondary: 214 100% 59%; /* Electric blue for secondary highlights */
+    --secondary: var(--pp-lavender);
     --secondary-foreground: 0 0% 100%;
-
-    --muted: 0 0% 15%; /* Darker muted areas */
-    --muted-foreground: 0 0% 62%; /* Cool gray #9E9E9E - secondary text */
-
-    /* Electric blue accent for highlights */
-    --accent: 214 100% 59%; /* Electric blue accent */
+    --muted: var(--surface-muted);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--pp-lavender);
     --accent-foreground: 0 0% 100%;
-
-    /* Bold red for errors #FF5252 */
-    --destructive: 4 100% 66%; /* Bold red for alerts */
+    --destructive: var(--pp-coral);
     --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 20%; /* Sharp, defined borders */
-    --input: 0 0% 15%; /* Dark inputs with contrast */
-    --ring: 164 82% 51%; /* Bright teal focus ring */
-
-    /* Activity colors - bright, data-driven palette */
-    --feed-color: 164 82% 51%; /* Bright teal for feeding */
-    --diaper-color: 214 100% 59%; /* Electric blue for diapers */
-    --nap-color: 245 100% 65%; /* Bright purple for naps */
-    --note-color: 190 100% 55%; /* Cyan for notes */
-    --chat-color: 164 82% 51%; /* Bright teal for chat */
-
-    /* High contrast gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
-    --gradient-feed: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
-    --gradient-diaper: linear-gradient(135deg, hsl(214 100% 59%), hsl(214 90% 68%));
-    --gradient-nap: linear-gradient(135deg, hsl(245 100% 65%), hsl(245 90% 72%));
+    --border: var(--divider);
+    --input: var(--surface-muted);
+    --ring: var(--pp-mint);
+    --radius: 8px;
+    
+    /* Activity colors */
+    --feed-color: var(--pp-mint);
+    --diaper-color: var(--pp-lavender);
+    --nap-color: var(--pp-lavender);
+    --note-color: 190 100% 55%;
+    --chat-color: var(--pp-mint);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(164 75% 75%));
+    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
+    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
     --gradient-note: linear-gradient(135deg, hsl(190 100% 55%), hsl(190 90% 65%));
-    --gradient-chat: linear-gradient(135deg, hsl(164 82% 51%), hsl(164 75% 60%));
-
-    /* Sidebar with performance dashboard feel */
-    --sidebar-background: 0 0% 7%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 164 82% 51%;
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 164 82% 51%;
-
-    /* Performance dashboard shadows - flat design */
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
+    
+    /* Shadows - flat design */
     --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+    
+    /* Sidebar */
+    --sidebar-background: var(--bg);
+    --sidebar-foreground: var(--text);
+    --sidebar-primary: var(--pp-mint);
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: var(--surface-muted);
+    --sidebar-accent-foreground: var(--text);
+    --sidebar-border: var(--divider);
+    --sidebar-ring: var(--pp-mint);
   }
 }
 
@@ -147,19 +175,145 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-variant-numeric: tabular-nums; /* Tabular lining for dark mode */
+    @apply bg-background text-foreground;
+    font-family: var(--font-ui-light);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .dark body {
+    font-family: var(--font-ui-dark);
+  }
+
+  /* Typography utilities */
+  .number, .value, .time {
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Component base styles */
+  .card {
+    background: hsl(var(--surface));
+    border-radius: var(--card-radius);
+    box-shadow: var(--elev-shadow);
+  }
+
+  .dark .card {
+    border-radius: 8px;
+    box-shadow: none;
+    border: 1px solid hsl(0 0% 16%); /* #2A2A2A */
+  }
+
+  /* Badge variants */
+  .badge--mint {
+    background: color-mix(in srgb, hsl(var(--pp-mint)) 12%, #fff);
+    color: hsl(var(--pp-mint));
+  }
+
+  .dark .badge--mint {
+    background: hsl(var(--pp-mint));
+    color: #fff;
+  }
+
+  .badge--lavender {
+    background: color-mix(in srgb, hsl(var(--pp-lavender)) 12%, #fff);
+    color: hsl(var(--pp-lavender));
+  }
+
+  .dark .badge--lavender {
+    background: hsl(var(--pp-lavender));
+    color: #fff;
+  }
+
+  /* Value highlighting */
+  .value--highlight {
+    color: hsl(var(--accent-1));
+    font-weight: 700;
+  }
+
+  /* Dividers */
+  .hr {
+    height: 1px;
+    background: hsl(var(--divider));
   }
 }
 
 @layer utilities {
-  /* Light mode - calm and supportive utilities */
+  /* Typography scale */
+  .text-h1 {
+    font-size: 32px;
+    line-height: 38px;
+    font-weight: 600; /* Light mode: SemiBold */
+  }
+  
+  .dark .text-h1 {
+    font-weight: 700; /* Dark mode: Bold */
+  }
+  
+  .text-h2 {
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+  
+  .dark .text-h2 {
+    font-weight: 700;
+  }
+  
+  .text-h3 {
+    font-size: 20px;
+    line-height: 26px;
+    font-weight: 600;
+  }
+  
+  .dark .text-h3 {
+    font-weight: 700;
+  }
+  
+  .text-body {
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 400; /* Light mode: Regular */
+  }
+  
+  .dark .text-body {
+    font-weight: 500; /* Dark mode: Medium */
+  }
+  
+  .text-caption {
+    font-size: 13px;
+    line-height: 18px;
+  }
+  
+  .text-label {
+    font-size: 12px;
+    line-height: 16px;
+  }
+  
+  /* Numeric text with monospace font */
+  .text-numeric {
+    font-family: var(--font-num);
+    font-weight: 500; /* Light mode: Medium */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+  
+  .dark .text-numeric {
+    font-weight: 700; /* Dark mode: Bold */
+  }
+
+  /* Light mode utilities - calm and supportive */
   .gentle-fade {
-    @apply transition-all duration-500 ease-out;
+    transition: var(--transition-smooth);
   }
   
   .supportive-card {
-    @apply rounded-xl shadow-card bg-white border border-border/20 backdrop-blur-sm;
+    @apply rounded-2xl shadow-card bg-white border border-border/20 backdrop-blur-sm;
+  }
+  
+  .dark .supportive-card {
+    @apply rounded-lg shadow-none bg-card border-border;
   }
   
   .reassuring-text {
@@ -167,7 +321,7 @@ All colors MUST be HSL.
   }
   
   .confidence-badge {
-    @apply bg-primary/10 text-primary border border-primary/20 rounded-full px-3 py-1 text-sm font-medium;
+    @apply badge--mint rounded-full px-3 py-2 text-label font-medium;
   }
 
   /* Performance dashboard utilities for dark mode */
@@ -180,10 +334,30 @@ All colors MUST be HSL.
   }
   
   .performance-card {
-    @apply dark:rounded-sharp dark:border-2 dark:border-primary/20 dark:bg-card/80 dark:backdrop-blur-sm;
+    @apply dark:rounded-lg dark:border dark:border-border dark:bg-card;
   }
   
   .metric-text {
     @apply dark:font-bold dark:text-primary;
+  }
+  
+  /* Component utilities */
+  .pp-card {
+    background: hsl(var(--surface));
+    border-radius: var(--card-radius);
+    box-shadow: var(--elev-shadow);
+    padding: var(--s-4) var(--s-5);
+  }
+  
+  .dark .pp-card {
+    border-radius: 8px;
+    box-shadow: none;
+    border: 1px solid hsl(0 0% 16%);
+  }
+  
+  .pp-divider {
+    height: 1px;
+    background: hsl(var(--divider));
+    margin: var(--s-3) 0;
   }
 }
