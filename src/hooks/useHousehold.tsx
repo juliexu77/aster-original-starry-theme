@@ -39,7 +39,7 @@ export const useHousehold = () => {
     }
 
     fetchHousehold();
-    fetchCollaborators();
+    // fetchCollaborators will be called from within fetchHousehold after household is set
 
     // Set up real-time subscriptions
     const householdsSubscription = supabase
@@ -145,6 +145,9 @@ export const useHousehold = () => {
 
       console.log('Household data:', householdData);
       setHousehold(householdData);
+      
+      // Fetch collaborators immediately after setting household
+      await fetchCollaborators(householdData.id);
     } catch (error) {
       console.error('Error in fetchHousehold:', error);
     } finally {
@@ -159,6 +162,8 @@ export const useHousehold = () => {
       const targetHouseholdId = householdId || household?.id;
       if (!targetHouseholdId) return;
 
+      console.log('Fetching collaborators for household:', targetHouseholdId);
+
       // First get collaborators
       const { data: collaboratorData, error: collaboratorError } = await supabase
         .from('collaborators')
@@ -170,7 +175,9 @@ export const useHousehold = () => {
         return;
       }
 
-      // Then get profiles for all user_ids
+      console.log('Raw collaborator data:', collaboratorData);
+
+      // Then get profiles for all user_ids (if any exist)
       if (collaboratorData && collaboratorData.length > 0) {
         const userIds = collaboratorData.map(c => c.user_id);
         const { data: profileData, error: profileError } = await supabase
@@ -180,7 +187,10 @@ export const useHousehold = () => {
 
         if (profileError) {
           console.error('Error fetching profiles:', profileError);
+          // Don't fail if profiles can't be fetched, just continue without them
         }
+
+        console.log('Profile data:', profileData);
 
         // Merge collaborator and profile data
         const enrichedCollaborators = collaboratorData.map(collaborator => ({
@@ -188,8 +198,10 @@ export const useHousehold = () => {
           profiles: profileData?.find(p => p.user_id === collaborator.user_id) || null
         }));
 
+        console.log('Enriched collaborators:', enrichedCollaborators);
         setCollaborators(enrichedCollaborators);
       } else {
+        console.log('No collaborators found');
         setCollaborators([]);
       }
     } catch (error) {
