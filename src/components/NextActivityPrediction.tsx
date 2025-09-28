@@ -56,7 +56,6 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     const prediction = engine.getNextAction();
     
     const currentTime = getCurrentTime();
-    const currentMinutes = getTimeInMinutes(currentTime);
     
     // Convert the new prediction format to the old UI format
     let type: "feed" | "nap";
@@ -69,21 +68,20 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (prediction.next_action === "FEED_NOW") {
       type = "feed";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
-      reason = "Time for feeding based on patterns";
-    } else if (prediction.next_action === "START_WIND_DOWN" || prediction.next_action === "LET_SLEEP_CONTINUE") {
+      reason = `t_since_last_feed (~${Math.floor((prediction.rationale.t_since_last_feed_min || 0) / 60)}h ${(prediction.rationale.t_since_last_feed_min || 0) % 60}m)`;
+    } else if (prediction.next_action === "START_WIND_DOWN") {
       type = "nap";
-      if (prediction.next_action === "LET_SLEEP_CONTINUE") {
-        anticipatedTime = undefined;
-        reason = "Baby is currently sleeping";
-      } else {
-        anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
-        reason = "Time for nap based on wake windows";
-      }
+      anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
+      reason = `wake window (~${Math.round((prediction.rationale.t_awake_now_min || 0) / 60 * 10) / 10}h awake)`;
+    } else if (prediction.next_action === "LET_SLEEP_CONTINUE") {
+      type = "nap";
+      anticipatedTime = undefined;
+      reason = "currently sleeping";
     } else {
       // INDEPENDENT_TIME or HOLD - default to feed
       type = "feed";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes * 2);
-      reason = "Continue current activity, then likely feeding";
+      reason = `continue current activity`;
     }
 
     // Map confidence scores
@@ -94,7 +92,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     // Create details object for expanded view
     const rationale = prediction.rationale;
     details = {
-      description: reason,
+      description: `Based on recent patterns and current state`,
       data: [
         {
           activity: { type: "analysis", time: currentTime },
@@ -131,77 +129,58 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
   };
 
-  const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
-      case 'high':
-        return "text-green-600 bg-green-50";
-      case 'medium':
-        return "text-yellow-600 bg-yellow-50";
-      case 'low':
-        return "text-orange-600 bg-orange-50";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
-
   const getPredictionText = () => {
     if (prediction.anticipatedTime) {
-      return `Next: ${prediction.type === "feed" ? "Feeding" : "Nap"} around ${prediction.anticipatedTime}`;
+      return `${prediction.type === "feed" ? "Feeding" : "Nap"} around ${prediction.anticipatedTime}`;
     }
     return `${prediction.type === "feed" ? "Consider feeding" : "Watch for sleepy cues"}`;
   };
 
-  const getSubtext = () => {
-    return prediction.reason;
-  };
-
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="next-action-card bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {getIcon(prediction.type)}
+          <Clock className="h-5 w-5 text-gray-600" />
           <div>
-            <h3 className="font-semibold text-lg">
-              {getPredictionText()}
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              {getSubtext()}
-            </p>
+            <h3 className="font-semibold text-lg">Next Predicted Action</h3>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getConfidenceColor(prediction.confidence)}`}>
-            {prediction.confidence} confidence
-          </span>
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
-        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-1 hover:bg-gray-100 rounded"
+        >
+          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
       </div>
 
       {isExpanded && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <h4 className="font-medium text-sm mb-2">Prediction Analysis:</h4>
-          <p className="text-sm text-muted-foreground mb-2">{prediction.details.description}</p>
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-2">
+            {getIcon(prediction.type)}
+            <span className="font-medium">{getPredictionText()}</span>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
           
-          {prediction.details.data.length > 0 && (
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-700">Recent patterns:</p>
-              {prediction.details.data.slice(0, 3).map((item: any, index: number) => (
-                <div key={index} className="text-xs text-muted-foreground">
-                  • {item.value} ({item.calculation})
-                </div>
-              ))}
-              {prediction.details.calculation && (
-                <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-gray-200">
-                  <strong>Calculation:</strong> {prediction.details.calculation}
-                </div>
-              )}
-            </div>
-          )}
+          <div className="p-3 bg-gray-50 rounded-lg">
+            <h4 className="font-medium text-sm mb-2">Prediction Analysis:</h4>
+            <p className="text-sm text-muted-foreground mb-2">{prediction.details.description}</p>
+            
+            {prediction.details.data.length > 0 && (
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-gray-700">Recent patterns:</p>
+                {prediction.details.data.slice(0, 3).map((item: any, index: number) => (
+                  <div key={index} className="text-xs text-muted-foreground">
+                    • {item.value} ({item.calculation})
+                  </div>
+                ))}
+                {prediction.details.calculation && (
+                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-gray-200">
+                    <strong>Calculation:</strong> {prediction.details.calculation}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
