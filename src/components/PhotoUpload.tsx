@@ -36,21 +36,31 @@ export function PhotoUpload({
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     try {
+      console.log('Starting photo upload:', file.name, file.size, file.type);
+      console.log('Upload folder:', folder, 'Bucket:', bucketName);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${folder}/${Date.now()}.${fileExt}`;
+      console.log('Generated file path:', fileName);
 
       // Upload file to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucketName)
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      console.log('Upload response:', { uploadData, uploadError });
+
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from(bucketName)
         .getPublicUrl(fileName);
 
+      console.log('Generated public URL:', publicUrl);
       onPhotoUpdate(publicUrl);
       
       toast({
@@ -61,7 +71,7 @@ export function PhotoUpload({
       console.error('Error uploading photo:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to upload photo. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to upload photo. Please try again.",
         variant: "destructive"
       });
     } finally {
