@@ -124,7 +124,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
       // Enhanced logic: detect dream feed pattern (late evening feed after sleep)
-      const isDreamFeed = lastActivity.type === 'feed' && lastFeedTime > 20 * 60; // After 8pm
+      const isDreamFeed = lastFeed && lastFeedTime > 20 * 60; // After 8pm
       const hasRecentSleep = activities.some(a => a.type === 'nap' && 
         getTimeInMinutes(a.time) > 18 * 60 && getTimeInMinutes(a.time) < lastFeedTime); // Sleep before dream feed
       
