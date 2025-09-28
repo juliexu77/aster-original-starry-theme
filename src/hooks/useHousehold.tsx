@@ -317,12 +317,13 @@ export const useHousehold = () => {
 
       const householdId = data as string;
 
-      // Remember this as the active household
+      // Remember this as the active household and immediately set it
       try {
         localStorage.setItem('active_household_id', householdId);
       } catch {}
 
-      // Fetch and set the accepted household as current
+      // Immediately fetch and set the accepted household as current
+      await fetchHousehold();
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('*')
