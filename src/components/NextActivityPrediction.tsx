@@ -373,27 +373,42 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           const typicalMinutes = Math.round(candidateTimes.reduce((a, b) => a + b, 0) / candidateTimes.length);
           const delta = ((typicalMinutes - currentMinutes) % (24 * 60) + (24 * 60)) % (24 * 60);
           const safeDelta = delta === 0 ? 30 : Math.round(delta);
-          const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
-          nextNapPrediction = {
-            type: "nap",
-            anticipatedTime,
-            confidence: 'medium' as const,
-            reason: "Typical sleep time approaching",
-            details: {
-              description: "Based on historical nap times, this is typically when your baby sleeps.",
-              data: candidateTimes.map((time, index) => {
-                const h = Math.floor(time / 60);
-                const m = time % 60;
-                const timeStr = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
-                return {
-                  activity: napActivities[index],
-                  value: timeStr,
-                  calculation: "Historical nap time"
-                };
-              }),
-              calculation: "Pattern matches current time window"
-            }
-          };
+
+          console.log('🕰️ Time-of-day nap check:', {
+            currentTime,
+            currentMinutes,
+            typicalMinutes,
+            delta,
+            safeDelta,
+            candidateCount: candidateTimes.length
+          });
+
+          // Only consider time-of-day nap predictions if within the next 6 hours
+          if (safeDelta > 0 && safeDelta <= 360) {
+            const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
+            nextNapPrediction = {
+              type: "nap",
+              anticipatedTime,
+              confidence: 'medium' as const,
+              reason: "Typical sleep time approaching",
+              details: {
+                description: "Based on historical nap times, this is typically when your baby sleeps.",
+                data: candidateTimes.map((time, index) => {
+                  const h = Math.floor(time / 60);
+                  const m = time % 60;
+                  const timeStr = `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+                  return {
+                    activity: napActivities[index],
+                    value: timeStr,
+                    calculation: "Historical nap time"
+                  };
+                }),
+                calculation: "Pattern matches current time window"
+              }
+            };
+          } else {
+            console.log('⏭️ Skipping typical nap prediction due to far-in-future time', { safeDelta });
+          }
         }
       }
     }
