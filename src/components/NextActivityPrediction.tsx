@@ -29,10 +29,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
   const addMinutesToTime = (timeString: string, minutes: number) => {
     const timeInMinutes = getTimeInMinutes(timeString);
-    const totalMinutes = Math.round(timeInMinutes + minutes);
-    const newTimeInMinutes = totalMinutes % (24 * 60);
-    const hours = Math.floor(newTimeInMinutes / 60);
-    const mins = Math.round(newTimeInMinutes % 60);
+    let totalMinutes = timeInMinutes + minutes;
+    
+    // Handle day rollover properly
+    while (totalMinutes < 0) totalMinutes += (24 * 60);
+    totalMinutes = totalMinutes % (24 * 60);
+    
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = Math.round(totalMinutes % 60);
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
@@ -124,7 +128,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
       
       if (timeSinceLastFeed >= avgFeedInterval - 60) {
-        const anticipatedTime = addMinutesToTime(lastFeed.time, Math.round(avgFeedInterval));
+        const anticipatedTime = addMinutesToTime(lastFeed.time, avgFeedInterval);
         const hours = Math.round(avgFeedInterval / 60 * 10) / 10;
         nextFeedPrediction = {
           type: "feed",
@@ -154,7 +158,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         if (timeSinceLastNap < 0) timeSinceLastNap += (24 * 60);
         
         if (timeSinceLastNap >= avgSleepInterval - 60) {
-          const anticipatedTime = addMinutesToTime(lastNap.time, Math.round(avgSleepInterval));
+          const anticipatedTime = addMinutesToTime(lastNap.time, avgSleepInterval);
           const hours = Math.round(avgSleepInterval / 60 * 10) / 10;
           nextNapPrediction = {
             type: "nap",
@@ -222,15 +226,20 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Return earliest prediction
+    // Return earliest prediction with proper day rollover handling
     if (nextFeedPrediction && nextNapPrediction) {
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
-      const adjustedFeedTime = feedTime < currentMinutes ? feedTime + (24 * 60) : feedTime;
-      const adjustedNapTime = napTime < currentMinutes ? napTime + (24 * 60) : napTime;
+      // Calculate time until each prediction, accounting for day rollover
+      let timeToFeed = feedTime - currentMinutes;
+      let timeToNap = napTime - currentMinutes;
       
-      return adjustedFeedTime <= adjustedNapTime ? nextFeedPrediction : nextNapPrediction;
+      // Handle day rollover - if prediction is "earlier" in the day, it's tomorrow
+      if (timeToFeed < 0) timeToFeed += (24 * 60);
+      if (timeToNap < 0) timeToNap += (24 * 60);
+      
+      return timeToFeed <= timeToNap ? nextFeedPrediction : nextNapPrediction;
     }
 
     if (nextFeedPrediction) return nextFeedPrediction;
