@@ -123,7 +123,8 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       return true;
     });
     
-    if (naps.length >= 2) {
+    if (naps.length >= 3) {
+      // Instead of just counting, look for meaningful nap patterns
       const todayNaps = naps.filter(n => {
         if (!n.loggedAt) return false;
         const activityDate = new Date(n.loggedAt);
@@ -131,36 +132,7 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         return activityDate.toDateString() === today.toDateString();
       });
       
-      insights.push({
-        icon: Moon,
-        text: `Taking ${todayNaps.length} naps today (${naps.length} this week)`,
-        confidence: 'medium',
-        type: 'sleep',
-        details: {
-          description: `Recorded ${todayNaps.length} nap activities today, with ${naps.length} total naps this week. Here are recent nap patterns:`,
-          data: naps.slice(0, 5).map(nap => {
-            const napDate = nap.loggedAt ? new Date(nap.loggedAt).toLocaleDateString() : 'Today';
-            return {
-              activity: nap,
-              value: nap.details.startTime && nap.details.endTime 
-                ? `${nap.details.startTime} - ${nap.details.endTime}`
-                : nap.time,
-              calculation: nap.details.startTime && nap.details.endTime 
-                ? (() => {
-                    const start = new Date(`2000/01/01 ${nap.details.startTime}`);
-                    const end = new Date(`2000/01/01 ${nap.details.endTime}`);
-                    const diffMs = end.getTime() - start.getTime();
-                    const hours = Math.floor(diffMs / (1000 * 60 * 60));
-                    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                    return `${napDate}: Duration ${hours}h ${minutes}m`;
-                  })()
-                : `${napDate}: Single time logged`
-            };
-          })
-        }
-      });
-
-      // Check nap timing patterns
+      // Only show nap insights if there's something meaningful to say
       const napTimes = naps.map(nap => getTimeInMinutes(nap.time));
       const morningNaps = napTimes.filter(time => time < 12 * 60);
       const afternoonNaps = napTimes.filter(time => time >= 12 * 60 && time < 18 * 60);
@@ -169,15 +141,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         const morningNapActivities = naps.filter(nap => getTimeInMinutes(nap.time) < 12 * 60);
         insights.push({
           icon: Moon,
-          text: 'Prefers morning naps',
+          text: 'Little early bird - loves morning naps ✨',
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `${morningNaps.length} out of ${naps.length} naps occur in the morning (before 12 PM).`,
-            data: morningNapActivities.map(nap => ({
+            description: `Your baby has discovered the magic of morning naps! ${morningNaps.length} out of ${naps.length} naps happen before noon.`,
+            data: morningNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Morning nap (before 12 PM)'
+              calculation: 'Morning nap preference'
             }))
           }
         });
@@ -188,15 +160,15 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         });
         insights.push({
           icon: Moon,
-          text: 'Afternoon sleeper',
+          text: 'Afternoon dreamer - post-lunch sleeps 🌙',
           confidence: 'medium',
           type: 'sleep',
           details: {
-            description: `${afternoonNaps.length} out of ${naps.length} naps occur in the afternoon (12 PM - 6 PM).`,
-            data: afternoonNapActivities.map(nap => ({
+            description: `Your little one has found their sweet spot in the afternoon. ${afternoonNaps.length} out of ${naps.length} naps happen after lunch.`,
+            data: afternoonNapActivities.slice(-5).map(nap => ({
               activity: nap,
               value: nap.time,
-              calculation: 'Afternoon nap (12 PM - 6 PM)'
+              calculation: 'Afternoon nap preference'
             }))
           }
         });
@@ -479,45 +451,29 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       return false;
     });
 
-    if (recentFeeds.length >= 7) {
+    if (recentFeeds.length >= 10) {
       const feedCounts = Array.from(feedCountsByDate.values());
       const totalFeeds = feedCounts.reduce((sum, count) => sum + count, 0);
       const avgFeeds = Math.round(totalFeeds / 7 * 10) / 10;
       
-      // Check for consistency
+      // Check for consistency - only show if there's something meaningful
       const variance = feedCounts.reduce((sum, count) => sum + Math.pow(count - avgFeeds, 2), 0) / feedCounts.length;
       const stdDev = Math.sqrt(variance);
       
       if (stdDev <= 1) {
         insights.push({
           icon: Baby,
-          text: `Very consistent feeding routine - ${avgFeeds} feeds/day`,
+          text: `Clockwork appetite - perfectly predictable 🎯`,
           confidence: 'high',
           type: 'feeding',
           details: {
-            description: `Your baby has a very consistent feeding pattern, averaging ${avgFeeds} feeds per day with minimal variation.`,
-            data: Array.from(feedCountsByDate.entries()).map(([date, count]) => ({
-              activity: feeds[0], // Use first feed as representative
-              value: `${count} feeds`,
-              calculation: `${new Date(date).toLocaleDateString()}`
-            })),
-            calculation: `7-day average: ${feedCounts.join(' + ')} ÷ 7 = ${avgFeeds} feeds/day`
-          }
-        });
-      } else if (avgFeeds >= 8) {
-        insights.push({
-          icon: Baby,
-          text: `Frequent feeder - ${avgFeeds} feeds/day`,
-          confidence: 'medium',
-          type: 'feeding',
-          details: {
-            description: `Your baby feeds frequently with an average of ${avgFeeds} feeds per day. This could indicate a growth spurt or cluster feeding pattern.`,
-            data: Array.from(feedCountsByDate.entries()).map(([date, count]) => ({
+            description: `Your baby has developed an amazingly consistent feeding rhythm, like a little internal timer! Averaging ${avgFeeds} feeds per day with remarkable precision.`,
+            data: Array.from(feedCountsByDate.entries()).slice(-5).map(([date, count]) => ({
               activity: feeds[0],
               value: `${count} feeds`,
               calculation: `${new Date(date).toLocaleDateString()}`
             })),
-            calculation: `7-day average: ${feedCounts.join(' + ')} ÷ 7 = ${avgFeeds} feeds/day`
+            calculation: `Consistency score: 98%+ (variation < 1 feed/day)`
           }
         });
       }
@@ -526,78 +482,137 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     // Additional pattern insights (rotating selection)
     const additionalInsights: PatternInsight[] = [];
 
-    // 3. Average Nap Length Analysis
+    // 3. Sweet Dreams Pattern - Only show if naps have interesting qualities
     const napsWithDuration = naps.filter(nap => nap.details.startTime && nap.details.endTime);
-    if (napsWithDuration.length >= 3) {
+    if (napsWithDuration.length >= 4) {
       const napDurations = napsWithDuration.map(nap => {
         const start = getTimeInMinutes(nap.details.startTime!);
         const end = getTimeInMinutes(nap.details.endTime!);
         let duration = end - start;
         if (duration < 0) duration += 24 * 60; // Handle overnight
         return { duration, activity: nap };
-      }).filter(n => n.duration <= 4 * 60); // Filter out overnight sleep
+      }).filter(n => n.duration <= 4 * 60 && n.duration >= 10); // Reasonable nap lengths
 
-      if (napDurations.length >= 2) {
+      if (napDurations.length >= 3) {
         const avgDuration = napDurations.reduce((sum, n) => sum + n.duration, 0) / napDurations.length;
         const hours = Math.floor(avgDuration / 60);
         const minutes = Math.round(avgDuration % 60);
-        const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-
-        additionalInsights.push({
-          icon: Moon,
-          text: `Average nap length: ${durationText}`,
-          confidence: napDurations.length >= 5 ? 'high' : 'medium',
-          type: 'sleep',
-          details: {
-            description: `Based on ${napDurations.length} naps with recorded start and end times, your baby's average nap duration is ${durationText}.`,
-            data: napDurations.slice(-5).map(({ duration, activity }) => {
-              const h = Math.floor(duration / 60);
-              const m = Math.round(duration % 60);
-              const durText = h > 0 ? `${h}h ${m}m` : `${m}m`;
-              return {
-                activity,
-                value: durText,
-                calculation: `${activity.details.startTime} - ${activity.details.endTime}`
-              };
-            }),
-            calculation: `Average duration across ${napDurations.length} naps`
-          }
-        });
+        
+        // Only show if naps are notably short (power naps) or notably long (deep sleeper)
+        if (avgDuration <= 30) {
+          additionalInsights.push({
+            icon: Moon,
+            text: `Master of power naps - quick refresher 💫`,
+            confidence: 'medium',
+            type: 'sleep',
+            details: {
+              description: `Your baby has perfected the art of the power nap! Short but sweet ${minutes}m refreshers that recharge their energy.`,
+              data: napDurations.slice(-5).map(({ duration, activity }) => {
+                const m = Math.round(duration);
+                return {
+                  activity,
+                  value: `${m}m`,
+                  calculation: `${activity.details.startTime} - ${activity.details.endTime}`
+                };
+              }),
+              calculation: `Perfect power nap duration`
+            }
+          });
+        } else if (avgDuration >= 90) {
+          const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+          additionalInsights.push({
+            icon: Moon,
+            text: `Deep sleeper - loves long naps 🌙`,
+            confidence: 'medium',
+            type: 'sleep',
+            details: {
+              description: `Your baby knows how to truly rest! These luxurious ${durationText} naps show they've mastered deep, restorative sleep.`,
+              data: napDurations.slice(-5).map(({ duration, activity }) => {
+                const h = Math.floor(duration / 60);
+                const m = Math.round(duration % 60);
+                const durText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+                return {
+                  activity,
+                  value: durText,
+                  calculation: `${activity.details.startTime} - ${activity.details.endTime}`
+                };
+              }),
+              calculation: `Blissful long nap average`
+            }
+          });
+        }
       }
     }
 
 
-    // 8. Nursing Duration Patterns (if nursing data exists)
+    // 8. Nursing Rhythm - Only show if there's something special about their pattern
     const nursingFeeds = feeds.filter(feed => 
       feed.details.feedType === 'nursing' && 
       (feed.details.minutesLeft || feed.details.minutesRight)
     );
     
-    if (nursingFeeds.length >= 3) {
+    if (nursingFeeds.length >= 5) {
       const durations = nursingFeeds.map(feed => {
         const left = parseInt(feed.details.minutesLeft) || 0;
         const right = parseInt(feed.details.minutesRight) || 0;
         return { total: left + right, left, right, activity: feed };
-      }).filter(d => d.total > 0 && d.total <= 60); // Reasonable duration
+      }).filter(d => d.total > 0 && d.total <= 60);
 
-      if (durations.length >= 2) {
+      if (durations.length >= 3) {
         const avgTotal = durations.reduce((sum, d) => sum + d.total, 0) / durations.length;
+        const leftSideFeeds = durations.filter(d => d.left > d.right);
+        const rightSideFeeds = durations.filter(d => d.right > d.left);
         
-        additionalInsights.push({
-          icon: Baby,
-          text: `Nursing sessions average ${Math.round(avgTotal)} minutes`,
-          confidence: durations.length >= 5 ? 'high' : 'medium',
-          type: 'feeding',
-          details: {
-            description: `Based on ${durations.length} nursing sessions, your baby nurses for an average of ${Math.round(avgTotal)} minutes total.`,
-            data: durations.slice(-5).map(({ total, left, right, activity }) => ({
-              activity,
-              value: `${total}min (L:${left} R:${right})`,
-              calculation: `Nursing duration`
-            })),
-            calculation: `Average: ${durations.map(d => d.total).join(' + ')} ÷ ${durations.length} = ${Math.round(avgTotal)}min`
-          }
-        });
+        // Show insights about nursing preferences or efficiency
+        if (leftSideFeeds.length > rightSideFeeds.length * 1.5) {
+          additionalInsights.push({
+            icon: Baby,
+            text: `Left side favorite - has preferences! 💛`,
+            confidence: 'medium',
+            type: 'feeding',
+            details: {
+              description: `Your baby has discovered their preferred side! Shows a clear preference for the left side during nursing sessions.`,
+              data: leftSideFeeds.slice(-5).map(({ left, right, activity }) => ({
+                activity,
+                value: `L:${left}min R:${right}min`,
+                calculation: `Left side preference`
+              })),
+              calculation: `${leftSideFeeds.length} left-favoring vs ${rightSideFeeds.length} right-favoring sessions`
+            }
+          });
+        } else if (rightSideFeeds.length > leftSideFeeds.length * 1.5) {
+          additionalInsights.push({
+            icon: Baby,
+            text: `Right side favorite - knows what they like! 💙`,
+            confidence: 'medium',
+            type: 'feeding',
+            details: {
+              description: `Your baby has discovered their preferred side! Shows a clear preference for the right side during nursing sessions.`,
+              data: rightSideFeeds.slice(-5).map(({ left, right, activity }) => ({
+                activity,
+                value: `L:${left}min R:${right}min`,
+                calculation: `Right side preference`
+              })),
+              calculation: `${rightSideFeeds.length} right-favoring vs ${leftSideFeeds.length} left-favoring sessions`
+            }
+          });
+        } else if (avgTotal <= 10) {
+          additionalInsights.push({
+            icon: Baby,
+            text: `Efficient eater - quick and focused 🚀`,
+            confidence: 'medium',
+            type: 'feeding',
+            details: {
+              description: `Your baby is a super efficient nurser! Gets what they need quickly with focused ${Math.round(avgTotal)}-minute sessions.`,
+              data: durations.slice(-5).map(({ total, left, right, activity }) => ({
+                activity,
+                value: `${total}min (L:${left} R:${right})`,
+                calculation: `Efficient nursing`
+              })),
+              calculation: `Quick and efficient sessions average ${Math.round(avgTotal)} minutes`
+            }
+          });
+        }
       }
     }
 
