@@ -21,26 +21,15 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      // Use consistent local date formatting
-      const localDateStr = date.toDateString();
-      const localDate = new Date(localDateStr);
-      const dateStr = localDate.getFullYear() + '-' + 
-                     String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                     String(localDate.getDate()).padStart(2, '0');
+      const dateStr = date.toISOString().split('T')[0];
       
       // Filter nap activities for this specific date
       const dayNaps = activities.filter(a => {
-      if (a.type !== "nap") return false;
-      if (!a.loggedAt) return false;
-      
-      // Use consistent date grouping approach - convert to local date string first
-      const activityDate = new Date(a.loggedAt);
-      const localDateStr = activityDate.toDateString();
-      const localDate = new Date(localDateStr);
-      const activityDateKey = localDate.getFullYear() + '-' + 
-                             String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                             String(localDate.getDate()).padStart(2, '0');
-      return dateStr === activityDateKey;
+        if (a.type !== "nap") return false;
+        if (!a.loggedAt) return false;
+        
+        const activityDate = new Date(a.loggedAt).toISOString().split('T')[0];
+        return dateStr === activityDate;
       });
       
       // Create sleep blocks for the time range
@@ -123,13 +112,8 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
     activities.forEach(activity => {
       if (!activity.loggedAt) return; // Skip activities without loggedAt timestamp
       
-      // Use consistent date grouping approach - convert to local date string first
       const activityDate = new Date(activity.loggedAt);
-      const localDateStr = activityDate.toDateString();
-      const localDate = new Date(localDateStr);
-      const dateKey = localDate.getFullYear() + '-' + 
-                     String(localDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                     String(localDate.getDate()).padStart(2, '0');
+      const dateKey = activityDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
       
       if (!activityByDate[dateKey]) {
         activityByDate[dateKey] = [];
