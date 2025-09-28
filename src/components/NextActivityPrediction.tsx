@@ -300,8 +300,32 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       }
     }
 
-    // Return earliest prediction
+    // Prioritize based on baby's current needs, not just time
     if (nextFeedPrediction && nextNapPrediction) {
+      // Calculate time since last nap ended (wake window)
+      const lastNap = napActivities[0];
+      const lastNapEndTime = lastNap?.details.endTime ? 
+        getTimeInMinutes(lastNap.details.endTime) : 
+        getTimeInMinutes(lastNap?.time || "");
+      
+      let timeSinceNapEnded = currentMinutes - lastNapEndTime;
+      if (timeSinceNapEnded < 0) timeSinceNapEnded += (24 * 60);
+      
+      // Calculate time since last feed
+      const lastFeed = feedActivities[0];
+      const lastFeedTime = getTimeInMinutes(lastFeed?.time || "");
+      let timeSinceLastFeed = currentMinutes - lastFeedTime;
+      if (timeSinceLastFeed < 0) timeSinceLastFeed += (24 * 60);
+      
+      // Prioritize nap if baby has been awake for 90+ minutes and it's been less than 3.5 hours since last feed
+      const WAKE_WINDOW_PRIORITY = 90; // 1.5 hours
+      const FEED_INTERVAL_THRESHOLD = 210; // 3.5 hours
+      
+      if (timeSinceNapEnded >= WAKE_WINDOW_PRIORITY && timeSinceLastFeed < FEED_INTERVAL_THRESHOLD) {
+        return nextNapPrediction;
+      }
+      
+      // Otherwise, return the earlier prediction
       const feedTime = getTimeInMinutes(nextFeedPrediction.anticipatedTime);
       const napTime = getTimeInMinutes(nextNapPrediction.anticipatedTime);
       
