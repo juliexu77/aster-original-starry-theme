@@ -159,11 +159,11 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
         if (timeSinceLastNap >= avgSleepInterval - 60) {
           const anticipatedTime = addMinutesToTime(lastNap.time, avgSleepInterval);
           console.log("Creating nap prediction for:", anticipatedTime);
-          nextNapPrediction = {
-            type: "nap",
-            anticipatedTime,
-            reason: `Next nap due based on sleep pattern (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`
-          };
+           nextNapPrediction = {
+             type: "sleep",
+             anticipatedTime,
+             reason: `Next sleep due based on sleep pattern (avg ${Math.round(avgSleepInterval / 60 * 10) / 10}h)`
+           };
         }
       }
       
@@ -196,9 +196,9 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
             const safeDelta = delta === 0 ? 30 : delta;
             const anticipatedTime = addMinutesToTime(currentTime, safeDelta);
             nextNapPrediction = {
-              type: "nap",
+              type: "sleep",
               anticipatedTime,
-              reason: "Typical nap time based on historical patterns"
+              reason: "Typical sleep time based on historical patterns"
             };
           }
         } else {
@@ -264,10 +264,10 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
     if (lastActivity.type === "feed") {
       return {
-        type: "nap",
+        type: "sleep",
         suggestedTime: undefined,
         anticipatedTime: undefined,
-        reason: "Consider nap time after feeding"
+        reason: "Consider sleep time after feeding"
       };
     }
 

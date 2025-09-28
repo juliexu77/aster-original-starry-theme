@@ -143,14 +143,35 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setShowKeypad(false);
   };
 
-  const startNapTimer = () => {
+  const startNapTimer = async () => {
     setIsTimerActive(true);
     setTimerStart(new Date());
-    setStartTime(new Date().toLocaleTimeString("en-US", { 
+    const startTime = new Date().toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
-    }));
+    });
+    setStartTime(startTime);
+    
+    // Save the activity immediately when starting the sleep timer
+    const newActivity: Omit<Activity, "id"> = {
+      type: "nap",
+      time: startTime,
+      details: {
+        startTime: startTime,
+        endTime: "", // Will be filled when timer is stopped
+      },
+    };
+
+    onAddActivity(newActivity, selectedDate, startTime);
+    
+    // Close the modal after starting the timer
+    resetForm();
+    if (onClose) {
+      onClose();
+    } else {
+      setInternalOpen(false);
+    }
   };
 
   const stopNapTimer = () => {

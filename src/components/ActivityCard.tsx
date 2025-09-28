@@ -142,6 +142,8 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
       if (activity.details.startTime && activity.details.endTime) {
         const duration = calculateNapDuration(activity.details.startTime, activity.details.endTime);
         return `${babyName} slept ${duration}`;
+      } else if (activity.details.startTime && !activity.details.endTime) {
+        return `${babyName} is sleeping (started at ${activity.details.startTime})`;
       }
       return `${babyName} took a nap`;
     case "note":
