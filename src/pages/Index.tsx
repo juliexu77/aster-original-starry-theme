@@ -298,8 +298,8 @@ const Index = () => {
                             </div>
                           </div>
                           
-                          {/* Next Predicted Action - Show after Today's activities */}
-                          {dateKey === todayKey && activities.length > 0 && (
+                          {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
+                          {index === 0 && activities.length > 0 && (
                             <div className="mt-4 mb-4">
                               <NextActivityPrediction activities={activities} />
                             </div>
