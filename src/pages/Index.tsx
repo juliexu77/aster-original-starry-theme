@@ -4,7 +4,8 @@ import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
-import { Settings } from "@/pages/Settings";
+import { Settings as SettingsPage } from "@/pages/Settings";
+import { Helper } from "@/components/Helper";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -14,7 +15,8 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar } from "lucide-react";
+import { Calendar, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Index = () => {
@@ -186,8 +188,15 @@ const Index = () => {
             <SleepChart activities={activities} />
           </div>
         );
-      case "settings":
-        return <Settings />;
+    case "helper":
+      return <Helper activities={activities.map(a => ({
+        id: a.id,
+        type: a.type,
+        logged_at: a.loggedAt,
+        details: a.details
+      }))} babyBirthDate={babyProfile?.birthday ? new Date(babyProfile.birthday) : undefined} />;
+    case "settings":
+      return <SettingsPage />;
       default:
         return (
           <>
@@ -359,6 +368,14 @@ const Index = () => {
           <h1 className="text-xl font-semibold">
             {babyProfile?.name ? `${babyProfile.name}'s Day` : "Baby Tracker"}
           </h1>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setActiveTab("settings")}
+            className="p-2"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 
