@@ -132,9 +132,19 @@ const Index = () => {
           
           // Create a new date with the selected date and time in LOCAL timezone
           const combinedDateTime = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate(), hours, minutes, 0, 0);
-          loggedAt = combinedDateTime.toISOString();
+          // Store as local time to avoid timezone shift issues
+          const year = combinedDateTime.getFullYear();
+          const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
+          const day = String(combinedDateTime.getDate()).padStart(2, '0');
+          const hour = String(combinedDateTime.getHours()).padStart(2, '0');
+          const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
+          loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00.000Z`;
         } else {
-          loggedAt = activityDate.toISOString();
+          // Store as local time to avoid timezone shift issues
+          const year = activityDate.getFullYear();
+          const month = String(activityDate.getMonth() + 1).padStart(2, '0');
+          const day = String(activityDate.getDate()).padStart(2, '0');
+          loggedAt = `${year}-${month}-${day}T12:00:00.000Z`;
         }
       } else {
         loggedAt = new Date().toISOString();

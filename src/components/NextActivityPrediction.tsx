@@ -52,7 +52,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (!canPredictFeeds && !canPredictNaps) {
       return {
         type: "feed",
-        suggestedTime: undefined,
+        anticipatedTime: undefined,
         confidence: 'low' as const,
         reason: "Gathering data to make predictions",
         details: {
@@ -95,7 +95,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (!lastActivity) {
       return {
         type: "feed",
-        suggestedTime: undefined,
+        anticipatedTime: undefined,
         confidence: 'low' as const,
         reason: "Start your day with a feeding",
         details: {
@@ -240,7 +240,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (lastActivity.type === "nap") {
       return {
         type: "feed",
-        suggestedTime: undefined,
+        anticipatedTime: undefined,
         confidence: 'medium' as const,
         reason: "Feeding typically follows sleep",
         details: {
@@ -253,7 +253,7 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
 
     return {
       type: "nap",
-      suggestedTime: undefined,
+      anticipatedTime: undefined,
       confidence: 'medium' as const,
       reason: "Consider sleep time after feeding",
       details: {
