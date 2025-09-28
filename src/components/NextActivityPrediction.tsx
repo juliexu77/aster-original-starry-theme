@@ -280,84 +280,70 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
   };
 
-  const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
-    switch (confidence) {
-      case 'high': return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950 dark:border-green-800';
-      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950 dark:border-blue-800';
-      case 'low': return 'text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950 dark:border-amber-800';
-      default: return 'text-muted-foreground bg-muted border-border';
-    }
-  };
 
   const IconComponent = getIcon(prediction.type);
 
   return (
-    <Card className="shadow-card border-border">
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-xl font-sans font-semibold dark:font-bold">
-          <Clock className="h-5 w-5 text-primary" />
-          {t('nextActivity')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <div className={`rounded-lg p-4 transition-all ${getConfidenceColor(prediction.confidence)}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <IconComponent className="h-5 w-5" />
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">
-                    {prediction.type === 'feed' ? t('nextFeed') : t('nextNap')} at {prediction.anticipatedTime}
-                  </h3>
-                  <p className="text-sm opacity-75">{prediction.reason}</p>
-                </div>
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Clock className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold text-foreground">Next Predicted Action</h2>
+      </div>
+      
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <div className="bg-muted/50 rounded-xl p-4 border border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-muted rounded-lg p-2">
+                <IconComponent className="h-5 w-5 text-muted-foreground" />
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs capitalize">
-                  {prediction.confidence} confidence
-                </Badge>
-                <CollapsibleTrigger asChild>
-                  <button className="p-1 hover:bg-white/20 rounded">
-                    {isExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-foreground">
+                  {prediction.type === 'feed' ? 'Feed' : 'Nap'} around {prediction.anticipatedTime}
+                </h3>
+                <p className="text-sm text-muted-foreground">{prediction.reason}</p>
               </div>
             </div>
-            
-            <CollapsibleContent>
-              <div className="mt-4 pt-4 border-t border-current/20">
-                <p className="text-sm mb-4 opacity-90">
-                  {prediction.details.description}
-                </p>
-                
-                {prediction.details.data && prediction.details.data.length > 0 && (
-                  <div className="space-y-2">
-                    <h5 className="text-xs font-medium opacity-75 uppercase tracking-wide">
-                      Supporting Data
-                    </h5>
-                    <div className="space-y-1">
-                      {prediction.details.data.slice(0, 3).map((dataPoint: any, dataIndex: number) => (
-                        <div key={dataIndex} className="flex justify-between items-center text-xs">
-                          <span className="opacity-75">
-                            {dataPoint.calculation}
-                          </span>
-                          <span className="font-medium">
-                            {dataPoint.value}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+            <CollapsibleTrigger asChild>
+              <button className="p-1 hover:bg-muted rounded text-muted-foreground">
+                {isExpanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
                 )}
-              </div>
-            </CollapsibleContent>
+              </button>
+            </CollapsibleTrigger>
           </div>
-        </Collapsible>
-      </CardContent>
-    </Card>
+          
+          <CollapsibleContent>
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-sm text-muted-foreground mb-4">
+                {prediction.details.description}
+              </p>
+              
+              {prediction.details.data && prediction.details.data.length > 0 && (
+                <div className="space-y-2">
+                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Supporting Data
+                  </h5>
+                  <div className="space-y-1">
+                    {prediction.details.data.slice(0, 3).map((dataPoint: any, dataIndex: number) => (
+                      <div key={dataIndex} className="flex justify-between items-center text-xs">
+                        <span className="text-muted-foreground">
+                          {dataPoint.calculation}
+                        </span>
+                        <span className="font-medium text-foreground">
+                          {dataPoint.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CollapsibleContent>
+        </div>
+      </Collapsible>
+    </div>
   );
 };
