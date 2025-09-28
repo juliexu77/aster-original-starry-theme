@@ -74,7 +74,9 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs opacity-75 capitalize">{insight.confidence} confidence</span>
+                    {insight.confidence === 'high' && (
+                      <span className="text-xs opacity-75 capitalize">{insight.confidence} confidence</span>
+                    )}
                     {expandedInsight === index ? (
                       <ChevronUp className="h-3 w-3 opacity-50" />
                     ) : (
@@ -90,31 +92,24 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                     </p>
                     
                     {insight.details.data.length > 0 && (
-                      <div className="space-y-2">
-                        <h5 className="text-xs font-medium opacity-75 uppercase tracking-wide">
-                          Supporting Data
-                        </h5>
-                        <div className="space-y-1">
-                          {insight.details.data.slice(0, 3).map((dataPoint, dataIndex) => (
-                            <div key={dataIndex} className="flex justify-between items-center text-xs">
-                              <span className="opacity-75">
-                                {dataPoint.calculation || 'Activity'}
-                              </span>
-                              <span className="font-medium">
-                                {dataPoint.value}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {insight.details.calculation && (
-                      <div className="mt-3 pt-3 border-t border-current/20">
-                        <span className="text-xs opacity-75 font-medium">Calculation: </span>
-                        <span className="text-xs opacity-90">{insight.details.calculation}</span>
-                      </div>
-                    )}
+                       <div className="space-y-2">
+                         <h5 className="text-xs font-medium opacity-75 uppercase tracking-wide">
+                           Supporting Data
+                         </h5>
+                         <div className="space-y-1">
+                           {insight.details.data.slice(0, 3).map((dataPoint, dataIndex) => (
+                             <div key={dataIndex} className="flex justify-between items-center text-xs">
+                               <span className="opacity-75">
+                                 Activity
+                               </span>
+                               <span className="font-medium">
+                                 {dataPoint.value}
+                               </span>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
                   </div>
                 )}
               </div>

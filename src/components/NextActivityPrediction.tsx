@@ -198,8 +198,8 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       if (wakeWindows.length > 0) {
         const avgWakeWindow = wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length;
         
-        // Predict next nap if we're approaching the average wake window
-        if (timeSinceLastNapEnded >= avgWakeWindow - 30) {
+        // Predict next nap if we're approaching or past the average wake window
+        if (timeSinceLastNapEnded >= avgWakeWindow - 15) {
           const nextNapMinutes = lastNapEndTime + Math.round(avgWakeWindow);
           const anticipatedTime = addMinutesToTime(lastNap.details.endTime || lastNap.time, Math.round(avgWakeWindow));
           const hours = Math.round(avgWakeWindow / 60 * 10) / 10;
@@ -412,24 +412,24 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
               </p>
               
                {nextActivity.details.data.length > 0 && (
-                <div className="space-y-2">
-                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Recent Data
-                  </h5>
-                  <div className="space-y-1">
-                    {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
-                      <div key={index} className="flex justify-between items-center text-xs">
-                        <span className="text-muted-foreground">
-                          Time between {nextActivity.type}s
-                        </span>
-                        <span className="font-medium">
-                          {dataPoint.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                 <div className="space-y-2">
+                   <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                     Recent Data
+                   </h5>
+                   <div className="space-y-1">
+                     {nextActivity.details.data.slice(0, 3).map((dataPoint, index) => (
+                       <div key={index} className="flex justify-between items-center text-xs">
+                         <span className="text-muted-foreground">
+                           Time between {nextActivity.type}s
+                         </span>
+                         <span className="font-medium">
+                           {dataPoint.value}
+                         </span>
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
             </div>
           </div>
         )}
