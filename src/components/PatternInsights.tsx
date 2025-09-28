@@ -111,7 +111,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
-    // Analyze nap patterns - filter for today's naps only
+    // Analyze nap patterns - filter for today's daytime naps only
     const today = new Date();
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const todayEnd = new Date(todayStart);
@@ -121,7 +121,14 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       if (a.type !== 'nap') return false;
       if (!a.loggedAt) return true; // Include if no timestamp (fallback)
       const activityDate = new Date(a.loggedAt);
-      return activityDate >= todayStart && activityDate < todayEnd;
+      if (!(activityDate >= todayStart && activityDate < todayEnd)) return false;
+      
+      // Only count daytime naps (exclude overnight sleep)
+      const napTime = getTimeInMinutes(a.time);
+      // Exclude naps that start after 6 PM (likely overnight sleep)
+      if (napTime >= 18 * 60) return false;
+      
+      return true;
     });
     
     if (naps.length >= 2) {
