@@ -78,6 +78,7 @@ export default {
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
+        'subtle': 'var(--shadow-subtle)',
       },
       borderRadius: {
         lg: "var(--radius)",
