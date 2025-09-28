@@ -523,7 +523,270 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       }
     }
 
-    return insights;
+    // Additional pattern insights (rotating selection)
+    const additionalInsights: PatternInsight[] = [];
+
+    // 3. Average Nap Length Analysis
+    const napsWithDuration = naps.filter(nap => nap.details.startTime && nap.details.endTime);
+    if (napsWithDuration.length >= 3) {
+      const napDurations = napsWithDuration.map(nap => {
+        const start = getTimeInMinutes(nap.details.startTime!);
+        const end = getTimeInMinutes(nap.details.endTime!);
+        let duration = end - start;
+        if (duration < 0) duration += 24 * 60; // Handle overnight
+        return { duration, activity: nap };
+      }).filter(n => n.duration <= 4 * 60); // Filter out overnight sleep
+
+      if (napDurations.length >= 2) {
+        const avgDuration = napDurations.reduce((sum, n) => sum + n.duration, 0) / napDurations.length;
+        const hours = Math.floor(avgDuration / 60);
+        const minutes = Math.round(avgDuration % 60);
+        const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+        additionalInsights.push({
+          icon: Moon,
+          text: `Average nap length: ${durationText}`,
+          confidence: napDurations.length >= 5 ? 'high' : 'medium',
+          type: 'sleep',
+          details: {
+            description: `Based on ${napDurations.length} naps with recorded start and end times, your baby's average nap duration is ${durationText}.`,
+            data: napDurations.slice(-5).map(({ duration, activity }) => {
+              const h = Math.floor(duration / 60);
+              const m = Math.round(duration % 60);
+              const durText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+              return {
+                activity,
+                value: durText,
+                calculation: `${activity.details.startTime} - ${activity.details.endTime}`
+              };
+            }),
+            calculation: `Average duration across ${napDurations.length} naps`
+          }
+        });
+      }
+    }
+
+    // 7. Peak Feeding Times Analysis
+    if (feeds.length >= 6) {
+      const feedingHours = feeds.map(feed => Math.floor(getTimeInMinutes(feed.time) / 60));
+      const hourCounts = new Map<number, number>();
+      
+      feedingHours.forEach(hour => {
+        hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
+      });
+
+      const sortedHours = Array.from(hourCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 2);
+
+      if (sortedHours.length >= 2 && sortedHours[0][1] >= 2) {
+        const peakHour1 = sortedHours[0][0];
+        const peakHour2 = sortedHours[1][0];
+        const formatHour = (h: number) => `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h >= 12 ? 'PM' : 'AM'}`;
+        
+        additionalInsights.push({
+          icon: Baby,
+          text: `Peak feeding times: ${formatHour(peakHour1)}-${formatHour(peakHour1 + 1)} & ${formatHour(peakHour2)}-${formatHour(peakHour2 + 1)}`,
+          confidence: 'medium',
+          type: 'feeding',
+          details: {
+            description: `Most feeds occur between ${formatHour(peakHour1)}-${formatHour(peakHour1 + 1)} (${sortedHours[0][1]} feeds) and ${formatHour(peakHour2)}-${formatHour(peakHour2 + 1)} (${sortedHours[1][1]} feeds).`,
+            data: feeds.filter(feed => {
+              const hour = Math.floor(getTimeInMinutes(feed.time) / 60);
+              return hour === peakHour1 || hour === peakHour2;
+            }).slice(-6).map(feed => ({
+              activity: feed,
+              value: feed.time,
+              calculation: `Peak time feeding`
+            })),
+            calculation: `Analysis of ${feeds.length} feeding times`
+          }
+        });
+      }
+    }
+
+    // 8. Nursing Duration Patterns (if nursing data exists)
+    const nursingFeeds = feeds.filter(feed => 
+      feed.details.feedType === 'nursing' && 
+      (feed.details.minutesLeft || feed.details.minutesRight)
+    );
+    
+    if (nursingFeeds.length >= 3) {
+      const durations = nursingFeeds.map(feed => {
+        const left = parseInt(feed.details.minutesLeft) || 0;
+        const right = parseInt(feed.details.minutesRight) || 0;
+        return { total: left + right, left, right, activity: feed };
+      }).filter(d => d.total > 0 && d.total <= 60); // Reasonable duration
+
+      if (durations.length >= 2) {
+        const avgTotal = durations.reduce((sum, d) => sum + d.total, 0) / durations.length;
+        
+        additionalInsights.push({
+          icon: Baby,
+          text: `Nursing sessions average ${Math.round(avgTotal)} minutes`,
+          confidence: durations.length >= 5 ? 'high' : 'medium',
+          type: 'feeding',
+          details: {
+            description: `Based on ${durations.length} nursing sessions, your baby nurses for an average of ${Math.round(avgTotal)} minutes total.`,
+            data: durations.slice(-5).map(({ total, left, right, activity }) => ({
+              activity,
+              value: `${total}min (L:${left} R:${right})`,
+              calculation: `Nursing duration`
+            })),
+            calculation: `Average: ${durations.map(d => d.total).join(' + ')} ÷ ${durations.length} = ${Math.round(avgTotal)}min`
+          }
+        });
+      }
+    }
+
+    // 14. Weekend vs Weekday Patterns
+    const activitiesWithDates = activities.filter(a => a.loggedAt);
+    if (activitiesWithDates.length >= 10) {
+      const weekdayActivities = activitiesWithDates.filter(a => {
+        const day = new Date(a.loggedAt!).getDay();
+        return day >= 1 && day <= 5; // Monday-Friday
+      });
+      
+      const weekendActivities = activitiesWithDates.filter(a => {
+        const day = new Date(a.loggedAt!).getDay();
+        return day === 0 || day === 6; // Saturday-Sunday
+      });
+
+      if (weekdayActivities.length >= 5 && weekendActivities.length >= 3) {
+        const weekdayFeeds = weekdayActivities.filter(a => a.type === 'feed').length;
+        const weekendFeeds = weekendActivities.filter(a => a.type === 'feed').length;
+        const weekdayAvg = weekdayFeeds / Math.min(5, weekdayActivities.length / 3); // Rough daily average
+        const weekendAvg = weekendFeeds / Math.min(2, weekendActivities.length / 3);
+        
+        if (Math.abs(weekendAvg - weekdayAvg) >= 1) {
+          const more = weekendAvg > weekdayAvg ? 'more' : 'fewer';
+          const diff = Math.round(Math.abs(weekendAvg - weekdayAvg) * 10) / 10;
+          
+          additionalInsights.push({
+            icon: Clock,
+            text: `${diff} ${more} feeds on weekends`,
+            confidence: 'medium',
+            type: 'general',
+            details: {
+              description: `Weekend feeding patterns differ from weekdays. Averaging ${Math.round(weekendAvg * 10) / 10} feeds on weekends vs ${Math.round(weekdayAvg * 10) / 10} on weekdays.`,
+              data: [
+                ...weekdayActivities.filter(a => a.type === 'feed').slice(-3).map(a => ({
+                  activity: a,
+                  value: a.time,
+                  calculation: `Weekday feeding`
+                })),
+                ...weekendActivities.filter(a => a.type === 'feed').slice(-2).map(a => ({
+                  activity: a,
+                  value: a.time,
+                  calculation: `Weekend feeding`
+                }))
+              ],
+              calculation: `Weekday avg: ${Math.round(weekdayAvg * 10) / 10}, Weekend avg: ${Math.round(weekendAvg * 10) / 10}`
+            }
+          });
+        }
+      }
+    }
+
+    // 15. Activity Clustering Analysis
+    if (activities.length >= 8) {
+      const activityTimes = activities.map(a => ({
+        time: getTimeInMinutes(a.time),
+        activity: a
+      }));
+
+      // Find busy periods (3+ activities within 2 hours)
+      const busyPeriods: Array<{ start: number; end: number; activities: Activity[]; count: number }> = [];
+      
+      for (let i = 0; i < activityTimes.length - 2; i++) {
+        const windowStart = activityTimes[i].time;
+        const activitiesInWindow = activityTimes.filter(a => {
+          const timeDiff = Math.abs(a.time - windowStart);
+          return timeDiff <= 120; // Within 2 hours
+        });
+
+        if (activitiesInWindow.length >= 3) {
+          const times = activitiesInWindow.map(a => a.time).sort((a, b) => a - b);
+          busyPeriods.push({
+            start: times[0],
+            end: times[times.length - 1],
+            activities: activitiesInWindow.map(a => a.activity),
+            count: activitiesInWindow.length
+          });
+        }
+      }
+
+      // Remove overlapping periods and keep most significant ones
+      const uniqueBusyPeriods = busyPeriods
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 2);
+
+      if (uniqueBusyPeriods.length >= 1) {
+        const formatTime = (minutes: number) => {
+          const h = Math.floor(minutes / 60);
+          const m = minutes % 60;
+          return `${h === 0 ? 12 : h > 12 ? h - 12 : h}:${m.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+        };
+
+        const period = uniqueBusyPeriods[0];
+        const startTime = formatTime(period.start);
+        const endTime = formatTime(period.end);
+
+        additionalInsights.push({
+          icon: Clock,
+          text: `Busy period: ${startTime} - ${endTime} (${period.count} activities)`,
+          confidence: 'medium',
+          type: 'general',
+          details: {
+            description: `Most activity clusters around ${startTime} - ${endTime} with ${period.count} activities typically happening during this window.`,
+            data: period.activities.slice(-5).map(activity => ({
+              activity,
+              value: activity.time,
+              calculation: `${activity.type} during busy period`
+            })),
+            calculation: `${period.count} activities within 2-hour window`
+          }
+        });
+      }
+    }
+
+    // Rotation system: Show key insights + rotating selection
+    const keyInsights = insights.filter(i => 
+      i.text.includes('Average bedtime') || 
+      i.text.includes('Usually feeds every') ||
+      i.text.includes('stays awake')
+    );
+
+    // Create day-based rotation for additional insights
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const rotationIndex = dayOfYear % Math.max(1, additionalInsights.length);
+    
+    // Show 1-2 rotating insights per day
+    const rotatingInsights = additionalInsights.length > 0 
+      ? additionalInsights.slice(rotationIndex, rotationIndex + 2).concat(
+          additionalInsights.slice(0, Math.max(0, (rotationIndex + 2) - additionalInsights.length))
+        ).slice(0, 2)
+      : [];
+
+    // Combine key insights with rotating ones, remove duplicates
+    const finalInsights = [...keyInsights];
+    rotatingInsights.forEach(insight => {
+      if (!finalInsights.some(existing => existing.text === insight.text)) {
+        finalInsights.push(insight);
+      }
+    });
+
+    // Add remaining non-key insights if we have space and they're not rotating
+    insights.forEach(insight => {
+      if (!keyInsights.includes(insight) && 
+          !rotatingInsights.some(r => r.text === insight.text) &&
+          !finalInsights.some(f => f.text === insight.text)) {
+        finalInsights.push(insight);
+      }
+    });
+
+    return finalInsights;
   };
 
   return {
