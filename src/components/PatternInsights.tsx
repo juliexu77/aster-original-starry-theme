@@ -194,13 +194,28 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
       }
     }
 
-    // Analyze wake windows (time between naps)
-    const completedNaps = naps.filter(nap => nap.details.startTime && nap.details.endTime);
-    if (completedNaps.length >= 2) {
+    // Analyze wake windows (time between daytime naps only)
+    const completedDaytimeNaps = naps.filter(nap => {
+      if (!nap.details.startTime || !nap.details.endTime) return false;
+      
+      const startTime = getTimeInMinutes(nap.details.startTime);
+      const endTime = getTimeInMinutes(nap.details.endTime);
+      
+      // Only consider daytime naps (start between 6 AM and 6 PM)
+      // Exclude overnight sleep periods
+      if (startTime < 6 * 60 || startTime >= 18 * 60) return false;
+      
+      // Also exclude naps that span too long (likely overnight sleep)
+      const duration = endTime >= startTime ? endTime - startTime : (24 * 60) - startTime + endTime;
+      if (duration > 4 * 60) return false; // Exclude naps longer than 4 hours
+      
+      return true;
+    });
+    if (completedDaytimeNaps.length >= 2) {
       const wakeWindows: Array<{ duration: number; afterNap: Activity; beforeNap: Activity }> = [];
       
-      // Sort naps by start time to get chronological order
-      const sortedNaps = [...completedNaps].sort((a, b) => {
+      // Sort daytime naps by start time to get chronological order
+      const sortedNaps = [...completedDaytimeNaps].sort((a, b) => {
         const aTime = getTimeInMinutes(a.details.startTime!);
         const bTime = getTimeInMinutes(b.details.startTime!);
         return aTime - bTime;
@@ -239,7 +254,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
           confidence: wakeWindows.length >= 3 ? 'high' : 'medium',
           type: 'sleep',
           details: {
-            description: `Based on ${wakeWindows.length} wake windows today, your baby typically stays awake for ${timeText} between naps. This is a good indicator of their natural rhythm.`,
+            description: `Based on ${wakeWindows.length} wake windows between daytime naps today, your baby typically stays awake for ${timeText} between naps. This is a good indicator of their natural rhythm.`,
             data: wakeWindows.map(({ duration, afterNap, beforeNap }) => {
               const wHours = Math.floor(duration / 60);
               const wMinutes = Math.round(duration % 60);
