@@ -17,7 +17,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Sleep Chart */}
+      {/* Daily Sleep Totals */}
       <div className="bg-card rounded-xl p-6 shadow-card border border-border">
         <SleepChartControls
           currentWeekOffset={currentWeekOffset}

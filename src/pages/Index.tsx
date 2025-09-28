@@ -59,6 +59,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [showFullTimeline, setShowFullTimeline] = useState(false);
   
 
   // Check user authentication and household status
@@ -234,79 +235,100 @@ const Index = () => {
                       new Date(b).getTime() - new Date(a).getTime()
                     );
 
-                    return sortedDates.map((dateKey, index) => {
-                      const date = new Date(dateKey);
-                      const today = new Date();
-                      const yesterday = new Date(Date.now() - 86400000);
-                      
-                      const todayKey = today.getFullYear() + '-' + 
-                                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                                     String(today.getDate()).padStart(2, '0');
-                      const yesterdayKey = yesterday.getFullYear() + '-' + 
-                                         String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                                         String(yesterday.getDate()).padStart(2, '0');
-                      
-                      let displayDate;
-                      if (dateKey === todayKey) {
-                        displayDate = "Today";
-                      } else if (dateKey === yesterdayKey) {
-                        displayDate = "Yesterday";
-                      } else {
-                        displayDate = date.toLocaleDateString("en-US", { 
-                          weekday: "long", 
-                          month: "short", 
-                          day: "numeric" 
-                        });
-                      }
+                    // Filter dates based on showFullTimeline
+                    const today = new Date();
+                    const yesterday = new Date(Date.now() - 86400000);
+                    const todayKey = today.getFullYear() + '-' + 
+                                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                   String(today.getDate()).padStart(2, '0');
+                    const yesterdayKey = yesterday.getFullYear() + '-' + 
+                                       String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                                       String(yesterday.getDate()).padStart(2, '0');
 
-                      return (
-                        <div key={dateKey}>
-                          <div className="space-y-2">
-                            {/* Date Header */}
-                            <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold">
-                              {displayDate}
-                            </h3>
-                            
-                            {/* Activities for this date */}
-                            <div className="space-y-1">
-                              {activityGroups[dateKey].map((activity) => (
-                                <ActivityCard
-                                  key={activity.id}
-                                  activity={activity}
-                                  babyName={babyProfile?.name}
-                                  onEdit={(activity) => setEditingActivity(activity)}
-                                  onDelete={async (activityId) => {
-                                    try {
-                                      const { error } = await supabase
-                                        .from('activities')
-                                        .delete()
-                                        .eq('id', activityId);
-                                      
-                                      if (error) throw error;
-                                      refetchActivities();
-                                    } catch (error) {
-                                      console.error('Error deleting activity:', error);
-                                      toast({
-                                        title: "Error deleting activity",
-                                        description: "Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          </div>
+                    const visibleDates = showFullTimeline 
+                      ? sortedDates 
+                      : sortedDates.filter(date => date === todayKey || date === yesterdayKey);
+
+                    return (
+                      <>
+                        {visibleDates.map((dateKey, index) => {
+                          const date = new Date(dateKey);
                           
-                          {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
-                          {index === 0 && activities.length > 0 && (
-                            <div className="mt-4 mb-4">
-                              <NextActivityPrediction activities={activities} />
+                          let displayDate;
+                          if (dateKey === todayKey) {
+                            displayDate = "Today";
+                          } else if (dateKey === yesterdayKey) {
+                            displayDate = "Yesterday";
+                          } else {
+                            displayDate = date.toLocaleDateString("en-US", { 
+                              weekday: "long", 
+                              month: "short", 
+                              day: "numeric" 
+                            });
+                          }
+
+                          return (
+                            <div key={dateKey}>
+                              <div className="space-y-2">
+                                {/* Date Header */}
+                                <h3 className="text-base font-sans font-medium text-foreground border-b border-border pb-1 mb-2 dark:font-bold">
+                                  {displayDate}
+                                </h3>
+                                
+                                {/* Activities for this date */}
+                                <div className="space-y-1">
+                                  {activityGroups[dateKey].map((activity) => (
+                                    <ActivityCard
+                                      key={activity.id}
+                                      activity={activity}
+                                      babyName={babyProfile?.name}
+                                      onEdit={(activity) => setEditingActivity(activity)}
+                                      onDelete={async (activityId) => {
+                                        try {
+                                          const { error } = await supabase
+                                            .from('activities')
+                                            .delete()
+                                            .eq('id', activityId);
+                                          
+                                          if (error) throw error;
+                                          refetchActivities();
+                                        } catch (error) {
+                                          console.error('Error deleting activity:', error);
+                                          toast({
+                                            title: "Error deleting activity",
+                                            description: "Please try again.",
+                                            variant: "destructive"
+                                          });
+                                        }
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              {/* Next Predicted Action - Show after most recent day's activities (today if present, otherwise yesterday) */}
+                              {index === 0 && activities.length > 0 && (
+                                <div className="mt-4 mb-4">
+                                  <NextActivityPrediction activities={activities} />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      );
-                    });
+                          );
+                        })}
+
+                        {/* Show More/Less Button */}
+                        {sortedDates.length > visibleDates.length && (
+                          <div className="text-center pt-4">
+                            <button
+                              onClick={() => setShowFullTimeline(!showFullTimeline)}
+                              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-4 py-2 rounded-md hover:bg-accent"
+                            >
+                              {showFullTimeline ? "Show less" : `Show ${sortedDates.length - visibleDates.length} more days`}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
                   })()
                 )}
               </div>
