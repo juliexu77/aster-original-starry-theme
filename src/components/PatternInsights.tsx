@@ -192,7 +192,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         confidence: 'high',
         type: 'general',
         details: {
-          description: `${dailyFeeds} feeds per day falls within the typical range of 6-8 feeds for healthy babies.`,
+          description: `${dailyFeeds} feeds today falls within the typical range of 6-8 feeds for healthy babies.`,
           data: feeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
@@ -209,7 +209,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
         confidence: 'medium',
         type: 'general',
         details: {
-          description: `${dailyFeeds} feeds per day is above typical range, which could indicate growth spurts or increased appetite.`,
+          description: `${dailyFeeds} feeds today is above typical range, which could indicate growth spurts or increased appetite.`,
           data: feeds.map(feed => ({
             activity: feed,
             value: feed.details.quantity && feed.details.unit 
