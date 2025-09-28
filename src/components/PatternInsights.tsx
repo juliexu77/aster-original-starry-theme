@@ -68,7 +68,7 @@ export const PatternInsights = ({ activities }: PatternInsightsProps) => {
                   <div className="flex items-center gap-3">
                     <IconComponent className="h-4 w-4" />
                     <div className="flex-1">
-                      <h4 className="text-sm font-medium">{insight.text}</h4>
+                      <h4 className="text-xs font-medium">{insight.text}</h4>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

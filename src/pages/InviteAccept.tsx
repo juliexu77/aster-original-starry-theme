@@ -30,8 +30,8 @@ const InviteAccept = () => {
     
     try {
       await acceptInvite(code);
-      // Navigate to app after successful invite acceptance
-      navigate("/app");
+      // Navigate to main app after successful invite acceptance
+      navigate("/");
     } catch (err: any) {
       setError(err.message || "Failed to accept invite");
     } finally {

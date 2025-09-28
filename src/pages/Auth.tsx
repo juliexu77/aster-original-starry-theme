@@ -35,6 +35,7 @@ const Auth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
+        const redirectTo = searchParams.get('redirect');
         if (redirectTo) {
           navigate(redirectTo, { replace: true });
         } else {
