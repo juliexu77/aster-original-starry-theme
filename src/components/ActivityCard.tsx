@@ -191,7 +191,10 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
         </button>
         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
           <span className="text-xs text-muted-foreground">
-            {activity.time}
+            {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
+              ? activity.details.startTime  // Show just start time for ongoing naps
+              : activity.time  // Show full time or time range for completed activities
+            }
           </span>
         </div>
       </div>

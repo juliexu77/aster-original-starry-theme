@@ -191,11 +191,17 @@ const Index = () => {
                     const activityGroups: { [date: string]: typeof activities } = {};
                     
                     activities.forEach(activity => {
-                      const activityDate = new Date(activity.loggedAt!).toDateString();
-                      if (!activityGroups[activityDate]) {
-                        activityGroups[activityDate] = [];
+                      // Use the logged_at date for grouping activities by day
+                      const activityDate = new Date(activity.loggedAt!);
+                      // Get the date string in local timezone to avoid timezone issues
+                      const dateKey = activityDate.getFullYear() + '-' + 
+                                     String(activityDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                                     String(activityDate.getDate()).padStart(2, '0');
+                      
+                      if (!activityGroups[dateKey]) {
+                        activityGroups[dateKey] = [];
                       }
-                      activityGroups[activityDate].push(activity);
+                      activityGroups[dateKey].push(activity);
                     });
 
                     // Sort activities within each date group by actual activity time
@@ -218,15 +224,22 @@ const Index = () => {
                       new Date(b).getTime() - new Date(a).getTime()
                     );
 
-                    return sortedDates.map((dateString, index) => {
-                      const date = new Date(dateString);
-                      const today = new Date().toDateString();
-                      const yesterday = new Date(Date.now() - 86400000).toDateString();
+                    return sortedDates.map((dateKey, index) => {
+                      const date = new Date(dateKey);
+                      const today = new Date();
+                      const yesterday = new Date(Date.now() - 86400000);
+                      
+                      const todayKey = today.getFullYear() + '-' + 
+                                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                     String(today.getDate()).padStart(2, '0');
+                      const yesterdayKey = yesterday.getFullYear() + '-' + 
+                                         String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
+                                         String(yesterday.getDate()).padStart(2, '0');
                       
                       let displayDate;
-                      if (dateString === today) {
+                      if (dateKey === todayKey) {
                         displayDate = "Today";
-                      } else if (dateString === yesterday) {
+                      } else if (dateKey === yesterdayKey) {
                         displayDate = "Yesterday";
                       } else {
                         displayDate = date.toLocaleDateString("en-US", { 
@@ -237,7 +250,7 @@ const Index = () => {
                       }
 
                       return (
-                        <div key={dateString}>
+                        <div key={dateKey}>
                           <div className="space-y-2">
                             {/* Date Header */}
                             <h3 className="text-base font-serif font-medium text-foreground border-b border-border pb-1 mb-2">
@@ -246,7 +259,7 @@ const Index = () => {
                             
                             {/* Activities for this date */}
                             <div className="space-y-1">
-                              {activityGroups[dateString].map((activity) => (
+                              {activityGroups[dateKey].map((activity) => (
                                 <ActivityCard
                                   key={activity.id}
                                   activity={activity}
@@ -276,7 +289,7 @@ const Index = () => {
                           </div>
                           
                           {/* Next Predicted Action - Show after Today's activities */}
-                          {dateString === today && activities.length > 0 && (
+                          {dateKey === todayKey && activities.length > 0 && (
                             <div className="mt-4 mb-4">
                               <NextActivityPrediction activities={activities} />
                             </div>
