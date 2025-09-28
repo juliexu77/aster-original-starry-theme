@@ -66,12 +66,14 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
       };
     }
 
-    // Calculate feed-to-feed intervals
+    // Calculate feed-to-feed intervals (activities are already sorted newest first)
     const feedIntervals: number[] = [];
-    for (let i = 1; i < feedActivities.length; i++) {
-      const current = getTimeInMinutes(feedActivities[i - 1].time);
-      const previous = getTimeInMinutes(feedActivities[i].time);
-      const interval = Math.abs(current - previous);
+    for (let i = 0; i < feedActivities.length - 1; i++) {
+      const newer = getTimeInMinutes(feedActivities[i].time);
+      const older = getTimeInMinutes(feedActivities[i + 1].time);
+      // Handle day rollover by using the smaller of the two possible intervals
+      let interval = newer - older;
+      if (interval < 0) interval = (24 * 60) + interval; // Wrap around day
       if (interval > 0 && interval < 12 * 60) { // Reasonable interval (less than 12 hours)
         feedIntervals.push(interval);
       }
@@ -80,18 +82,20 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     // Calculate sleep-to-sleep intervals and analyze time-of-day patterns
     const sleepIntervals: number[] = [];
     const sleepTimes: number[] = [];
-    for (let i = 1; i < napActivities.length; i++) {
-      const current = getTimeInMinutes(napActivities[i - 1].time);
-      const previous = getTimeInMinutes(napActivities[i].time);
-      const interval = Math.abs(current - previous);
+    for (let i = 0; i < napActivities.length - 1; i++) {
+      const newer = getTimeInMinutes(napActivities[i].time);
+      const older = getTimeInMinutes(napActivities[i + 1].time);
+      // Handle day rollover
+      let interval = newer - older;
+      if (interval < 0) interval = (24 * 60) + interval;
       if (interval > 0 && interval < 12 * 60) { // Reasonable interval
         sleepIntervals.push(interval);
       }
-      sleepTimes.push(getTimeInMinutes(napActivities[i - 1].time));
     }
-    if (napActivities.length > 0) {
-      sleepTimes.push(getTimeInMinutes(napActivities[napActivities.length - 1].time));
-    }
+    // Collect all nap times for time-of-day pattern analysis
+    napActivities.forEach(nap => {
+      sleepTimes.push(getTimeInMinutes(nap.time));
+    });
 
     // Get the last activity
     const lastActivity = activities[0]; // Most recent
@@ -105,9 +109,11 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     }
 
     const lastActivityTime = getTimeInMinutes(lastActivity.time);
-    const timeSinceLastActivity = currentMinutes >= lastActivityTime 
-      ? currentMinutes - lastActivityTime 
-      : (24 * 60) + currentMinutes - lastActivityTime; // Handle day rollover
+    let timeSinceLastActivity = currentMinutes - lastActivityTime;
+    // Handle day rollover (if current time is earlier in day than last activity)
+    if (timeSinceLastActivity < 0) {
+      timeSinceLastActivity = (24 * 60) + timeSinceLastActivity;
+    }
 
     // Predict next feed based on feed-to-feed patterns
     if (lastActivity.type === "feed" && canPredictFeeds) {
