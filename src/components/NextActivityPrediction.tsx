@@ -180,26 +180,6 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
           </div>
           <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
           
-          <div className="p-3 bg-muted rounded-lg">
-            <h4 className="font-medium text-sm mb-2 text-foreground">Prediction Analysis:</h4>
-            <p className="text-sm text-muted-foreground mb-2">{prediction.details.description}</p>
-            
-            {prediction.details.data.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-foreground">Recent patterns:</p>
-                {prediction.details.data.slice(0, 3).map((item: any, index: number) => (
-                  <div key={index} className="text-xs text-muted-foreground">
-                    • {item.value} ({item.calculation})
-                  </div>
-                ))}
-                {prediction.details.calculation && (
-                  <div className="text-xs text-muted-foreground mt-2 pt-2 border-t border-border">
-                    <strong>Calculation:</strong> {prediction.details.calculation}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
         </div>
       )}
     </div>
