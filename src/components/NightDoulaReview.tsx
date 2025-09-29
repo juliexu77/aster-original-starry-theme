@@ -648,15 +648,16 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
             )}
           </div>
           
-          {/* Photos appear after text is complete - no animation, just like texting */}
+          {/* Photos appear after text is complete - full width like social media */}
           {showPhotos && todaysPhotos.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-6 space-y-3">
               {todaysPhotos.map((photo, index) => (
                 <img 
                   key={index}
                   src={photo} 
                   alt="Baby photo from today" 
-                  className="w-20 h-20 object-cover rounded-lg border border-border"
+                  className="w-full max-w-md mx-auto rounded-xl border border-border shadow-md object-cover"
+                  style={{ aspectRatio: '4/3' }}
                 />
               ))}
             </div>
