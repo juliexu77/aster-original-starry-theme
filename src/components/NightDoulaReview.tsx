@@ -42,79 +42,99 @@ const AGE_NORMS = {
   '12+': { feeds: [3, 5], naps: [1, 2], napTime: [1.5, 2.5] }
 };
 
-// Sentence library for varied responses
+// Sentence library for varied responses with improved tone
 const SENTENCE_LIBRARY = {
   feeds: [
-    "{baby_name} had {feed_count} feeds today (about {feed_total_ml} ml).",
-    "He finished {feed_count} feeds in total, around {feed_total_ml} ml altogether.",
+    "{baby_name} had {feed_count} feeds today, about {feed_total_ml} ml in total.",
+    "{baby_name} finished {feed_count} feeds today, around {feed_total_ml} ml altogether.",
     "Today's tally: {feed_count} feeds, adding up to about {feed_total_ml} ml.",
-    "He got in {feed_count} feeds, for roughly {feed_total_ml} ml overall."
+    "{baby_name} got in {feed_count} feeds, for roughly {feed_total_ml} ml overall."
   ],
   naps: {
     'all-short': [
-      "All of his naps were on the shorter side, ~30 minutes each.",
+      "All of his naps were on the shorter side, around 30 minutes each.",
       "He only managed catnaps today, nothing longer than half an hour.",
-      "Every nap was brief, closer to 30 minutes."
+      "Every nap was brief today, closer to 30 minutes."
     ],
     'all-long': [
-      "He took two solid stretches, each well over an hour.",
-      "All of his naps today were longer, more than an hour each.",
+      "He took solid stretches today, each well over an hour.",
+      "All of his naps today were longer ones, more than an hour each.",
       "Nice long naps throughout — each lasting over an hour."
     ],
     'mix': [
-      "It was a mix — two short naps and one long stretch in the late morning.",
+      "His naps were a mix — one solid stretch late morning and two shorter catnaps.",
       "He balanced a long nap with a couple of shorter ones.",
-      "Today had variety: one good long nap and two quicker ones."
+      "Today had variety: one good anchor nap and two quicker ones."
+    ],
+    'single-short': [
+      "He had one shorter nap today, around {duration} minutes.",
+      "Just one catnap today, about {duration} minutes.",
+      "He managed one brief nap, closer to {duration} minutes."
+    ],
+    'single-long': [
+      "He took one solid stretch today, just over {duration} hours.",
+      "One good long nap today, lasting about {duration} hours.",
+      "He had one anchor nap today, around {duration} hours."
     ]
   },
   bedtime: [
     "Bedtime was {bedtime}.",
     "He settled for the night at {bedtime}.",
-    "Down for sleep at {bedtime}, right on schedule.",
-    "He was asleep for the night by {bedtime}."
+    "Down for sleep at {bedtime}.",
+    "He was ready for bed by {bedtime}."
   ],
   notes: [
+    "Since you noted {note_reference}, that may explain {note_related_effect}.",
     "You mentioned {note_reference} — that could explain {note_related_effect}.",
-    "Since you noted {note_reference}, that likely played a role today.",
-    "You wrote about {note_reference}; it makes sense that {note_related_effect}.",
-    "Noticing {note_reference} probably affected how his day unfolded."
+    "With {note_reference} going on, {note_related_effect} makes sense.",
+    "Given the {note_reference} you tracked, {note_related_effect} is pretty typical."
   ],
   comparison: {
-    feeds: [
-      "He drank about {diff} ml more than yesterday.",
-      "That's {diff} ml less than yesterday's intake.",
-      "Slightly {more_less} hungry compared to yesterday."
+    feeds_more: [
+      "Compared to yesterday, he drank about {diff} ml more",
+      "He took in {diff} ml more than yesterday",
+      "That's {diff} ml extra compared to yesterday"
     ],
-    naps: [
-      "He got about {diff} minutes more daytime sleep than yesterday.",
-      "That's {diff} minutes less nap time than the day before.",
-      "Compared to yesterday, naps were {shorter_longer}."
+    feeds_less: [
+      "Compared to yesterday, he drank about {diff} ml less", 
+      "That's {diff} ml less than yesterday's intake",
+      "He took in {diff} ml less than the day before"
     ],
-    bedtime: [
-      "He went down {diff} minutes earlier than yesterday.",
-      "Tonight's bedtime was a little later than yesterday's.",
-      "Bedtime shifted {earlier_later} compared to last night."
+    naps_more: [
+      "and slept about {diff} minutes more during the day",
+      "with {diff} more minutes of daytime sleep",
+      "and got {diff} extra minutes of nap time"
+    ],
+    naps_less: [
+      "and slept a bit less during the day",
+      "with shorter naps overall",
+      "and got less daytime sleep"
+    ],
+    growth_spurt: [
+      ", which often points to a growth spurt.",
+      " — classic growth spurt pattern.",
+      ", which lots of babies do right before a leap."
     ]
   },
   peer: [
-    "For his age, most babies nap 3–4 times with at least one long nap — so he's right in range.",
-    "Babies his age typically feed 5–8 times a day, so today's {feed_count} feeds are right on track.",
-    "It's common at this age to see one or two long naps anchoring the day, which he managed today.",
-    "This nap pattern is very normal for {baby_age} months."
+    "Lots of {age_months}-month-olds do this exact mix — an anchor nap with quick ones around it — so he's right in range.",
+    "Most babies his age have {nap_count} naps with at least one longer stretch, so this pattern is really common.",
+    "For {age_months} months, this feeding rhythm is exactly what I see with lots of babies — {feed_count} feeds is spot on.",
+    "Babies his age typically do {feed_count}-{feed_upper} feeds daily, so he's tracking beautifully."
   ],
-  insight: [
-    "Taken together, this points to a growth spurt.",
-    "This rhythm often means he'll be extra tired tomorrow morning.",
-    "That extra intake is a great sign he's fueling up for growth.",
-    "Consistency like this sets a solid foundation.",
-    "He may be catching up on rest, which is completely normal."
+  insights: [
+    "Tomorrow he may want his first nap a little earlier if he's catching up.",
+    "He might sleep a bit longer overnight after that extra intake.",
+    "Watch for him to be extra sleepy tomorrow morning after this pattern.",
+    "He may cluster feed again tomorrow if this growth spurt continues.",
+    "Tomorrow's first nap might be his longest if he's still adjusting."
   ],
   encouragement: [
-    "You're doing a wonderful job keeping his rhythm steady.",
-    "He's thriving, and you're guiding him beautifully.",
-    "Days like this really show how well you're supporting him.",
-    "Keep trusting your instincts — they're serving him so well.",
-    "You're giving him exactly what he needs."
+    "You're giving him exactly the rhythm he needs.",
+    "You're reading his cues perfectly.",
+    "He's thriving with your steady guidance.",
+    "You're doing exactly what he needs right now.",
+    "Your instincts are serving him so well."
   ]
 };
 
@@ -128,6 +148,11 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [reviewGenerated, setReviewGenerated] = useState(false);
   const [fullReviewText, setFullReviewText] = useState("");
   const [isPulsing, setIsPulsing] = useState(false);
+
+  // Random selection helper
+  const randomChoice = (array: string[]): string => {
+    return array[Math.floor(Math.random() * array.length)];
+  };
 
   // Check if review was already shown today
   useEffect(() => {
@@ -250,7 +275,6 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     }, 0);
 
     const bedtime = bedtimeNap?.details?.startTime || null;
-
     const photos = notes.flatMap(n => n.details?.photos || []);
 
     return {
@@ -265,12 +289,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     };
   };
 
-  // Random selection helper
-  const randomChoice = (array: string[]): string => {
-    return array[Math.floor(Math.random() * array.length)];
-  };
-
-  // Generate the night doula message using sentence library
+  // Generate the night doula message using sentence library - ALWAYS include all 6 sections
   const generateNightDoulaMessage = (): string => {
     const name = babyName || household?.baby_name || "your little one";
     const today = new Date();
@@ -284,17 +303,15 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     
     let sentences: string[] = [];
     
-    // 1. RECAP: Feeds
-    if (todayStats.feeds > 0) {
-      let feedSentence = randomChoice(SENTENCE_LIBRARY.feeds);
-      feedSentence = feedSentence
-        .replace('{baby_name}', name)
-        .replace('{feed_count}', todayStats.feeds.toString())
-        .replace('{feed_total_ml}', Math.round(todayStats.volume).toString());
-      sentences.push(feedSentence);
-    }
+    // 1. RECAP: Feeds, Naps, Bedtime (always include)
+    let feedSentence = randomChoice(SENTENCE_LIBRARY.feeds);
+    feedSentence = feedSentence
+      .replace('{baby_name}', name)
+      .replace('{feed_count}', todayStats.feeds.toString())
+      .replace('{feed_total_ml}', Math.round(todayStats.volume).toString());
+    sentences.push(feedSentence);
     
-    // 2. RECAP: Naps
+    // Naps
     if (todayStats.naps > 0) {
       const napDurations = activities
         .filter(a => a.type === 'nap' && !a.details?.isNightSleep && 
@@ -310,31 +327,81 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         .filter(d => d > 0);
       
       const classification = classifyNaps(napDurations);
-      const napSentence = randomChoice(SENTENCE_LIBRARY.naps[classification.type] || SENTENCE_LIBRARY.naps.mix);
+      let napSentence = randomChoice(SENTENCE_LIBRARY.naps[classification.type] || SENTENCE_LIBRARY.naps.mix);
+      
+      if (classification.type === 'single-short' || classification.type === 'single-long') {
+        const duration = classification.type === 'single-short' ? 
+          napDurations[0] : 
+          Math.round(napDurations[0] / 60 * 10) / 10;
+        napSentence = napSentence.replace('{duration}', duration.toString());
+      }
+      
       sentences.push(napSentence);
     }
     
-    // 3. RECAP: Bedtime
+    // Bedtime
     if (todayStats.bedtime) {
       let bedtimeSentence = randomChoice(SENTENCE_LIBRARY.bedtime);
       bedtimeSentence = bedtimeSentence.replace('{bedtime}', todayStats.bedtime);
       sentences.push(bedtimeSentence);
     }
     
-    // 4. NOTES (if any)
+    // 2. COMPARISON to Yesterday (always include at least one concrete diff)
+    const volumeDiff = Math.abs(todayStats.volume - yesterdayStats.volume);
+    const napDiff = Math.abs(todayStats.napDuration - yesterdayStats.napDuration);
+    let comparisonSentence = "";
+    
+    if (volumeDiff > 0 || yesterdayStats.volume === 0) {
+      const isMore = todayStats.volume > yesterdayStats.volume;
+      const feedComp = randomChoice(isMore ? SENTENCE_LIBRARY.comparison.feeds_more : SENTENCE_LIBRARY.comparison.feeds_less);
+      comparisonSentence = feedComp.replace('{diff}', Math.round(volumeDiff).toString());
+      
+      // Add nap comparison
+      if (napDiff > 10) {
+        const napComp = randomChoice(todayStats.napDuration > yesterdayStats.napDuration ? 
+          SENTENCE_LIBRARY.comparison.naps_more : SENTENCE_LIBRARY.comparison.naps_less);
+        comparisonSentence += " " + napComp.replace('{diff}', Math.round(napDiff).toString());
+      }
+      
+      // Add growth spurt indicator if significant increase
+      if (volumeDiff > todayStats.volume * 0.15) {
+        comparisonSentence += randomChoice(SENTENCE_LIBRARY.comparison.growth_spurt);
+      } else {
+        comparisonSentence += ".";
+      }
+    } else {
+      // Fallback comparison
+      comparisonSentence = `Compared to yesterday, his rhythm stayed pretty consistent.`;
+    }
+    
+    sentences.push(comparisonSentence);
+    
+    // 3. PEER Normalization (specific, not vague)
+    let peerSentence = randomChoice(SENTENCE_LIBRARY.peer);
+    peerSentence = peerSentence
+      .replace('{age_months}', ageInMonths.toString())
+      .replace('{nap_count}', todayStats.naps.toString())
+      .replace('{feed_count}', todayStats.feeds.toString())
+      .replace('{feed_upper}', norms.feeds[1].toString());
+    sentences.push(peerSentence);
+    
+    // 4. PARENT NOTE Reference (if present)
     if (todayStats.notes.length > 0) {
       const noteContent = todayStats.notes[0].details?.content || "";
       if (noteContent.length > 0) {
         let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
-        let noteRef = noteContent.slice(0, 20);
-        let noteEffect = "his day patterns";
+        let noteRef = noteContent.slice(0, 15);
+        let noteEffect = "the day's pattern";
         
         if (noteContent.toLowerCase().includes('teeth')) {
           noteRef = "teething";
-          noteEffect = "the shorter naps";
+          noteEffect = "the shorter afternoon nap";
         } else if (noteContent.toLowerCase().includes('fuss')) {
           noteRef = "fussiness";
-          noteEffect = "the extra feeds";
+          noteEffect = "the extra attention he needed";
+        } else if (noteContent.toLowerCase().includes('growth') || noteContent.toLowerCase().includes('hungry')) {
+          noteRef = "extra hunger";
+          noteEffect = "those additional feeds";
         }
         
         noteSentence = noteSentence
@@ -344,40 +411,11 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       }
     }
     
-    // 5. COMPARISON to Yesterday
-    if (yesterdayStats.feeds > 0 || yesterdayStats.volume > 0) {
-      const volumeDiff = Math.abs(todayStats.volume - yesterdayStats.volume);
-      const napDiff = Math.abs(todayStats.napDuration - yesterdayStats.napDuration);
-      
-      if (volumeDiff > todayStats.volume * 0.1) {
-        let compSentence = randomChoice(SENTENCE_LIBRARY.comparison.feeds);
-        const moreLess = todayStats.volume > yesterdayStats.volume ? "more" : "less";
-        compSentence = compSentence
-          .replace('{diff}', Math.round(volumeDiff).toString())
-          .replace('{more_less}', moreLess);
-        sentences.push(compSentence);
-      } else if (napDiff > 20) {
-        let compSentence = randomChoice(SENTENCE_LIBRARY.comparison.naps);
-        const shorterLonger = todayStats.napDuration > yesterdayStats.napDuration ? "longer" : "shorter";
-        compSentence = compSentence
-          .replace('{diff}', Math.round(napDiff).toString())
-          .replace('{shorter_longer}', shorterLonger);
-        sentences.push(compSentence);
-      }
-    }
-    
-    // 6. PEER Comparison (normalize)
-    let peerSentence = randomChoice(SENTENCE_LIBRARY.peer);
-    peerSentence = peerSentence
-      .replace('{feed_count}', todayStats.feeds.toString())
-      .replace('{baby_age}', ageInMonths.toString());
-    sentences.push(peerSentence);
-    
-    // 7. INSIGHT / Interpretation
-    const insightSentence = randomChoice(SENTENCE_LIBRARY.insight);
+    // 5. FORWARD-LOOKING Insight (1 line prediction/tip)
+    const insightSentence = randomChoice(SENTENCE_LIBRARY.insights);
     sentences.push(insightSentence);
     
-    // 8. ENCOURAGEMENT / Close
+    // 6. ENCOURAGEMENT (always)
     const encouragementSentence = randomChoice(SENTENCE_LIBRARY.encouragement);
     sentences.push(encouragementSentence);
     
@@ -402,19 +440,19 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     setReviewGenerated(true);
   }, [activities, babyName, household]);
 
-  // Streaming animation effect
+  // Streaming animation effect - much faster like ChatGPT
   useEffect(() => {
     if (!isTyping || !fullReviewText) return;
     
-    const targetWPM = 50; // 45-55 words per minute
+    const targetWPM = 120; // Much faster - 120 words per minute like ChatGPT
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
     const msPerChar = (60 * 1000) / charsPerMinute;
     
     const timer = setTimeout(() => {
       if (currentCharIndex < fullReviewText.length) {
-        // Add slight jitter (3-6 chars per tick)
-        const jitter = Math.floor(Math.random() * 4) + 3;
+        // Faster chunks (8-12 chars per tick)
+        const jitter = Math.floor(Math.random() * 5) + 8;
         const nextIndex = Math.min(currentCharIndex + jitter, fullReviewText.length);
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
@@ -422,7 +460,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         setIsTyping(false);
         setIsPulsing(false);
       }
-    }, msPerChar * (Math.floor(Math.random() * 4) + 3)); // Jitter timing too
+    }, msPerChar * 2); // Much shorter delays
     
     return () => clearTimeout(timer);
   }, [currentCharIndex, fullReviewText, isTyping]);
