@@ -389,34 +389,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               <DialogTitle className="text-lg font-medium">
                 {editingActivity ? "Edit Activity" : "Add Activity"}
               </DialogTitle>
-              {/* Three-dot menu - only show when editing */}
-              {editingActivity && onDeleteActivity && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={() => {
-                        if (editingActivity && onDeleteActivity) {
-                          onDeleteActivity(editingActivity.id);
-                          if (onClose) onClose();
-                        }
-                      }}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Activity
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
             </div>
           </DialogHeader>
           
@@ -823,6 +795,23 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               >
                 Cancel
               </Button>
+              
+              {/* Show delete button when editing */}
+              {editingActivity && onDeleteActivity && (
+                <Button 
+                  variant="destructive" 
+                  onClick={() => {
+                    if (editingActivity && onDeleteActivity) {
+                      onDeleteActivity(editingActivity.id);
+                      if (onClose) onClose();
+                    }
+                  }}
+                  className="flex-1 h-12"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </Button>
+              )}
               
               <Button 
                 onClick={handleSubmit} 
