@@ -158,7 +158,7 @@ export function useActivities() {
     if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
-      // Convert time string to timestamp
+      // Convert time string to timestamp - preserving local timezone
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       
@@ -166,6 +166,7 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
+      // Create date object for today and set the specific time in local timezone
       const loggedAt = new Date();
       loggedAt.setHours(hour24, minutes, 0, 0);
 
