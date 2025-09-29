@@ -148,6 +148,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [fullReviewText, setFullReviewText] = useState("");
   const [isPulsing, setIsPulsing] = useState(false);
   const [showPhotos, setShowPhotos] = useState(false);
+  const [useWordMode, setUseWordMode] = useState(false);
+  const [lastRenderTime, setLastRenderTime] = useState(0);
 
   // Random selection helper
   const randomChoice = (array: string[]): string => {
@@ -472,6 +474,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     setTypedText("");
     setCurrentCharIndex(0);
     setShowPhotos(false);
+    setUseWordMode(false); // Start with chunked mode
+    setLastRenderTime(0);
     
     // Store in localStorage
     const today = new Date().toDateString();
@@ -489,44 +493,81 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     }
   }, [activities, babyName, household, prefersReducedMotion]);
 
-  // Smooth, calm typing animation with punctuation pauses
+  // Smart batched typing animation with performance fallback
   useEffect(() => {
     if (!isTyping || !fullReviewText || prefersReducedMotion) return;
     
-    // Much faster - closer to ChatGPT speed but still calm
-    const targetWPM = 150; // Fast enough to feel responsive
+    const targetWPM = 90; // 80-100 WPM range
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
-    const baseDelay = (60 * 1000) / charsPerMinute; // About 85ms per char
+    const baseDelay = (60 * 1000) / charsPerMinute; // ~140ms per char
+    
+    const startTime = performance.now();
     
     const timer = setTimeout(() => {
       if (currentCharIndex < fullReviewText.length) {
-        const currentChar = fullReviewText[currentCharIndex];
-        const nextIndex = currentCharIndex + 1;
+        let nextIndex = currentCharIndex;
+        
+        if (useWordMode) {
+          // Word-by-word mode for slower devices
+          const remainingText = fullReviewText.slice(currentCharIndex);
+          const nextSpace = remainingText.indexOf(' ');
+          const nextPunctuation = remainingText.search(/[.!?]/);
+          
+          if (nextSpace === -1 && nextPunctuation === -1) {
+            // Last word
+            nextIndex = fullReviewText.length;
+          } else if (nextPunctuation !== -1 && (nextSpace === -1 || nextPunctuation < nextSpace)) {
+            // Include punctuation with word
+            nextIndex = currentCharIndex + nextPunctuation + 1;
+          } else if (nextSpace !== -1) {
+            // Include space with word
+            nextIndex = currentCharIndex + nextSpace + 1;
+          }
+        } else {
+          // Chunked mode: 2-3 characters at a time
+          const chunkSize = Math.random() > 0.5 ? 2 : 3;
+          nextIndex = Math.min(currentCharIndex + chunkSize, fullReviewText.length);
+        }
         
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
         
-        // Add small pauses after punctuation for natural feel
+        // Performance check: if rendering takes too long, switch to word mode
+        const renderTime = performance.now() - startTime;
+        if (renderTime > 50 && !useWordMode) {
+          setUseWordMode(true);
+        }
+        setLastRenderTime(renderTime);
+        
+        // Natural pauses at punctuation
+        const currentChar = fullReviewText[nextIndex - 1];
         const isPunctuation = ['.', '!', '?'].includes(currentChar);
         const isComma = currentChar === ',';
         
+        let delay = useWordMode ? baseDelay * 2 : baseDelay;
+        
         if (isPunctuation) {
-          // Brief pause after sentences
-          setTimeout(() => {}, baseDelay * 1.5);
+          delay *= 2; // Longer pause after sentences
         } else if (isComma) {
-          // Tiny pause after commas
-          setTimeout(() => {}, baseDelay * 0.5);
+          delay *= 1.3; // Slight pause after commas
         }
+        
+        // Adjust delay based on chunk size to maintain consistent WPM
+        if (!useWordMode) {
+          const charsAdded = nextIndex - currentCharIndex;
+          delay = delay * charsAdded;
+        }
+        
       } else {
         setIsTyping(false);
         setIsPulsing(false);
         setShowPhotos(true);
       }
-    }, baseDelay);
+    }, useWordMode ? baseDelay * 2 : baseDelay);
     
     return () => clearTimeout(timer);
-  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion]);
+  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion, useWordMode]);
 
   if (!showPrompt && !showReview) {
     return null;
