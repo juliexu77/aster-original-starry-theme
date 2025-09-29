@@ -6,6 +6,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
+import { NightDoulaReview } from "@/components/NightDoulaReview";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -207,6 +208,16 @@ const Index = () => {
       default:
         return (
           <>
+            {/* Night Doula Review - Top Priority */}
+            <div className="px-4 pt-4">
+              <NightDoulaReview activities={activities.map(a => ({
+                id: a.id,
+                type: a.type,
+                logged_at: a.loggedAt,
+                details: a.details
+              }))} babyName={babyProfile?.name} />
+            </div>
+            
             {/* Activities Timeline */}
             <div className="px-4 py-4">              
               <div className="space-y-4 pb-20">

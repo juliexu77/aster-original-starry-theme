@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, TrendingUp, AlertCircle, Baby, Target, ChevronDown, ChevronUp, Heart } from "lucide-react";
+import { Clock, Calendar, TrendingUp, AlertCircle, Baby, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { format, differenceInWeeks, startOfDay, endOfDay, subDays } from "date-fns";
 import { useHousehold } from "@/hooks/useHousehold";
 
@@ -29,140 +29,6 @@ interface HelperCard {
 export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   console.log('Helper component received activities:', activities.length, activities.slice(0, 3));
   const { household } = useHousehold();
-  const [showDailyReview, setShowDailyReview] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typedText, setTypedText] = useState("");
-  const [showReviewPrompt, setShowReviewPrompt] = useState(false);
-
-  // Check if it's evening and show daily review prompt
-  useEffect(() => {
-    const checkTime = () => {
-      const now = new Date();
-      const hour = now.getHours();
-      const hasActivitiesToday = activities.some(activity => {
-        const activityDate = new Date(activity.logged_at);
-        return activityDate.toDateString() === now.toDateString();
-      });
-      
-      setShowReviewPrompt(hour >= 19 && hasActivitiesToday && !showDailyReview); // 7 PM or later
-    };
-
-    checkTime();
-    const interval = setInterval(checkTime, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, [activities, showDailyReview]);
-  
-  const generatePersonalizedDailyReview = (): string => {
-    const today = new Date();
-    const todayActivities = activities.filter(activity => {
-      const activityDate = new Date(activity.logged_at);
-      return activityDate.toDateString() === today.toDateString();
-    });
-
-    const feeds = todayActivities.filter(a => a.type === "feed");
-    const naps = todayActivities.filter(a => a.type === "nap");
-    const diapers = todayActivities.filter(a => a.type === "diaper");
-    const notes = todayActivities.filter(a => a.type === "note");
-
-    const babyName = household?.baby_name || "your little one";
-    const babyPronoun = "they"; // Could be made configurable
-    const totalIntake = feeds.reduce((sum, f) => {
-      const quantity = f.details?.quantity || 0;
-      return sum + (parseFloat(quantity as string) || 0);
-    }, 0);
-
-    let review = `Good evening! Let me share how ${babyName}'s day went. `;
-
-    // Feeding insights
-    if (feeds.length > 0) {
-      const avgInterval = feeds.length > 1 ? Math.round(12 / feeds.length) : 0;
-      review += `You fed ${babyName} ${feeds.length} times today, and ${babyPronoun} took in ${totalIntake.toFixed(1)}${feeds.some(f => f.details?.unit === 'ml') ? 'ml' : 'oz'} total. `;
-      
-      if (feeds.length >= 8) {
-        review += `${babyName} had a hearty appetite today - that's wonderful! `;
-      } else if (feeds.length >= 6) {
-        review += `${babyName} seems to be eating well and settling into a nice rhythm. `;
-      } else if (feeds.length >= 4) {
-        review += `${babyName} had decent feeds today, though ${babyPronoun} might be going through a growth phase. `;
-      } else {
-        review += `${babyName} had fewer feeds than usual - ${babyPronoun} might just be having a lighter day or cluster feeding later. `;
-      }
-    } else {
-      review += `I notice you didn't log any feeds today - just a gentle reminder to track them for better insights. `;
-    }
-
-    // Sleep insights
-    if (naps.length > 0) {
-      const totalNapTime = naps.reduce((sum, n) => {
-        if (n.details?.startTime && n.details?.endTime) {
-          const start = new Date(`1970-01-01 ${n.details.startTime}`);
-          const end = new Date(`1970-01-01 ${n.details.endTime}`);
-          return sum + Math.round((end.getTime() - start.getTime()) / (1000 * 60));
-        }
-        return sum;
-      }, 0);
-
-      if (totalNapTime > 0) {
-        const napHours = Math.floor(totalNapTime / 60);
-        const napMins = totalNapTime % 60;
-        review += `For sleep, ${babyName} took ${naps.length} nap${naps.length > 1 ? 's' : ''} totaling ${napHours}h ${napMins}m. `;
-        
-        if (totalNapTime > 240) {
-          review += `That's excellent rest - ${babyName} really recharged today! `;
-        } else if (totalNapTime > 120) {
-          review += `Good sleep patterns emerging - ${babyName} is learning to rest well. `;
-        } else {
-          review += `${babyName} had shorter naps today - ${babyPronoun} might be going through a developmental leap or just needed more awake time. `;
-        }
-      } else {
-        review += `You logged ${naps.length} nap${naps.length > 1 ? 's' : ''} but the timing details weren't captured - try adding start and end times for better sleep insights. `;
-      }
-    } else {
-      review += `No naps were logged today - ${babyName} might have been extra alert or had different sleep needs. `;
-    }
-
-    // Diaper insights
-    if (diapers.length > 0) {
-      review += `You changed ${diapers.length} diaper${diapers.length > 1 ? 's' : ''} today`;
-      if (diapers.length >= 6) {
-        review += ` - perfect hydration and digestion signs! `;
-      } else if (diapers.length >= 4) {
-        review += ` - good signs of healthy intake. `;
-      } else {
-        review += ` - keep an eye on hydration, especially if ${babyName} seems fussy. `;
-      }
-    }
-
-    // Notes and observations
-    if (notes.length > 0) {
-      review += `I also noticed you made ${notes.length} special observation${notes.length > 1 ? 's' : ''} about ${babyName} today - these little moments and notes help track ${babyPronoun} development beautifully. `;
-    }
-
-    // Encouraging conclusion
-    review += `Overall, you're doing wonderfully with ${babyName}. Every day is different, and you're learning ${babyPronoun} unique rhythm together. Rest well tonight - tomorrow brings new discoveries! 💙`;
-
-    return review;
-  };
-
-  const startDailyReview = () => {
-    const reviewText = generatePersonalizedDailyReview();
-    setShowDailyReview(true);
-    setShowReviewPrompt(false);
-    setIsTyping(true);
-    setTypedText("");
-    
-    // Simulate typing effect
-    let charIndex = 0;
-    const typingInterval = setInterval(() => {
-      if (charIndex < reviewText.length) {
-        setTypedText(reviewText.substring(0, charIndex + 1));
-        charIndex++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTyping(false);
-      }
-    }, 25); // Typing speed
-  };
 
   const getAllInsights = (): HelperCard[] => {
     const today = new Date();
@@ -427,16 +293,16 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
       } else if (ageInWeeks < 26) {
         agePhase = "Established routine phase";
         guidance = [
-          "3-4 feeds per day becoming standard",
-          "2-3 regular naps expected",
-          "6-8 hour night stretches achievable"
+          "Longer sleep stretches expected",
+          "3-4 hour feeding windows",
+          "Watch for sleep regressions"
         ];
       } else {
-        agePhase = "Mobile baby";
+        agePhase = "Mature infant";
         guidance = [
-          "Solid foods affecting milk intake",
-          "2 main naps + possible short nap",
-          "10-12 hour nights possible"
+          "Solid patterns should be established",
+          "Night weaning may be possible",
+          "Growth spurts still affect schedules"
         ];
       }
 
@@ -444,121 +310,73 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
         title: `${agePhase} (${ageInWeeks} weeks)`,
         summary: "Age-appropriate expectations",
         bullets: guidance,
-        icon: Baby,
+        icon: Calendar,
         confidence: 0.9
       });
     }
 
-    return insights.slice(0, 5); // Limit to most important insights
+    return insights.slice(0, 6); // Limit to top 6 insights
   };
 
-  const cards = getAllInsights();
+  const insights = getAllInsights();
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-semibold mb-2">Your Assistant</h2>
-        <p className="text-sm text-muted-foreground">Here's what I'm noticing about your baby's patterns</p>
-      </div>
-
-      <div className="space-y-4">
-        {cards.map((card, index) => {
-          const Icon = card.icon;
-          return (
-            <Card key={index} className="transition-all hover:shadow-md">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Icon className="h-5 w-5 text-primary" />
-                  {card.title}
-                </CardTitle>
-                <p className="text-sm font-medium text-muted-foreground">{card.summary}</p>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {card.bullets.map((bullet, i) => (
-                    <li key={i} className="text-sm flex items-start gap-2">
-                      <span className="w-1 h-1 bg-primary rounded-full mt-2 flex-shrink-0" />
-                      <span className="leading-relaxed">{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          );
-        })}
-        
-        {cards.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-8">
-              <Baby className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">Start logging activities to see personalized insights</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Daily Review Prompt */}
-        {showReviewPrompt && (
-          <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 animate-fade-in">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <Heart className="w-6 h-6 text-purple-500" />
-                <div>
-                  <h3 className="font-semibold text-purple-900">Your Night Doula</h3>
-                  <p className="text-sm text-purple-700">Want to hear about your day?</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={startDailyReview}
-                  className="bg-purple-500 hover:bg-purple-600 text-white"
-                  size="sm"
-                >
-                  Yes, tell me
-                </Button>
-                <Button 
-                  onClick={() => setShowReviewPrompt(false)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Maybe later
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Daily Review Display */}
-        {showDailyReview && (
-          <Card className="border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-purple-500" />
-                  <span className="text-purple-900">Your Day Together</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDailyReview(false)}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-white/70 rounded-lg p-4 border border-purple-100">
-                <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                  {typedText}
-                  {isTyping && (
-                    <span className="animate-pulse text-purple-500">|</span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+    <div className="space-y-6 p-4">
+      {insights.map((insight, index) => (
+        <InsightCard key={index} insight={insight} />
+      ))}
     </div>
+  );
+};
+
+interface InsightCardProps {
+  insight: HelperCard;
+}
+
+const InsightCard = ({ insight }: InsightCardProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const Icon = insight.icon;
+  const confidenceColor = insight.confidence && insight.confidence > 0.8 
+    ? "text-emerald-600 dark:text-emerald-400" 
+    : insight.confidence && insight.confidence > 0.6 
+    ? "text-amber-600 dark:text-amber-400" 
+    : "text-muted-foreground";
+
+  return (
+    <Card className="transition-all duration-300 hover:shadow-lg">
+      <CardHeader 
+        className="cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Icon className="w-5 h-5 text-primary" />
+            {insight.title}
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {insight.confidence && (
+              <Badge variant="outline" className={confidenceColor}>
+                {Math.round(insight.confidence * 100)}%
+              </Badge>
+            )}
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </div>
+        </div>
+        <p className="text-muted-foreground">{insight.summary}</p>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent className="pt-0">
+          <ul className="space-y-2">
+            {insight.bullets.map((bullet, index) => (
+              <li key={index} className="flex items-start gap-2 text-sm">
+                <span className="text-primary text-xs mt-1">•</span>
+                <span>{bullet}</span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      )}
+    </Card>
   );
 };
