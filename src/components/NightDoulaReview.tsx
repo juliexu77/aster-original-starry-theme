@@ -22,36 +22,9 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [isTyping, setIsTyping] = useState(false);
   const [typedText, setTypedText] = useState("");
   const [showPrompt, setShowPrompt] = useState(false);
-  const [persistedReview, setPersistedReview] = useState<string | null>(null);
-  const [showFeedbackQuestion, setShowFeedbackQuestion] = useState(false);
-  const [userFeedback, setUserFeedback] = useState<string | null>(null);
-  const [doulaResponse, setDoulaResponse] = useState<string | null>(null);
-
-  // Load persisted review on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('nightDoulaReview');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const today = new Date().toDateString();
-      if (parsed.date === today) {
-        setPersistedReview(parsed.text);
-        setShowReview(true);
-        setTypedText(parsed.text);
-        if (parsed.feedback) {
-          setUserFeedback(parsed.feedback);
-          setDoulaResponse(parsed.response);
-        }
-      } else {
-        // Clear old review
-        localStorage.removeItem('nightDoulaReview');
-      }
-    }
-  }, []);
 
   // Check if it's evening and show review prompt
   useEffect(() => {
-    if (persistedReview) return; // Don't show prompt if already has review
-    
     const checkTime = () => {
       const now = new Date();
       const hour = now.getHours();
@@ -66,7 +39,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     checkTime();
     const interval = setInterval(checkTime, 60000); // Check every minute
     return () => clearInterval(interval);
-  }, [activities, showReview, persistedReview]);
+  }, [activities, showReview]);
 
   const generatePersonalizedReview = (): string => {
     const today = new Date();
@@ -185,67 +158,20 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       review += `I also noticed you made ${notes.length} special note${notes.length > 1 ? 's' : ''} about ${name} today - these observations help track their development beautifully. `;
     }
 
-    // Encouraging conclusion with feedback question
-    review += `You're doing wonderfully with ${name}. Every day teaches you more about their unique needs and rhythms.`;
+    // Encouraging conclusion
+    review += `You're doing wonderfully with ${name}. Every day teaches you more about their unique needs and rhythms. Rest well tonight! 💙`;
 
     return review;
   };
 
-  const generateFeedbackResponse = (feedback: string): string => {
-    const name = babyName || household?.baby_name || "your little one";
-    const responses = {
-      great: [
-        `I'm so glad to hear that! Those wonderful days remind us why this journey is so special. ${name} is lucky to have someone so attentive.`,
-        `That's beautiful! Days like these are gifts. You're clearly in tune with ${name}'s needs and it shows.`,
-        `How lovely! These golden days are exactly what parenting is about. You should feel proud of how well you're caring for ${name}.`
-      ],
-      good: [
-        `I'm happy things went well! Steady, peaceful days are such a blessing with little ones.`,
-        `That sounds like a really solid day. You're finding your rhythm with ${name} and it's working beautifully.`,
-        `Wonderful! Those good days give us energy for the trickier ones. You're doing great with ${name}.`
-      ],
-      okay: [
-        `Some days are just like that, and that's completely normal. You still showed up for ${name} and that's what matters most.`,
-        `I hear you. Not every day feels perfect, but you're still doing all the important things for ${name}. Tomorrow is a fresh start.`,
-        `Those in-between days are part of the journey. ${name} doesn't need perfect days, just your loving presence.`
-      ],
-      tough: [
-        `Oh honey, I hear you. Hard days are so draining, but please know you're not alone in feeling this way. ${name} is fortunate to have someone who cares so deeply.`,
-        `Difficult days are part of this journey, even though they're exhausting. Your dedication to ${name} shines through even on the hardest days.`,
-        `I'm sending you extra support tonight. These challenging days don't reflect your parenting - they reflect how demanding caring for ${name} can be. Rest if you can.`
-      ]
-    };
-
-    let category = 'okay';
-    const lowerFeedback = feedback.toLowerCase();
-    
-    if (lowerFeedback.includes('great') || lowerFeedback.includes('amazing') || lowerFeedback.includes('wonderful') || lowerFeedback.includes('perfect')) {
-      category = 'great';
-    } else if (lowerFeedback.includes('good') || lowerFeedback.includes('nice') || lowerFeedback.includes('well')) {
-      category = 'good';
-    } else if (lowerFeedback.includes('hard') || lowerFeedback.includes('difficult') || lowerFeedback.includes('tough') || lowerFeedback.includes('exhausting') || lowerFeedback.includes('overwhelming')) {
-      category = 'tough';
-    }
-
-    const categoryResponses = responses[category as keyof typeof responses];
-    return categoryResponses[Math.floor(Math.random() * categoryResponses.length)];
-  };
-
   const startReview = () => {
-    if (persistedReview) {
-      setShowReview(true);
-      setShowPrompt(false);
-      setTypedText(persistedReview);
-      return;
-    }
-
     const reviewText = generatePersonalizedReview();
     setShowReview(true);
     setShowPrompt(false);
     setIsTyping(true);
     setTypedText("");
     
-    // Faster typing effect like ChatGPT
+    // Simulate typing effect
     let charIndex = 0;
     const typingInterval = setInterval(() => {
       if (charIndex < reviewText.length) {
@@ -254,36 +180,12 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       } else {
         clearInterval(typingInterval);
         setIsTyping(false);
-        setShowFeedbackQuestion(true);
-        
-        // Save to localStorage
-        const reviewData = {
-          text: reviewText,
-          date: new Date().toDateString()
-        };
-        localStorage.setItem('nightDoulaReview', JSON.stringify(reviewData));
       }
-    }, 12); // Much faster typing speed (was 25ms, now 12ms)
+    }, 25); // Typing speed
   };
 
-  const handleFeedbackSubmit = (feedback: string) => {
-    setUserFeedback(feedback);
-    const response = generateFeedbackResponse(feedback);
-    setDoulaResponse(response);
-    setShowFeedbackQuestion(false);
-
-    // Update localStorage with feedback
-    const saved = localStorage.getItem('nightDoulaReview');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      parsed.feedback = feedback;
-      parsed.response = response;
-      localStorage.setItem('nightDoulaReview', JSON.stringify(parsed));
-    }
-  };
-
-  // Don't show anything if it's not evening or no activities today, unless we have a persisted review
-  if (!showPrompt && !showReview && !persistedReview) {
+  // Don't show anything if it's not evening or no activities today
+  if (!showPrompt && !showReview) {
     return null;
   }
 
@@ -337,39 +239,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         
         <div className="text-foreground leading-relaxed">
           {typedText}
-          {isTyping && (
-            <span className="inline-flex items-center ml-1">
-              <span className="w-1 h-1 bg-foreground rounded-full animate-pulse"></span>
-              <span className="w-1 h-1 bg-foreground rounded-full animate-pulse ml-0.5" style={{ animationDelay: '0.2s' }}></span>
-              <span className="w-1 h-1 bg-foreground rounded-full animate-pulse ml-0.5" style={{ animationDelay: '0.4s' }}></span>
-            </span>
-          )}
-          
-          {/* Feedback Question */}
-          {showFeedbackQuestion && !userFeedback && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-3">How did today feel for you?</p>
-              <div className="flex flex-wrap gap-2">
-                {["It was great!", "Pretty good", "Just okay", "Really tough"].map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleFeedbackSubmit(option)}
-                    className="px-3 py-1.5 text-xs bg-accent hover:bg-accent/80 rounded-full transition-colors"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Doula Response to Feedback */}
-          {doulaResponse && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground">{doulaResponse}</p>
-              <p className="text-xs text-muted-foreground mt-2">Rest well tonight! 💙</p>
-            </div>
-          )}
+          {isTyping && <span className="animate-pulse">|</span>}
         </div>
       </CardContent>
     </Card>
