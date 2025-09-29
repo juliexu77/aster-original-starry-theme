@@ -91,7 +91,7 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
       });
       
       const dayData: SleepDataDay = {
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
         fullDate: date,
         sleepBlocks,
         hasData: dayNaps.length > 0,

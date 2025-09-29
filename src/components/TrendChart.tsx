@@ -73,7 +73,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const unit = preferredUnit;
       
       data.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
         value,
         feedCount,
         unit,
@@ -124,7 +124,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const napCount = dayNaps.length;
       
       data.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
         value,
         napCount,
         detail: value > 0 ? `${value}h, ${napCount} naps` : "No naps"
@@ -140,26 +140,22 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   const maxNapValue = Math.max(...napData.map(d => d.value));
 
   return (
-    <div className="space-y-6">
-      {/* Feed Volume Chart */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            Daily Feed Volume ({preferredUnit})
-          </h3>
-        </div>
-        
+    <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="flex items-center gap-2 mb-6">
+        <TrendingUp className="w-5 h-5 text-muted-foreground" />
+        <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+          Daily Trends
+        </h3>
+      </div>
+      
+      <div className="space-y-8">
+        {/* Feed Volume Chart */}
         <div className="space-y-4">
-          {/* Legend */}
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
-              <span className="text-muted-foreground">Total {preferredUnit}</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
+            <span className="text-sm text-muted-foreground">Feed Volume ({preferredUnit})</span>
           </div>
 
-          {/* Feed volume chart */}
           <div className="grid grid-cols-7 gap-2 h-32">
             {feedData.map((day, index) => (
               <div key={index} className="flex flex-col items-center gap-1">
@@ -191,27 +187,14 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Nap Duration Chart */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="w-5 h-5 text-muted-foreground" />
-          <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-            Daily Sleep Totals
-          </h3>
-        </div>
-        
+        {/* Sleep Duration Chart */}
         <div className="space-y-4">
-          {/* Legend */}
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-gradient-nap"></div>
-              <span className="text-muted-foreground">Hours</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-gradient-nap"></div>
+            <span className="text-sm text-muted-foreground">Sleep Hours</span>
           </div>
 
-          {/* Nap duration chart */}
           <div className="grid grid-cols-7 gap-2 h-32">
             {napData.map((day, index) => (
               <div key={index} className="flex flex-col items-center gap-1 relative">
