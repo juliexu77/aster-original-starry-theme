@@ -35,11 +35,16 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
   // Use the same time logic as sorting - startTime for naps when available
   let displayTime;
   if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
-    const today = new Date().toDateString();
-    const activityDate = new Date(dbActivity.logged_at).toDateString();
-    // Combine the date from logged_at with the time from startTime
-    const combinedDateTime = new Date(`${activityDate} ${dbActivity.details.startTime}`);
-    displayTime = combinedDateTime.toLocaleTimeString("en-US", { 
+    // Build time using logged_at as base in local timezone to avoid parsing ambiguity
+    const base = new Date(dbActivity.logged_at);
+    const [t, period] = dbActivity.details.startTime.split(" ");
+    const [hStr, mStr] = t.split(":");
+    let h = parseInt(hStr, 10);
+    const m = parseInt(mStr ?? "0", 10);
+    if (period === "PM" && h !== 12) h += 12;
+    if (period === "AM" && h === 12) h = 0;
+    base.setHours(h, m, 0, 0);
+    displayTime = base.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
@@ -126,10 +131,13 @@ export function useActivities() {
       // Sort activities by actual activity time (startTime for naps, logged_at for others)
       const sortedData = (data || []).sort((a, b) => {
         const getActivityTime = (activity: any) => {
-          // For naps, use startTime if available, otherwise logged_at
           if (activity.type === 'nap' && activity.details.startTime) {
-            const activityDate = new Date(activity.logged_at).toDateString();
-            return new Date(`${activityDate} ${activity.details.startTime}`).getTime();
+            const base = new Date(activity.logged_at);
+            const minutes = parseTimeToMinutes(activity.details.startTime);
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            base.setHours(hours, mins, 0, 0);
+            return base.getTime();
           }
           return new Date(activity.logged_at).getTime();
         };
