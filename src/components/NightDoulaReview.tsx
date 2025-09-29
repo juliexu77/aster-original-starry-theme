@@ -300,13 +300,21 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
 
     // Collect diaper observations and full notes
     const allNotes = [...notes, ...diapers.filter(d => 
-      d.details?.notes || d.details?.leak || d.details?.blowout || d.details?.rash
+      d.details?.notes || d.details?.hasLeak || d.details?.blowout || d.details?.rash
     )];
 
     console.log('Night Doula Debug - Enhanced Day Stats:', {
       date: date.toDateString(),
       photosCount: photos.length,
       photoSources: photos,
+      diaperCount: diapers.length,
+      diaperDetails: diapers.map(d => ({ 
+        hasLeak: d.details?.hasLeak, 
+        diaperType: d.details?.diaperType,
+        hasCream: d.details?.hasCream,
+        notes: d.details?.notes
+      })),
+      notesCount: allNotes.length,
       activitiesWithPhotos: activities_filtered.filter(a => 
         a.details?.photoUrl || a.details?.photo || a.details?.photos
       ).map(a => ({ 
@@ -382,13 +390,13 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       let noteRef = "";
       let noteEffect = "";
       
-      // Check for diaper-specific observations first
+      // Check for diaper-specific observations first (using correct field names)
       const diaperNote = todayStats.notes.find(note => 
-        note.type === 'diaper' && (note.details?.leak || note.details?.blowout || note.details?.rash)
+        note.type === 'diaper' && (note.details?.hasLeak || note.details?.blowout || note.details?.rash)
       );
       
       if (diaperNote) {
-        if (diaperNote.details?.leak) {
+        if (diaperNote.details?.hasLeak) {
           noteRef = "a leak";
           noteEffect = "fussiness during that change";
         } else if (diaperNote.details?.blowout) {
