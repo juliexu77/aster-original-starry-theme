@@ -152,6 +152,25 @@ export const NextActivityPrediction = ({ activities }: NextActivityPredictionPro
     if (prediction.anticipatedTime) {
       return `${prediction.type === "feed" ? "Feeding" : "Nap"} around ${prediction.anticipatedTime}`;
     }
+    
+    // For sleeping babies, show what's likely next after they wake up
+    if (prediction.reason === "currently sleeping") {
+      const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
+      const currentPrediction = engine.getNextAction();
+      
+      if (currentPrediction.next_action === 'LET_SLEEP_CONTINUE') {
+        // Determine what's likely next based on rationale
+        const feedScore = currentPrediction.rationale.scores.feed;
+        const sleepScore = currentPrediction.rationale.scores.sleep;
+        
+        if (feedScore > sleepScore) {
+          return "Likely feeding when baby wakes up";
+        } else {
+          return "May need another nap after this sleep";
+        }
+      }
+    }
+    
     return `${prediction.type === "feed" ? "Consider feeding" : "Watch for sleepy cues"}`;
   };
 
