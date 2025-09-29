@@ -178,6 +178,10 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const [useWordMode, setUseWordMode] = useState(false);
   const [lastRenderTime, setLastRenderTime] = useState(0);
 
+  // Detect mobile devices for optimal animation
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   window.innerWidth <= 768;
+
   // Random selection helper
   const randomChoice = (array: string[]): string => {
     return array[Math.floor(Math.random() * array.length)];
@@ -566,7 +570,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     setTypedText("");
     setCurrentCharIndex(0);
     setShowPhotos(false);
-    setUseWordMode(false); // Start with chunked mode
+    setUseWordMode(isMobile); // Start mobile devices in word mode
     setLastRenderTime(0);
     
     // Store in localStorage
@@ -585,14 +589,18 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     }
   }, [activities, babyName, household, prefersReducedMotion]);
 
-  // Smart batched typing animation with performance fallback
+  // Smart performance-optimized animation with mobile detection
   useEffect(() => {
     if (!isTyping || !fullReviewText || prefersReducedMotion) return;
     
-    const targetWPM = 90; // 80-100 WPM range
+    // Mobile-optimized settings
+    const targetWPM = isMobile ? 120 : 90; // Faster on mobile for less processing
     const avgCharsPerWord = 4.7;
     const charsPerMinute = targetWPM * avgCharsPerWord;
-    const baseDelay = (60 * 1000) / charsPerMinute; // ~140ms per char
+    const baseDelay = (60 * 1000) / charsPerMinute;
+    
+    // Mobile uses word-by-word, desktop uses small chunks
+    const useMobileMode = isMobile || useWordMode;
     
     const startTime = performance.now();
     
@@ -600,53 +608,49 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
       if (currentCharIndex < fullReviewText.length) {
         let nextIndex = currentCharIndex;
         
-        if (useWordMode) {
-          // Word-by-word mode for slower devices
+        if (useMobileMode) {
+          // Mobile: Word-by-word for better performance
           const remainingText = fullReviewText.slice(currentCharIndex);
           const nextSpace = remainingText.indexOf(' ');
           const nextPunctuation = remainingText.search(/[.!?]/);
           
           if (nextSpace === -1 && nextPunctuation === -1) {
-            // Last word
             nextIndex = fullReviewText.length;
           } else if (nextPunctuation !== -1 && (nextSpace === -1 || nextPunctuation < nextSpace)) {
-            // Include punctuation with word
             nextIndex = currentCharIndex + nextPunctuation + 1;
           } else if (nextSpace !== -1) {
-            // Include space with word
             nextIndex = currentCharIndex + nextSpace + 1;
           }
         } else {
-          // Chunked mode: 2-3 characters at a time
-          const chunkSize = Math.random() > 0.5 ? 2 : 3;
+          // Desktop: Larger chunks for smooth animation
+          const chunkSize = Math.random() > 0.5 ? 4 : 6; // Bigger chunks
           nextIndex = Math.min(currentCharIndex + chunkSize, fullReviewText.length);
         }
         
         setTypedText(fullReviewText.substring(0, nextIndex));
         setCurrentCharIndex(nextIndex);
         
-        // Performance check: if rendering takes too long, switch to word mode
+        // Performance fallback: switch to word mode if rendering is slow
         const renderTime = performance.now() - startTime;
-        if (renderTime > 50 && !useWordMode) {
+        if (renderTime > 50 && !useMobileMode && !isMobile) {
           setUseWordMode(true);
         }
-        setLastRenderTime(renderTime);
         
-        // Natural pauses at punctuation
+        // Natural pauses based on content
         const currentChar = fullReviewText[nextIndex - 1];
         const isPunctuation = ['.', '!', '?'].includes(currentChar);
         const isComma = currentChar === ',';
         
-        let delay = useWordMode ? baseDelay * 2 : baseDelay;
+        let delay = useMobileMode ? baseDelay * 2.5 : baseDelay;
         
         if (isPunctuation) {
-          delay *= 2; // Longer pause after sentences
+          delay *= 1.8; // Pause after sentences
         } else if (isComma) {
-          delay *= 1.3; // Slight pause after commas
+          delay *= 1.2; // Brief pause after commas
         }
         
-        // Adjust delay based on chunk size to maintain consistent WPM
-        if (!useWordMode) {
+        // Adjust for chunk size to maintain consistent WPM
+        if (!useMobileMode) {
           const charsAdded = nextIndex - currentCharIndex;
           delay = delay * charsAdded;
         }
@@ -656,10 +660,10 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         setIsPulsing(false);
         setShowPhotos(true);
       }
-    }, useWordMode ? baseDelay * 2 : baseDelay);
+    }, useMobileMode ? baseDelay * 2.5 : baseDelay);
     
     return () => clearTimeout(timer);
-  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion, useWordMode]);
+  }, [currentCharIndex, fullReviewText, isTyping, prefersReducedMotion, useWordMode, isMobile]);
 
   if (!showPrompt && !showReview) {
     return null;
