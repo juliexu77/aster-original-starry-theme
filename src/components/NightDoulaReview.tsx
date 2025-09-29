@@ -42,6 +42,82 @@ const AGE_NORMS = {
   '12+': { feeds: [3, 5], naps: [1, 2], napTime: [1.5, 2.5] }
 };
 
+// Sentence library for varied responses
+const SENTENCE_LIBRARY = {
+  feeds: [
+    "{baby_name} had {feed_count} feeds today (about {feed_total_ml} ml).",
+    "He finished {feed_count} feeds in total, around {feed_total_ml} ml altogether.",
+    "Today's tally: {feed_count} feeds, adding up to about {feed_total_ml} ml.",
+    "He got in {feed_count} feeds, for roughly {feed_total_ml} ml overall."
+  ],
+  naps: {
+    'all-short': [
+      "All of his naps were on the shorter side, ~30 minutes each.",
+      "He only managed catnaps today, nothing longer than half an hour.",
+      "Every nap was brief, closer to 30 minutes."
+    ],
+    'all-long': [
+      "He took two solid stretches, each well over an hour.",
+      "All of his naps today were longer, more than an hour each.",
+      "Nice long naps throughout — each lasting over an hour."
+    ],
+    'mix': [
+      "It was a mix — two short naps and one long stretch in the late morning.",
+      "He balanced a long nap with a couple of shorter ones.",
+      "Today had variety: one good long nap and two quicker ones."
+    ]
+  },
+  bedtime: [
+    "Bedtime was {bedtime}.",
+    "He settled for the night at {bedtime}.",
+    "Down for sleep at {bedtime}, right on schedule.",
+    "He was asleep for the night by {bedtime}."
+  ],
+  notes: [
+    "You mentioned {note_reference} — that could explain {note_related_effect}.",
+    "Since you noted {note_reference}, that likely played a role today.",
+    "You wrote about {note_reference}; it makes sense that {note_related_effect}.",
+    "Noticing {note_reference} probably affected how his day unfolded."
+  ],
+  comparison: {
+    feeds: [
+      "He drank about {diff} ml more than yesterday.",
+      "That's {diff} ml less than yesterday's intake.",
+      "Slightly {more_less} hungry compared to yesterday."
+    ],
+    naps: [
+      "He got about {diff} minutes more daytime sleep than yesterday.",
+      "That's {diff} minutes less nap time than the day before.",
+      "Compared to yesterday, naps were {shorter_longer}."
+    ],
+    bedtime: [
+      "He went down {diff} minutes earlier than yesterday.",
+      "Tonight's bedtime was a little later than yesterday's.",
+      "Bedtime shifted {earlier_later} compared to last night."
+    ]
+  },
+  peer: [
+    "For his age, most babies nap 3–4 times with at least one long nap — so he's right in range.",
+    "Babies his age typically feed 5–8 times a day, so today's {feed_count} feeds are right on track.",
+    "It's common at this age to see one or two long naps anchoring the day, which he managed today.",
+    "This nap pattern is very normal for {baby_age} months."
+  ],
+  insight: [
+    "Taken together, this points to a growth spurt.",
+    "This rhythm often means he'll be extra tired tomorrow morning.",
+    "That extra intake is a great sign he's fueling up for growth.",
+    "Consistency like this sets a solid foundation.",
+    "He may be catching up on rest, which is completely normal."
+  ],
+  encouragement: [
+    "You're doing a wonderful job keeping his rhythm steady.",
+    "He's thriving, and you're guiding him beautifully.",
+    "Days like this really show how well you're supporting him.",
+    "Keep trusting your instincts — they're serving him so well.",
+    "You're giving him exactly what he needs."
+  ]
+};
+
 export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps) => {
   const { household } = useHousehold();
   const [showReview, setShowReview] = useState(false);
@@ -83,44 +159,22 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return AGE_NORMS['12+'];
   };
 
-  // Check trigger logic: after 7 PM with 30-45 min of no activity
+  // Check trigger logic: after 7 PM with activities today
   useEffect(() => {
     const checkTrigger = () => {
       const now = new Date();
       const hour = now.getHours();
       
-      if (hour < 19) return; // Before 7 PM
+      // Show between 7 PM and 11 PM
+      if (hour < 19 || hour > 23) return;
       
       const hasActivitiesToday = activities.some(activity => {
         const activityDate = new Date(activity.logged_at);
         return activityDate.toDateString() === now.toDateString();
       });
       
-      if (!hasActivitiesToday) return;
-      
-      // Check if bedtime was logged
-      const todayActivities = activities.filter(activity => {
-        const activityDate = new Date(activity.logged_at);
-        return activityDate.toDateString() === now.toDateString();
-      });
-      
-      const hasBedtime = todayActivities.some(a => 
-        a.type === 'nap' && a.details?.isNightSleep
-      );
-      
-      if (!hasBedtime) return;
-      
-      // Check for 30+ minutes of no activity
-      const lastActivity = todayActivities
-        .sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())[0];
-      
-      if (lastActivity) {
-        const timeSinceLastActivity = now.getTime() - new Date(lastActivity.logged_at).getTime();
-        const minutesSince = timeSinceLastActivity / (1000 * 60);
-        
-        if (minutesSince >= 30 && !reviewGenerated) {
-          setShowPrompt(true);
-        }
+      if (hasActivitiesToday && !reviewGenerated) {
+        setShowPrompt(true);
       }
     };
 
@@ -211,7 +265,12 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     };
   };
 
-  // Generate the night doula message
+  // Random selection helper
+  const randomChoice = (array: string[]): string => {
+    return array[Math.floor(Math.random() * array.length)];
+  };
+
+  // Generate the night doula message using sentence library
   const generateNightDoulaMessage = (): string => {
     const name = babyName || household?.baby_name || "your little one";
     const today = new Date();
@@ -223,15 +282,19 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     const ageInMonths = getBabyAgeInMonths();
     const norms = getAgeNorms(ageInMonths);
     
-    let message = "";
+    let sentences: string[] = [];
     
-    // 1. Daily Recap
-    message += `${name} had ${todayStats.feeds} feed${todayStats.feeds !== 1 ? 's' : ''} today`;
-    if (todayStats.volume > 0) {
-      message += ` (about ${Math.round(todayStats.volume)} ${todayStats.unit})`;
+    // 1. RECAP: Feeds
+    if (todayStats.feeds > 0) {
+      let feedSentence = randomChoice(SENTENCE_LIBRARY.feeds);
+      feedSentence = feedSentence
+        .replace('{baby_name}', name)
+        .replace('{feed_count}', todayStats.feeds.toString())
+        .replace('{feed_total_ml}', Math.round(todayStats.volume).toString());
+      sentences.push(feedSentence);
     }
-    message += ". ";
     
+    // 2. RECAP: Naps
     if (todayStats.naps > 0) {
       const napDurations = activities
         .filter(a => a.type === 'nap' && !a.details?.isNightSleep && 
@@ -247,76 +310,78 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
         .filter(d => d > 0);
       
       const classification = classifyNaps(napDurations);
-      message += `${name}'s naps were ${classification.description}. `;
+      const napSentence = randomChoice(SENTENCE_LIBRARY.naps[classification.type] || SENTENCE_LIBRARY.naps.mix);
+      sentences.push(napSentence);
     }
     
+    // 3. RECAP: Bedtime
     if (todayStats.bedtime) {
-      message += `Bedtime was ${todayStats.bedtime}. `;
+      let bedtimeSentence = randomChoice(SENTENCE_LIBRARY.bedtime);
+      bedtimeSentence = bedtimeSentence.replace('{bedtime}', todayStats.bedtime);
+      sentences.push(bedtimeSentence);
     }
     
-    // 2. Note Reference
+    // 4. NOTES (if any)
     if (todayStats.notes.length > 0) {
       const noteContent = todayStats.notes[0].details?.content || "";
-      if (noteContent.toLowerCase().includes('teeth') || noteContent.toLowerCase().includes('fuss')) {
-        message += `You mentioned some fussiness today — that could explain any shorter naps or extra feeds. `;
-      } else if (noteContent.length > 0) {
-        message += `You noted "${noteContent.slice(0, 30)}${noteContent.length > 30 ? '...' : ''}" — these observations help track ${name}'s patterns. `;
-      }
-    }
-    
-    // 3. Comparison to Yesterday
-    if (yesterdayStats.feeds > 0 || yesterdayStats.volume > 0) {
-      const volumeDiff = todayStats.volume - yesterdayStats.volume;
-      const feedDiff = todayStats.feeds - yesterdayStats.feeds;
-      
-      if (Math.abs(volumeDiff) > todayStats.volume * 0.1 || Math.abs(feedDiff) > 0) {
-        message += `Compared to yesterday, `;
-        if (volumeDiff > todayStats.volume * 0.1) {
-          message += `${name} drank about ${Math.round(Math.abs(volumeDiff))} ${todayStats.unit} ${volumeDiff > 0 ? 'more' : 'less'}`;
-        }
-        if (feedDiff !== 0 && Math.abs(volumeDiff) > todayStats.volume * 0.1) {
-          message += ` and had ${Math.abs(feedDiff)} ${feedDiff > 0 ? 'extra' : 'fewer'} feed${Math.abs(feedDiff) > 1 ? 's' : ''}`;
-        } else if (feedDiff !== 0) {
-          message += `${name} had ${Math.abs(feedDiff)} ${feedDiff > 0 ? 'extra' : 'fewer'} feed${Math.abs(feedDiff) > 1 ? 's' : ''}`;
+      if (noteContent.length > 0) {
+        let noteSentence = randomChoice(SENTENCE_LIBRARY.notes);
+        let noteRef = noteContent.slice(0, 20);
+        let noteEffect = "his day patterns";
+        
+        if (noteContent.toLowerCase().includes('teeth')) {
+          noteRef = "teething";
+          noteEffect = "the shorter naps";
+        } else if (noteContent.toLowerCase().includes('fuss')) {
+          noteRef = "fussiness";
+          noteEffect = "the extra feeds";
         }
         
-        if (volumeDiff > todayStats.volume * 0.15 || feedDiff > 1) {
-          message += `, which often points to a growth spurt. `;
-        } else {
-          message += `. `;
-        }
+        noteSentence = noteSentence
+          .replace('{note_reference}', noteRef)
+          .replace('{note_related_effect}', noteEffect);
+        sentences.push(noteSentence);
       }
     }
     
-    // 4. Age Norm Comparison
-    const feedsInRange = todayStats.feeds >= norms.feeds[0] && todayStats.feeds <= norms.feeds[1];
-    const napsInRange = todayStats.naps >= norms.naps[0] && todayStats.naps <= norms.naps[1];
-    
-    if (feedsInRange && napsInRange) {
-      message += `For ${name}'s age, most babies feed ${norms.feeds[0]}–${norms.feeds[1]} times daily and nap ${norms.naps[0]}–${norms.naps[1]} times, so this pattern is right on track. `;
-    } else if (feedsInRange) {
-      message += `For ${name}'s age, most babies feed ${norms.feeds[0]}–${norms.feeds[1]} times daily — ${name}'s ${todayStats.feeds} feeds are right in range. `;
-    } else {
-      message += `Most babies ${name}'s age typically have ${norms.feeds[0]}–${norms.feeds[1]} feeds and ${norms.naps[0]}–${norms.naps[1]} naps daily. `;
+    // 5. COMPARISON to Yesterday
+    if (yesterdayStats.feeds > 0 || yesterdayStats.volume > 0) {
+      const volumeDiff = Math.abs(todayStats.volume - yesterdayStats.volume);
+      const napDiff = Math.abs(todayStats.napDuration - yesterdayStats.napDuration);
+      
+      if (volumeDiff > todayStats.volume * 0.1) {
+        let compSentence = randomChoice(SENTENCE_LIBRARY.comparison.feeds);
+        const moreLess = todayStats.volume > yesterdayStats.volume ? "more" : "less";
+        compSentence = compSentence
+          .replace('{diff}', Math.round(volumeDiff).toString())
+          .replace('{more_less}', moreLess);
+        sentences.push(compSentence);
+      } else if (napDiff > 20) {
+        let compSentence = randomChoice(SENTENCE_LIBRARY.comparison.naps);
+        const shorterLonger = todayStats.napDuration > yesterdayStats.napDuration ? "longer" : "shorter";
+        compSentence = compSentence
+          .replace('{diff}', Math.round(napDiff).toString())
+          .replace('{shorter_longer}', shorterLonger);
+        sentences.push(compSentence);
+      }
     }
     
-    // 5. Expert Insight
-    if (todayStats.volume > yesterdayStats.volume * 1.15) {
-      message += `That extra intake is a great sign ${name}'s fueling up for growth. `;
-    } else if (todayStats.bedtime && todayStats.naps > 0) {
-      message += `The combination of good naps and an earlier bedtime often means better overnight sleep. `;
-    } else {
-      message += `${name}'s rhythm is developing beautifully. `;
-    }
+    // 6. PEER Comparison (normalize)
+    let peerSentence = randomChoice(SENTENCE_LIBRARY.peer);
+    peerSentence = peerSentence
+      .replace('{feed_count}', todayStats.feeds.toString())
+      .replace('{baby_age}', ageInMonths.toString());
+    sentences.push(peerSentence);
     
-    // 6. Encouragement/Close
-    if (todayStats.napDuration < yesterdayStats.napDuration * 0.8) {
-      message += `Tomorrow ${name} may want that first nap a bit earlier if they're catching up. `;
-    }
+    // 7. INSIGHT / Interpretation
+    const insightSentence = randomChoice(SENTENCE_LIBRARY.insight);
+    sentences.push(insightSentence);
     
-    message += `You're doing a wonderful job keeping ${name}'s rhythm steady.`;
+    // 8. ENCOURAGEMENT / Close
+    const encouragementSentence = randomChoice(SENTENCE_LIBRARY.encouragement);
+    sentences.push(encouragementSentence);
     
-    return message;
+    return sentences.join(' ');
   };
 
   // ChatGPT-style streaming effect
