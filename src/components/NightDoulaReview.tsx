@@ -128,6 +128,33 @@ const LANGUAGE_BANK = {
     "Tomorrow might bring a little extra crankiness, so early cues will help.",
     "Chances are he'll even out by bedtime tomorrow."
   ],
+  tips: {
+    rash: [
+      "A thin layer of Vaseline before each diaper can help prevent future redness.",
+      "Letting him air dry for a few minutes during changes can work wonders for sensitive skin.",
+      "Sometimes switching to a different diaper brand helps with recurring redness."
+    ],
+    leak: [
+      "Going up a diaper size at night often stops those early morning leaks.",
+      "Making sure the leg cuffs are pulled out can prevent most side leaks.",
+      "Double-check that frilly edges around the legs aren't tucked in — they're meant to stick out."
+    ],
+    growth_spurt: [
+      "Growth spurts usually last 2-3 days, so this extra hunger should level out soon.",
+      "Cluster feeding in the evening often means a longer sleep stretch afterward.",
+      "Many babies get extra sleepy the day after a big feeding day — it's all that growing!"
+    ],
+    sleep: [
+      "A slightly cooler room (68-70°F) often helps babies sleep longer stretches.",
+      "White noise at about the volume of a shower can really improve nap quality.",
+      "If he startles awake, waiting 2-3 minutes before going in gives him a chance to settle back down."
+    ],
+    feeding: [
+      "Burping halfway through a feed often prevents those post-meal hiccups.",
+      "If he's getting fussy during feeds, try switching sides or taking a little break.",
+      "Babies often feed more efficiently when they're calm, so no rush if he needs a moment."
+    ]
+  },
   encouragement: [
     "You're doing a wonderful job reading his needs.",
     "Your instincts are spot on.",
@@ -479,9 +506,37 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     peerSentence = peerSentence.replace('{age_months}', ageInMonths.toString());
     message += peerSentence + " ";
 
-    // 5. Forward-looking insight
-    const insightSentence = randomChoice(LANGUAGE_BANK.insights);
-    message += insightSentence + " ";
+    // 5. Forward-looking insight with contextual tips
+    let insightWithTip = randomChoice(LANGUAGE_BANK.insights);
+    
+    // Add contextual tips based on today's observations
+    if (todayStats.notes.some(note => 
+      note.type === 'diaper' && (note.details?.note?.toLowerCase().includes('rash') || note.details?.note?.toLowerCase().includes('red'))
+    )) {
+      // Diaper rash tip
+      const rashTip = randomChoice(LANGUAGE_BANK.tips.rash);
+      insightWithTip += ` Pro tip: ${rashTip}`;
+    } else if (todayStats.notes.some(note => 
+      note.type === 'diaper' && note.details?.hasLeak
+    )) {
+      // Leak prevention tip
+      const leakTip = randomChoice(LANGUAGE_BANK.tips.leak);
+      insightWithTip += ` Pro tip: ${leakTip}`;
+    } else if (yesterdayStats.volume > 0 && todayStats.volume > yesterdayStats.volume * 1.2) {
+      // Growth spurt tip
+      const growthTip = randomChoice(LANGUAGE_BANK.tips.growth_spurt);
+      insightWithTip += ` Pro tip: ${growthTip}`;
+    } else if (todayStats.napDuration < 120 && todayStats.naps >= 2) {
+      // Short naps tip
+      const sleepTip = randomChoice(LANGUAGE_BANK.tips.sleep);
+      insightWithTip += ` Pro tip: ${sleepTip}`;
+    } else if (Math.random() > 0.5) {
+      // Random feeding tip sometimes
+      const feedingTip = randomChoice(LANGUAGE_BANK.tips.feeding);
+      insightWithTip += ` Pro tip: ${feedingTip}`;
+    }
+    
+    message += insightWithTip + " ";
 
     // 6. Encouragement
     const encouragementSentence = randomChoice(LANGUAGE_BANK.encouragement);
