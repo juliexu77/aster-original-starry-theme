@@ -268,11 +268,14 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     return { type: 'mix', description: '' };
   };
 
-  // Extract day stats with comprehensive photo search
+  // Extract day stats with consistent date handling (same as timeline)
   const getDayStats = (date: Date): DayStats => {
     const activities_filtered = activities.filter(activity => {
       const activityDate = new Date(activity.logged_at);
-      return activityDate.toDateString() === date.toDateString();
+      // Use same local date logic as timeline to avoid timezone issues
+      const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
+      const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      return localActivityDate.getTime() === localTargetDate.getTime();
     });
 
     const feeds = activities_filtered.filter(a => a.type === 'feed');

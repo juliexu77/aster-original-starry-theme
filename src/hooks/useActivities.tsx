@@ -35,22 +35,15 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
   // Use the same time logic as sorting - startTime for naps when available
   let displayTime;
   if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
-    // Build time using logged_at as base in local timezone to avoid parsing ambiguity
-    const base = new Date(dbActivity.logged_at);
-    const [t, period] = dbActivity.details.startTime.split(" ");
-    const [hStr, mStr] = t.split(":");
-    let h = parseInt(hStr, 10);
-    const m = parseInt(mStr ?? "0", 10);
-    if (period === "PM" && h !== 12) h += 12;
-    if (period === "AM" && h === 12) h = 0;
-    base.setHours(h, m, 0, 0);
-    displayTime = base.toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true 
-    });
+    // For naps, use the startTime directly as it's already in display format
+    displayTime = dbActivity.details.startTime;
   } else {
-    displayTime = new Date(dbActivity.logged_at).toLocaleTimeString("en-US", { 
+    // Use consistent local timezone handling like the timeline grouping
+    const activityDate = new Date(dbActivity.logged_at);
+    // Create date in local timezone to avoid timezone offset issues
+    const localDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate(), 
+                              activityDate.getHours(), activityDate.getMinutes(), activityDate.getSeconds());
+    displayTime = localDate.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
@@ -61,6 +54,7 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
     id: dbActivity.id,
     type: dbActivity.type,
     time: displayTime,
+    loggedAt: dbActivity.logged_at, // Keep the original timestamp
     details: dbActivity.details
   };
 };
