@@ -810,6 +810,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               {editingActivity && onDeleteActivity && (
                 <div className="text-center">
                   <button
+                    type="button"
                     onClick={() => {
                       if (editingActivity && onDeleteActivity) {
                         onDeleteActivity(editingActivity.id);
