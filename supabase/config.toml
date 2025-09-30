@@ -1,1 +1,4 @@
 project_id = "ufpavzvrtdzxwcwasaqj"
+
+[functions.parenting-chat]
+verify_jwt = false
