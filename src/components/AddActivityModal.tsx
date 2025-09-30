@@ -71,6 +71,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date()); // Separate date for sleep end time
   
   // Measure state
   const [weightLbs, setWeightLbs] = useState("");
@@ -87,7 +88,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       
       // Set the selected date based on the original logged date
       if (editingActivity.loggedAt) {
-        setSelectedDate(new Date(editingActivity.loggedAt));
+        const loggedDate = new Date(editingActivity.loggedAt);
+        setSelectedDate(loggedDate);
+        setSelectedEndDate(loggedDate); // Initialize end date to same day by default
       }
       
       if (editingActivity.type === "feed") {
@@ -708,9 +711,9 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   {hasEndTime && (
                     <TimeScrollPicker 
                       value={endTime} 
-                      selectedDate={selectedDate}
+                      selectedDate={selectedEndDate}
                       onChange={setEndTime} 
-                      onDateChange={setSelectedDate}
+                      onDateChange={setSelectedEndDate}
                       label="End Time" 
                     />
                   )}
