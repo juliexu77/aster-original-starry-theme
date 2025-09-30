@@ -235,27 +235,34 @@ export function useActivities() {
     if (!user) throw new Error('User not authenticated');
 
     try {
-      const { error } = await supabase
+      // Rely on RLS to ensure only the creator can delete. Use RETURNING to detect if a row was actually deleted.
+      const { data, error } = await supabase
         .from('activities')
         .delete()
         .eq('id', activityId)
-        .eq('created_by', user.id); // Only allow deleting own activities
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // If no data returned, nothing was deleted (likely due to permissions)
+      if (!data) {
+        throw new Error('You can only delete activities you created.');
+      }
 
       // Immediately refetch to ensure UI is in sync with database
       await fetchActivities();
 
       toast({
-        title: "Activity deleted",
-        description: "Activity has been removed."
+        title: 'Activity deleted',
+        description: 'Activity has been removed.'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting activity:', error);
       toast({
-        title: "Error deleting activity",
-        description: "Please try again.",
-        variant: "destructive"
+        title: 'Could not delete activity',
+        description: error?.message || 'Please try again.',
+        variant: 'destructive'
       });
       throw error;
     }
