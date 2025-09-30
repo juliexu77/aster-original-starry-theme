@@ -209,7 +209,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
             <Bot className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground">Your Pediatric Assistant</h3>
+            <h3 className="font-semibold text-foreground">Your Care Assistant</h3>
             <p className="text-xs text-muted-foreground">Personalized guidance for {babyName || "your baby"}</p>
           </div>
         </div>
