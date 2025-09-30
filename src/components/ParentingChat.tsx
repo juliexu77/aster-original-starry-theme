@@ -52,10 +52,10 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   }, [hasInitialized, babyName]);
 
   const quickActions = [
-    { label: "📊 Daily summary", prompt: "Give me a warm summary of how today has been going." },
-    { label: "📈 Compare to expected range", prompt: "How is my baby doing compared to the expected range for their age?" },
-    { label: "💤 Sleep training methods", prompt: "Tell me about different sleep training philosophies like Taking Cara Babies, Moms on Call, and Twelve Hours by Twelve Weeks." },
-    { label: "🍼 Feeding patterns", prompt: "How are the feeding patterns looking today?" },
+    { label: "📊 Daily summary", prompt: "Give me a summary of how today has been going." },
+    { label: "📈 Compare to age norms", prompt: "How is my baby doing compared to typical patterns for their age?" },
+    { label: "⏰ Schedule recommendations", prompt: "What schedule would you recommend for my baby's age?" },
+    { label: "🍼 Feeding analysis", prompt: "Analyze today's feeding patterns." },
   ];
 
   const handleQuickAction = (prompt: string) => {
@@ -236,10 +236,10 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
                 </div>
               )}
               <div
-                className={`max-w-[80%] rounded-lg p-3 ${
+                className={`rounded-lg p-3 ${
                   msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
+                    ? "bg-primary text-primary-foreground max-w-[80%]"
+                    : "bg-muted text-foreground w-full"
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
