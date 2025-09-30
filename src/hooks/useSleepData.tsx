@@ -1,7 +1,7 @@
 import { Activity } from "@/components/ActivityCard";
 import { useHousehold } from "./useHousehold";
 import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
-import { SleepDataDay, AverageDailySummary } from "@/types/sleep";
+import { SleepDataDay, AverageDailySummary, SleepBlock } from "@/types/sleep";
 
 export const useSleepData = (activities: Activity[], showFullDay: boolean, currentWeekOffset: number) => {
   const { household } = useHousehold();
@@ -23,20 +23,55 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
       
-      // Filter nap activities for this specific date
+      // Filter nap activities for this specific date OR previous day (for overnight naps)
       const dayNaps = activities.filter(a => {
         if (a.type !== "nap") return false;
         if (!a.loggedAt) return false;
+        if (!a.details.startTime || !a.details.endTime) return false;
         
-        // Use consistent local date handling to avoid timezone issues
         const activityDate = new Date(a.loggedAt);
         const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
         const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        return localActivityDate.getTime() === localTargetDate.getTime();
+        
+        // Check if activity is on this date
+        if (localActivityDate.getTime() === localTargetDate.getTime()) return true;
+        
+        // Check if activity is from previous day but extends into this day (overnight)
+        const previousDate = new Date(date);
+        previousDate.setDate(previousDate.getDate() - 1);
+        const localPreviousDate = new Date(previousDate.getFullYear(), previousDate.getMonth(), previousDate.getDate());
+        
+        if (localActivityDate.getTime() === localPreviousDate.getTime()) {
+          // Check if it's an overnight nap
+          const parseTime = (timeStr: string) => {
+            const cleaned = timeStr.trim();
+            const [time, period] = cleaned.split(' ');
+            if (!time || !period) return null;
+            const [hoursStr, minutesStr] = time.split(':');
+            if (!hoursStr || !minutesStr) return null;
+            let hours = parseInt(hoursStr);
+            const minutes = parseInt(minutesStr);
+            if (period.toUpperCase() === 'PM' && hours !== 12) hours += 12;
+            if (period.toUpperCase() === 'AM' && hours === 12) hours = 0;
+            return { hours, minutes };
+          };
+          
+          const startTime = parseTime(a.details.startTime);
+          const endTime = parseTime(a.details.endTime);
+          if (!startTime || !endTime) return false;
+          
+          // If end time is before start time, it's overnight
+          return (endTime.hours * 60 + endTime.minutes) < (startTime.hours * 60 + startTime.minutes);
+        }
+        
+        return false;
       });
       
-      // Create sleep blocks for the time range
-      const sleepBlocks = Array(totalHours).fill(false);
+      // Create sleep blocks for the time range with metadata
+      const sleepBlocks: SleepBlock[] = Array(totalHours).fill(null).map(() => ({ 
+        isAsleep: false, 
+        naps: [] 
+      }));
       
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
@@ -63,30 +98,41 @@ export const useSleepData = (activities: Activity[], showFullDay: boolean, curre
           
           if (!startTime || !endTime) return;
           
+          // Check if this nap is from previous day (overnight)
+          const activityDate = new Date(nap.loggedAt!);
+          const localActivityDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
+          const localTargetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          const isFromPreviousDay = localActivityDate.getTime() !== localTargetDate.getTime();
+          
           // Create precise time blocks for continuous sleep bars
-          const startTimeInMinutes = startTime.hours * 60 + startTime.minutes;
-          const endTimeInMinutes = endTime.hours * 60 + endTime.minutes;
+          let startTimeInMinutes = startTime.hours * 60 + startTime.minutes;
+          let endTimeInMinutes = endTime.hours * 60 + endTime.minutes;
           const rangeStartInMinutes = (showFullDay ? 0 : 6) * 60;
           const rangeEndInMinutes = (showFullDay ? 24 : 21) * 60;
           
-          // Handle case where end time is next day (sleep overnight)
-          let actualEndTime = endTimeInMinutes;
+          // Handle overnight naps
           if (endTimeInMinutes < startTimeInMinutes) {
-            actualEndTime = endTimeInMinutes + (24 * 60); // Add 24 hours
+            // This is an overnight nap
+            if (isFromPreviousDay) {
+              // We're showing the morning portion on current day
+              // Start from midnight and go to end time
+              startTimeInMinutes = 0;
+            } else {
+              // We're showing the evening portion on the nap's logged day
+              // End at midnight
+              endTimeInMinutes = 24 * 60;
+            }
           }
           
           // Map to hour blocks and fill all hours in the sleep period
-          for (let minute = startTimeInMinutes; minute < actualEndTime; minute += 30) {
-            // Map current minute to chart hour
-            let chartMinute = minute;
-            if (chartMinute >= 24 * 60) {
-              chartMinute = chartMinute - (24 * 60); // Wrap to next day
-            }
-            
-            if (chartMinute >= rangeStartInMinutes && chartMinute < rangeEndInMinutes) {
-              const hourIndex = Math.floor((chartMinute - rangeStartInMinutes) / 60);
+          for (let minute = startTimeInMinutes; minute < endTimeInMinutes; minute += 30) {
+            if (minute >= rangeStartInMinutes && minute < rangeEndInMinutes) {
+              const hourIndex = Math.floor((minute - rangeStartInMinutes) / 60);
               if (hourIndex >= 0 && hourIndex < totalHours) {
-                sleepBlocks[hourIndex] = true;
+                sleepBlocks[hourIndex].isAsleep = true;
+                if (!sleepBlocks[hourIndex].naps.some(n => n.id === nap.id)) {
+                  sleepBlocks[hourIndex].naps.push(nap);
+                }
               }
             }
           }

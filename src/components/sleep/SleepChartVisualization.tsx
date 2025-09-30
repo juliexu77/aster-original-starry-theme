@@ -1,4 +1,8 @@
 import { SleepDataDay } from "@/types/sleep";
+import { Activity } from "@/components/ActivityCard";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Moon } from "lucide-react";
 
 interface SleepChartVisualizationProps {
   sleepData: SleepDataDay[];
@@ -6,6 +10,7 @@ interface SleepChartVisualizationProps {
 }
 
 export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVisualizationProps) => {
+  const [selectedNaps, setSelectedNaps] = useState<{ naps: Activity[], day: string } | null>(null);
   return (
     <>
       {/* Day headers */}
@@ -54,20 +59,30 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
             {sleepData.map((day, dayIndex) => (
               <div key={day.fullDate.getTime()} className="relative">
                 {/* Sleep bars - render continuous blocks */}
-                {day.sleepBlocks.map((isAsleep, hourIndex) => {
-                  if (!isAsleep) return null;
+                {day.sleepBlocks.map((block, hourIndex) => {
+                  if (!block.isAsleep) return null;
                   
                   // Find continuous sleep blocks to avoid overlapping bars
                   let blockStart = hourIndex;
                   let blockEnd = hourIndex;
                   
                   // Find the end of this sleep block
-                  while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1]) {
+                  while (blockEnd < day.sleepBlocks.length - 1 && day.sleepBlocks[blockEnd + 1].isAsleep) {
                     blockEnd++;
                   }
                   
                   // Only render if this is the start of a block (prevents duplicates)
                   if (blockStart !== hourIndex) return null;
+                  
+                  // Collect all naps from this continuous block
+                  const blockNaps: Activity[] = [];
+                  for (let i = blockStart; i <= blockEnd; i++) {
+                    day.sleepBlocks[i].naps.forEach(nap => {
+                      if (!blockNaps.some(n => n.id === nap.id)) {
+                        blockNaps.push(nap);
+                      }
+                    });
+                  }
                   
                   const blockLength = blockEnd - blockStart + 1;
                   const blockHeight = (blockLength / (showFullDay ? 24 : 15)) * 100;
@@ -76,13 +91,14 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
                   return (
                     <div
                       key={`sleep-block-${blockStart}-${blockEnd}`}
-                      className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20"
+                      className="absolute w-full bg-gradient-to-b from-nap to-nap/80 rounded-sm border border-nap/20 cursor-pointer hover:opacity-80 transition-opacity"
                       style={{
                         top: `${blockTop}%`,
                         height: `${blockHeight}%`,
-                        minHeight: '2px', // Ensure visibility of short naps
+                        minHeight: '2px',
                       }}
-                      title={`Sleep: ${blockLength} hour${blockLength > 1 ? 's' : ''}`}
+                      onClick={() => setSelectedNaps({ naps: blockNaps, day: day.date })}
+                      title={`Tap to view details`}
                     />
                   );
                 })}
@@ -91,6 +107,45 @@ export const SleepChartVisualization = ({ sleepData, showFullDay }: SleepChartVi
           </div>
         </div>
       </div>
+
+      {/* Sleep Details Sheet */}
+      <Sheet open={selectedNaps !== null} onOpenChange={(open) => !open && setSelectedNaps(null)}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Moon className="h-5 w-5 text-nap" />
+              Sleep on {selectedNaps?.day}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-4">
+            {selectedNaps?.naps.map((nap) => (
+              <div key={nap.id} className="p-4 rounded-lg bg-muted/30 border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Sleep Session</span>
+                  <span className="text-sm text-muted-foreground">{nap.time}</span>
+                </div>
+                {nap.details.startTime && nap.details.endTime && (
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Start:</span>
+                      <span className="font-medium">{nap.details.startTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">End:</span>
+                      <span className="font-medium">{nap.details.endTime}</span>
+                    </div>
+                  </div>
+                )}
+                {nap.details.note && (
+                  <div className="mt-2 pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground">{nap.details.note}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 };

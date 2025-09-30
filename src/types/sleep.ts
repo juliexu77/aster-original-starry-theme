@@ -1,7 +1,14 @@
+import { Activity } from "@/components/ActivityCard";
+
+export interface SleepBlock {
+  isAsleep: boolean;
+  naps: Activity[];
+}
+
 export interface SleepDataDay {
   date: string;
   fullDate: Date;
-  sleepBlocks: boolean[];
+  sleepBlocks: SleepBlock[];
   hasData: boolean;
   startHour: number;
   totalHours: number;
