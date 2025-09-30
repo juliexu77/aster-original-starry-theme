@@ -217,7 +217,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <ScrollArea className="flex-1 p-4 pb-32" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-4 pb-44" ref={scrollRef}>
         <div className="space-y-4 max-w-3xl mx-auto">
           {messages.length === 0 && !isLoading && (
             <div className="text-center text-muted-foreground py-12">
@@ -236,13 +236,13 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
                 </div>
               )}
               <div
-                className={`rounded-lg p-3 ${
+                className={`rounded-lg p-3 min-w-0 break-words ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground max-w-[80%]"
                     : "bg-muted text-foreground w-full"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
                 
                 {/* Display photos if they are in the message */}
                 {msg.role === "assistant" && msg.content.includes("📸") && activities && (
@@ -294,7 +294,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
         </div>
       </ScrollArea>
 
-      <div className="fixed bottom-16 left-0 right-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="fixed bottom-16 left-0 right-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)]">
         {messages.length > 0 && !isLoading && (
           <div className="px-4 pt-3 pb-2">
             <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">

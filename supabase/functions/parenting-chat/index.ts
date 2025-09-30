@@ -18,11 +18,12 @@ serve(async (req) => {
     console.log("Total activities received:", activities?.length || 0);
 
     // Build context from recent activities to analyze trends
-    const getUserTimezoneDate = (date: Date, tz: string) => {
-      return date.toLocaleDateString('en-US', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
+    const getUserTzDayKey = (date: Date, tz: string) => {
+      // ISO-style day key that's safe for sorting (YYYY-MM-DD)
+      return date.toLocaleDateString('en-CA', { timeZone: tz || 'UTC' });
     };
     
-    const userToday = getUserTimezoneDate(new Date(), timezone || 'UTC');
+    const userToday = getUserTzDayKey(new Date(), timezone || 'UTC');
     
     // Get last 7 days of activities for trend analysis
     const sevenDaysAgo = new Date();
@@ -33,14 +34,12 @@ serve(async (req) => {
       return activityDate >= sevenDaysAgo;
     }) || [];
     
-    // Group activities by day
+    // Group activities by day (in user's timezone)
     const activitiesByDay: { [key: string]: any[] } = {};
     recentActivities.forEach((a: any) => {
       const activityDate = new Date(a.logged_at);
-      const dayKey = getUserTimezoneDate(activityDate, timezone || 'UTC');
-      if (!activitiesByDay[dayKey]) {
-        activitiesByDay[dayKey] = [];
-      }
+      const dayKey = getUserTzDayKey(activityDate, timezone || 'UTC');
+      if (!activitiesByDay[dayKey]) activitiesByDay[dayKey] = [];
       activitiesByDay[dayKey].push(a);
     });
     
@@ -50,19 +49,12 @@ serve(async (req) => {
       const naps = dayActivities.filter(a => a.type === 'nap');
       const diapers = dayActivities.filter(a => a.type === 'diaper');
       
-      const totalFeedVolume = feeds.reduce((sum, f) => {
-        const qty = parseFloat(f.details?.quantity) || 0;
-        return sum + qty;
-      }, 0);
-      
-      const totalNapMinutes = naps.reduce((sum, n) => {
-        return sum + (n.details?.duration || 0) / 60;
-      }, 0);
-      
+      const totalFeedVolume = feeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0);
+      const totalNapMinutes = naps.reduce((sum, n) => sum + ((n.details?.duration || 0) / 60), 0);
       const avgNapLength = naps.length > 0 ? Math.round(totalNapMinutes / naps.length) : 0;
       
       return {
-        date,
+        date, // ISO day key
         isToday: date === userToday,
         feedCount: feeds.length,
         totalFeedVolume,
@@ -72,7 +64,9 @@ serve(async (req) => {
         avgNapLength,
         diaperCount: diapers.length
       };
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }).sort((a, b) => a.date.localeCompare(b.date));
+
+    console.log("Daily summaries:", JSON.stringify(dailySummaries));
 
     const metricsContext = `
 RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
