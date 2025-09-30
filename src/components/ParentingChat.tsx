@@ -29,6 +29,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -40,14 +41,30 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
     }
   }, [messages]);
 
-  // Auto-load daily summary on mount
+  // Show welcome message on mount
   useEffect(() => {
-    if (!hasInitialized && activities.length > 0) {
+    if (!hasInitialized) {
       setHasInitialized(true);
-      setIsLoading(true);
-      streamChat("Give me a warm, personalized summary of how today has been going for my baby.", true);
+      setMessages([{
+        role: "assistant",
+        content: `Hi! Would you like to hear how ${babyName || "your baby"}'s day is going?`
+      }]);
     }
-  }, [hasInitialized, activities]);
+  }, [hasInitialized, babyName]);
+
+  const quickActions = [
+    { label: "📊 Daily summary", prompt: "Give me a warm summary of how today has been going." },
+    { label: "📈 Compare to expected range", prompt: "How is my baby doing compared to the expected range for their age?" },
+    { label: "💤 Sleep training methods", prompt: "Tell me about different sleep training philosophies like Taking Cara Babies, Moms on Call, and Twelve Hours by Twelve Weeks." },
+    { label: "🍼 Feeding patterns", prompt: "How are the feeding patterns looking today?" },
+  ];
+
+  const handleQuickAction = (prompt: string) => {
+    setShowQuickActions(false);
+    setMessages(prev => [...prev, { role: "user", content: prompt }]);
+    setIsLoading(true);
+    streamChat(prompt, prompt.includes("summary"));
+  };
 
   const streamChat = async (userMessage: string, isInitial = false) => {
     try {
@@ -188,6 +205,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
 
     const userMessage = input.trim();
     setInput("");
+    setShowQuickActions(false);
     setMessages(prev => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
@@ -203,12 +221,12 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-4 pb-32" ref={scrollRef}>
         <div className="space-y-4 max-w-3xl mx-auto">
           {messages.length === 0 && !isLoading && (
             <div className="text-center text-muted-foreground py-12">
               <Bot className="h-16 w-16 mx-auto mb-4 opacity-40" />
-              <p className="text-sm">Loading today's summary...</p>
+              <p className="text-sm">Loading...</p>
             </div>
           )}
           {messages.map((msg, idx) => (
@@ -254,13 +272,32 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border bg-card/50">
+      {showQuickActions && messages.length > 0 && (
+        <div className="px-4 pb-4">
+          <div className="flex flex-wrap gap-2 max-w-3xl mx-auto">
+            {quickActions.map((action) => (
+              <Button
+                key={action.label}
+                variant="outline"
+                size="sm"
+                onClick={() => handleQuickAction(action.prompt)}
+                disabled={isLoading}
+                className="text-xs"
+              >
+                {action.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-16 left-0 right-0 p-4 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="flex gap-2 max-w-3xl mx-auto">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask me anything about feeding, sleep, development..."
+            placeholder="Ask helper"
             disabled={isLoading}
             className="flex-1"
           />
