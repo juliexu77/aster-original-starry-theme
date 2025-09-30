@@ -80,20 +80,67 @@ serve(async (req) => {
       }
     };
     
+    const parseTimeToMinutes = (timeStr: string): number => {
+      try {
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+        let adjustedHours = hours;
+        
+        if (period === 'PM' && hours !== 12) {
+          adjustedHours += 12;
+        } else if (period === 'AM' && hours === 12) {
+          adjustedHours = 0;
+        }
+        
+        return adjustedHours * 60 + minutes;
+      } catch {
+        return 0;
+      }
+    };
+    
     // Calculate daily summaries for trend analysis
     const dailySummaries = Object.entries(activitiesByDay).map(([date, dayActivities]) => {
       const feeds = dayActivities.filter(a => a.type === 'feed');
-      const naps = dayActivities.filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime);
+      const naps = dayActivities.filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime)
+        .sort((a, b) => parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!));
       const diapers = dayActivities.filter(a => a.type === 'diaper');
       
       const totalFeedVolume = feeds.reduce((sum, f) => sum + (parseFloat(f.details?.quantity) || 0), 0);
       
-      const totalNapMinutes = naps.reduce((sum, n) => {
+      // Calculate nap details with timing
+      const napDetails = naps.map((n, idx) => {
         const duration = calculateNapDuration(n.details.startTime!, n.details.endTime!);
-        return sum + duration;
-      }, 0);
+        const startMinutes = parseTimeToMinutes(n.details.startTime!);
+        
+        let timeOfDay = 'evening';
+        if (startMinutes < 12 * 60) {
+          timeOfDay = 'morning';
+        } else if (startMinutes < 17 * 60) {
+          timeOfDay = 'afternoon';
+        }
+        
+        return {
+          index: idx + 1,
+          duration,
+          timeOfDay,
+          startTime: n.details.startTime
+        };
+      });
       
-      const avgNapLength = naps.length > 0 ? Math.round(totalNapMinutes / naps.length) : 0;
+      const totalNapMinutes = napDetails.reduce((sum, n) => sum + n.duration, 0);
+      const avgNapLength = napDetails.length > 0 ? Math.round(totalNapMinutes / napDetails.length) : 0;
+      
+      // Calculate wake windows
+      const wakeWindows = [];
+      for (let i = 0; i < naps.length - 1; i++) {
+        const napEnd = parseTimeToMinutes(naps[i].details.endTime!);
+        const nextNapStart = parseTimeToMinutes(naps[i + 1].details.startTime!);
+        let wakeWindow = nextNapStart - napEnd;
+        if (wakeWindow < 0) wakeWindow += 24 * 60; // Handle midnight crossing
+        wakeWindows.push(Math.round(wakeWindow));
+      }
+      
+      const avgWakeWindow = wakeWindows.length > 0 ? Math.round(wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length) : 0;
       
       return {
         date, // ISO day key
@@ -102,8 +149,11 @@ serve(async (req) => {
         totalFeedVolume,
         feedUnit: feeds[0]?.details?.unit || 'ml',
         napCount: naps.length,
+        napDetails,
         totalNapMinutes: Math.round(totalNapMinutes),
         avgNapLength,
+        wakeWindows,
+        avgWakeWindow,
         diaperCount: diapers.length
       };
     }).sort((a, b) => a.date.localeCompare(b.date));
@@ -122,7 +172,25 @@ ${dailySummaries.map(day => {
     lines.push(`- Feeds: ${day.feedCount} feeds (${day.totalFeedVolume}${day.feedUnit} total)`);
   }
   if (day.napCount > 0) {
-    lines.push(`- Naps: ${day.napCount} naps (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)`);
+    const morningNaps = day.napDetails.filter((n: any) => n.timeOfDay === 'morning');
+    const afternoonNaps = day.napDetails.filter((n: any) => n.timeOfDay === 'afternoon');
+    const eveningNaps = day.napDetails.filter((n: any) => n.timeOfDay === 'evening');
+    
+    lines.push(`- Naps: ${day.napCount} total (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)`);
+    
+    if (morningNaps.length > 0) {
+      lines.push(`  • Morning naps: ${morningNaps.length} (${morningNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+    }
+    if (afternoonNaps.length > 0) {
+      lines.push(`  • Afternoon naps: ${afternoonNaps.length} (${afternoonNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+    }
+    if (eveningNaps.length > 0) {
+      lines.push(`  • Evening naps: ${eveningNaps.length} (${eveningNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+    }
+    
+    if (day.wakeWindows.length > 0) {
+      lines.push(`  • Wake windows: ${day.wakeWindows.join('min, ')}min (avg ${day.avgWakeWindow}min)`);
+    }
   }
   if (day.diaperCount > 0) {
     lines.push(`- Diapers: ${day.diaperCount} changes`);
@@ -131,12 +199,12 @@ ${dailySummaries.map(day => {
   return lines.join('\n');
 }).join('\n\n')}
 
-Focus on TRENDS and INSIGHTS:
-- Are feeding amounts increasing/decreasing?
-- Are nap durations getting longer/shorter?
-- Are wake windows lengthening?
-- Any concerning patterns or positive developments?
-- How do recent days compare?
+ANALYSIS FOCUS:
+- Compare morning vs afternoon/evening nap lengths - are some naps consistently longer?
+- How are wake windows changing over time? Are they lengthening as baby grows?
+- Do wake windows differ throughout the day (e.g., shorter after first nap, longer later)?
+- Are feeding patterns consolidating? Total intake staying consistent?
+- What developmental patterns do you notice for a ${babyAge}-month-old?
 `;
 
     console.log("Metrics context generated:", metricsContext);
@@ -156,17 +224,17 @@ Focus on TRENDS and INSIGHTS:
 
 ${metricsContext}
 
-CRITICAL INSTRUCTIONS:
-- DO NOT list individual activities, times, or feeds - parents can see those in the UI
-- DO NOT mention activity types with zero count (e.g., if no diapers were logged, don't discuss diapers)
-- Focus ONLY on trends, patterns, changes, and insights across days where activities were logged
-- Identify what's changing: "Feeds are consolidating", "Nap lengths are increasing", "Wake windows are stretching"
-- Provide interpretation: What does this mean for a ${babyAge}-month-old? Is this expected development?
-- Offer actionable guidance based on trends, not individual data points
-- Be concise, practical, and supportive - get to the insights quickly
-- Keep responses to 3-4 sentences maximum
+RESPONSE GUIDELINES:
+- DO NOT list individual activities or times - focus on patterns and insights
+- DO NOT mention activity types with zero count
+- DISCUSS morning vs afternoon nap patterns - which are longer? Is this typical?
+- ANALYZE wake windows - do they vary throughout the day? Are they age-appropriate?
+- IDENTIFY trends over multiple days - what's improving or changing?
+- PROVIDE developmental context for ${babyAge} months
+- Be thorough but conversational - parents want detailed insights
+- Aim for 5-7 sentences covering different aspects (nap patterns, wake windows, feeding trends)
 
-${isInitial ? "Provide a brief trend analysis. What patterns do you notice over the past few days? What's changing? What guidance would help?" : "Answer their question with trend-focused insights."}` 
+${isInitial ? "Provide a detailed trend analysis covering: nap timing patterns (morning vs afternoon), wake window variations throughout the day, feeding consistency, and what these patterns mean developmentally." : "Answer their question with detailed, trend-focused insights."}` 
           },
           ...messages,
         ],
