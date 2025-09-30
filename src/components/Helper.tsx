@@ -16,6 +16,15 @@ interface HelperProps {
 
 export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   const { household } = useHousehold();
+  
+  const calculateBabyAge = () => {
+    if (!household?.baby_birthday) return 0;
+    const birthDate = new Date(household.baby_birthday);
+    const today = new Date();
+    const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                   (today.getMonth() - birthDate.getMonth());
+    return Math.max(0, months);
+  };
 
   return (
     <div className="space-y-6 p-4">
@@ -24,7 +33,11 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
         babyName={household?.baby_name} 
       />
       
-      <ParentingChat />
+      <ParentingChat 
+        activities={activities}
+        babyName={household?.baby_name}
+        babyAge={calculateBabyAge()}
+      />
     </div>
   );
 };

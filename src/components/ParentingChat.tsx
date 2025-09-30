@@ -11,7 +11,20 @@ interface Message {
   content: string;
 }
 
-export const ParentingChat = () => {
+interface Activity {
+  id: string;
+  type: string;
+  logged_at: string;
+  details: any;
+}
+
+interface ParentingChatProps {
+  activities: Activity[];
+  babyName?: string;
+  babyAge?: number;
+}
+
+export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +47,12 @@ export const ParentingChat = () => {
           "Content-Type": "application/json",
           Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcGF2enZydGR6eHdjd2FzYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODk0ODMsImV4cCI6MjA3NDI2NTQ4M30.KWdhL3IiQ0YWW2Q6MBHkXOwEz41ZU7EVS_eKG0Hn600",
         },
-        body: JSON.stringify({ messages: [...messages, { role: "user", content: userMessage }] }),
+        body: JSON.stringify({ 
+          messages: [...messages, { role: "user", content: userMessage }],
+          activities,
+          babyName,
+          babyAge
+        }),
       });
 
       if (!resp.ok) {
@@ -170,15 +188,12 @@ export const ParentingChat = () => {
   };
 
   return (
-    <Card className="flex flex-col h-[600px] bg-card border-border">
+    <Card className="flex flex-col h-[calc(100vh-12rem)] bg-card border-border">
       <div className="p-4 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" />
           <h3 className="font-semibold text-foreground">Parenting Assistant</h3>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          Ask me anything about infant care, sleep, feeding, and development
-        </p>
       </div>
 
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
@@ -186,8 +201,7 @@ export const ParentingChat = () => {
           {messages.length === 0 && (
             <div className="text-center text-muted-foreground py-8">
               <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">Start a conversation by typing a question below</p>
-              <p className="text-xs mt-2">Example: "How can I help my baby sleep longer?"</p>
+              <p className="text-sm">Ask me anything about {babyName || "your baby"}'s care</p>
             </div>
           )}
           {messages.map((msg, idx) => (
@@ -233,7 +247,7 @@ export const ParentingChat = () => {
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border bg-muted/30">
+      <div className="p-4 border-t border-border bg-muted/30 sticky bottom-0">
         <div className="flex gap-2">
           <Input
             value={input}
