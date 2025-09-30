@@ -1,4 +1,3 @@
-import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ParentingChat } from "@/components/ParentingChat";
 import { useHousehold } from "@/hooks/useHousehold";
 
@@ -27,12 +26,7 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   };
 
   return (
-    <div className="space-y-6 p-4">
-      <NightDoulaReview 
-        activities={activities} 
-        babyName={household?.baby_name} 
-      />
-      
+    <div className="h-full">
       <ParentingChat 
         activities={activities}
         babyName={household?.baby_name}

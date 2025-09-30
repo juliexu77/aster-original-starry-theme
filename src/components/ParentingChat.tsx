@@ -28,6 +28,7 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -39,8 +40,19 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
     }
   }, [messages]);
 
-  const streamChat = async (userMessage: string) => {
+  // Auto-load daily summary on mount
+  useEffect(() => {
+    if (!hasInitialized && activities.length > 0) {
+      setHasInitialized(true);
+      setIsLoading(true);
+      streamChat("Give me a warm, personalized summary of how today has been going for my baby.", true);
+    }
+  }, [hasInitialized, activities]);
+
+  const streamChat = async (userMessage: string, isInitial = false) => {
     try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -51,7 +63,9 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
           messages: [...messages, { role: "user", content: userMessage }],
           activities,
           babyName,
-          babyAge
+          babyAge,
+          timezone,
+          isInitial
         }),
       });
 
@@ -188,20 +202,25 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)] bg-card border-border">
-      <div className="p-4 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold text-foreground">Parenting Assistant</h3>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-4 border-b border-border bg-card/50">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+            <Bot className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">Your Pediatric Assistant</h3>
+            <p className="text-xs text-muted-foreground">Personalized guidance for {babyName || "your baby"}</p>
+          </div>
         </div>
       </div>
 
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-4">
-          {messages.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">
-              <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p className="text-sm">Ask me anything about {babyName || "your baby"}'s care</p>
+        <div className="space-y-4 max-w-3xl mx-auto">
+          {messages.length === 0 && !isLoading && (
+            <div className="text-center text-muted-foreground py-12">
+              <Bot className="h-16 w-16 mx-auto mb-4 opacity-40" />
+              <p className="text-sm">Loading today's summary...</p>
             </div>
           )}
           {messages.map((msg, idx) => (
@@ -247,13 +266,13 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-border bg-muted/30 sticky bottom-0">
-        <div className="flex gap-2">
+      <div className="p-4 border-t border-border bg-card/50">
+        <div className="flex gap-2 max-w-3xl mx-auto">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask a question..."
+            placeholder="Ask me anything about feeding, sleep, development..."
             disabled={isLoading}
             className="flex-1"
           />
@@ -262,6 +281,6 @@ export const ParentingChat = ({ activities, babyName, babyAge }: ParentingChatPr
           </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
