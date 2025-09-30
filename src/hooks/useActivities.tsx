@@ -243,8 +243,8 @@ export function useActivities() {
 
       if (error) throw error;
 
-      // Optimistically remove from local state for immediate UI update
-      setActivities(prev => prev.filter(a => a.id !== activityId));
+      // Immediately refetch to ensure UI is in sync with database
+      await fetchActivities();
 
       toast({
         title: "Activity deleted",

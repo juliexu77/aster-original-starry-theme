@@ -281,7 +281,9 @@ const Index = () => {
                     return (
                       <>
                         {visibleDates.map((dateKey, index) => {
-                          const date = new Date(dateKey);
+                          // Parse dateKey (YYYY-MM-DD) as local date, not UTC
+                          const [year, month, day] = dateKey.split('-').map(Number);
+                          const date = new Date(year, month - 1, day);
                           
                           let displayDate;
                           if (dateKey === todayKey) {
@@ -315,7 +317,6 @@ const Index = () => {
                                       onDelete={async (activityId) => {
                                         try {
                                           await deleteActivity(activityId);
-                                          refetchActivities();
                                         } catch (error) {
                                           console.error('Error deleting activity:', error);
                                         }
@@ -469,8 +470,6 @@ const Index = () => {
         onDeleteActivity={async (activityId) => {
           try {
             await deleteActivity(activityId);
-            refetchActivities();
-            setEditingActivity(null);
           } catch (error) {
             console.error('Error deleting activity:', error);
           }
