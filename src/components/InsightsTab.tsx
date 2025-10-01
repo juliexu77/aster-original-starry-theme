@@ -205,15 +205,11 @@ return (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Avg Wake Windows:</span>
-                <span className="font-medium">
-                  {sleepMetrics.avgWakeWindowHours ? `${sleepMetrics.avgWakeWindowHours}h` : wakeWindowData.wakeWindows.join(", ")}
-                </span>
+                <span className="font-medium">{wakeWindowData.wakeWindows.join(", ")}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Naps per Day:</span>
-                <span className="font-medium">
-                  {sleepMetrics.napsPerDay > 0 ? `${sleepMetrics.napsPerDay}` : `${wakeWindowData.napCount}`} {t('perDay')}
-                </span>
+                <span className="font-medium">{wakeWindowData.napCount} {t('perDay')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('totalSleepNeed')}:</span>
@@ -221,7 +217,7 @@ return (
               </div>
               
               {/* Nested actual patterns from baby's data */}
-              {sleepInsights.length > 0 && (
+              {(sleepInsights.length > 0 || sleepMetrics.avgWakeWindowHours || sleepMetrics.napsPerDay > 0) && (
                 <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
@@ -229,6 +225,22 @@ return (
                       {household?.baby_name}'s Patterns
                     </span>
                   </div>
+                  {sleepMetrics.avgWakeWindowHours && (
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <div className="flex items-start gap-2 flex-1">
+                        <Clock className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">Avg wake windows: ~{sleepMetrics.avgWakeWindowHours}h</span>
+                      </div>
+                    </div>
+                  )}
+                  {sleepMetrics.napsPerDay > 0 && (
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <div className="flex items-start gap-2 flex-1">
+                        <Moon className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">{sleepMetrics.napsPerDay} naps per day</span>
+                      </div>
+                    </div>
+                  )}
                   {sleepInsights.map((insight, idx) => {
                     const IconComponent = insight.icon;
                     const wakeWindowRange = wakeWindowData.wakeWindows.join('-');
@@ -269,15 +281,11 @@ return (
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Feed Frequency:</span>
-                <span className="font-medium">
-                  {feedingMetrics.avgFrequency ? `Every ${feedingMetrics.avgFrequency}h` : feedingGuidance.frequency}
-                </span>
+                <span className="font-medium">{feedingGuidance.frequency}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount per Feed:</span>
-                <span className="font-medium">
-                  {feedingMetrics.avgAmount ? `${feedingMetrics.avgAmount} oz` : feedingGuidance.amount}
-                </span>
+                <span className="font-medium">{feedingGuidance.amount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('dailyTotal')}:</span>
@@ -295,7 +303,7 @@ return (
               )}
               
               {/* Nested actual patterns from baby's data */}
-              {feedingInsights.length > 0 && (
+              {(feedingInsights.length > 0 || feedingMetrics.avgFrequency || feedingMetrics.avgAmount) && (
                 <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Brain className="h-3 w-3 text-primary/70" />
@@ -303,6 +311,22 @@ return (
                       {household?.baby_name}'s Patterns
                     </span>
                   </div>
+                  {feedingMetrics.avgFrequency && (
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <div className="flex items-start gap-2 flex-1">
+                        <Clock className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">Feed frequency: Every {feedingMetrics.avgFrequency}h</span>
+                      </div>
+                    </div>
+                  )}
+                  {feedingMetrics.avgAmount && (
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <div className="flex items-start gap-2 flex-1">
+                        <Milk className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                        <span className="text-primary/90">Amount per feed: {feedingMetrics.avgAmount} oz</span>
+                      </div>
+                    </div>
+                  )}
                   {feedingInsights.map((insight, idx) => {
                     const IconComponent = insight.icon;
                     const match = getPatternMatch(insight, feedingGuidance.frequency, 'feed');
