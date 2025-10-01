@@ -35,6 +35,100 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const sleepInsights = insights.filter(i => i.type === 'sleep');
   const feedingInsights = insights.filter(i => i.type === 'feeding');
   
+  // Calculate actual sleep metrics from activities (daytime naps only)
+  const calculateSleepMetrics = () => {
+    const naps = activities.filter(a => a.type === 'nap' && a.details.startTime && a.details.endTime);
+    
+    // Helper to parse time to minutes
+    const parseTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let totalMinutes = (hours % 12) * 60 + minutes;
+      if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+      if (period === 'AM' && hours === 12) totalMinutes = minutes;
+      return totalMinutes;
+    };
+    
+    // Filter for daytime naps only (7 AM - 7 PM)
+    const daytimeNaps = naps.filter(nap => {
+      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
+      return startMinutes >= 7 * 60 && startMinutes < 19 * 60; // 7 AM to 7 PM
+    });
+    
+    // Count naps per day
+    const napsPerDay = daytimeNaps.length > 0 ? Math.round(daytimeNaps.length / 7) : 0;
+    
+    // Calculate wake windows between naps
+    const wakeWindows: number[] = [];
+    const sortedNaps = [...daytimeNaps].sort((a, b) => 
+      parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!)
+    );
+    
+    for (let i = 1; i < sortedNaps.length; i++) {
+      const prevNapEnd = parseTimeToMinutes(sortedNaps[i - 1].details.endTime!);
+      const currentNapStart = parseTimeToMinutes(sortedNaps[i].details.startTime!);
+      const wakeWindow = currentNapStart - prevNapEnd;
+      if (wakeWindow > 0 && wakeWindow < 360) { // Valid wake window (< 6 hours)
+        wakeWindows.push(wakeWindow);
+      }
+    }
+    
+    const avgWakeWindow = wakeWindows.length > 0 
+      ? wakeWindows.reduce((a, b) => a + b, 0) / wakeWindows.length 
+      : 0;
+    
+    return {
+      napsPerDay,
+      avgWakeWindowHours: avgWakeWindow > 0 ? (avgWakeWindow / 60).toFixed(1) : null
+    };
+  };
+  
+  // Calculate feeding metrics from activities
+  const calculateFeedingMetrics = () => {
+    const feeds = activities.filter(a => a.type === 'feed');
+    
+    // Calculate frequency
+    const parseTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let totalMinutes = (hours % 12) * 60 + minutes;
+      if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+      if (period === 'AM' && hours === 12) totalMinutes = minutes;
+      return totalMinutes;
+    };
+    
+    const intervals: number[] = [];
+    for (let i = 1; i < feeds.length; i++) {
+      const current = parseTimeToMinutes(feeds[i-1].time);
+      const previous = parseTimeToMinutes(feeds[i].time);
+      const interval = Math.abs(current - previous);
+      if (interval > 30 && interval < 360) {
+        intervals.push(interval);
+      }
+    }
+    
+    const avgFrequency = intervals.length > 0 
+      ? (intervals.reduce((a, b) => a + b, 0) / intervals.length / 60).toFixed(1)
+      : null;
+    
+    // Calculate average amount per feed
+    const bottleFeeds = feeds.filter(f => f.details.feedType === 'bottle' && f.details.quantity);
+    const amounts = bottleFeeds.map(f => {
+      const qty = parseFloat(f.details.quantity!);
+      // Convert ml to oz if needed (1 oz = 29.57 ml)
+      return f.details.unit === 'ml' ? qty / 29.57 : qty;
+    });
+    
+    const avgAmount = amounts.length > 0 
+      ? (amounts.reduce((a, b) => a + b, 0) / amounts.length).toFixed(1)
+      : null;
+    
+    return { avgFrequency, avgAmount };
+  };
+  
+  const sleepMetrics = calculateSleepMetrics();
+  const feedingMetrics = calculateFeedingMetrics();
+  
   // Helper to match patterns to guidelines and get trend
   const getPatternMatch = (insight: any, expectedRange: string, type: 'wake' | 'feed') => {
     // Extract hours from insight text (e.g., "~6h 43m" or "2.8h")
@@ -110,12 +204,16 @@ return (
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('wakeWindows')}:</span>
-                <span className="font-medium">{wakeWindowData.wakeWindows.join(", ")}</span>
+                <span className="text-muted-foreground">Avg Wake Windows:</span>
+                <span className="font-medium">
+                  {sleepMetrics.avgWakeWindowHours ? `${sleepMetrics.avgWakeWindowHours}h` : wakeWindowData.wakeWindows.join(", ")}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('expectedNaps')}:</span>
-                <span className="font-medium">{wakeWindowData.napCount} {t('perDay')}</span>
+                <span className="text-muted-foreground">Naps per Day:</span>
+                <span className="font-medium">
+                  {sleepMetrics.napsPerDay > 0 ? `${sleepMetrics.napsPerDay}` : `${wakeWindowData.napCount}`} {t('perDay')}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('totalSleepNeed')}:</span>
@@ -170,12 +268,16 @@ return (
             </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('frequency')}:</span>
-                <span className="font-medium">{feedingGuidance.frequency}</span>
+                <span className="text-muted-foreground">Feed Frequency:</span>
+                <span className="font-medium">
+                  {feedingMetrics.avgFrequency ? `Every ${feedingMetrics.avgFrequency}h` : feedingGuidance.frequency}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('amountPerFeed')}:</span>
-                <span className="font-medium">{feedingGuidance.amount}</span>
+                <span className="text-muted-foreground">Amount per Feed:</span>
+                <span className="font-medium">
+                  {feedingMetrics.avgAmount ? `${feedingMetrics.avgAmount} oz` : feedingGuidance.amount}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('dailyTotal')}:</span>
