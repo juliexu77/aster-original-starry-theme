@@ -161,6 +161,14 @@ serve(async (req) => {
 
     console.log("Daily summaries:", JSON.stringify(dailySummaries));
 
+    // Helper to format duration in hours and minutes
+    const formatDuration = (minutes: number): string => {
+      if (minutes < 60) return `${minutes}min`;
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+    };
+    
     // Build metrics context focusing only on non-zero activities
     const metricsContext = `
 RECENT ACTIVITY SUMMARY for ${babyName || "baby"} (${babyAge || "unknown"} months old):
@@ -176,20 +184,20 @@ ${dailySummaries.map(day => {
     const afternoonNaps = day.napDetails.filter((n: any) => n.timeOfDay === 'afternoon');
     const eveningNaps = day.napDetails.filter((n: any) => n.timeOfDay === 'evening');
     
-    lines.push(`- Naps: ${day.napCount} total (${day.totalNapMinutes} min total, avg ${day.avgNapLength} min each)`);
+    lines.push(`- Naps: ${day.napCount} total (${formatDuration(day.totalNapMinutes)} total, avg ${formatDuration(day.avgNapLength)} each)`);
     
     if (morningNaps.length > 0) {
-      lines.push(`  • Morning naps: ${morningNaps.length} (${morningNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+      lines.push(`  • Morning naps: ${morningNaps.length} (${morningNaps.map((n: any) => formatDuration(n.duration)).join(', ')})`);
     }
     if (afternoonNaps.length > 0) {
-      lines.push(`  • Afternoon naps: ${afternoonNaps.length} (${afternoonNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+      lines.push(`  • Afternoon naps: ${afternoonNaps.length} (${afternoonNaps.map((n: any) => formatDuration(n.duration)).join(', ')})`);
     }
     if (eveningNaps.length > 0) {
-      lines.push(`  • Evening naps: ${eveningNaps.length} (${eveningNaps.map((n: any) => `${n.duration}min`).join(', ')})`);
+      lines.push(`  • Evening naps: ${eveningNaps.length} (${eveningNaps.map((n: any) => formatDuration(n.duration)).join(', ')})`);
     }
     
     if (day.wakeWindows.length > 0) {
-      lines.push(`  • Wake windows: ${day.wakeWindows.join('min, ')}min (avg ${day.avgWakeWindow}min)`);
+      lines.push(`  • Wake windows: ${day.wakeWindows.map(w => formatDuration(w)).join(', ')} (avg ${formatDuration(day.avgWakeWindow)})`);
     }
   }
   if (day.diaperCount > 0) {
@@ -200,11 +208,8 @@ ${dailySummaries.map(day => {
 }).join('\n\n')}
 
 ANALYSIS FOCUS:
-- Compare morning vs afternoon/evening nap lengths - are some naps consistently longer?
-- How are wake windows changing over time? Are they lengthening as baby grows?
-- Do wake windows differ throughout the day (e.g., shorter after first nap, longer later)?
-- Are feeding patterns consolidating? Total intake staying consistent?
-- What developmental patterns do you notice for a ${babyAge}-month-old?
+- Compare morning vs afternoon nap lengths and wake window variations
+- Identify trends over multiple days and developmental patterns for ${babyAge} months
 `;
 
     console.log("Metrics context generated:", metricsContext);
@@ -225,16 +230,12 @@ ANALYSIS FOCUS:
 ${metricsContext}
 
 RESPONSE GUIDELINES:
-- DO NOT list individual activities or times - focus on patterns and insights
-- DO NOT mention activity types with zero count
-- DISCUSS morning vs afternoon nap patterns - which are longer? Is this typical?
-- ANALYZE wake windows - do they vary throughout the day? Are they age-appropriate?
-- IDENTIFY trends over multiple days - what's improving or changing?
-- PROVIDE developmental context for ${babyAge} months
-- Be thorough but conversational - parents want detailed insights
-- Aim for 5-7 sentences covering different aspects (nap patterns, wake windows, feeding trends)
+- Focus on patterns and insights, not individual activities
+- Discuss nap timing (morning vs afternoon) and wake window variations
+- Provide developmental context for ${babyAge} months
+- Keep responses concise - 3-4 key insights
 
-${isInitial ? "Provide a detailed trend analysis covering: nap timing patterns (morning vs afternoon), wake window variations throughout the day, feeding consistency, and what these patterns mean developmentally." : "Answer their question with detailed, trend-focused insights."}` 
+${isInitial ? "Analyze nap patterns, wake windows, and feeding trends with developmental context." : "Answer with pattern-focused insights."}`
           },
           ...messages,
         ],
