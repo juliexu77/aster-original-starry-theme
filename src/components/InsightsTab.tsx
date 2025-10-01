@@ -1,6 +1,6 @@
 import { Activity } from "./ActivityCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Baby, Clock, Milk, Moon, Lightbulb, Brain } from "lucide-react";
+import { Baby, Clock, Milk, Moon, Lightbulb, Brain, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -34,6 +34,40 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   // Categorize insights by type
   const sleepInsights = insights.filter(i => i.type === 'sleep');
   const feedingInsights = insights.filter(i => i.type === 'feeding');
+  
+  // Helper to match patterns to guidelines and get trend
+  const getPatternMatch = (insight: any, expectedRange: string, type: 'wake' | 'feed') => {
+    // Extract hours from insight text (e.g., "~6h 43m" or "2.8h")
+    const insightMatch = insight.text.match(/(\d+\.?\d*)h/);
+    if (!insightMatch) return null;
+    const actualValue = parseFloat(insightMatch[1]);
+    
+    // Parse expected range (e.g., "2.5-3.5hrs" or "Every 4-5 hours")
+    const rangeMatch = expectedRange.match(/(\d+\.?\d*)\s*-?\s*(\d+\.?\d*)/);
+    if (!rangeMatch) return null;
+    
+    const minExpected = parseFloat(rangeMatch[1]);
+    const maxExpected = parseFloat(rangeMatch[2] || rangeMatch[1]);
+    
+    // Determine trend
+    let trend: 'up' | 'down' | 'normal' = 'normal';
+    let comparison = '';
+    
+    if (actualValue > maxExpected) {
+      trend = 'up';
+      const diff = (actualValue - maxExpected).toFixed(1);
+      comparison = `+${diff}h above expected`;
+    } else if (actualValue < minExpected) {
+      trend = 'down';
+      const diff = (minExpected - actualValue).toFixed(1);
+      comparison = `-${diff}h below expected`;
+    } else {
+      trend = 'normal';
+      comparison = 'within expected range';
+    }
+    
+    return { trend, comparison, actualValue, minExpected, maxExpected };
+  };
 
   const getAgeStage = (weeks: number) => {
     if (weeks < 4) return t('newborn');
@@ -99,10 +133,25 @@ return (
                   </div>
                   {sleepInsights.map((insight, idx) => {
                     const IconComponent = insight.icon;
+                    const wakeWindowRange = wakeWindowData.wakeWindows.join('-');
+                    const match = getPatternMatch(insight, wakeWindowRange, 'wake');
+                    
+                    const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                     match?.trend === 'down' ? TrendingDown : 
+                                     Minus;
+                    const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                      match?.trend === 'down' ? 'text-blue-500' : 
+                                      'text-muted-foreground/50';
+                    
                     return (
-                      <div key={idx} className="flex items-start gap-2 text-xs">
-                        <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">{insight.text}</span>
+                      <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">{insight.text}</span>
+                        </div>
+                        {match && match.trend !== 'normal' && (
+                          <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                        )}
                       </div>
                     );
                   })}
@@ -154,10 +203,24 @@ return (
                   </div>
                   {feedingInsights.map((insight, idx) => {
                     const IconComponent = insight.icon;
+                    const match = getPatternMatch(insight, feedingGuidance.frequency, 'feed');
+                    
+                    const TrendIcon = match?.trend === 'up' ? TrendingUp : 
+                                     match?.trend === 'down' ? TrendingDown : 
+                                     Minus;
+                    const trendColor = match?.trend === 'up' ? 'text-orange-500' : 
+                                      match?.trend === 'down' ? 'text-blue-500' : 
+                                      'text-muted-foreground/50';
+                    
                     return (
-                      <div key={idx} className="flex items-start gap-2 text-xs">
-                        <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
-                        <span className="text-primary/90">{insight.text}</span>
+                      <div key={idx} className="flex items-start justify-between gap-2 text-xs">
+                        <div className="flex items-start gap-2 flex-1">
+                          <IconComponent className="h-3 w-3 text-primary/60 mt-0.5 flex-shrink-0" />
+                          <span className="text-primary/90">{insight.text}</span>
+                        </div>
+                        {match && match.trend !== 'normal' && (
+                          <TrendIcon className={`h-3 w-3 mt-0.5 flex-shrink-0 ${trendColor}`} />
+                        )}
                       </div>
                     );
                   })}
