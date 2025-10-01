@@ -9,7 +9,7 @@ interface TrendChartProps {
 }
 
 export const TrendChart = ({ activities }: TrendChartProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
 
   // Determine preferred unit from last feed entry
@@ -76,7 +76,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const unit = preferredUnit;
       
       data.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
+        date: date.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { weekday: "short" }),
         value,
         feedCount,
         unit,
@@ -128,7 +128,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       const napCount = dayNaps.length;
       
       data.push({
-        date: date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3),
+        date: date.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { weekday: "short" }),
         value,
         napCount,
         detail: value > 0 ? `${value}h, ${napCount} ${t('naps')}` : t('noNaps')
