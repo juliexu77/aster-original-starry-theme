@@ -122,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       'lastFeedQuantity',
       'language', // Keep this one as it's a user preference
       'baby_tracker_offline_activities',
-      'baby_tracker_sync_status'
+      'baby_tracker_sync_status',
+      'active_household_id' // Clear household ID on logout
     ];
     
     keysToRemove.forEach(key => {
