@@ -93,8 +93,14 @@ export const useHousehold = () => {
 
         if (preferredError) {
           console.error('Error verifying preferred household access:', preferredError);
+          // Clear invalid household ID
+          localStorage.removeItem('active_household_id');
         } else if (preferredCollab && preferredCollab.length > 0) {
           householdId = preferredCollab[0].household_id;
+        } else {
+          // User no longer has access to this household, clear it
+          console.log('User no longer has access to preferred household, clearing');
+          localStorage.removeItem('active_household_id');
         }
       }
 
