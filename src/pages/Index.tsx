@@ -15,8 +15,9 @@ import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings } from "lucide-react";
+import { Calendar, Settings, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -35,6 +36,7 @@ const Index = () => {
   } = useActivities();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
 
@@ -164,15 +166,27 @@ const Index = () => {
         loggedAt = new Date().toISOString();
       }
 
-      const { error } = await supabase.from('activities').insert({
+      const { data, error } = await supabase.from('activities').insert({
         household_id: householdId,
         type,
         logged_at: loggedAt,
         details,
         created_by: user.id
-      });
+      }).select().single();
 
       if (error) throw error;
+
+      // Track for undo
+      if (data) {
+        trackCreate({
+          id: data.id,
+          type: data.type,
+          logged_at: data.logged_at,
+          details: data.details,
+          household_id: data.household_id,
+          created_by: data.created_by
+        });
+      }
 
       // Refetch activities to update the list
       refetchActivities();
@@ -312,7 +326,26 @@ const Index = () => {
                                       onEdit={(activity) => setEditingActivity(activity)}
                                       onDelete={async (activityId) => {
                                         try {
+                                          // Get activity data before deleting for undo tracking
+                                          const { data: activityToDelete } = await supabase
+                                            .from('activities')
+                                            .select('*')
+                                            .eq('id', activityId)
+                                            .single();
+
                                           await deleteActivity(activityId);
+
+                                          // Track for undo
+                                          if (activityToDelete) {
+                                            trackDelete({
+                                              id: activityToDelete.id,
+                                              type: activityToDelete.type,
+                                              logged_at: activityToDelete.logged_at,
+                                              details: activityToDelete.details,
+                                              household_id: activityToDelete.household_id,
+                                              created_by: activityToDelete.created_by
+                                            });
+                                          }
                                         } catch (error) {
                                           console.error('Error deleting activity:', error);
                                         }
@@ -373,23 +406,50 @@ const Index = () => {
           <h1 className="text-xl font-semibold">
             {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
           </h1>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => {
-              if (activeTab === "settings") {
-                // If we're already in settings, go back to previous tab
-                setActiveTab(previousTab);
-              } else {
-                // Going to settings, save current tab as previous
-                setPreviousTab(activeTab);
-                setActiveTab("settings");
-              }
-            }}
-            className="p-2"
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {canUndo && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={async () => {
+                  const success = await undo();
+                  if (success) {
+                    toast({
+                      title: "Undone",
+                      description: `${undoCount - 1} action${undoCount - 1 !== 1 ? 's' : ''} remaining`,
+                    });
+                    refetchActivities();
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: "Could not undo action",
+                      variant: "destructive"
+                    });
+                  }
+                }}
+                className="p-2"
+              >
+                <Undo2 className="h-5 w-5" />
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                if (activeTab === "settings") {
+                  // If we're already in settings, go back to previous tab
+                  setActiveTab(previousTab);
+                } else {
+                  // Going to settings, save current tab as previous
+                  setPreviousTab(activeTab);
+                  setActiveTab("settings");
+                }
+              }}
+              className="p-2"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -422,6 +482,13 @@ const Index = () => {
         }}
         onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
           try {
+            // Get current state for undo tracking
+            const { data: currentActivity } = await supabase
+              .from('activities')
+              .select('*')
+              .eq('id', updatedActivity.id)
+              .single();
+
             // Convert time string to timestamp for database update
             const [time, period] = activityTime.split(' ');
             const [hours, minutes] = time.split(':').map(Number);
@@ -452,6 +519,29 @@ const Index = () => {
               .eq('id', updatedActivity.id);
             
             if (error) throw error;
+
+            // Track for undo
+            if (currentActivity) {
+              trackUpdate(
+                {
+                  id: updatedActivity.id,
+                  type: updatedActivity.type,
+                  logged_at: loggedAt,
+                  details: updatedActivity.details,
+                  household_id: currentActivity.household_id,
+                  created_by: currentActivity.created_by
+                },
+                {
+                  id: currentActivity.id,
+                  type: currentActivity.type,
+                  logged_at: currentActivity.logged_at,
+                  details: currentActivity.details,
+                  household_id: currentActivity.household_id,
+                  created_by: currentActivity.created_by
+                }
+              );
+            }
+
             refetchActivities();
             setEditingActivity(null);
           } catch (error) {
@@ -465,7 +555,26 @@ const Index = () => {
         }}
         onDeleteActivity={async (activityId) => {
           try {
+            // Get activity data before deleting for undo tracking
+            const { data: activityToDelete } = await supabase
+              .from('activities')
+              .select('*')
+              .eq('id', activityId)
+              .single();
+
             await deleteActivity(activityId);
+
+            // Track for undo
+            if (activityToDelete) {
+              trackDelete({
+                id: activityToDelete.id,
+                type: activityToDelete.type,
+                logged_at: activityToDelete.logged_at,
+                details: activityToDelete.details,
+                household_id: activityToDelete.household_id,
+                created_by: activityToDelete.created_by
+              });
+            }
           } catch (error) {
             console.error('Error deleting activity:', error);
           }
