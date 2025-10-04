@@ -24,6 +24,7 @@ export interface DatabaseActivity {
     duration?: string;
     // General
     note?: string;
+    displayTime?: string; // Store the original selected time for consistent display
   };
   created_by: string;
   created_at: string;

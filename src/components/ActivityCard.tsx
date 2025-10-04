@@ -33,6 +33,7 @@ export interface Activity {
     photoUrl?: string;
     // General
     note?: string;
+    displayTime?: string; // Store the original selected time for consistent display
   };
 }
 

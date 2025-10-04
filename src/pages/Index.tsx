@@ -43,19 +43,17 @@ const Index = () => {
   // Convert database activities to UI activities
   const activities: Activity[] = user && household && dbActivities 
     ? dbActivities.map(dbActivity => {
-        // Debug logging
-        console.log('Activity:', {
-          type: dbActivity.type,
-          logged_at: dbActivity.logged_at,
-          logged_at_parsed: new Date(dbActivity.logged_at).toString(),
-          details: dbActivity.details
-        });
-
-        let displayTime = new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: '2-digit', 
-          hour12: true 
-        });
+        // Use displayTime from details if available (for consistent display), 
+        // otherwise fall back to converting logged_at
+        let displayTime = dbActivity.details.displayTime;
+        
+        if (!displayTime) {
+          displayTime = new Date(dbActivity.logged_at).toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit', 
+            hour12: true 
+          });
+        }
 
         // For naps, show start-end time range
         if (dbActivity.type === 'nap' && dbActivity.details.startTime && dbActivity.details.endTime) {
@@ -133,6 +131,8 @@ const Index = () => {
 
       // Combine selected date with selected time
       let loggedAt: string;
+      let displayTime = activityTime; // Store the original selected time for display
+      
       if (activityDate && activityTime) {
         // Parse the time string (e.g., "7:00 AM")
         const timeMatch = activityTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -172,13 +172,24 @@ const Index = () => {
       } else {
         // Default to now (UTC ISO)
         loggedAt = new Date().toISOString();
+        displayTime = new Date().toLocaleTimeString("en-US", { 
+          hour: "numeric", 
+          minute: "2-digit",
+          hour12: true 
+        });
       }
+
+      // Store the display time in details for consistent display
+      const detailsWithTime = {
+        ...details,
+        displayTime: displayTime
+      };
 
       const { data, error } = await supabase.from('activities').insert({
         household_id: householdId,
         type,
         logged_at: loggedAt,
-        details,
+        details: detailsWithTime,
         created_by: user.id
       }).select().single();
 
@@ -522,7 +533,10 @@ const Index = () => {
               .update({
                 type: updatedActivity.type,
                 logged_at: loggedAt,
-                details: updatedActivity.details
+                details: {
+                  ...updatedActivity.details,
+                  displayTime: activityTime // Store display time for consistent display
+                }
               })
               .eq('id', updatedActivity.id);
             
