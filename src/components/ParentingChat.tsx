@@ -24,6 +24,31 @@ interface ParentingChatProps {
   babyAgeInWeeks?: number;
 }
 
+// Simple markdown formatter for better readability
+const formatMarkdown = (text: string) => {
+  // Split into paragraphs
+  const paragraphs = text.split('\n\n').filter(p => p.trim());
+  
+  return paragraphs.map((paragraph, idx) => {
+    // Convert **bold** to <strong>
+    let formatted = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert bullet points
+    formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+    
+    // Wrap lists
+    if (formatted.includes('<li>')) {
+      formatted = '<ul class="list-disc pl-5 space-y-1">' + formatted + '</ul>';
+    }
+    
+    return (
+      <div key={idx} className={idx < paragraphs.length - 1 ? "mb-4" : ""}>
+        <div dangerouslySetInnerHTML={{ __html: formatted }} />
+      </div>
+    );
+  });
+};
+
 export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -272,7 +297,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
                     : "bg-muted text-foreground w-full"
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                {msg.role === "assistant" ? (
+                  <div className="text-sm">{formatMarkdown(msg.content)}</div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                )}
                 
                 {/* Display photos if they are in the message */}
                 {msg.role === "assistant" && msg.content.includes("📸") && activities && (
