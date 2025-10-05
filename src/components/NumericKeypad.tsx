@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Delete } from "lucide-react";
+import { Delete, ChevronDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface NumericKeypadProps {
   isOpen: boolean;
@@ -89,40 +90,52 @@ useEffect(() => {
         <div className="space-y-4">
           {/* Display */}
           <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <div className="text-3xl font-bold text-foreground">
+            <div className="flex items-center justify-center gap-2">
+              <div className="text-3xl font-bold text-foreground min-w-[80px]">
                 {value || "0"}
               </div>
               
-              {/* Unit toggle inline */}
-              <div className="flex gap-1">
-                <Button
-                  type="button"
-                  variant={unit === "oz" ? "default" : "outline"}
-                  size="sm"
-                  className={`h-8 px-3 text-sm ${unit === "oz" ? 'bg-primary text-primary-foreground' : ''}`}
-                  onClick={() => { 
-                    const next = "oz"; 
-                    onUnitChange?.(next); 
-                    try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                  }}
-                >
-                  oz
-                </Button>
-                <Button
-                  type="button"
-                  variant={unit === "ml" ? "default" : "outline"}
-                  size="sm"
-                  className={`h-8 px-3 text-sm ${unit === "ml" ? 'bg-primary text-primary-foreground' : ''}`}
-                  onClick={() => { 
-                    const next = "ml"; 
-                    onUnitChange?.(next); 
-                    try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                  }}
-                >
-                  ml
-                </Button>
-              </div>
+              {/* Unit dropdown */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-lg font-medium hover:bg-muted/50"
+                  >
+                    {unit}
+                    <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-32 p-2" align="center">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant={unit === "oz" ? "default" : "ghost"}
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => { 
+                        const next = "oz"; 
+                        onUnitChange?.(next); 
+                        try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                      }}
+                    >
+                      oz (ounces)
+                    </Button>
+                    <Button
+                      variant={unit === "ml" ? "default" : "ghost"}
+                      size="sm"
+                      className="justify-start"
+                      onClick={() => { 
+                        const next = "ml"; 
+                        onUnitChange?.(next); 
+                        try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
+                      }}
+                    >
+                      ml (milliliters)
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
