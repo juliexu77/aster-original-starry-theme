@@ -498,6 +498,7 @@ const Index = () => {
           setEditingActivity(null);
         }}
         editingActivity={editingActivity}
+        householdId={household?.id}
         onAddActivity={(activity, activityDate, activityTime) => {
           addActivity(activity.type, activity.details, activityDate, activityTime);
           setShowAddActivity(false);

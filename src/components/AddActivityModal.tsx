@@ -27,9 +27,10 @@ interface AddActivityModalProps {
   editingActivity?: Activity | null; // Add editing support
   onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => void;
   onDeleteActivity?: (activityId: string) => void; // Add delete support
+  householdId?: string; // Add household ID for photo uploads
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId }: AddActivityModalProps) => {
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
@@ -235,9 +236,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
+      
+      if (!householdId) throw new Error('Household not found');
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${householdId}/${Date.now()}.${fileExt}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('baby-photos')
