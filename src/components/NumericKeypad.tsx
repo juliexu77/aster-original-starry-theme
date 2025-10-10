@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Delete, ChevronDown } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface NumericKeypadProps {
   isOpen: boolean;
@@ -95,47 +94,20 @@ useEffect(() => {
                 {value || "0"}
               </div>
               
-              {/* Unit dropdown */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2 text-lg font-medium hover:bg-muted/50"
-                  >
-                    {unit}
-                    <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-32 p-2" align="center">
-                  <div className="flex flex-col gap-1">
-                    <Button
-                      variant={unit === "oz" ? "default" : "ghost"}
-                      size="sm"
-                      className="justify-start"
-                      onClick={() => { 
-                        const next = "oz"; 
-                        onUnitChange?.(next); 
-                        try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                      }}
-                    >
-                      oz (ounces)
-                    </Button>
-                    <Button
-                      variant={unit === "ml" ? "default" : "ghost"}
-                      size="sm"
-                      className="justify-start"
-                      onClick={() => { 
-                        const next = "ml"; 
-                        onUnitChange?.(next); 
-                        try { localStorage.setItem('lastUsedUnit', next); } catch (e) {} 
-                      }}
-                    >
-                      ml (milliliters)
-                    </Button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              {/* Unit toggle button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 text-lg font-medium hover:bg-muted/50"
+                onClick={() => {
+                  const next = unit === "oz" ? "ml" : "oz";
+                  onUnitChange?.(next);
+                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {}
+                }}
+              >
+                {unit}
+                <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
+              </Button>
             </div>
           </div>
 
