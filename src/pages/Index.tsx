@@ -27,7 +27,8 @@ const Index = () => {
   const { t } = useLanguage();
   const { 
     household, 
-    loading: householdLoading
+    loading: householdLoading,
+    refetch: refetchHousehold
   } = useHousehold();
   const { 
     activities: dbActivities, 
@@ -423,7 +424,29 @@ const Index = () => {
     );
   }
 
-
+  // If authenticated but no household found, guide the user to fix it
+  if (user && !household) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-4">
+          <h2 className="text-xl font-semibold">No household available</h2>
+          <p className="text-muted-foreground">We couldn't load your household. This can happen after switching devices or if an old link was removed.</p>
+          <div className="flex gap-3 justify-center">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                try { localStorage.removeItem('active_household_id'); } catch {}
+                refetchHousehold();
+              }}
+            >
+              Retry
+            </Button>
+            <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-background pb-16">
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
