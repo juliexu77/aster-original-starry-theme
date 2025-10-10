@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity } from "./ActivityCard";
-import { Baby, Moon, Palette, StickyNote, Clock, Droplets, Heart, Coffee } from "lucide-react";
+import { Baby, Moon, Palette, StickyNote, Clock, Droplets, Heart, Milk } from "lucide-react";
 
 interface ActivityDetailModalProps {
   activity: Activity | null;
@@ -48,7 +48,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             
             {activity.details?.feedType && (
               <div className="flex items-center gap-2">
-                <Coffee className="h-4 w-4 text-muted-foreground" />
+                <Milk className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">Type: {activity.details.feedType}</span>
               </div>
             )}

@@ -13,31 +13,26 @@ interface TimeScrollPickerProps {
 export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, label }: TimeScrollPickerProps) => {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   
-  const [selectedHour, setSelectedHour] = useState(() => {
-    if (value) {
-      const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (match) return parseInt(match[1]);
-    }
-    return new Date().getHours() % 12 || 12;
-  });
+  const [selectedHour, setSelectedHour] = useState(12);
+  const [selectedMinute, setSelectedMinute] = useState(0);
+  const [selectedPeriod, setSelectedPeriod] = useState<"AM" | "PM">("AM");
   
-  const [selectedMinute, setSelectedMinute] = useState(() => {
+  // Initialize from props on mount
+  useEffect(() => {
     if (value) {
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (match) return parseInt(match[2]);
+      if (match) {
+        setSelectedHour(parseInt(match[1]));
+        setSelectedMinute(parseInt(match[2]));
+        setSelectedPeriod(match[3].toUpperCase() as "AM" | "PM");
+      }
+    } else {
+      const now = new Date();
+      setSelectedHour(now.getHours() % 12 || 12);
+      setSelectedMinute(Math.round(now.getMinutes() / 5) * 5);
+      setSelectedPeriod(now.getHours() >= 12 ? "PM" : "AM");
     }
-    return Math.round(new Date().getMinutes() / 5) * 5;
-  });
-  
-  const [selectedPeriod, setSelectedPeriod] = useState(() => {
-    if (value) {
-      const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (match) return match[3].toUpperCase() as "AM" | "PM";
-    }
-    // Try to get last used period from localStorage, default to current time
-    const lastUsedPeriod = localStorage.getItem('lastUsedPeriod') as "AM" | "PM";
-    return lastUsedPeriod || (new Date().getHours() >= 12 ? "PM" : "AM");
-  });
+  }, []); // Only run on mount
 
   // Generate dates array (past 7 days, today, next 3 days)
   const generateDates = () => {
