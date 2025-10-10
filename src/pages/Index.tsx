@@ -278,19 +278,31 @@ const Index = () => {
                     Object.keys(activityGroups).forEach(dateKey => {
                       activityGroups[dateKey].sort((a, b) => {
                         const getActivityTime = (activity: any) => {
-                          // For naps, use startTime if available, otherwise logged_at
-                          if (activity.type === 'nap' && activity.details?.startTime) {
-                            const base = new Date(activity.loggedAt!);
-                            const [t, period] = activity.details.startTime.split(' ');
-                            const [hStr, mStr] = t.split(':');
-                            let h = parseInt(hStr, 10);
-                            const m = parseInt(mStr ?? '0', 10);
-                            if (period === 'PM' && h !== 12) h += 12;
-                            if (period === 'AM' && h === 12) h = 0;
-                            base.setHours(h, m, 0, 0);
-                            return base.getTime();
+                          try {
+                            // For naps, use startTime if available, otherwise logged_at
+                            if (activity.type === 'nap' && activity.details?.startTime) {
+                              const base = new Date(activity.loggedAt!);
+                              const [t, period] = activity.details.startTime.split(' ');
+                              const [hStr, mStr] = t.split(':');
+                              let h = parseInt(hStr, 10);
+                              let m = parseInt(mStr ?? '0', 10);
+                              
+                              // Validate hours and minutes
+                              if (isNaN(h) || isNaN(m) || h < 0 || h > 12 || m < 0 || m >= 60) {
+                                // Invalid time, fallback to logged_at
+                                return new Date(activity.loggedAt!).getTime();
+                              }
+                              
+                              if (period === 'PM' && h !== 12) h += 12;
+                              if (period === 'AM' && h === 12) h = 0;
+                              base.setHours(h, m, 0, 0);
+                              return base.getTime();
+                            }
+                            return new Date(activity.loggedAt!).getTime();
+                          } catch (error) {
+                            console.error('Error parsing activity time:', error, activity);
+                            return new Date(activity.loggedAt!).getTime();
                           }
-                          return new Date(activity.loggedAt!).getTime();
                         };
 
                         return getActivityTime(b) - getActivityTime(a);

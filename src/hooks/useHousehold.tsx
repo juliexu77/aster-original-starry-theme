@@ -39,7 +39,11 @@ export const useHousehold = () => {
       return;
     }
 
-    fetchHousehold();
+    fetchHousehold().catch(err => {
+      console.error('Error in fetchHousehold effect:', err);
+      setError('Failed to load household');
+      setLoading(false);
+    });
     // fetchCollaborators will be called from within fetchHousehold after household is set
 
     // Set up real-time subscriptions
@@ -48,7 +52,9 @@ export const useHousehold = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'households' }, 
         () => {
-          fetchHousehold();
+          fetchHousehold().catch(err => {
+            console.error('Error in real-time household fetch:', err);
+          });
         }
       )
       .subscribe();
@@ -58,7 +64,9 @@ export const useHousehold = () => {
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'collaborators' }, 
         () => {
-          fetchCollaborators();
+          fetchCollaborators().catch(err => {
+            console.error('Error in real-time collaborators fetch:', err);
+          });
         }
       )
       .subscribe();
