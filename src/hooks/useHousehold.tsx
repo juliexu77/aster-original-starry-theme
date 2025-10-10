@@ -210,6 +210,15 @@ export const useHousehold = () => {
     try {
       console.log('Creating household with baby name:', babyName, 'birthday:', babyBirthday);
 
+      // Check if user is already a parent in another household
+      const { data: isParent } = await supabase.rpc('user_is_parent_in_household', {
+        _user_id: user.id
+      });
+
+      if (isParent) {
+        throw new Error('You already have a household. You can only be the owner of one household, but you can join others as a collaborator.');
+      }
+
       // Create household with client-generated id to avoid RLS issues on RETURNING
       const newHouseholdId = crypto.randomUUID();
 

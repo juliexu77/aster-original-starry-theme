@@ -63,15 +63,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const ensureUserHasHousehold = async (userId: string) => {
     try {
-      // Check if user already has a household
+      // Check if user already has any household (as parent or collaborator)
       const { data: collaboratorData } = await supabase
         .from('collaborators')
-        .select('household_id')
+        .select('household_id, role')
         .eq('user_id', userId)
         .limit(1);
 
       if (collaboratorData && collaboratorData.length > 0) {
         // User already has a household
+        console.log('User already has a household, role:', collaboratorData[0].role);
+        return;
+      }
+
+      // Double-check they're not a parent elsewhere using the security definer function
+      const { data: isParent } = await supabase.rpc('user_is_parent_in_household', {
+        _user_id: userId
+      });
+
+      if (isParent) {
+        console.log('User is already a parent in another household');
         return;
       }
 
