@@ -81,6 +81,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks }: Parentin
     { label: "📈 Compare to age norms", prompt: "How is my baby doing compared to typical patterns for their age?" },
     { label: "⏰ Schedule recommendations", prompt: "What schedule would you recommend for my baby's age?" },
     { label: "🍼 Feeding analysis", prompt: "Analyze today's feeding patterns." },
+    { label: "📅 Next week expectations", prompt: "What should I expect for next week based on my baby's age and current patterns?" },
   ];
 
   const handleQuickAction = (prompt: string) => {
