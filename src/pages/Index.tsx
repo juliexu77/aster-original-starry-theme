@@ -90,8 +90,12 @@ const Index = () => {
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
       } else {
-        // No household exists, show setup
-        setHasProfile(false);
+        // No household exists yet - wait a bit longer for creation
+        // This handles the race condition on first login
+        const timer = setTimeout(() => {
+          setHasProfile(false);
+        }, 500);
+        return () => clearTimeout(timer);
       }
     } else {
       // Redirect unauthenticated users to auth

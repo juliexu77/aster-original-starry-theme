@@ -14,7 +14,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     console.log('RouteGuard - Current path:', location.pathname, 'User:', !!user, 'Loading:', loading);
 
     // Require authentication for all protected routes
-    const publicRoutes = ['/auth', '/invite', '/onboarding'];
+    const publicRoutes = ['/auth', '/invite', '/onboarding', '/demo'];
     const isPublicRoute = publicRoutes.some(route => 
       location.pathname === route || location.pathname.startsWith(route + '/')
     );
@@ -31,8 +31,17 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Redirect authenticated users away from auth and onboarding pages to the main app
-    if (user && !isAuthWithRedirect && (location.pathname === "/auth" || location.pathname === "/onboarding" || location.pathname === "/")) {
+    // Add small delay to allow household creation to complete
+    if (user && !isAuthWithRedirect && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
       console.log('Redirecting authenticated user to main app');
+      const timer = setTimeout(() => {
+        navigate("/app", { replace: true });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    
+    // Redirect from root to app if authenticated
+    if (user && location.pathname === "/") {
       navigate("/app", { replace: true });
       return;
     }
