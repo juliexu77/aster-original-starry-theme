@@ -62,6 +62,32 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     return 7; // Today is at index 7
   });
 
+  // Update time picker state when value prop changes (for editing activities)
+  useEffect(() => {
+    if (value) {
+      const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        setSelectedHour(parseInt(match[1]));
+        setSelectedMinute(parseInt(match[2]));
+        setSelectedPeriod(match[3].toUpperCase() as "AM" | "PM");
+        setHasUserInteracted(false); // Reset interaction flag
+      }
+    }
+  }, [value]);
+
+  // Update date picker when selectedDate prop changes
+  useEffect(() => {
+    if (selectedDate) {
+      const index = dates.findIndex(date => 
+        date.toDateString() === selectedDate.toDateString()
+      );
+      if (index >= 0) {
+        setSelectedDateIndex(index);
+        setHasUserInteracted(false); // Reset interaction flag
+      }
+    }
+  }, [selectedDate, dates]);
+
   const hourRef = useRef<HTMLDivElement>(null);
   const minuteRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
@@ -107,6 +133,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   };
 
   useEffect(() => {
+    // Scroll to selected values whenever they change
     scrollToValue(hourRef, selectedHour, hours);
     scrollToValue(minuteRef, selectedMinute, minutes);
     
@@ -115,7 +142,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const itemHeight = 32;
       dateRef.current.scrollTop = selectedDateIndex * itemHeight;
     }
-  }, []);
+  }, [selectedHour, selectedMinute, selectedDateIndex]);
 
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement>,
