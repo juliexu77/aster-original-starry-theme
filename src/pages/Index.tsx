@@ -21,7 +21,8 @@ import { Calendar, Settings, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+ 
 const Index = () => {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
@@ -457,193 +458,194 @@ const Index = () => {
       </div>
     );
   }
-  return (
-    <div className="min-h-screen bg-background pb-16">
-      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-semibold">
-            {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
-          </h1>
-          <div className="flex items-center gap-2">
-            {canUndo && (
+return (
+    <ErrorBoundary onRetry={() => { refetchHousehold(); refetchActivities(); }}>
+      <div className="min-h-screen bg-background pb-16">
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex items-center justify-between p-4">
+            <h1 className="text-xl font-semibold">
+              {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
+            </h1>
+            <div className="flex items-center gap-2">
+              {canUndo && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={async () => {
+                    const success = await undo();
+                    if (success) {
+                      toast({
+                        title: "Undone",
+                        description: `${undoCount - 1} action${undoCount - 1 !== 1 ? 's' : ''} remaining`,
+                      });
+                      refetchActivities();
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: "Could not undo action",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                  className="p-2"
+                >
+                  <Undo2 className="h-5 w-5" />
+                </Button>
+              )}
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={async () => {
-                  const success = await undo();
-                  if (success) {
-                    toast({
-                      title: "Undone",
-                      description: `${undoCount - 1} action${undoCount - 1 !== 1 ? 's' : ''} remaining`,
-                    });
-                    refetchActivities();
+                onClick={() => {
+                  if (activeTab === "settings") {
+                    // If we're already in settings, go back to previous tab
+                    setActiveTab(previousTab);
                   } else {
-                    toast({
-                      title: "Error",
-                      description: "Could not undo action",
-                      variant: "destructive"
-                    });
+                    // Going to settings, save current tab as previous
+                    setPreviousTab(activeTab);
+                    setActiveTab("settings");
                   }
                 }}
                 className="p-2"
               >
-                <Undo2 className="h-5 w-5" />
+                <Settings className="h-5 w-5" />
               </Button>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                if (activeTab === "settings") {
-                  // If we're already in settings, go back to previous tab
-                  setActiveTab(previousTab);
-                } else {
-                  // Going to settings, save current tab as previous
-                  setPreviousTab(activeTab);
-                  setActiveTab("settings");
-                }
-              }}
-              className="p-2"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {renderTabContent()}
+        {renderTabContent()}
 
+        <BottomNavigation 
+          activeTab={activeTab} 
+          onTabChange={(newTab) => {
+            // When changing tabs via bottom nav, save previous tab (unless going to settings)
+            if (newTab !== "settings") {
+              setPreviousTab(activeTab);
+            }
+            setActiveTab(newTab);
+          }}
+          onAddActivity={() => setShowAddActivity(true)}
+        />
 
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={(newTab) => {
-          // When changing tabs via bottom nav, save previous tab (unless going to settings)
-          if (newTab !== "settings") {
-            setPreviousTab(activeTab);
-          }
-          setActiveTab(newTab);
-        }}
-        onAddActivity={() => setShowAddActivity(true)}
-      />
+        {/* Add Activity Modal */}
+        <AddActivityModal
+          isOpen={showAddActivity || !!editingActivity}
+          onClose={() => {
+            setShowAddActivity(false);
+            setEditingActivity(null);
+          }}
+          editingActivity={editingActivity}
+          householdId={household?.id}
+          onAddActivity={(activity, activityDate, activityTime) => {
+            addActivity(activity.type, activity.details, activityDate, activityTime);
+            setShowAddActivity(false);
+          }}
+          onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
+            try {
+              // Get current state for undo tracking
+              const { data: currentActivity } = await supabase
+                .from('activities')
+                .select('*')
+                .eq('id', updatedActivity.id)
+                .single();
 
-      {/* Add Activity Modal */}
-      <AddActivityModal
-        isOpen={showAddActivity || !!editingActivity}
-        onClose={() => {
-          setShowAddActivity(false);
-          setEditingActivity(null);
-        }}
-        editingActivity={editingActivity}
-        householdId={household?.id}
-        onAddActivity={(activity, activityDate, activityTime) => {
-          addActivity(activity.type, activity.details, activityDate, activityTime);
-          setShowAddActivity(false);
-        }}
-        onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
-          try {
-            // Get current state for undo tracking
-            const { data: currentActivity } = await supabase
-              .from('activities')
-              .select('*')
-              .eq('id', updatedActivity.id)
-              .single();
+              // Convert time string to timestamp for database update
+              const [time, period] = activityTime.split(' ');
+              const [hours, minutes] = time.split(':').map(Number);
+              
+              let hour24 = hours;
+              if (period === 'PM' && hours !== 12) hour24 += 12;
+              if (period === 'AM' && hours === 12) hour24 = 0;
+              
+              // Create timestamp the same way as addActivity to ensure consistency
+              const combinedDateTime = new Date(
+                selectedDate.getFullYear(),
+                selectedDate.getMonth(),
+                selectedDate.getDate(),
+                hour24,
+                minutes,
+                0,
+                0
+              );
+              const loggedAt = combinedDateTime.toISOString();
 
-            // Convert time string to timestamp for database update
-            const [time, period] = activityTime.split(' ');
-            const [hours, minutes] = time.split(':').map(Number);
-            
-            let hour24 = hours;
-            if (period === 'PM' && hours !== 12) hour24 += 12;
-            if (period === 'AM' && hours === 12) hour24 = 0;
-            
-            // Create timestamp the same way as addActivity to ensure consistency
-            const combinedDateTime = new Date(
-              selectedDate.getFullYear(),
-              selectedDate.getMonth(),
-              selectedDate.getDate(),
-              hour24,
-              minutes,
-              0,
-              0
-            );
-            const loggedAt = combinedDateTime.toISOString();
-
-            const { error } = await supabase
-              .from('activities')
-              .update({
-                type: updatedActivity.type,
-                logged_at: loggedAt,
-                details: {
-                  ...updatedActivity.details,
-                  displayTime: activityTime // Store display time for consistent display
-                }
-              })
-              .eq('id', updatedActivity.id);
-            
-            if (error) throw error;
-
-            // Track for undo
-            if (currentActivity) {
-              trackUpdate(
-                {
-                  id: updatedActivity.id,
+              const { error } = await supabase
+                .from('activities')
+                .update({
                   type: updatedActivity.type,
                   logged_at: loggedAt,
-                  details: updatedActivity.details,
-                  household_id: currentActivity.household_id,
-                  created_by: currentActivity.created_by
-                },
-                {
-                  id: currentActivity.id,
-                  type: currentActivity.type,
-                  logged_at: currentActivity.logged_at,
-                  details: currentActivity.details,
-                  household_id: currentActivity.household_id,
-                  created_by: currentActivity.created_by
-                }
-              );
-            }
+                  details: {
+                    ...updatedActivity.details,
+                    displayTime: activityTime // Store display time for consistent display
+                  }
+                })
+                .eq('id', updatedActivity.id);
+              
+              if (error) throw error;
 
-            refetchActivities();
-            setEditingActivity(null);
-          } catch (error) {
-            console.error('Error updating activity:', error);
-            toast({
-              title: "Error updating activity",
-              description: "Please try again.",
-              variant: "destructive"
-            });
-          }
-        }}
-        onDeleteActivity={async (activityId) => {
-          try {
-            // Get activity data before deleting for undo tracking
-            const { data: activityToDelete } = await supabase
-              .from('activities')
-              .select('*')
-              .eq('id', activityId)
-              .single();
+              // Track for undo
+              if (currentActivity) {
+                trackUpdate(
+                  {
+                    id: updatedActivity.id,
+                    type: updatedActivity.type,
+                    logged_at: loggedAt,
+                    details: updatedActivity.details,
+                    household_id: currentActivity.household_id,
+                    created_by: currentActivity.created_by
+                  },
+                  {
+                    id: currentActivity.id,
+                    type: currentActivity.type,
+                    logged_at: currentActivity.logged_at,
+                    details: currentActivity.details,
+                    household_id: currentActivity.household_id,
+                    created_by: currentActivity.created_by
+                  }
+                );
+              }
 
-            await deleteActivity(activityId);
-
-            // Track for undo
-            if (activityToDelete) {
-              trackDelete({
-                id: activityToDelete.id,
-                type: activityToDelete.type,
-                logged_at: activityToDelete.logged_at,
-                details: activityToDelete.details,
-                household_id: activityToDelete.household_id,
-                created_by: activityToDelete.created_by
+              refetchActivities();
+              setEditingActivity(null);
+            } catch (error) {
+              console.error('Error updating activity:', error);
+              toast({
+                title: "Error updating activity",
+                description: "Please try again.",
+                variant: "destructive"
               });
             }
-          } catch (error) {
-            console.error('Error deleting activity:', error);
-          }
-        }}
-      />
+          }}
+          onDeleteActivity={async (activityId) => {
+            try {
+              // Get activity data before deleting for undo tracking
+              const { data: activityToDelete } = await supabase
+                .from('activities')
+                .select('*')
+                .eq('id', activityId)
+                .single();
 
-    </div>
+              await deleteActivity(activityId);
+
+              // Track for undo
+              if (activityToDelete) {
+                trackDelete({
+                  id: activityToDelete.id,
+                  type: activityToDelete.type,
+                  logged_at: activityToDelete.logged_at,
+                  details: activityToDelete.details,
+                  household_id: activityToDelete.household_id,
+                  created_by: activityToDelete.created_by
+                });
+              }
+            } catch (error) {
+              console.error('Error deleting activity:', error);
+            }
+          }}
+        />
+
+      </div>
+    </ErrorBoundary>
   );
 };
 
