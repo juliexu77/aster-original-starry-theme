@@ -108,9 +108,12 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   // Call onChange once on mount with initial values
   useEffect(() => {
-    const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
-    const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
-    onChange(timeString);
+    // Only emit initial time if no value was provided (new entry)
+    if (!value) {
+      const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
+      const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
+      onChange(timeString);
+    }
   }, []); // Only on mount
 
   useEffect(() => {

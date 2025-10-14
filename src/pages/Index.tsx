@@ -76,6 +76,7 @@ const Index = () => {
       })
     : [];
 
+  const ongoingNap = activities.find(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime);
   const [activeTab, setActiveTab] = useState("home");
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
@@ -222,6 +223,35 @@ const Index = () => {
         description: "Please try again.",
         variant: "destructive"
       });
+    }
+  };
+
+  const markWakeUp = async () => {
+    if (!ongoingNap) return;
+    try {
+      const now = new Date();
+      const rounded = Math.round(now.getMinutes() / 5) * 5;
+      const safeMins = Math.min(55, Math.max(0, rounded));
+      const endStr = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        safeMins,
+        0,
+        0
+      ).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+
+      const { error } = await supabase
+        .from('activities')
+        .update({ details: { ...ongoingNap.details, endTime: endStr } })
+        .eq('id', ongoingNap.id);
+
+      if (error) throw error;
+      toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
+      refetchActivities();
+    } catch (e) {
+      toast({ title: "Error", description: "Could not mark wake-up", variant: "destructive" });
     }
   };
 
@@ -480,7 +510,17 @@ return (
             <h1 className="text-xl font-semibold">
               {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
             </h1>
-            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                {ongoingNap && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={markWakeUp}
+                    className="px-3"
+                  >
+                    {(babyProfile?.name || 'Baby') + ' woke up'}
+                  </Button>
+                )}
               {canUndo && (
                 <Button 
                   variant="ghost" 
