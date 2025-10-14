@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TimeScrollPicker } from "./TimeScrollPicker";
+import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
 import { Plus, Baby, Palette, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
@@ -154,6 +155,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       }
     }
   }, [feedType, editingActivity, quantity]);
+
+  // Load last nursing times when creating new nursing feeds
+  useEffect(() => {
+    if (!editingActivity && feedType === "nursing" && !minutesLeft && !minutesRight) {
+      const lastLeft = localStorage.getItem('lastNursingLeft');
+      const lastRight = localStorage.getItem('lastNursingRight');
+      if (lastLeft) setMinutesLeft(lastLeft);
+      if (lastRight) setMinutesRight(lastRight);
+    }
+  }, [feedType, editingActivity, minutesLeft, minutesRight]);
 
   // Ensure new entries default to current local time when opening
   useEffect(() => {
@@ -400,8 +411,14 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           localStorage.setItem('lastUsedUnit', unit);
           localStorage.setItem('lastFeedQuantity', quantity);
         } else if (feedType === "nursing") {
-          if (minutesLeft) details.minutesLeft = minutesLeft;
-          if (minutesRight) details.minutesRight = minutesRight;
+          if (minutesLeft) {
+            details.minutesLeft = minutesLeft;
+            localStorage.setItem('lastNursingLeft', minutesLeft);
+          }
+          if (minutesRight) {
+            details.minutesRight = minutesRight;
+            localStorage.setItem('lastNursingRight', minutesRight);
+          }
         } else if (feedType === "solid") {
           if (solidDescription) details.solidDescription = solidDescription;
         }
@@ -620,28 +637,17 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
                 {feedType === "nursing" && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">{t('nursingTime')}</Label>
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1 block">{t('leftSide')}</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={minutesLeft}
-                          onChange={(e) => setMinutesLeft(e.target.value)}
-                          className="text-center"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted-foreground mb-1 block">{t('rightSide')}</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          value={minutesRight}
-                          onChange={(e) => setMinutesRight(e.target.value)}
-                          className="text-center"
-                        />
-                      </div>
+                      <MinuteScrollPicker
+                        value={minutesLeft}
+                        onChange={setMinutesLeft}
+                        label={t('leftSide')}
+                      />
+                      <MinuteScrollPicker
+                        value={minutesRight}
+                        onChange={setMinutesRight}
+                        label={t('rightSide')}
+                      />
                     </div>
                   </div>
                 )}
