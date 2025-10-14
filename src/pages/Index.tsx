@@ -76,7 +76,8 @@ const Index = () => {
       })
     : [];
 
-  const ongoingNap = activities.find(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime);
+  const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
+  const ongoingNap = activities.find(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime && a.id !== justEndedNapId);
   const [activeTab, setActiveTab] = useState("home");
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
@@ -164,16 +165,25 @@ const Index = () => {
             0
           );
         } else {
-          // Fallback: noon local time on selected date
+          // Fallback: use current local time (rounded to 5 mins) on selected date
+          const now = new Date();
+          const rounded = Math.round(now.getMinutes() / 5) * 5;
+          const safeMins = Math.min(55, Math.max(0, rounded));
           combinedDateTime = new Date(
             activityDate.getFullYear(),
             activityDate.getMonth(),
             activityDate.getDate(),
-            12,
-            0,
+            now.getHours(),
+            safeMins,
             0,
             0
           );
+          // Ensure display time is consistent
+          displayTime = combinedDateTime.toLocaleTimeString("en-US", { 
+            hour: "numeric", 
+            minute: "2-digit", 
+            hour12: true 
+          });
         }
         loggedAt = combinedDateTime.toISOString();
       } else {
@@ -228,6 +238,8 @@ const Index = () => {
 
   const markWakeUp = async () => {
     if (!ongoingNap) return;
+    // Hide the button immediately to avoid lingering UI while we save
+    setJustEndedNapId(ongoingNap.id);
     try {
       const now = new Date();
       const rounded = Math.round(now.getMinutes() / 5) * 5;
@@ -250,7 +262,10 @@ const Index = () => {
       if (error) throw error;
       toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
       refetchActivities();
+      // Clear the temporary hide after refresh
+      setTimeout(() => setJustEndedNapId(null), 1500);
     } catch (e) {
+      setJustEndedNapId(null);
       toast({ title: "Error", description: "Could not mark wake-up", variant: "destructive" });
     }
   };
