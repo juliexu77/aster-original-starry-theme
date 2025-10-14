@@ -23,7 +23,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   const { toast } = useToast();
   
   const [babyName, setBabyName] = useState("");
-  const [babyBirthday, setBabyBirthday] = useState("");
+  const [babyBirthday, setBabyBirthday] = useState<string | null>(null);
   
   // Save status states
   const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
@@ -33,7 +33,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   useEffect(() => {
     if (open && household) {
       setBabyName(household.baby_name || "");
-      setBabyBirthday(household.baby_birthday || "");
+      setBabyBirthday(household.baby_birthday || null);
     }
   }, [open, household]);
 
@@ -65,7 +65,8 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
     setBabyBirthdaySaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
-        await updateHousehold({ baby_birthday: babyBirthday });
+        // Convert empty string to null for database
+        await updateHousehold({ baby_birthday: babyBirthday || null });
         setBabyBirthdaySaveStatus("saved");
         setTimeout(() => setBabyBirthdaySaveStatus("idle"), 3000);
       } catch (error) {
@@ -154,7 +155,7 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
                     const day = String(date.getDate()).padStart(2, '0');
                     setBabyBirthday(`${year}-${month}-${day}`);
                   } else {
-                    setBabyBirthday("");
+                    setBabyBirthday(null);
                   }
                 }}
                 placeholder={t('selectBirthday')}
