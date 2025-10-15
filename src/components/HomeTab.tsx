@@ -82,31 +82,56 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Calculate awake time
   const getAwakeTime = () => {
     if (ongoingNap) return null;
-    
-    const lastNap = displayActivities
-      .filter(a => a.type === 'nap' && a.details?.endTime)
-      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-    
-    if (!lastNap || !lastNap.details?.endTime) return null;
-    
-    // Parse end time
-    const [time, period] = lastNap.details.endTime.split(' ');
-    const [hours, minutes] = time.split(':').map(Number);
-    let hour24 = hours;
-    if (period === 'PM' && hours !== 12) hour24 += 12;
-    if (period === 'AM' && hours === 12) hour24 = 0;
-    
-    const wakeTime = new Date(lastNap.loggedAt!);
-    wakeTime.setHours(hour24, minutes, 0, 0);
-    
-    const awakeMinutes = differenceInMinutes(currentTime, wakeTime);
+
+    // Consider naps from today and yesterday only
+    const yesterdayStart = new Date();
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    yesterdayStart.setHours(0, 0, 0, 0);
+
+    const parseTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(' ');
+      const [hStr, mStr] = time.split(':');
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr || '0', 10);
+      if (period === 'PM' && h !== 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      return h * 60 + m;
+    };
+
+    // Find the most recent completed nap (yesterday or today)
+    const recentNaps = activities.filter(a =>
+      a.loggedAt && new Date(a.loggedAt) >= yesterdayStart &&
+      a.type === 'nap' && a.details?.endTime
+    );
+
+    if (recentNaps.length === 0) return null;
+
+    const napsWithEndDate = recentNaps.map(nap => {
+      const baseDate = new Date(nap.loggedAt!);
+      const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
+      const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
+
+      const endDate = new Date(baseDate);
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+      endDate.setHours(endHours, endMins, 0, 0);
+
+      // If we have startTime and end < start, it ended after midnight (next day)
+      if (startMinutes !== null && endMinutes < startMinutes) {
+        endDate.setDate(endDate.getDate() + 1);
+      }
+
+      return { nap, endDate };
+    });
+
+    const last = napsWithEndDate.sort((a, b) => b.endDate.getTime() - a.endDate.getTime())[0];
+
+    const awakeMinutes = differenceInMinutes(currentTime, last.endDate);
+    if (awakeMinutes < 0) return null;
     const awakeHours = Math.floor(awakeMinutes / 60);
     const remainingMinutes = awakeMinutes % 60;
-    
-    if (awakeHours > 0) {
-      return `${awakeHours}h ${remainingMinutes}m`;
-    }
-    return `${remainingMinutes}m`;
+
+    return awakeHours > 0 ? `${awakeHours}h ${remainingMinutes}m` : `${remainingMinutes}m`;
   };
 
   // Get last feed
