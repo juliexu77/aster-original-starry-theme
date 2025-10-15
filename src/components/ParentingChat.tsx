@@ -393,51 +393,54 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         </div>
       </ScrollArea>
 
-      {/* Contextual Chips */}
-      {currentChips.length > 0 && !isLoading && (
-        <div className={`p-4 border-t border-border/50 transition-all duration-300 ${inputFocused ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
-          <div className="flex flex-wrap gap-2">
-            {currentChips.map((chip, idx) => (
-              <Button
-                key={idx}
-                variant="outline"
-                size="sm"
-                onClick={() => handleChipClick(chip)}
-                className="text-xs animate-in fade-in slide-in-from-bottom-2"
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                {chip}
-              </Button>
-            ))}
+      {/* Input with Contextual Chips */}
+      <div className="border-t border-border/50 bg-background/95 backdrop-blur-sm">
+        {/* Chips - only show when not loading and not focused */}
+        {currentChips.length > 0 && !isLoading && (
+          <div className={`px-4 pt-4 pb-2 transition-all duration-300 ${inputFocused ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}>
+            <div className="flex flex-wrap gap-2">
+              {currentChips.map((chip, idx) => (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleChipClick(chip)}
+                  className="text-xs animate-in fade-in slide-in-from-bottom-2"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  {chip.replace(/^["']|["']$/g, '')}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* Input */}
-      <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm">
-        {!inputFocused && currentChips.length > 0 && (
-          <p className="text-xs text-muted-foreground text-center mb-2 transition-opacity duration-200">
-            💬 Or tell me what's been on your mind…
-          </p>
         )}
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            onFocus={() => setInputFocused(true)}
-            onBlur={() => setInputFocused(false)}
-            placeholder={placeholders[placeholderIndex]}
-            disabled={isLoading}
-            className="flex-1 transition-all duration-200"
-          />
-          <Button
-            onClick={handleSend}
-            disabled={isLoading || !input.trim()}
-            size="icon"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
+
+        {/* Input area */}
+        <div className="p-4">
+          {!inputFocused && currentChips.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center mb-3 transition-opacity duration-200">
+              💬 Or tell me what's been on your mind…
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
+              placeholder={inputFocused || currentChips.length === 0 ? placeholders[placeholderIndex] : ""}
+              disabled={isLoading}
+              className="flex-1 transition-all duration-200"
+            />
+            <Button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              size="icon"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
