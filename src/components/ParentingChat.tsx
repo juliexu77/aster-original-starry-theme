@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bot, User, Send } from "lucide-react";
+import { Bot, User, Send, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: "user" | "assistant";
@@ -62,6 +63,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.supabase.co/functions/v1/parenting-chat";
 
@@ -336,6 +340,32 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   return (
     <div className="flex flex-col h-full bg-background">
+      {/* Birthday Setup Prompt */}
+      {needsBirthdaySetup && (
+        <div className="p-4 bg-gradient-to-br from-accent/50 to-accent/30 border-b border-border">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <p className="text-sm font-medium text-foreground">
+                Set your baby's birthday for personalized guidance
+              </p>
+              <p className="text-xs text-muted-foreground">
+                The Guide provides age-appropriate insights and developmental context when we know your baby's age.
+              </p>
+              <Button
+                size="sm"
+                onClick={() => navigate("/settings")}
+                className="mt-2"
+              >
+                Go to Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Loading State */}
       {!hasInitialized && activities.length > 0 && (
         <div className="flex-1 flex items-center justify-center p-8">
