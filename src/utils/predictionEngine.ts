@@ -57,9 +57,41 @@ export interface PredictionRationale {
   };
 }
 
+export interface TimingPredictions {
+  nextWakeAt?: Date;
+  nextNapWindowStart?: Date;
+  nextFeedAt?: Date;
+  expectedFeedVolume?: number;
+}
+
+export interface DayProgress {
+  feedsToday: number;
+  napsToday: number;
+  diapersToday: number;
+  totalDaySleepMinutes: number;
+  expectedFeedsMin: number;
+  expectedFeedsMax: number;
+  expectedNapsMin: number;
+  expectedNapsMax: number;
+}
+
+export interface EngineInternals {
+  learnedWakeWindowMedian?: number;
+  learnedFeedIntervalMedian?: number;
+  learnedDaySleepMedian?: number;
+  wakeWindowStdDev?: number;
+  feedIntervalStdDev?: number;
+  dataStability: 'sparse' | 'unstable' | 'stable';
+  blendRatio: { age: number; learned: number };
+}
+
 export interface NextActionResult {
-  next_action: 'FEED_NOW' | 'START_WIND_DOWN' | 'INDEPENDENT_TIME' | 'LET_SLEEP_CONTINUE' | 'HOLD';
-  confidence: number;
+  intent: 'FEED_SOON' | 'START_WIND_DOWN' | 'INDEPENDENT_TIME' | 'LET_SLEEP_CONTINUE' | 'HOLD';
+  confidence: 'high' | 'medium' | 'low';
+  timing: TimingPredictions;
+  reasons: string[];
+  dayProgress: DayProgress;
+  internals: EngineInternals;
   rationale: PredictionRationale;
   reevaluate_in_minutes: number;
 }
@@ -224,10 +256,33 @@ function extractFeedEvents(events: PredictionEvent[]): FeedEvent[] {
 // PERSONALIZATION
 // ---------------------------
 
-function calculateAdaptiveParams(events: PredictionEvent[], baseParams: PersonalizedParams): PersonalizedParams {
+function standardDeviation(values: number[]): number {
+  if (values.length === 0) return 0;
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+  return Math.sqrt(variance);
+}
+
+interface AdaptiveResult {
+  params: PersonalizedParams;
+  internals: {
+    learnedWakeWindowMedian?: number;
+    learnedFeedIntervalMedian?: number;
+    learnedDaySleepMedian?: number;
+    wakeWindowStdDev?: number;
+    feedIntervalStdDev?: number;
+    dataStability: 'sparse' | 'unstable' | 'stable';
+    blendRatio: { age: number; learned: number };
+    wakeWindows: number[];
+    feedIntervals: number[];
+    dailySleepTotals: number[];
+  };
+}
+
+function calculateAdaptiveParams(events: PredictionEvent[], baseParams: PersonalizedParams): AdaptiveResult {
   const now = new Date();
-  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-  const recentEvents = events.filter(e => e.timestamp >= threeDaysAgo);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const recentEvents = events.filter(e => e.timestamp >= sevenDaysAgo);
 
   // Calculate wake windows
   const sleepSegments = extractSleepSegments(recentEvents);
@@ -238,7 +293,7 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
     const next = sleepSegments[i + 1];
     if (current.end && next.start) {
       const wakeWindow = Math.round((next.start.getTime() - current.end.getTime()) / 60000);
-      if (wakeWindow > 0 && wakeWindow < 480) { // Reasonable wake window (< 8h)
+      if (wakeWindow > 0 && wakeWindow < 480) {
         wakeWindows.push(wakeWindow);
       }
     }
@@ -250,7 +305,7 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   
   for (let i = 0; i < feedEvents.length - 1; i++) {
     const interval = Math.round((feedEvents[i].timestamp.getTime() - feedEvents[i + 1].timestamp.getTime()) / 60000);
-    if (interval > 0 && interval < 480) { // Reasonable interval (< 8h)
+    if (interval > 0 && interval < 480) {
       feedIntervals.push(interval);
     }
   }
@@ -268,27 +323,61 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   
   dailySleepTotals.push(...sleepByDay.values());
 
-  // Apply adaptive parameters with sufficient data points
+  // Determine blend ratio based on data quality
+  let blendRatio = { age: 0.8, learned: 0.2 };
+  let dataStability: 'sparse' | 'unstable' | 'stable' = 'sparse';
+
+  if (wakeWindows.length >= 3 && feedIntervals.length >= 3) {
+    const wakeStdDev = standardDeviation(wakeWindows);
+    const wakeMedian = median(wakeWindows);
+    const isStable = wakeStdDev < (wakeMedian * 0.3); // CV < 30%
+    
+    if (isStable) {
+      blendRatio = { age: 0.3, learned: 0.7 };
+      dataStability = 'stable';
+    } else {
+      blendRatio = { age: 0.6, learned: 0.4 };
+      dataStability = 'unstable';
+    }
+  }
+
+  // Apply blended parameters
   const adaptive = { ...baseParams };
   
-  if (wakeWindows.length >= 4) {
+  if (wakeWindows.length >= 3) {
     const medianWakeWindow = median(wakeWindows);
-    adaptive.wake_window_min = clamp(medianWakeWindow * 0.8, baseParams.wake_window_min * 0.7, baseParams.wake_window_min * 1.3);
-    adaptive.wake_window_max = clamp(medianWakeWindow * 1.2, baseParams.wake_window_max * 0.7, baseParams.wake_window_max * 1.3);
+    const blended = baseParams.wake_window_max * blendRatio.age + medianWakeWindow * blendRatio.learned;
+    adaptive.wake_window_min = clamp(blended * 0.8, baseParams.wake_window_min * 0.7, baseParams.wake_window_min * 1.5);
+    adaptive.wake_window_max = clamp(blended, baseParams.wake_window_max * 0.7, baseParams.wake_window_max * 1.5);
   }
   
-  if (feedIntervals.length >= 4) {
+  if (feedIntervals.length >= 3) {
     const medianFeedInterval = median(feedIntervals);
-    adaptive.feed_interval_min = clamp(medianFeedInterval * 0.8, baseParams.feed_interval_min * 0.7, baseParams.feed_interval_min * 1.3);
-    adaptive.feed_interval_max = clamp(medianFeedInterval * 1.2, baseParams.feed_interval_max * 0.7, baseParams.feed_interval_max * 1.3);
+    const blended = baseParams.feed_interval_max * blendRatio.age + medianFeedInterval * blendRatio.learned;
+    adaptive.feed_interval_min = clamp(blended * 0.8, baseParams.feed_interval_min * 0.7, baseParams.feed_interval_min * 1.5);
+    adaptive.feed_interval_max = clamp(blended, baseParams.feed_interval_max * 0.7, baseParams.feed_interval_max * 1.5);
   }
   
   if (dailySleepTotals.length >= 3) {
     const medianDaySleep = median(dailySleepTotals);
-    adaptive.day_sleep_target = clamp(medianDaySleep, 120, 270); // 2-4.5 hours
+    adaptive.day_sleep_target = clamp(medianDaySleep, 120, 300);
   }
 
-  return adaptive;
+  return {
+    params: adaptive,
+    internals: {
+      learnedWakeWindowMedian: wakeWindows.length >= 3 ? median(wakeWindows) : undefined,
+      learnedFeedIntervalMedian: feedIntervals.length >= 3 ? median(feedIntervals) : undefined,
+      learnedDaySleepMedian: dailySleepTotals.length >= 3 ? median(dailySleepTotals) : undefined,
+      wakeWindowStdDev: wakeWindows.length >= 3 ? standardDeviation(wakeWindows) : undefined,
+      feedIntervalStdDev: feedIntervals.length >= 3 ? standardDeviation(feedIntervals) : undefined,
+      dataStability,
+      blendRatio,
+      wakeWindows,
+      feedIntervals,
+      dailySleepTotals
+    }
+  };
 }
 
 // ---------------------------
@@ -301,15 +390,20 @@ export class BabyCarePredictionEngine {
   private feedEvents: FeedEvent[] = [];
   private params: PersonalizedParams;
   private adaptiveParams: PersonalizedParams;
+  private internals: EngineInternals;
+  private ageInMonths: number;
 
   constructor(activities: Activity[], babyBirthday?: string) {
     this.events = parseActivitiesToEvents(activities);
     this.sleepSegments = extractSleepSegments(this.events);
     this.feedEvents = extractFeedEvents(this.events);
     
-    const ageInMonths = babyBirthday ? calculateAgeInMonths(babyBirthday) : 6;
-    this.params = getAgeParams(ageInMonths);
-    this.adaptiveParams = calculateAdaptiveParams(this.events, this.params);
+    this.ageInMonths = babyBirthday ? calculateAgeInMonths(babyBirthday) : 6;
+    this.params = getAgeParams(this.ageInMonths);
+    
+    const adaptiveResult = calculateAdaptiveParams(this.events, this.params);
+    this.adaptiveParams = adaptiveResult.params;
+    this.internals = adaptiveResult.internals;
   }
 
   private getTimeSinceLastFeed(now: Date): number | null {
@@ -511,6 +605,144 @@ if (ongoingSleep) {
     return 'INDEPENDENT_TIME';
   }
 
+  private getExpectedFeeds(): { min: number; max: number } {
+    if (this.ageInMonths < 1) return { min: 8, max: 12 };
+    if (this.ageInMonths < 3) return { min: 6, max: 8 };
+    if (this.ageInMonths < 6) return { min: 5, max: 7 };
+    if (this.ageInMonths < 9) return { min: 4, max: 6 };
+    if (this.ageInMonths < 12) return { min: 3, max: 5 };
+    return { min: 3, max: 4 };
+  }
+
+  private getExpectedNaps(): { min: number; max: number } {
+    if (this.ageInMonths < 3) return { min: 4, max: 6 };
+    if (this.ageInMonths < 6) return { min: 3, max: 4 };
+    if (this.ageInMonths < 9) return { min: 2, max: 3 };
+    if (this.ageInMonths < 12) return { min: 2, max: 3 };
+    if (this.ageInMonths < 18) return { min: 1, max: 2 };
+    return { min: 1, max: 2 };
+  }
+
+  private getDayProgress(now: Date): DayProgress {
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+
+    const todayEvents = this.events.filter(e => e.timestamp >= todayStart && e.timestamp < todayEnd);
+    const feedsToday = todayEvents.filter(e => e.type === 'feed').length;
+    const napsToday = this.sleepSegments.filter(s => 
+      s.start >= todayStart && s.start < todayEnd && s.end !== null
+    ).length;
+    const diapersToday = todayEvents.filter(e => e.type === 'diaper').length;
+    
+    const expectedFeeds = this.getExpectedFeeds();
+    const expectedNaps = this.getExpectedNaps();
+
+    return {
+      feedsToday,
+      napsToday,
+      diapersToday,
+      totalDaySleepMinutes: this.getCumulativeDaySleep(now),
+      expectedFeedsMin: expectedFeeds.min,
+      expectedFeedsMax: expectedFeeds.max,
+      expectedNapsMin: expectedNaps.min,
+      expectedNapsMax: expectedNaps.max
+    };
+  }
+
+  private generateReasons(rationale: PredictionRationale, intent: string): string[] {
+    const reasons: string[] = [];
+    
+    if (rationale.t_awake_now_min !== null && intent.includes('WIND_DOWN')) {
+      const hours = Math.floor(rationale.t_awake_now_min / 60);
+      const mins = rationale.t_awake_now_min % 60;
+      const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+      reasons.push(`Awake for ${timeStr}`);
+    }
+
+    if (rationale.t_since_last_feed_min !== null && intent.includes('FEED')) {
+      const hours = Math.floor(rationale.t_since_last_feed_min / 60);
+      const mins = rationale.t_since_last_feed_min % 60;
+      const timeStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+      reasons.push(`${timeStr} since last feed`);
+    }
+
+    if (rationale.flags.short_nap && intent.includes('WIND_DOWN')) {
+      reasons.push('Last nap was shorter than typical');
+    }
+
+    if (rationale.cumulative_day_sleep_min < rationale.day_sleep_target_min * 0.7) {
+      reasons.push('Day sleep is below target');
+    }
+
+    if (rationale.flags.cluster_feeding) {
+      reasons.push('Cluster feeding pattern detected');
+    }
+
+    if (rationale.night_or_day === 'night') {
+      reasons.push('Evening hours — winding down time');
+    }
+
+    return reasons;
+  }
+
+  private calculateTimingPredictions(now: Date, rationale: PredictionRationale): TimingPredictions {
+    const timing: TimingPredictions = {};
+
+    // Calculate next feed time
+    if (rationale.t_since_last_feed_min !== null) {
+      const nextFeedMinutes = this.adaptiveParams.feed_interval_max - rationale.t_since_last_feed_min;
+      if (nextFeedMinutes > 0) {
+        timing.nextFeedAt = new Date(now.getTime() + nextFeedMinutes * 60000);
+      } else {
+        timing.nextFeedAt = now;
+      }
+    }
+
+    // Calculate expected feed volume
+    const recentFeeds = this.feedEvents.slice(0, 3).filter(f => f.volume && f.volume > 0);
+    if (recentFeeds.length > 0) {
+      const avgVolume = recentFeeds.reduce((sum, f) => sum + (f.volume || 0), 0) / recentFeeds.length;
+      timing.expectedFeedVolume = Math.round(avgVolume);
+    }
+
+    // Calculate next nap window if awake
+    if (rationale.t_awake_now_min !== null) {
+      const napWindowMinutes = this.adaptiveParams.wake_window_max - rationale.t_awake_now_min;
+      if (napWindowMinutes > 0) {
+        timing.nextNapWindowStart = new Date(now.getTime() + napWindowMinutes * 60000);
+      } else {
+        timing.nextNapWindowStart = now;
+      }
+    }
+
+    // Calculate next wake time if sleeping
+    if (rationale.t_awake_now_min === null && this.sleepSegments.length > 0) {
+      const ongoingSleep = this.sleepSegments.find(s => !s.end);
+      if (ongoingSleep) {
+        // Use age-appropriate nap duration
+        let expectedNapDuration = 90;
+        if (this.ageInMonths < 3) expectedNapDuration = 120;
+        else if (this.ageInMonths < 6) expectedNapDuration = 90;
+        else if (this.ageInMonths < 12) expectedNapDuration = 75;
+        else expectedNapDuration = 60;
+
+        // Blend with learned if available
+        if (this.internals.learnedDaySleepMedian && this.internals.dataStability !== 'sparse') {
+          const dayNaps = this.getDayProgress(now).napsToday || 3;
+          const learnedAvgNap = this.internals.learnedDaySleepMedian / Math.max(dayNaps, 2);
+          expectedNapDuration = expectedNapDuration * this.internals.blendRatio.age + 
+                               learnedAvgNap * this.internals.blendRatio.learned;
+        }
+
+        timing.nextWakeAt = new Date(ongoingSleep.start.getTime() + expectedNapDuration * 60000);
+      }
+    }
+
+    return timing;
+  }
+
   public getNextAction(now: Date = new Date()): NextActionResult {
     const isNight = isNightTime(now);
     const tSinceLastFeed = this.getTimeSinceLastFeed(now);
@@ -523,38 +755,50 @@ if (ongoingSleep) {
 
     // Check if currently sleeping
     if (tAwakeNow === null) {
+      const rationale: PredictionRationale = {
+        t_since_last_feed_min: tSinceLastFeed,
+        t_awake_now_min: null,
+        cumulative_day_sleep_min: cumulativeDaySleep,
+        day_sleep_target_min: this.adaptiveParams.day_sleep_target,
+        last_nap_duration_min: lastNapDuration,
+        scores: { feed: 0, sleep: 1 },
+        night_or_day: isNight ? 'night' : 'day',
+        flags: { cluster_feeding: clusterFeeding, short_nap: shortNapFlag, data_gap: dataGap }
+      };
+
       return {
-        next_action: 'LET_SLEEP_CONTINUE',
-        confidence: 0.9,
-        rationale: {
-          t_since_last_feed_min: tSinceLastFeed,
-          t_awake_now_min: null,
-          cumulative_day_sleep_min: cumulativeDaySleep,
-          day_sleep_target_min: this.adaptiveParams.day_sleep_target,
-          last_nap_duration_min: lastNapDuration,
-          scores: { feed: 0, sleep: 1 },
-          night_or_day: isNight ? 'night' : 'day',
-          flags: { cluster_feeding: clusterFeeding, short_nap: shortNapFlag, data_gap: dataGap }
-        },
+        intent: 'LET_SLEEP_CONTINUE',
+        confidence: 'high',
+        timing: this.calculateTimingPredictions(now, rationale),
+        reasons: ['Currently sleeping'],
+        dayProgress: this.getDayProgress(now),
+        internals: this.internals,
+        rationale,
         reevaluate_in_minutes: 30
       };
     }
 
     // Data gap handling
     if (dataGap) {
+      const rationale: PredictionRationale = {
+        t_since_last_feed_min: tSinceLastFeed,
+        t_awake_now_min: tAwakeNow,
+        cumulative_day_sleep_min: cumulativeDaySleep,
+        day_sleep_target_min: this.adaptiveParams.day_sleep_target,
+        last_nap_duration_min: lastNapDuration,
+        scores: { feed: 0.8, sleep: 0 },
+        night_or_day: isNight ? 'night' : 'day',
+        flags: { cluster_feeding: clusterFeeding, short_nap: shortNapFlag, data_gap: true }
+      };
+
       return {
-        next_action: 'FEED_NOW',
-        confidence: 0.3,
-        rationale: {
-          t_since_last_feed_min: tSinceLastFeed,
-          t_awake_now_min: tAwakeNow,
-          cumulative_day_sleep_min: cumulativeDaySleep,
-          day_sleep_target_min: this.adaptiveParams.day_sleep_target,
-          last_nap_duration_min: lastNapDuration,
-          scores: { feed: 0.8, sleep: 0 },
-          night_or_day: isNight ? 'night' : 'day',
-          flags: { cluster_feeding: clusterFeeding, short_nap: shortNapFlag, data_gap: true }
-        },
+        intent: 'FEED_SOON',
+        confidence: 'low',
+        timing: this.calculateTimingPredictions(now, rationale),
+        reasons: ['Not enough recent data', 'Feed likely overdue'],
+        dayProgress: this.getDayProgress(now),
+        internals: this.internals,
+        rationale,
         reevaluate_in_minutes: 45
       };
     }
@@ -567,62 +811,80 @@ if (ongoingSleep) {
     const THRESHOLD_WIND_DOWN = 0.60;
     const DECISION_MARGIN = 0.08;
 
-    let nextAction: NextActionResult['next_action'];
-    let confidence = Math.max(feedScore, sleepScore);
+    type Intent = 'FEED_SOON' | 'START_WIND_DOWN' | 'INDEPENDENT_TIME' | 'LET_SLEEP_CONTINUE' | 'HOLD';
+    let intent: Intent;
+    let confidenceScore = Math.max(feedScore, sleepScore);
     let conflictZone = false;
 
     // Primary decision logic
     if (feedScore >= THRESHOLD_FEED && feedScore - sleepScore > DECISION_MARGIN) {
-      nextAction = 'FEED_NOW';
+      intent = 'FEED_SOON';
     } else if (sleepScore >= THRESHOLD_WIND_DOWN && sleepScore - feedScore > DECISION_MARGIN) {
-      nextAction = 'START_WIND_DOWN';
+      intent = 'START_WIND_DOWN';
     } else {
       // Conflict zone - apply tie breakers
       conflictZone = true;
-      nextAction = this.applyTieBreakers(tSinceLastFeed, tAwakeNow, lastNapDuration);
+      const tieBreaker = this.applyTieBreakers(tSinceLastFeed, tAwakeNow, lastNapDuration);
+      intent = tieBreaker === 'FEED_NOW' ? 'FEED_SOON' : tieBreaker;
       
       // Night-time override for independent time
-      if (nextAction === 'INDEPENDENT_TIME' && isNight) {
-        nextAction = 'START_WIND_DOWN';
+      if (intent === 'INDEPENDENT_TIME' && isNight) {
+        intent = 'START_WIND_DOWN';
       }
       
       // Prevent extending beyond wake window max unless feed overdue
-      if (nextAction === 'INDEPENDENT_TIME' && tAwakeNow > this.adaptiveParams.wake_window_max && feedScore < THRESHOLD_FEED) {
-        nextAction = 'START_WIND_DOWN';
+      if (intent === 'INDEPENDENT_TIME' && tAwakeNow > this.adaptiveParams.wake_window_max && feedScore < THRESHOLD_FEED) {
+        intent = 'START_WIND_DOWN';
       }
     }
 
     // Adjust confidence
-    if (conflictZone) confidence -= 0.05;
-    if (dataGap) confidence -= 0.1;
-    confidence = clamp(confidence, 0.2, 0.95);
+    if (conflictZone) confidenceScore -= 0.05;
+    if (dataGap) confidenceScore -= 0.1;
+    confidenceScore = clamp(confidenceScore, 0.2, 0.95);
+
+    // Map to confidence level
+    let confidence: 'high' | 'medium' | 'low';
+    if (confidenceScore >= 0.7 && !conflictZone && this.internals.dataStability === 'stable') {
+      confidence = 'high';
+    } else if (confidenceScore >= 0.5 || this.internals.dataStability === 'unstable') {
+      confidence = 'medium';
+    } else {
+      confidence = 'low';
+    }
 
     // Determine reevaluation time
     const reevaluateIn = {
-      'FEED_NOW': 45,
+      'FEED_SOON': 45,
       'START_WIND_DOWN': 10,
       'INDEPENDENT_TIME': 10,
       'LET_SLEEP_CONTINUE': 30,
       'HOLD': 10
-    }[nextAction];
+    }[intent];
+
+    const rationale: PredictionRationale = {
+      t_since_last_feed_min: tSinceLastFeed,
+      t_awake_now_min: tAwakeNow,
+      cumulative_day_sleep_min: cumulativeDaySleep,
+      day_sleep_target_min: this.adaptiveParams.day_sleep_target,
+      last_nap_duration_min: lastNapDuration,
+      scores: { feed: feedScore, sleep: sleepScore },
+      night_or_day: isNight ? 'night' : 'day',
+      flags: {
+        cluster_feeding: clusterFeeding,
+        short_nap: shortNapFlag,
+        data_gap: dataGap
+      }
+    };
 
     return {
-      next_action: nextAction,
+      intent,
       confidence,
-      rationale: {
-        t_since_last_feed_min: tSinceLastFeed,
-        t_awake_now_min: tAwakeNow,
-        cumulative_day_sleep_min: cumulativeDaySleep,
-        day_sleep_target_min: this.adaptiveParams.day_sleep_target,
-        last_nap_duration_min: lastNapDuration,
-        scores: { feed: feedScore, sleep: sleepScore },
-        night_or_day: isNight ? 'night' : 'day',
-        flags: {
-          cluster_feeding: clusterFeeding,
-          short_nap: shortNapFlag,
-          data_gap: dataGap
-        }
-      },
+      timing: this.calculateTimingPredictions(now, rationale),
+      reasons: this.generateReasons(rationale, intent),
+      dayProgress: this.getDayProgress(now),
+      internals: this.internals,
+      rationale,
       reevaluate_in_minutes: reevaluateIn
     };
   }

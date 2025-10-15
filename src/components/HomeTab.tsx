@@ -3,8 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
-import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
-import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
 
 interface HomeTabProps {
@@ -20,7 +19,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
-  const { insights } = usePatternAnalysis(activities);
+  const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -251,8 +250,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   };
 
-  // Get next predicted action
-  const getNextPredictedAction = () => {
+  // Use unified prediction engine
+  const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
+  
+  // Legacy helper for backward compatibility
+  const getNextPredictedAction_LEGACY = () => {
     const expectedNaps = getExpectedNaps(babyAgeMonths);
     
     if (ongoingNap) {
@@ -358,7 +360,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const sleepStatus = getSleepStatus();
   const sentiment = getDailySentiment();
   const developmentalPhase = getDevelopmentalPhase();
-  const nextAction = getNextPredictedAction();
 
   return (
     <div className="px-4 py-6 space-y-6 pb-24">
@@ -489,7 +490,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <span className="font-medium">Feeds:</span> {summary.feedCount} logged today
               </p>
               <p className="text-xs text-muted-foreground">
-                {getFeedComparison(summary.feedCount, babyAgeMonths)}
+                {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
               </p>
             </div>
           </div>
@@ -501,7 +502,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <span className="font-medium">Sleep:</span> {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} completed
               </p>
               <p className="text-xs text-muted-foreground">
-                {getNapComparison(summary.napCount, babyAgeMonths)}
+                {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
               </p>
             </div>
           </div>

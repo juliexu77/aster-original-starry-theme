@@ -68,7 +68,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     const prediction = engine.getNextAction();
     
     console.log('🔮 Prediction result:', {
-      action: prediction.next_action,
+      action: prediction.intent,
       confidence: prediction.confidence,
       rationale: {
         feedMinutes: prediction.rationale.t_since_last_feed_min,
@@ -83,25 +83,24 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     // Convert the new prediction format to the old UI format
     let type: "feed" | "nap";
     let anticipatedTime: string | undefined;
-    let confidence: "high" | "medium" | "low";
     let reason: string;
     let details: any;
 
     // Map new actions to old types
-    if (prediction.next_action === "FEED_NOW") {
+    if (prediction.intent === "FEED_SOON") {
       type = "feed";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
       const hours = Math.floor((prediction.rationale.t_since_last_feed_min || 0) / 60);
       const mins = (prediction.rationale.t_since_last_feed_min || 0) % 60;
       reason = `${t('lastFed')} ${hours}h ${mins}m ${t('ago')}`;
-    } else if (prediction.next_action === "START_WIND_DOWN") {
+    } else if (prediction.intent === "START_WIND_DOWN") {
       type = "nap";
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
       const totalMins = prediction.rationale.t_awake_now_min || 0;
       const awakeHours = Math.floor(totalMins / 60);
       const awakeMins = Math.round(totalMins % 60);
       reason = `${t('wakeWindow')} (~${awakeHours}h ${awakeMins}m ${t('awake')})`;
-    } else if (prediction.next_action === "LET_SLEEP_CONTINUE") {
+    } else if (prediction.intent === "LET_SLEEP_CONTINUE") {
       type = "nap";
       anticipatedTime = undefined;
       reason = t('currentlySleeping');
@@ -111,11 +110,6 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
       anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes * 2);
       reason = t('continueCurrentActivity');
     }
-
-    // Map confidence scores
-    if (prediction.confidence >= 0.8) confidence = "high";
-    else if (prediction.confidence >= 0.6) confidence = "medium";
-    else confidence = "low";
 
     // Create details object for expanded view
     const rationale = prediction.rationale;
@@ -138,10 +132,10 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           calculation: `Target: ${Math.round(rationale.day_sleep_target_min / 60 * 10) / 10}h`
         }
       ],
-      calculation: `${prediction.next_action} with ${Math.round(prediction.confidence * 100)}% confidence`
+      calculation: `${prediction.intent} with ${prediction.confidence} confidence`
     };
 
-    return { type, anticipatedTime, confidence, reason, details };
+    return { type, anticipatedTime, confidence: prediction.confidence, reason, details };
   };
 
   const prediction = predictNextActivity();
@@ -168,7 +162,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
       const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
       const currentPrediction = engine.getNextAction();
       
-      if (currentPrediction.next_action === 'LET_SLEEP_CONTINUE') {
+      if (currentPrediction.intent === 'LET_SLEEP_CONTINUE') {
         // Determine what's likely next based on rationale
         const feedScore = currentPrediction.rationale.scores.feed;
         const sleepScore = currentPrediction.rationale.scores.sleep;
