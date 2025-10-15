@@ -15,8 +15,8 @@ interface HelperProps {
 }
 
 export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
-  const { household } = useHousehold();
-  const { userProfile } = useUserProfile();
+  const { household, loading: householdLoading } = useHousehold();
+  const { userProfile, loading: profileLoading } = useUserProfile();
   
   const calculateBabyAgeInWeeks = () => {
     if (!household?.baby_birthday) return 0;
@@ -54,14 +54,28 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   
   // Extract first name from full name
   const userName = userProfile?.full_name?.split(' ')[0] || userProfile?.full_name;
+  
+  // Wait for essential data to load before showing chat
+  if (householdLoading || profileLoading || !household) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
+            <span className="text-2xl">🌿</span>
+          </div>
+          <p className="text-sm text-muted-foreground">The Quiet Village is preparing...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full">
       <ParentingChat 
         activities={activities}
-        babyName={household?.baby_name || 'Baby'}
+        babyName={household.baby_name || 'Baby'}
         babyAgeInWeeks={ageInWeeks}
-        userName={userName}
+        userName={userName || 'Parent'}
         predictionIntent={predictionSignals.intent}
         predictionConfidence={predictionSignals.confidence}
       />
