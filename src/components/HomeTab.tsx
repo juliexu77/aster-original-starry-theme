@@ -16,12 +16,25 @@ interface HomeTabProps {
   activities: Activity[];
   babyName?: string;
   userName?: string;
+  babyBirthday?: string;
   onAddActivity: () => void;
 }
 
-export const HomeTab = ({ activities, babyName, userName, onAddActivity }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Calculate baby's age in months
+  const getBabyAgeInMonths = () => {
+    if (!babyBirthday) return null;
+    const birthDate = new Date(babyBirthday);
+    const today = new Date();
+    const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                   (today.getMonth() - birthDate.getMonth());
+    return Math.max(0, months);
+  };
+
+  const babyAgeMonths = getBabyAgeInMonths();
 
   // Update current time every minute
   useEffect(() => {
@@ -109,6 +122,53 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity }: HomeT
     const diaperCount = todayActivities.filter(a => a.type === 'diaper').length;
 
     return { feedCount, napCount, diaperCount };
+  };
+
+  // Get age-appropriate expectations
+  const getExpectedFeeds = (months: number | null) => {
+    if (months === null) return null;
+    if (months < 1) return { min: 8, max: 12, typical: "8-12" };
+    if (months < 3) return { min: 6, max: 8, typical: "6-8" };
+    if (months < 6) return { min: 5, max: 7, typical: "5-7" };
+    if (months < 9) return { min: 4, max: 6, typical: "4-6" };
+    if (months < 12) return { min: 3, max: 5, typical: "3-5" };
+    return { min: 3, max: 4, typical: "3-4" };
+  };
+
+  const getExpectedNaps = (months: number | null) => {
+    if (months === null) return null;
+    if (months < 3) return { min: 4, max: 6, typical: "4-6" };
+    if (months < 6) return { min: 3, max: 4, typical: "3-4" };
+    if (months < 9) return { min: 2, max: 3, typical: "2-3" };
+    if (months < 12) return { min: 2, max: 3, typical: "2-3" };
+    if (months < 18) return { min: 1, max: 2, typical: "1-2" };
+    return { min: 1, max: 2, typical: "1-2" };
+  };
+
+  const getFeedComparison = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return "Tracking your unique rhythm";
+    
+    if (count >= expected.min && count <= expected.max) {
+      return `Right on track for ${months} months (typical: ${expected.typical})`;
+    } else if (count < expected.min) {
+      return `Below typical range (${expected.typical} for ${months} months)`;
+    } else {
+      return `Above typical range (${expected.typical} for ${months} months)`;
+    }
+  };
+
+  const getNapComparison = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return "Every nap is progress";
+    
+    if (count >= expected.min && count <= expected.max) {
+      return `Consistent with ${months}-month patterns (${expected.typical} typical)`;
+    } else if (count < expected.min) {
+      return `Shorter schedule (${expected.typical} typical for ${months} months)`;
+    } else {
+      return `Extra naps today (${expected.typical} typical for ${months} months)`;
+    }
   };
 
   const summary = getDailySummary();
@@ -228,7 +288,7 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity }: HomeT
                 <span className="font-medium">Feeds:</span> {summary.feedCount} logged today
               </p>
               <p className="text-xs text-muted-foreground">
-                {summary.feedCount >= 6 ? 'Right on rhythm' : 'Building your routine'}
+                {getFeedComparison(summary.feedCount, babyAgeMonths)}
               </p>
             </div>
           </div>
@@ -240,7 +300,7 @@ export const HomeTab = ({ activities, babyName, userName, onAddActivity }: HomeT
                 <span className="font-medium">Sleep:</span> {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} completed
               </p>
               <p className="text-xs text-muted-foreground">
-                {summary.napCount >= 2 ? 'Consistent sleep patterns' : 'Every nap is progress'}
+                {getNapComparison(summary.napCount, babyAgeMonths)}
               </p>
             </div>
           </div>

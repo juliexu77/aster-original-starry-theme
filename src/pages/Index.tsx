@@ -283,6 +283,7 @@ const ongoingNap = activities
         return <HomeTab 
           activities={activities} 
           babyName={babyProfile?.name}
+          babyBirthday={babyProfile?.birthday}
           userName={userProfile?.full_name?.split(' ')[0]}
           onAddActivity={() => setShowAddActivity(true)}
         />;
