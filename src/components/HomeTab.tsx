@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
-
-interface Activity {
-  id: string;
-  type: string;
-  time: string;
-  loggedAt?: string;
-  details: any;
-}
+import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
+import { calculateAgeInWeeks } from "@/utils/huckleberrySchedules";
+import { Activity } from "@/components/ActivityCard";
 
 interface HomeTabProps {
   activities: Activity[];
@@ -25,6 +20,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
+  const { insights } = usePatternAnalysis(activities);
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -297,10 +293,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       
       // Get last feed to estimate amount
       const recentFeeds = todayActivities
-        .filter(a => a.type === 'feed' && a.details?.amount)
+        .filter(a => a.type === 'feed' && a.details?.quantity)
         .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime());
       const avgAmount = recentFeeds.length > 0 
-        ? Math.round(recentFeeds.slice(0, 3).reduce((sum, f) => sum + (f.details.amount || 0), 0) / Math.min(3, recentFeeds.length))
+        ? Math.round(recentFeeds.slice(0, 3).reduce((sum, f) => sum + (parseFloat(f.details.quantity!) || 0), 0) / Math.min(3, recentFeeds.length))
         : 180;
       
       // If nap is longer than expected, adjust message
@@ -366,24 +362,18 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="px-4 py-6 space-y-6 pb-24">
-      {/* Greeting Section with Sentiment */}
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-foreground">
-            {getGreeting()}{userName ? `, ${userName}` : ''}
-          </h1>
-          {babyAge && (
-            <p className="text-sm text-muted-foreground">
-              {babyAge.months} month{babyAge.months !== 1 ? 's' : ''}{babyAge.weeks > 0 ? `, ${babyAge.weeks} week${babyAge.weeks !== 1 ? 's' : ''}` : ''} — {developmentalPhase}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
-          <span className="text-lg">{sentiment.emoji}</span>
-          <span className="text-sm font-medium text-foreground">{sentiment.text}</span>
-        </div>
-        <div className="space-y-1">
-          <p className="text-base text-muted-foreground leading-relaxed">
+      {/* Now Moment - Unified Header */}
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold text-foreground">
+          {getGreeting()}{userName ? `, ${userName}` : ''}
+        </h1>
+        {babyAge && (
+          <p className="text-sm text-muted-foreground">
+            {babyAge.months} month{babyAge.months !== 1 ? 's' : ''}{babyAge.weeks > 0 ? `, ${babyAge.weeks} week${babyAge.weeks !== 1 ? 's' : ''}` : ''} — {developmentalPhase}
+          </p>
+        )}
+        <div className="space-y-1.5 pt-2">
+          <p className="text-base text-foreground leading-relaxed">
             {sleepStatus.main}
           </p>
           {sleepStatus.sub && (
@@ -391,26 +381,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               {sleepStatus.sub}
             </p>
           )}
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-lg">{sentiment.emoji}</span>
+            <span className="text-sm font-medium text-foreground/80">{sentiment.text}</span>
+          </div>
         </div>
       </div>
 
-      {/* Next Predicted Action */}
-      <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
-        <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-          🔮 Next up
-        </h2>
-        <p className="text-sm text-foreground/90 leading-relaxed">
-          {nextAction}
-        </p>
-      </Card>
-
-      {/* Today's Quick View */}
-      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
-        <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-          Today at a glance
+      {/* Today's Rhythm - Combined Section */}
+      <Card className="p-4 space-y-4 bg-card/50 backdrop-blur">
+        <h2 className="text-base font-semibold text-foreground">
+          Today's Rhythm
         </h2>
         
-        <div className="space-y-2">
+        {/* Current Activity Status */}
+        <div className="space-y-2.5 pb-3 border-b border-border/50">
           {/* Last Feed */}
           {lastFeed && (
             <div className="flex items-center gap-3 text-foreground">
@@ -420,9 +405,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex-1">
                 <p className="text-sm">
                   Last feed: <span className="font-medium">{lastFeed.time}</span>
-                  {lastFeed.details?.amount && (
+                  {lastFeed.details?.quantity && (
                     <span className="text-muted-foreground ml-1">
-                      • {lastFeed.details.amount} {lastFeed.details.unit || 'ml'}
+                      • {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
                     </span>
                   )}
                 </p>
@@ -439,9 +424,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex-1">
                 <p className="text-sm">
                   Last diaper: <span className="font-medium">{lastDiaper.time}</span>
-                  {lastDiaper.details?.type && (
+                  {lastDiaper.details?.diaperType && (
                     <span className="text-muted-foreground ml-1">
-                      • {lastDiaper.details.type}
+                      • {lastDiaper.details.diaperType}
                     </span>
                   )}
                 </p>
@@ -488,23 +473,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         {todayActivities.length === 0 && (
           <button
             onClick={onAddActivity}
-            className="w-full mt-4 py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
+            className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
           >
             Tap the green + below to log your first event
           </button>
         )}
-      </Card>
 
-      {/* How You're Doing Today */}
-      <Card className="p-4 space-y-3 bg-card/50 backdrop-blur">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-            How you're doing today
-          </h2>
-        </div>
-        
-        <div className="space-y-2">
+        {/* Daily Progress & Comparisons */}
+        {todayActivities.length > 0 && (
+        <div className="space-y-2.5 pt-3">
           <div className="flex items-start gap-2">
             <span className="text-lg">🌤️</span>
             <div>
@@ -541,7 +518,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           </div>
         </div>
+        )}
       </Card>
+
+      {/* Next Predicted Action */}
+      {nextAction && (
+        <Card className="p-4 space-y-2 bg-primary/5 border-primary/10">
+          <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
+            🔮 What's next
+          </h2>
+          <p className="text-sm text-foreground/90 leading-relaxed">
+            {nextAction}
+          </p>
+        </Card>
+      )}
 
       {/* Recent Activity Summary - Tappable */}
       {todayActivities.length > 0 && (
@@ -585,9 +575,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       {activity.type === 'diaper' && <Droplet className="w-3 h-3 text-primary" />}
                       {activity.type === 'nap' && <Moon className="w-3 h-3 text-primary" />}
                       <span className="capitalize text-foreground">{activity.type}</span>
-                      {activity.details?.amount && (
+                      {activity.details?.quantity && (
                         <span className="text-muted-foreground text-xs">
-                          {activity.details.amount} {activity.details.unit || 'ml'}
+                          {activity.details.quantity} {activity.details.unit || 'ml'}
                         </span>
                       )}
                       {activity.type === 'nap' && activity.details?.endTime && (
