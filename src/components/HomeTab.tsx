@@ -420,15 +420,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       </div>
 
       {/* What's Next - Predictive Card (High Priority) */}
-      {nextAction && !showingYesterday && (
+      {(nextAction && !showingYesterday) || ongoingNap ? (
         <Card className="p-4 space-y-3 bg-gradient-to-br from-card/80 to-card/60 backdrop-blur border-primary/20">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
             <h2 className="text-sm font-semibold text-foreground">What's next</h2>
           </div>
-          <p className="text-base text-foreground leading-relaxed">
-            {nextAction}
-          </p>
+          {nextAction && (
+            <p className="text-base text-foreground leading-relaxed">
+              {nextAction}
+            </p>
+          )}
           
           {/* Wake-up button if sleeping */}
           {ongoingNap && onEndNap && (
@@ -441,7 +443,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </Button>
           )}
         </Card>
-      )}
+      ) : null}
 
       {/* Today's Flow - Rhythm Summary */}
       <Card className="p-4 space-y-4 bg-card/50 backdrop-blur">
