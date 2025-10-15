@@ -330,7 +330,19 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
   if (wakeWindows.length >= 3 && feedIntervals.length >= 3) {
     const wakeStdDev = standardDeviation(wakeWindows);
     const wakeMedian = median(wakeWindows);
-    const isStable = wakeStdDev < (wakeMedian * 0.3); // CV < 30%
+    const coefficientOfVariation = wakeStdDev / wakeMedian;
+    
+    console.log('📊 Data Stability Check:', {
+      wakeWindows: wakeWindows.length,
+      feedIntervals: feedIntervals.length,
+      wakeMedian,
+      wakeStdDev,
+      coefficientOfVariation,
+      threshold: 0.4
+    });
+    
+    // Relaxed threshold: CV < 40% (was 30%) to account for natural baby rhythm variations
+    const isStable = coefficientOfVariation < 0.4;
     
     if (isStable) {
       blendRatio = { age: 0.3, learned: 0.7 };
@@ -339,6 +351,8 @@ function calculateAdaptiveParams(events: PredictionEvent[], baseParams: Personal
       blendRatio = { age: 0.6, learned: 0.4 };
       dataStability = 'unstable';
     }
+    
+    console.log('✅ Data Stability Result:', dataStability);
   }
 
   // Apply blended parameters
