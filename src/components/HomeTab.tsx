@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, TrendingUp } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { format, isToday, differenceInMinutes } from "date-fns";
+import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 
 interface Activity {
   id: string;
@@ -23,18 +23,28 @@ interface HomeTabProps {
 export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity }: HomeTabProps) => {
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showTimeline, setShowTimeline] = useState(false);
 
-  // Calculate baby's age in months
-  const getBabyAgeInMonths = () => {
+  // Calculate baby's age in months and weeks
+  const getBabyAge = () => {
     if (!babyBirthday) return null;
     const birthDate = new Date(babyBirthday);
     const today = new Date();
-    const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                   (today.getMonth() - birthDate.getMonth());
-    return Math.max(0, months);
+    const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+                        (today.getMonth() - birthDate.getMonth());
+    const months = Math.max(0, totalMonths);
+    
+    // Calculate remaining weeks
+    const monthsDate = new Date(birthDate);
+    monthsDate.setMonth(monthsDate.getMonth() + totalMonths);
+    const daysDiff = Math.floor((today.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(daysDiff / 7);
+    
+    return { months, weeks };
   };
 
-  const babyAgeMonths = getBabyAgeInMonths();
+  const babyAge = getBabyAge();
+  const babyAgeMonths = babyAge?.months || null;
 
   // Update current time every minute
   useEffect(() => {
@@ -100,19 +110,88 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     .filter(a => a.type === 'diaper')
     .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
 
-  // Get sleep status message
+  // Get sleep status message with duration
   const getSleepStatus = () => {
     if (ongoingNap) {
       const startTime = ongoingNap.details?.startTime || ongoingNap.time;
-      return `${babyName || 'Baby'} has been sleeping since ${startTime}`;
+      
+      // Calculate sleep duration
+      const [time, period] = startTime.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
+      let hour24 = hours;
+      if (period === 'PM' && hours !== 12) hour24 += 12;
+      if (period === 'AM' && hours === 12) hour24 = 0;
+      
+      const napStart = new Date(ongoingNap.loggedAt!);
+      napStart.setHours(hour24, minutes, 0, 0);
+      
+      const sleepMinutes = differenceInMinutes(currentTime, napStart);
+      const sleepHours = Math.floor(sleepMinutes / 60);
+      const remainingMinutes = sleepMinutes % 60;
+      
+      const durationText = sleepHours > 0 
+        ? `${sleepHours}h ${remainingMinutes}m` 
+        : `${remainingMinutes}m`;
+      
+      return {
+        main: `${babyName || 'Baby'} has been sleeping since ${startTime}`,
+        sub: `${babyName?.split(' ')[0] || 'Baby'} has been asleep for ${durationText} — ${sleepHours >= 2 ? 'a solid nap' : 'resting peacefully'}.`
+      };
     }
     
     const awakeTime = getAwakeTime();
     if (awakeTime) {
-      return `${babyName || 'Baby'} has been awake for ${awakeTime}`;
+      return {
+        main: `${babyName || 'Baby'} has been awake for ${awakeTime}`,
+        sub: null
+      };
     }
     
-    return `${babyName || 'Baby'} is ready to start the day`;
+    return {
+      main: `${babyName || 'Baby'} is ready to start the day`,
+      sub: null
+    };
+  };
+
+  // Get daily sentiment based on patterns
+  const getDailySentiment = () => {
+    const summary = getDailySummary();
+    const expected = getExpectedFeeds(babyAgeMonths);
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+    
+    // Growth spurt indicators: more frequent feeds than typical
+    if (expected && summary.feedCount > expected.max + 2) {
+      return { emoji: "🌱", text: "Growth spurt week" };
+    }
+    
+    // Smooth transition: feeds and naps in range
+    if (expected && expectedNaps && 
+        summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
+        summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
+      return { emoji: "☀️", text: "Smooth transition" };
+    }
+    
+    // Settled rhythm: consistent patterns
+    if (summary.feedCount >= 3 && summary.napCount >= 2) {
+      return { emoji: "✨", text: "Settled rhythm day" };
+    }
+    
+    // Default: building routine
+    return { emoji: "🌿", text: "Building rhythm together" };
+  };
+
+  // Get developmental phase description
+  const getDevelopmentalPhase = () => {
+    if (!babyAge) return null;
+    
+    const { months, weeks } = babyAge;
+    
+    if (months < 3) return "in the sleepy newborn phase";
+    if (months < 6) return "discovering the world around them";
+    if (months < 9) return "in the curious, exploratory phase";
+    if (months < 12) return "becoming more mobile and independent";
+    if (months < 18) return "learning to communicate and express";
+    return "growing into their own little person";
   };
 
   // Activity summary data
@@ -147,43 +226,68 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   const getFeedComparison = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return "Tracking your unique rhythm";
+    if (!expected) return "Feeds are consistent — stable days build confident nights.";
     
     if (count >= expected.min && count <= expected.max) {
-      return `Right on track for ${months} months (typical: ${expected.typical})`;
+      return `Right on rhythm for ${months} months — stable days build confident nights.`;
+    } else if (count < expected.min && count === 0) {
+      return "Just getting started today — every feed adds to your routine.";
     } else if (count < expected.min) {
-      return `Below typical range (${expected.typical} for ${months} months)`;
+      return `Light feeding day — still within healthy range for ${months} months.`;
     } else {
-      return `Above typical range (${expected.typical} for ${months} months)`;
+      return `Extra feeds today — often a sign of a growth spurt or comfort need.`;
     }
   };
 
   const getNapComparison = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
-    if (!expected) return "Every nap is progress";
+    if (!expected) return "Every nap is progress — building healthy sleep habits.";
     
     if (count >= expected.min && count <= expected.max) {
-      return `Consistent with ${months}-month patterns (${expected.typical} typical)`;
+      return `Solid nap balance — ${babyName?.split(' ')[0] || 'baby'} is learning to self-regulate.`;
+    } else if (count < expected.min && count === 0) {
+      return "Working on today's first nap — every rest counts.";
     } else if (count < expected.min) {
-      return `Shorter schedule (${expected.typical} typical for ${months} months)`;
+      return `Shorter nap day — normal during transitions and growth spurts.`;
     } else {
-      return `Extra naps today (${expected.typical} typical for ${months} months)`;
+      return `Extra restful day — sometimes babies need more recovery time.`;
     }
   };
 
   const summary = getDailySummary();
   const awakeTime = getAwakeTime();
+  const sleepStatus = getSleepStatus();
+  const sentiment = getDailySentiment();
+  const developmentalPhase = getDevelopmentalPhase();
 
   return (
     <div className="px-4 py-6 space-y-6 pb-24">
-      {/* Greeting Section */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-foreground">
-          {getGreeting()}{userName ? `, ${userName}` : ''}
-        </h1>
-        <p className="text-base text-muted-foreground leading-relaxed">
-          {getSleepStatus()}
-        </p>
+      {/* Greeting Section with Sentiment */}
+      <div className="space-y-3">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold text-foreground">
+            {getGreeting()}{userName ? `, ${userName}` : ''}
+          </h1>
+          {babyAge && (
+            <p className="text-sm text-muted-foreground">
+              {babyAge.months} month{babyAge.months !== 1 ? 's' : ''}{babyAge.weeks > 0 ? `, ${babyAge.weeks} week${babyAge.weeks !== 1 ? 's' : ''}` : ''} — {developmentalPhase}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 px-3 py-2 bg-primary/5 rounded-lg border border-primary/10">
+          <span className="text-lg">{sentiment.emoji}</span>
+          <span className="text-sm font-medium text-foreground">{sentiment.text}</span>
+        </div>
+        <div className="space-y-1">
+          <p className="text-base text-muted-foreground leading-relaxed">
+            {sleepStatus.main}
+          </p>
+          {sleepStatus.sub && (
+            <p className="text-sm text-muted-foreground/80 italic">
+              {sleepStatus.sub}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Today's Quick View */}
@@ -312,25 +416,71 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <span className="font-medium">Overall:</span> Calm and steady
               </p>
               <p className="text-xs text-muted-foreground">
-                You're doing great—keep trusting your rhythm
+                You're building confidence, one small rhythm at a time.
               </p>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Recent Activity Summary */}
+      {/* Recent Activity Summary - Tappable */}
       {todayActivities.length > 0 && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
-            Recent activity
-          </h2>
-          <div className="text-sm text-muted-foreground">
-            {summary.feedCount} feed{summary.feedCount !== 1 ? 's' : ''} • 
-            {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} • 
-            {summary.diaperCount} diaper{summary.diaperCount !== 1 ? 's' : ''}
-          </div>
-        </div>
+        <Card className="p-4">
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="w-full text-left space-y-2"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-foreground/70 uppercase tracking-wide">
+                Recent activity
+              </h2>
+              {showTimeline ? (
+                <ChevronUp className="w-4 h-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              )}
+            </div>
+            <div className="text-sm text-foreground font-medium">
+              {summary.feedCount} feed{summary.feedCount !== 1 ? 's' : ''} • {' '}
+              {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} • {' '}
+              {summary.diaperCount} diaper{summary.diaperCount !== 1 ? 's' : ''}
+            </div>
+            {!showTimeline && (
+              <p className="text-xs text-muted-foreground">
+                Tap to see today's rhythm
+              </p>
+            )}
+          </button>
+          
+          {showTimeline && (
+            <div className="mt-4 pt-4 border-t border-border space-y-2">
+              {todayActivities
+                .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                .slice(0, 8)
+                .map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-3 text-sm">
+                    <span className="text-muted-foreground w-16">{activity.time}</span>
+                    <div className="flex-1 flex items-center gap-2">
+                      {activity.type === 'feed' && <Baby className="w-3 h-3 text-primary" />}
+                      {activity.type === 'diaper' && <Droplet className="w-3 h-3 text-primary" />}
+                      {activity.type === 'nap' && <Moon className="w-3 h-3 text-primary" />}
+                      <span className="capitalize text-foreground">{activity.type}</span>
+                      {activity.details?.amount && (
+                        <span className="text-muted-foreground text-xs">
+                          {activity.details.amount} {activity.details.unit || 'ml'}
+                        </span>
+                      )}
+                      {activity.type === 'nap' && activity.details?.endTime && (
+                        <span className="text-muted-foreground text-xs">
+                          → {activity.details.endTime}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );
