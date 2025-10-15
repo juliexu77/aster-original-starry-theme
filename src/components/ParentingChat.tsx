@@ -26,6 +26,11 @@ interface ParentingChatProps {
   predictionConfidence?: string;
 }
 
+interface ParsedMessage {
+  content: string;
+  chips: string[];
+}
+
 // Simple markdown formatter for better readability
 const formatMarkdown = (text: string) => {
   const paragraphs = text.split('\n\n').filter(p => p.trim());
@@ -51,19 +56,37 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
-  const [villageGreeting, setVillageGreeting] = useState<string>("");
+  const [greetingMessage, setGreetingMessage] = useState<ParsedMessage>({ content: "", chips: [] });
+  const [currentChips, setCurrentChips] = useState<string[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.supabase.co/functions/v1/parenting-chat";
 
+  const placeholders = [
+    "How's your week going so far?",
+    "Anything you're curious about?",
+    "What's on your mind today?",
+    "Notice anything new today?",
+    "What's been feeling different?"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, greetingMessage]);
 
-  // Load Village greeting on mount - wait for required data
+  // Load initial greeting on mount - wait for required data
   useEffect(() => {
     if (!hasInitialized && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
       setHasInitialized(true);
@@ -72,16 +95,21 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     }
   }, [hasInitialized, activities.length, babyName, babyAgeInWeeks]);
 
-  const quickActions = [
-    { label: "Compare with others", prompt: "How does this compare to others his age?" },
-    { label: "Sleep rhythm help", prompt: "I'd like help with sleep rhythm and patterns." },
-    { label: "Feeding questions", prompt: "I have questions about feeding at this stage." },
-    { label: "What's coming next?", prompt: "What's coming in the next week or two developmentally?" },
-  ];
+  const parseMessageWithChips = (text: string): ParsedMessage => {
+    const chipsMatch = text.match(/CHIPS:\s*(.+)$/m);
+    if (chipsMatch) {
+      const chipsText = chipsMatch[1];
+      const chips = chipsText.split('|').map(c => c.trim()).filter(c => c.length > 0);
+      const content = text.replace(/CHIPS:\s*.+$/m, '').trim();
+      return { content, chips };
+    }
+    return { content: text, chips: [] };
+  };
 
-  const handleQuickAction = (prompt: string) => {
+  const handleChipClick = (chipText: string) => {
+    setInput("");
     setIsLoading(true);
-    streamChat(prompt, false, false);
+    streamChat(chipText, false, false);
   };
 
   const minutesToText = (m: number) => {
@@ -153,6 +181,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         setMessages(prev => [...prev, { role: "assistant", content: "" }]);
       }
 
+      // Add thoughtful delay before starting stream
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -181,16 +212,24 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               const display = formatDurationsInText(assistantContent);
               
               if (isGreeting) {
-                setVillageGreeting(display);
+                const parsed = parseMessageWithChips(display);
+                setGreetingMessage(parsed);
+                if (parsed.chips.length > 0) {
+                  setCurrentChips(parsed.chips);
+                }
               } else {
+                const parsed = parseMessageWithChips(display);
                 setMessages(prev => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
                     role: "assistant",
-                    content: display
+                    content: parsed.content
                   };
                   return newMessages;
                 });
+                if (parsed.chips.length > 0) {
+                  setCurrentChips(parsed.chips);
+                }
               }
             }
           } catch {
@@ -217,16 +256,24 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               const display = formatDurationsInText(assistantContent);
               
               if (isGreeting) {
-                setVillageGreeting(display);
+                const parsed = parseMessageWithChips(display);
+                setGreetingMessage(parsed);
+                if (parsed.chips.length > 0) {
+                  setCurrentChips(parsed.chips);
+                }
               } else {
+                const parsed = parseMessageWithChips(display);
                 setMessages(prev => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
                     role: "assistant",
-                    content: display
+                    content: parsed.content
                   };
                   return newMessages;
                 });
+                if (parsed.chips.length > 0) {
+                  setCurrentChips(parsed.chips);
+                }
               }
             }
           } catch {
@@ -275,43 +322,23 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
               <span className="text-2xl">🌿</span>
             </div>
-            <p className="text-sm text-muted-foreground">The Quiet Village is observing...</p>
+            <p className="text-sm text-muted-foreground">Observing patterns...</p>
           </div>
         </div>
       )}
 
-      {/* Village Greeting - Always at top */}
-      {villageGreeting && (
-        <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-b border-primary/20">
+      {/* Initial Greeting - Always at top */}
+      {greetingMessage.content && (
+        <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-b border-primary/20 animate-in fade-in duration-500">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
               <span className="text-xl">🌿</span>
             </div>
             <div className="flex-1 space-y-3">
               <div className="text-sm text-foreground/90 leading-relaxed">
-                {formatMarkdown(villageGreeting)}
+                {formatMarkdown(greetingMessage.content)}
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Smart Prompts */}
-      {villageGreeting && messages.length === 0 && (
-        <div className="p-4 border-b border-border/50">
-          <div className="flex flex-wrap gap-2">
-            {quickActions.map((action, idx) => (
-              <Button
-                key={idx}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickAction(action.prompt)}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                {action.label}
-              </Button>
-            ))}
           </div>
         </div>
       )}
@@ -366,16 +393,43 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
         </div>
       </ScrollArea>
 
+      {/* Contextual Chips */}
+      {currentChips.length > 0 && !isLoading && (
+        <div className={`p-4 border-t border-border/50 transition-all duration-300 ${inputFocused ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
+          <div className="flex flex-wrap gap-2">
+            {currentChips.map((chip, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                size="sm"
+                onClick={() => handleChipClick(chip)}
+                className="text-xs animate-in fade-in slide-in-from-bottom-2"
+                style={{ animationDelay: `${idx * 50}ms` }}
+              >
+                {chip}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className="p-4 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+        {!inputFocused && currentChips.length > 0 && (
+          <p className="text-xs text-muted-foreground text-center mb-2 transition-opacity duration-200">
+            💬 Or tell me what's been on your mind…
+          </p>
+        )}
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask anything about your baby's patterns..."
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
+            placeholder={placeholders[placeholderIndex]}
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 transition-all duration-200"
           />
           <Button
             onClick={handleSend}
