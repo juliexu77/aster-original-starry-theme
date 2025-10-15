@@ -4,6 +4,7 @@ import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
+import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
@@ -14,6 +15,7 @@ import { SleepChart } from "@/components/SleepChart";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +28,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 const Index = () => {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
+  const { userProfile } = useUserProfile();
   const { 
     household, 
     loading: householdLoading,
@@ -277,7 +280,12 @@ const ongoingNap = activities
   const renderTabContent = () => {
     switch (activeTab) {
       case "insights":
-        return <InsightsTab activities={activities} />;
+        return <HomeTab 
+          activities={activities} 
+          babyName={babyProfile?.name}
+          userName={userProfile?.full_name?.split(' ')[0]}
+          onAddActivity={() => setShowAddActivity(true)}
+        />;
       case "trends":
         return (
           <div className="px-4 py-6 space-y-6">
