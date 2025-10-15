@@ -63,14 +63,14 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
     }
   }, [messages]);
 
-  // Load Village greeting on mount
+  // Load Village greeting on mount - wait for required data
   useEffect(() => {
-    if (!hasInitialized && activities.length > 0) {
+    if (!hasInitialized && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
       setHasInitialized(true);
       setIsLoading(true);
       streamChat("", true, true);
     }
-  }, [hasInitialized, activities.length]);
+  }, [hasInitialized, activities.length, babyName, babyAgeInWeeks]);
 
   const quickActions = [
     { label: "How is this for their age?", prompt: "How is my baby's rhythm compared to typical patterns for their age?" },
@@ -268,6 +268,18 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   return (
     <div className="flex flex-col h-full bg-background">
+      {/* Loading State */}
+      {!hasInitialized && activities.length > 0 && (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto animate-pulse">
+              <span className="text-2xl">🌿</span>
+            </div>
+            <p className="text-sm text-muted-foreground">The Quiet Village is observing...</p>
+          </div>
+        </div>
+      )}
+
       {/* Village Greeting - Always at top */}
       {villageGreeting && (
         <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-b border-primary/20">

@@ -30,13 +30,13 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
 
   const ageInWeeks = calculateBabyAgeInWeeks();
   
-  // Get prediction signals (simplified - you can enhance this with actual prediction engine)
+  // Get prediction signals
   const getPredictionSignals = () => {
     const now = new Date();
     const recentActivities = activities.filter(a => {
       const activityDate = new Date(a.logged_at);
       const hoursDiff = (now.getTime() - activityDate.getTime()) / (1000 * 60 * 60);
-      return hoursDiff <= 4; // Last 4 hours
+      return hoursDiff <= 4;
     });
     
     const hasRecentSleep = recentActivities.some(a => a.type === 'nap' && !a.details?.endTime);
@@ -51,14 +51,17 @@ export const Helper = ({ activities, babyBirthDate }: HelperProps) => {
   };
   
   const predictionSignals = getPredictionSignals();
+  
+  // Extract first name from full name
+  const userName = userProfile?.full_name?.split(' ')[0] || userProfile?.full_name;
 
   return (
     <div className="h-full">
       <ParentingChat 
         activities={activities}
-        babyName={household?.baby_name}
+        babyName={household?.baby_name || 'Baby'}
         babyAgeInWeeks={ageInWeeks}
-        userName={userProfile?.full_name?.split(' ')[0]}
+        userName={userName}
         predictionIntent={predictionSignals.intent}
         predictionConfidence={predictionSignals.confidence}
       />
