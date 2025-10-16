@@ -93,18 +93,6 @@ const ongoingNap = activities
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   
-  // Calculate baby's age in months
-  const getBabyAge = () => {
-    if (!babyProfile?.birthday) return null;
-    const birthDate = new Date(babyProfile.birthday);
-    const today = new Date();
-    const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
-                        (today.getMonth() - birthDate.getMonth());
-    return Math.max(0, totalMonths);
-  };
-
-  const babyAge = babyProfile?.birthday ? { months: getBabyAge() } : null;
-  
 
   // Check user authentication and household status
   useEffect(() => {
@@ -562,14 +550,9 @@ return (
       <div className="min-h-screen bg-background pb-16">
         <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
           <div className="flex items-center justify-between p-4">
-            <div>
-              <div className="text-xl font-semibold">Parenting Partner</div>
-              {babyProfile?.name && babyAge && (
-                <div className="text-sm text-muted-foreground">
-                  {babyProfile.name} · {babyAge.months === 1 ? '1 month' : `${babyAge.months} months`}
-                </div>
-              )}
-            </div>
+            <h1 className="text-xl font-semibold">
+              {babyProfile?.name ? `${babyProfile.name}${t('babyDay')}` : t('babyTracker')}
+            </h1>
               <div className="flex items-center gap-2">
               {canUndo && (
                 <Button 

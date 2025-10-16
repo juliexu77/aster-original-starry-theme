@@ -419,8 +419,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="space-y-2">
         <p className="text-base text-foreground leading-relaxed">
           {getGreeting()}{userName ? `, ${userName}` : ''}. 
-          {developmentalPhase && (
-            <> {babyName || 'Baby'}'s {developmentalPhase}</>
+          {babyAge && developmentalPhase && (
+            <> At {babyAge.months === 1 ? 'one month' : `${babyAge.months} months`}, {babyName || 'baby'}'s {developmentalPhase}</>
           )}
           {sentiment.emoji && sentiment.text && (
             <> — and {showingYesterday ? "yesterday was" : "today's been"} a {sentiment.text.toLowerCase().replace('day', '').replace('week', '').trim()} rhythm so far</>
