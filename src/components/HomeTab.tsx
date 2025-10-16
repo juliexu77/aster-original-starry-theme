@@ -415,24 +415,33 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="px-4 py-6 space-y-5 pb-24">
-      {/* Unified Opening Narrative */}
+      {/* Greeting Section */}
       <div className="space-y-2">
-        <p className="text-base text-foreground leading-relaxed">
-          {getGreeting()}{userName ? `, ${userName}` : ''}. 
-          {babyAge && developmentalPhase && (
-            <> At {babyAge.months === 1 ? 'one month' : `${babyAge.months} months`}, {babyName || 'baby'}'s {developmentalPhase}</>
-          )}
-          {sentiment.emoji && sentiment.text && (
-            <> — and {showingYesterday ? "yesterday was" : "today's been"} a {sentiment.text.toLowerCase().replace('day', '').replace('week', '').trim()} rhythm so far</>
-          )}. 
-          {ongoingNap ? (
-            <> {babyName?.split(' ')[0] || 'Baby'} has been sleeping since {ongoingNap.details?.startTime || ongoingNap.time}; {sleepStatus.sub?.toLowerCase() || 'resting peacefully'}.</>
-          ) : awakeTime ? (
-            <> {babyName?.split(' ')[0] || 'Baby'}'s been awake about {awakeTime}; you'll likely start seeing sleepy cues soon.</>
-          ) : (
-            <> {sleepStatus.main}.</>
-          )}
+        <h2 className="text-2xl font-medium text-foreground">
+          {getGreeting()}{userName ? `, ${userName}` : ''}
+        </h2>
+        
+        {babyAge && developmentalPhase && (
+          <p className="text-sm text-muted-foreground">
+            {babyAge.months} {babyAge.months === 1 ? 'month' : 'months'} {babyAge.weeks > 0 && `and ${babyAge.weeks} ${babyAge.weeks === 1 ? 'week' : 'weeks'}`} — {developmentalPhase}
+          </p>
+        )}
+        
+        {sentiment.emoji && sentiment.text && (
+          <p className="text-sm font-medium text-foreground">
+            {sentiment.emoji} {sentiment.text}
+          </p>
+        )}
+        
+        <p className="text-base text-muted-foreground">
+          {sleepStatus.main}
         </p>
+        
+        {sleepStatus.sub && (
+          <p className="text-sm text-muted-foreground">
+            {sleepStatus.sub}
+          </p>
+        )}
       </div>
 
       {/* What's Next - Predictive Card (High Priority) */}
