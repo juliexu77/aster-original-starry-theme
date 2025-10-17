@@ -529,7 +529,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
       </ScrollArea>
 
       {/* Input with Contextual Chips */}
-      <div className="sticky bottom-0 border-t border-border/50 bg-background/95 backdrop-blur-sm">
+      <div className="sticky bottom-0 border-t border-border/30 bg-background">
         {/* Chips - only show when not loading and not focused */}
         {currentChips.length > 0 && !isLoading && (
           <div className={`px-4 pt-4 pb-2 transition-all duration-300 ${inputFocused ? 'opacity-0 max-h-0 overflow-hidden' : 'opacity-100 max-h-40'}`}>
@@ -552,7 +552,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
         {/* Input area */}
         <div className="p-4">
-          <div className="flex gap-2 items-end">
+          <div className="relative flex gap-3 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -561,15 +561,16 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
               onBlur={() => setInputFocused(false)}
               placeholder={placeholders[placeholderIndex]}
               disabled={isLoading}
-              rows={2}
-              className="flex-1 transition-all duration-200 dark:border-muted-foreground/40 dark:bg-muted/30 resize-none"
+              rows={1}
+              className="flex-1 min-h-[44px] max-h-32 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
+              className="flex-shrink-0 h-11 w-11 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50"
             >
-              <Send className="w-4 h-4" />
+              <Send className="h-5 w-5" />
             </Button>
           </div>
         </div>
