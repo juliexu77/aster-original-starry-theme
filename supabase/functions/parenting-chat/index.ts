@@ -261,7 +261,7 @@ SLEEP PATTERN CLUES:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-nano",
+        model: isInitial ? "google/gemini-2.5-flash" : "openai/gpt-5-nano",
         messages: [
           { 
             role: "system", 
