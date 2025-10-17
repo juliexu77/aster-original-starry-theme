@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, User, Send, Calendar } from "lucide-react";
+import { Bot, User, Send, Calendar, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  liked?: boolean;
 }
 
 interface Activity {
@@ -69,6 +70,14 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const savedGreetingRef = useRef(false);
   const { toast } = useToast();
   const { household } = useHousehold();
+
+  const handleLikeMessage = (index: number) => {
+    setMessages(prev => prev.map((msg, idx) => 
+      idx === index && msg.role === "assistant" 
+        ? { ...msg, liked: !msg.liked }
+        : msg
+    ));
+  };
   
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
@@ -510,15 +519,21 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
                 </div>
               )}
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+                onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(idx)}
+                className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
+                    : "bg-muted cursor-pointer select-none transition-all hover:bg-muted/80"
                 }`}
               >
                 <div className="text-sm leading-relaxed">
                   {formatMarkdown(emphasizeMicrolearning(msg.content))}
                 </div>
+                {msg.role === "assistant" && msg.liked && (
+                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    <Heart className="w-3.5 h-3.5 text-white fill-white" />
+                  </div>
+                )}
               </div>
               {msg.role === "user" && (
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
