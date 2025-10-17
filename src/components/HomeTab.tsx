@@ -53,9 +53,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get greeting based on time of day
   const getGreeting = () => {
     const hour = currentTime.getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return t('goodMorning');
+    if (hour < 18) return t('goodAfternoon');
+    return t('goodEvening');
   };
 
   // Get the greeting line including user name
@@ -174,35 +174,35 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         : `${remainingMinutes}m`;
       
       const qualityText = sleepHours >= 2 
-        ? 'a strong, restorative nap' 
+        ? t('strongRestorativeNap')
         : sleepHours >= 1 
-          ? 'resting deeply'
-          : 'settling in';
+          ? t('restingDeeply')
+          : t('settlingIn');
       
       return {
-        main: `${babyName || 'Baby'} has been sleeping since ${startTime}`,
-        sub: `${babyName?.split(' ')[0] || 'Baby'} has been resting for ${durationText} — ${qualityText}.`
+        main: `${babyName || t('baby')} ${t('hasBeenSleepingSince')} ${startTime}`,
+        sub: `${babyName?.split(' ')[0] || t('baby')} ${t('hasBeenRestingFor')} ${durationText} — ${qualityText}.`
       };
     }
     
     // If showing yesterday's data, adapt the message
     if (showingYesterday) {
       return {
-        main: `Starting a new day with ${babyName || 'Baby'}`,
-        sub: "Yesterday's rhythm shows below — ready to log today's first moment?"
+        main: `${t('startingNewDay')} ${babyName || t('baby')}`,
+        sub: t('yesterdayRhythm')
       };
     }
     
     const awakeTime = getAwakeTime();
     if (awakeTime) {
       return {
-        main: `${babyName || 'Baby'} has been awake for ${awakeTime}`,
+        main: `${babyName || t('baby')} ${t('hasBeenAwakeFor')} ${awakeTime}`,
         sub: null
       };
     }
     
     return {
-      main: `${babyName || 'Baby'} is ready to start the day`,
+      main: `${babyName || t('baby')} ${t('readyToStartDay')}`,
       sub: null
     };
   };
@@ -216,84 +216,84 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     
     // Growth spurt indicators: more frequent feeds than typical
     if (expected && summary.feedCount > expected.max + 2) {
-      return { emoji: "🌱", text: "Growth spurt week" };
+      return { emoji: "🌱", text: t('growthSpurtWeek') };
     }
     
     // Cluster feeding pattern (many feeds, shorter naps)
     if (expected && summary.feedCount > expected.max && summary.napCount < (expectedNaps?.min || 2)) {
-      return { emoji: "🌸", text: "Comfort day" };
+      return { emoji: "🌸", text: t('comfortDay') };
     }
     
     // Early morning with no data yet
     if (hour < 9 && summary.feedCount === 0 && summary.napCount === 0) {
-      return { emoji: "🌅", text: "Fresh start" };
+      return { emoji: "🌅", text: t('freshStart') };
     }
     
     // Peaceful day - longer/more naps, fewer feeds
     if (expectedNaps && summary.napCount >= expectedNaps.max && expected && summary.feedCount <= expected.max) {
-      return { emoji: "🕊️", text: "Peaceful day" };
+      return { emoji: "🕊️", text: t('peacefulDay') };
     }
     
     // Perfect alignment with expectations
     if (expected && expectedNaps && 
         summary.feedCount === expected.max && 
         summary.napCount === expectedNaps.max) {
-      return { emoji: "🎯", text: "On target" };
+      return { emoji: "🎯", text: t('onTarget') };
     }
     
     // Smooth transition: feeds and naps in range
     if (expected && expectedNaps && 
         summary.feedCount >= expected.min && summary.feedCount <= expected.max &&
         summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max) {
-      return { emoji: "☀️", text: "Smooth flow" };
+      return { emoji: "☀️", text: t('smoothFlow') };
     }
     
     // Mixed patterns - some in range, some not
     if (expected && expectedNaps &&
         ((summary.feedCount >= expected.min && summary.feedCount <= expected.max && summary.napCount < expectedNaps.min) ||
          (summary.napCount >= expectedNaps.min && summary.napCount <= expectedNaps.max && summary.feedCount < expected.min))) {
-      return { emoji: "🌤️", text: "Mixed patterns" };
+      return { emoji: "🌤️", text: t('mixedPatterns') };
     }
     
     // Adjustment phase - off from expected but not extreme
     if (expected && expectedNaps &&
         (summary.feedCount < expected.min - 1 || summary.napCount < expectedNaps.min - 1)) {
-      return { emoji: "🔄", text: "Adjustment phase" };
+      return { emoji: "🔄", text: t('adjustmentPhase') };
     }
     
     // Lots of activity
     if (summary.feedCount + summary.napCount + summary.diaperCount > 12) {
-      return { emoji: "⚡", text: "Active rhythm" };
+      return { emoji: "⚡", text: t('activeRhythm') };
     }
     
     // Irregular but positive
     if (hour > 12 && summary.feedCount >= 2 && summary.napCount >= 1) {
-      return { emoji: "🌊", text: "Going with the flow" };
+      return { emoji: "🌊", text: t('goingWithFlow') };
     }
     
     // Settled rhythm: consistent patterns
     if (summary.feedCount >= 3 && summary.napCount >= 2) {
-      return { emoji: "✨", text: "Settled rhythm day" };
+      return { emoji: "✨", text: t('settledRhythmDay') };
     }
     
     // Milestone development period (varies by age)
     if (babyAgeMonths !== null && [3, 4, 6, 9, 12].includes(babyAgeMonths) && 
         (summary.feedCount !== expected?.max || summary.napCount !== expectedNaps?.max)) {
-      return { emoji: "💫", text: "Finding balance" };
+      return { emoji: "💫", text: t('findingBalance') };
     }
     
     // Light day
     if (hour > 16 && summary.feedCount < 3 && summary.napCount < 2) {
-      return { emoji: "🌙", text: "Gentle pace" };
+      return { emoji: "🌙", text: t('gentlePace') };
     }
     
     // First activities of the day
     if (hour < 12 && (summary.feedCount === 1 || summary.napCount === 1)) {
-      return { emoji: "🌈", text: "Learning together" };
+      return { emoji: "🌈", text: t('learningTogether') };
     }
     
     // Default: building routine
-    return { emoji: "🌿", text: "Building rhythm" };
+    return { emoji: "🌿", text: t('buildingRhythm') };
   };
 
   // Get developmental phase description
@@ -302,12 +302,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     
     const { months, weeks } = babyAge;
     
-    if (months < 3) return "in the sleepy newborn phase";
-    if (months < 6) return "discovering the world around them";
-    if (months < 9) return "in the curious, exploratory phase";
-    if (months < 12) return "becoming more mobile and independent";
-    if (months < 18) return "learning to communicate and express";
-    return "growing into their own little person";
+    if (months < 3) return t('inSleepyNewbornPhase');
+    if (months < 6) return t('discoveringWorld');
+    if (months < 9) return t('curiousExploratoryPhase');
+    if (months < 12) return t('becomingMobile');
+    if (months < 18) return t('learningToCommunicate');
+    return t('growingIntoOwnPerson');
   };
 
   // Activity summary data
@@ -342,31 +342,31 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   const getFeedComparison = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return "Feeds are consistent — steady days help build confident nights.";
+    if (!expected) return t('feedsConsistent');
     
     if (count >= expected.min && count <= expected.max) {
-      return `Right on rhythm for ${months} months — steady days help build confident nights.`;
+      return t('rightOnRhythm').replace('{months}', String(months));
     } else if (count < expected.min && count === 0) {
-      return "Just getting started today — every feed adds to your routine.";
+      return t('gettingStartedToday');
     } else if (count < expected.min) {
-      return `Light feeding day — still within healthy range for ${months} months.`;
+      return t('lightFeedingDay').replace('{months}', String(months));
     } else {
-      return `Extra feeds today — often a sign of growth spurt or comfort needs.`;
+      return t('extraFeedsToday');
     }
   };
 
   const getNapComparison = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
-    if (!expected) return "Every nap is progress — building healthy sleep habits.";
+    if (!expected) return t('everyNapProgress');
     
     if (count >= expected.min && count <= expected.max) {
-      return `Solid nap rhythm — ${babyName?.split(' ')[0] || 'baby'} is practicing self-regulation beautifully.`;
+      return t('solidNapRhythm').replace('{baby}', babyName?.split(' ')[0] || t('baby'));
     } else if (count < expected.min && count === 0) {
-      return "Working on today's first nap — every rest counts.";
+      return t('workingOnFirstNap');
     } else if (count < expected.min) {
-      return `Shorter nap day — normal during transitions and growth spurts.`;
+      return t('shorterNapDay');
     } else {
-      return `Extra restful day — sometimes babies need more recovery time.`;
+      return t('extraRestfulDay');
     }
   };
 
@@ -607,7 +607,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </div>
               <div className="flex-1">
                 <p className="text-sm">
-                  Sleeping since <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                  {t('sleepingSince')} <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </p>
               </div>
             </div>
@@ -620,7 +620,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             onClick={onAddActivity}
             className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
           >
-            Tap the green + below to log your first event
+            {t('tapGreenToLog')}
           </button>
         )}
 
@@ -631,7 +631,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             <span className="text-lg">🌤️</span>
             <div className="flex-1">
               <p className="text-sm text-foreground">
-                <span className="font-medium">Feeds:</span> {summary.feedCount} logged {showingYesterday ? 'yesterday' : 'today'}
+                <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
@@ -643,7 +643,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             <span className="text-lg">🌈</span>
             <div className="flex-1">
               <p className="text-sm text-foreground">
-                <span className="font-medium">Sleep:</span> {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''} completed
+                <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
@@ -655,7 +655,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             <span className="text-lg">💫</span>
             <div className="flex-1">
               <p className="text-sm text-foreground">
-                <span className="font-medium">Overall:</span> Calm and steady
+                <span className="font-medium">{t('overallLabel')}</span> {t('calmAndSteady')}
               </p>
             </div>
           </div>
@@ -668,7 +668,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         <div className="flex items-start gap-2 px-2">
           <span className="text-lg">💚</span>
           <p className="text-sm text-muted-foreground leading-relaxed italic">
-            You're doing great{userName ? `, ${userName}` : ''}. These small rhythms are adding up.
+            {t('youreDoingGreat')}{userName ? `, ${userName}` : ''}. {t('smallRhythmsAddingUp')}
           </p>
         </div>
       )}
