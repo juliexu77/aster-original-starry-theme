@@ -34,7 +34,7 @@ const Onboarding = () => {
           {/* Mission Statement */}
           <div className="space-y-6">
             <h1 className="text-2xl font-sans font-medium text-foreground leading-tight dark:font-bold">
-              In tune with your baby — and yourself.
+              Stay in tune with your baby — and yourself.
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed">
               A calm, intelligent companion that helps you understand your baby's rhythm, respond with confidence, and grow together.
