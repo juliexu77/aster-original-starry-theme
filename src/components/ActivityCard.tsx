@@ -221,18 +221,18 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
         {getActivityIcon(activity.type)}
       </div>
       
-      {/* Content - clickable single line */}
-      <div className="flex-1 flex items-center justify-between min-w-0">
+      {/* Content - clickable with wrapping text */}
+      <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
         <button
           onClick={handleClick}
-          className="flex-1 text-left"
+          className="flex-1 text-left min-w-0"
         >
-          <p className="text-sm text-foreground font-medium truncate hover:text-primary transition-colors">
+          <p className="text-sm text-foreground font-medium break-words hover:text-primary transition-colors">
             {activityText}
           </p>
         </button>
-        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-          <span className="text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
             {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
               ? activity.details.startTime  // Show just start time for ongoing naps
               : activity.time  // Show full time or time range for completed activities
