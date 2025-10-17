@@ -89,21 +89,48 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     // Map new actions to old types
     if (prediction.intent === "FEED_SOON") {
       type = "feed";
-      anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
+      // Use actual predicted feed time if available
+      if (prediction.timing.nextFeedAt) {
+        const feedTime = prediction.timing.nextFeedAt;
+        const hours = feedTime.getHours();
+        const minutes = feedTime.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        anticipatedTime = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+      }
       const hours = Math.floor((prediction.rationale.t_since_last_feed_min || 0) / 60);
       const mins = (prediction.rationale.t_since_last_feed_min || 0) % 60;
       reason = `${t('lastFed')} ${hours}h ${mins}m ${t('ago')}`;
     } else if (prediction.intent === "START_WIND_DOWN") {
       type = "nap";
-      anticipatedTime = addMinutesToTime(currentTime, prediction.reevaluate_in_minutes);
+      // Use actual predicted nap window time if available
+      if (prediction.timing.nextNapWindowStart) {
+        const napTime = prediction.timing.nextNapWindowStart;
+        const hours = napTime.getHours();
+        const minutes = napTime.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        anticipatedTime = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+      }
       const totalMins = prediction.rationale.t_awake_now_min || 0;
       const awakeHours = Math.floor(totalMins / 60);
       const awakeMins = Math.round(totalMins % 60);
       reason = `${t('wakeWindow')} (~${awakeHours}h ${awakeMins}m ${t('awake')})`;
     } else if (prediction.intent === "LET_SLEEP_CONTINUE") {
       type = "nap";
-      anticipatedTime = undefined;
-      reason = t('currentlySleeping');
+      // When sleeping, show predicted wake time if available
+      if (prediction.timing.nextWakeAt) {
+        const wakeTime = prediction.timing.nextWakeAt;
+        const hours = wakeTime.getHours();
+        const minutes = wakeTime.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        anticipatedTime = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+        reason = `${t('currentlySleeping')} — may wake around ${anticipatedTime}`;
+      } else {
+        anticipatedTime = undefined;
+        reason = t('currentlySleeping');
+      }
     } else {
       // INDEPENDENT_TIME or HOLD - default to feed
       type = "feed";
