@@ -59,11 +59,13 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [hasHistory, setHasHistory] = useState(false);
   const [greetingMessage, setGreetingMessage] = useState<ParsedMessage>({ content: "", chips: [] });
   const [currentChips, setCurrentChips] = useState<string[]>([]);
   const [inputFocused, setInputFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const savedGreetingRef = useRef(false);
   const { toast } = useToast();
   const { household } = useHousehold();
   
@@ -99,19 +101,19 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
       try {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const now = new Date();
         
-        // Calculate chat_date using the same 6am logic as the database function
-        const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-        const chatDate = localTime.getHours() < 6 
-          ? new Date(localTime.setDate(localTime.getDate() - 1)).toISOString().split('T')[0]
-          : localTime.toISOString().split('T')[0];
+        // Use DB function to compute chat_date correctly at 6am boundary
+        const { data: chatDate, error: dateErr } = await supabase.rpc('get_chat_date', {
+          timestamp_tz: new Date().toISOString(),
+          user_timezone: timezone,
+        });
+        if (dateErr) throw dateErr;
 
         const { data, error } = await supabase
           .from('chat_messages')
           .select('*')
           .eq('household_id', household.id)
-          .eq('chat_date', chatDate)
+          .eq('chat_date', chatDate as string)
           .order('created_at', { ascending: true });
 
         if (error) throw error;
@@ -122,6 +124,9 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
             content: msg.content
           }));
           setMessages(loadedMessages);
+          setHasHistory(true);
+        } else {
+          setHasHistory(false);
         }
       } catch (error) {
         console.error('Error loading chat history:', error);
@@ -133,12 +138,12 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
   // Load initial greeting on mount - wait for required data
   useEffect(() => {
-    if (!hasInitialized && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
+    if (!hasInitialized && !hasHistory && activities.length > 0 && (babyName || babyAgeInWeeks !== undefined)) {
       setHasInitialized(true);
       setIsLoading(true);
       streamChat("", true, true);
     }
-  }, [hasInitialized, activities.length, babyName, babyAgeInWeeks]);
+  }, [hasInitialized, hasHistory, activities.length, babyName, babyAgeInWeeks]);
 
   const parseMessageWithChips = (text: string): ParsedMessage => {
     const chipsMatch = text.match(/CHIPS:\s*(.+)$/m);
@@ -187,13 +192,12 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const now = new Date();
-      
-      // Calculate chat_date using the same 6am logic
-      const localTime = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-      const chatDate = localTime.getHours() < 6 
-        ? new Date(localTime.setDate(localTime.getDate() - 1)).toISOString().split('T')[0]
-        : localTime.toISOString().split('T')[0];
+      // Use DB helper to generate the correct chat_date at 6am boundary
+      const { data: chatDate, error: dateErr } = await supabase.rpc('get_chat_date', {
+        timestamp_tz: new Date().toISOString(),
+        user_timezone: timezone,
+      });
+      if (dateErr) throw dateErr;
 
       const { error } = await supabase
         .from('chat_messages')
@@ -201,7 +205,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
           household_id: household.id,
           role: message.role,
           content: message.content,
-          chat_date: chatDate
+          chat_date: chatDate as string
         });
 
       if (error) throw error;
@@ -384,6 +388,13 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
             /* ignore partial leftovers */
           }
         }
+      }
+
+      // If greeting finished and there's no prior history, persist it once
+      if (isGreeting && assistantContent && !savedGreetingRef.current && !hasHistory) {
+        const parsed = parseMessageWithChips(formatDurationsInText(assistantContent));
+        await saveMessageToDatabase({ role: "assistant", content: parsed.content });
+        savedGreetingRef.current = true;
       }
     } catch (error) {
       console.error("Chat error:", error);
