@@ -553,70 +553,43 @@ const ongoingNap = activities
                                 
                                 {/* Activities for this date */}
                                 <div className="space-y-1">
-                                  {activityGroups[dateKey].map((activity, activityIndex) => {
-                                    // Get time period for rhythm divider
-                                    const getTimePeriod = (act: any) => {
-                                      if (!act.loggedAt) return null;
-                                      const hour = new Date(act.loggedAt).getHours();
-                                      if (hour >= 5 && hour < 12) return 'morning';
-                                      if (hour >= 12 && hour < 18) return 'afternoon';
-                                      return 'evening';
-                                    };
-                                    
-                                    const currentPeriod = getTimePeriod(activity);
-                                    const previousPeriod = activityIndex > 0 ? getTimePeriod(activityGroups[dateKey][activityIndex - 1]) : null;
-                                    const showDivider = currentPeriod !== previousPeriod && activityIndex > 0;
-                                    
-                                    return (
-                                      <div key={activity.id}>
-                                        {showDivider && (
-                                          <div className="flex items-center gap-2 py-3 my-2">
-                                            <div className="flex-1 h-px bg-border/50" />
-                                            <span className="text-xs text-muted-foreground/60 italic">
-                                              {currentPeriod === 'morning' && 'Morning rhythm'}
-                                              {currentPeriod === 'afternoon' && 'Afternoon'}
-                                              {currentPeriod === 'evening' && 'Evening'}
-                                            </span>
-                                            <div className="flex-1 h-px bg-border/50" />
-                                          </div>
-                                        )}
-                                        <ActivityCard
-                                          activity={activity}
-                                          babyName={babyProfile?.name}
-                                          onEdit={(clickedActivity) => {
-                                            console.log('Clicked activity:', clickedActivity);
-                                            setEditingActivity(clickedActivity);
-                                          }}
-                                          onDelete={async (activityId) => {
-                                            try {
-                                              // Get activity data before deleting for undo tracking
-                                              const { data: activityToDelete } = await supabase
-                                                .from('activities')
-                                                .select('*')
-                                                .eq('id', activityId)
-                                                .single();
+                                  {activityGroups[dateKey].map((activity) => (
+                                    <ActivityCard
+                                      key={activity.id}
+                                      activity={activity}
+                                      babyName={babyProfile?.name}
+                                      onEdit={(clickedActivity) => {
+                                        console.log('Clicked activity:', clickedActivity);
+                                        setEditingActivity(clickedActivity);
+                                      }}
+                                      onDelete={async (activityId) => {
+                                        try {
+                                          // Get activity data before deleting for undo tracking
+                                          const { data: activityToDelete } = await supabase
+                                            .from('activities')
+                                            .select('*')
+                                            .eq('id', activityId)
+                                            .single();
 
-                                              await deleteActivity(activityId);
+                                          await deleteActivity(activityId);
 
-                                              // Track for undo
-                                              if (activityToDelete) {
-                                                trackDelete({
-                                                  id: activityToDelete.id,
-                                                  type: activityToDelete.type,
-                                                  logged_at: activityToDelete.logged_at,
-                                                  details: activityToDelete.details,
-                                                  household_id: activityToDelete.household_id,
-                                                  created_by: activityToDelete.created_by
-                                                });
-                                              }
-                                            } catch (error) {
-                                              console.error('Error deleting activity:', error);
-                                            }
-                                          }}
-                                        />
-                                      </div>
-                                    );
-                                  })}
+                                          // Track for undo
+                                          if (activityToDelete) {
+                                            trackDelete({
+                                              id: activityToDelete.id,
+                                              type: activityToDelete.type,
+                                              logged_at: activityToDelete.logged_at,
+                                              details: activityToDelete.details,
+                                              household_id: activityToDelete.household_id,
+                                              created_by: activityToDelete.created_by
+                                            });
+                                          }
+                                        } catch (error) {
+                                          console.error('Error deleting activity:', error);
+                                        }
+                                      }}
+                                    />
+                                  ))}
                                 </div>
                               </div>
                               
