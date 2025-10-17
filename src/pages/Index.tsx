@@ -315,6 +315,12 @@ const ongoingNap = activities
       case "trends":
         return (
           <div className="px-4 py-6 space-y-6">
+            {/* Trends Header */}
+            <div className="space-y-1">
+              <h2 className="text-[18px] font-semibold text-foreground">
+                This week's rhythm at a glance.
+              </h2>
+            </div>
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
           </div>
@@ -338,6 +344,37 @@ const ongoingNap = activities
       case "insights":
         return (
           <>
+            {/* Log Header */}
+            <div className="px-4 pt-6 pb-4 space-y-3 border-b border-border">
+              <h2 className="text-[18px] font-medium text-foreground">
+                Today · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+              </h2>
+              
+              {/* Quick Summary Line */}
+              <p className="text-[13px] text-muted-foreground">
+                {(() => {
+                  const today = new Date();
+                  const todayKey = today.getFullYear() + '-' + 
+                                 String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                                 String(today.getDate()).padStart(2, '0');
+                  
+                  const todayActivities = activities.filter(a => {
+                    if (!a.loggedAt) return false;
+                    const activityDate = new Date(a.loggedAt);
+                    const y = activityDate.getFullYear();
+                    const m = String(activityDate.getMonth() + 1).padStart(2, '0');
+                    const d = String(activityDate.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${d}` === todayKey;
+                  });
+                  
+                  const naps = todayActivities.filter(a => a.type === 'nap' && a.details.endTime).length;
+                  const feeds = todayActivities.filter(a => a.type === 'feed').length;
+                  const diapers = todayActivities.filter(a => a.type === 'diaper').length;
+                  
+                  return `${naps} naps · ${feeds} feeds · ${diapers} diapers`;
+                })()}
+              </p>
+            </div>
             
             {/* Activities Timeline */}
             <div className="px-4 py-4">              
