@@ -161,7 +161,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
   };
 
   const emphasizeMicrolearning = (text: string) => {
-    return text.replace(/^\s*Light learning:/gim, '**💡 Light learning:**');
+    return text.replace(/🌿\s*Light learning:/gim, '**🌿 Light learning:**');
   };
   const handleChipClick = async (chipText: string) => {
     setInput("");
