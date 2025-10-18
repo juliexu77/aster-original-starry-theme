@@ -156,9 +156,6 @@ const Auth = () => {
         {/* Auth Forms */}
         <Card className="border-border bg-card/50 backdrop-blur shadow-card">
           <CardHeader className="pb-4">
-            <CardTitle className="text-center text-foreground text-xl font-sans font-medium">
-              {t('welcome')}
-            </CardTitle>
             <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
               {t('signInToAccount')}
             </CardDescription>
