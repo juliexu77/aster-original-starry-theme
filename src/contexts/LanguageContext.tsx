@@ -35,8 +35,10 @@ const translations = {
     
     // Navigation
     home: "Home",
+    guide: "Guide",
     insights: "Insights",
     trends: "Trends",
+    log: "Log",
     calendar: "Calendar",
     profile: "Profile",
     settings: "Settings",
@@ -483,9 +485,11 @@ const translations = {
     tapToAddFirst: "点击+按钮添加第一个活动",
     
     // Navigation
-    home: "首页",
+    home: "主页",
+    guide: "指南",
     insights: "洞察",
     trends: "趋势",
+    log: "日志",
     calendar: "日历",
     profile: "个人资料",
     settings: "设置",
