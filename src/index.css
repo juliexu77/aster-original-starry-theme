@@ -75,7 +75,7 @@
     /* Activity colors - varied palette */
     --feed-color: var(--pp-terracotta); /* terracotta for feeds */
     --diaper-color: var(--pp-grey); /* grey for diapers */
-    --nap-color: var(--pp-blackberry); /* blackberry for sleep */
+    --nap-color: var(--pp-terracotta); /* brownish terracotta for sleep */
     --note-color: 25 35% 35%; /* dark brown for notes */
     --chat-color: var(--pp-blackberry); /* blackberry for chat */
     
