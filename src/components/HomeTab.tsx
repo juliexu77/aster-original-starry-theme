@@ -81,7 +81,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Use yesterday's data as context if nothing logged today
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
   const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
-
+  // Debug: surface counts to verify measurement visibility
+  if (typeof window !== 'undefined') {
+    console.info('HomeTab - summary debug', {
+      todayCount: todayActivities.length,
+      yesterdayCount: yesterdayActivities.length,
+      showingYesterday,
+      typesToday: todayActivities.map(a => a.type),
+      typesYesterday: yesterdayActivities.map(a => a.type),
+    });
+  }
+  
   // Use the ongoingNap passed from parent (Index.tsx) for consistency
   const ongoingNap = passedOngoingNap;
 
@@ -477,6 +487,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   };
 
   const summary = getDailySummary();
+  if (typeof window !== 'undefined') {
+    console.info('HomeTab - measurement count', { showingYesterday, measureCount: summary.measureCount });
+  }
   const awakeTime = getAwakeTime();
   const sleepStatus = getSleepStatus();
   const sentiment = getDailySentiment();
