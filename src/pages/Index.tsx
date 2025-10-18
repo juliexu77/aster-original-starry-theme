@@ -119,8 +119,9 @@ const ongoingNap = activities
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
       } else {
-        // No household exists - show profile setup immediately
-        setHasProfile(false);
+        // No household exists - redirect to baby setup
+        navigate('/onboarding/baby-setup');
+        return;
       }
     } else {
       // Redirect unauthenticated users to auth

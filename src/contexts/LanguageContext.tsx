@@ -68,8 +68,27 @@ const translations = {
     
     // Onboarding
     welcomeToApp: "Stay in sync with your baby",
-    onboardingHeadline: "Stay in tune with your baby — and yourself.",
-    onboardingSubheadline: "A calm, intelligent companion that helps you understand your baby's rhythm, respond with confidence, and grow together.",
+    onboardingHeadline: "Stay in rhythm.",
+    onboardingSubheadline: "A gentle companion for your baby — and for you.",
+    
+    // Baby Setup
+    babySetupHeadline: "Let's begin finding your rhythm together.",
+    babySetupSubheadline: "Tell us a few quick things so we can tune the experience for your baby.",
+    babySetupCta: "Set Up My Baby's Profile",
+    babySetupNote: "You can always edit this later — this just helps the app learn your baby's flow.",
+    
+    // Village Invite
+    villageHeadline: "Who's in your village?",
+    villageSubheadline: "Parenting is easier when shared.",
+    villageDescription: "Invite partners, grandparents, or your nanny to stay in sync.",
+    villageSkip: "You can skip for now — invites can be sent anytime.",
+    villageMicrocopy: "Each caregiver sees the same daily rhythm — feeding, sleep, and gentle insights — so everyone moves together.",
+    addSomeone: "Add Someone",
+    
+    // Ready Screen
+    readyHeadline: "You're all set.",
+    readySubheadline: "Your baby's rhythm starts today.",
+    goToHome: "Go to Home",
     simplestWay: "The simplest way to track your baby's daily activities and patterns.",
     trackEverything: "Track Everything",
     logFeeds: "Log feeds, diaper changes, naps, and notes with just a few taps.",
@@ -521,8 +540,27 @@ const translations = {
     
     // Onboarding
     welcomeToApp: "与您的宝宝保持同步",
-    onboardingHeadline: "与您的宝宝和自己保持同步。",
-    onboardingSubheadline: "一个平静、智能的伴侣，帮助您了解宝宝的节奏，自信地回应，共同成长。",
+    onboardingHeadline: "保持节奏。",
+    onboardingSubheadline: "宝宝和你的温柔伙伴。",
+    
+    // Baby Setup
+    babySetupHeadline: "让我们一起找到你的节奏。",
+    babySetupSubheadline: "告诉我们一些简单的信息，这样我们就可以为你的宝宝调整体验。",
+    babySetupCta: "设置宝宝的个人资料",
+    babySetupNote: "你可以随时编辑 — 这只是帮助应用程序了解宝宝的节奏。",
+    
+    // Village Invite
+    villageHeadline: "谁在你的圈子里？",
+    villageSubheadline: "共同养育更轻松。",
+    villageDescription: "邀请伴侣、祖父母或保姆保持同步。",
+    villageSkip: "你可以暂时跳过 — 随时可以发送邀请。",
+    villageMicrocopy: "每个照护者都能看到相同的日常节奏 — 喂养、睡眠和温和的见解 — 让每个人都能一起行动。",
+    addSomeone: "添加成员",
+    
+    // Ready Screen
+    readyHeadline: "一切就绪。",
+    readySubheadline: "你宝宝的节奏从今天开始。",
+    goToHome: "进入主页",
     simplestWay: "追踪宝宝日常活动和模式的最简单方法。",
     trackEverything: "记录所有活动",
     logFeeds: "只需几次点击即可记录喂养、换尿布、睡觉和笔记。",

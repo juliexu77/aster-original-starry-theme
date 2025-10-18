@@ -30,8 +30,12 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Redirect authenticated users away from auth and onboarding pages to the main app
-    if (user && !isAuthWithRedirect && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
+    // Redirect authenticated users away from auth and initial onboarding pages to the main app
+    // But allow access to onboarding flow pages (baby-setup, village, ready)
+    const onboardingFlowPages = ['/onboarding/baby-setup', '/onboarding/village', '/onboarding/ready'];
+    const isOnboardingFlow = onboardingFlowPages.some(route => location.pathname === route);
+    
+    if (user && !isAuthWithRedirect && !isOnboardingFlow && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
       console.log('Redirecting authenticated user to main app');
       navigate("/app", { replace: true });
       return;

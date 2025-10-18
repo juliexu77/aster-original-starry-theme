@@ -33,10 +33,10 @@ const Onboarding = () => {
 
           {/* Mission Statement */}
           <div className="space-y-6">
-            <h1 className="text-2xl font-sans font-medium text-foreground leading-tight dark:font-bold">
+            <h1 className="text-3xl font-heading font-semibold text-foreground leading-tight">
               {t('onboardingHeadline')}
             </h1>
-            <p className="text-base text-muted-foreground leading-relaxed">
+            <p className="text-base text-warm-gray italic leading-relaxed font-light">
               {t('onboardingSubheadline')}
             </p>
           </div>
@@ -51,12 +51,19 @@ const Onboarding = () => {
               {t('getStarted')}
             </Button>
             
-            <div className="text-center">
+            <div className="flex flex-col items-center gap-3">
               <button
                 onClick={() => navigate("/auth")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
               >
                 {t('alreadyHaveAccount')}
+              </button>
+              
+              <button
+                onClick={() => navigate("/demo")}
+                className="text-sm text-warm-gray italic hover:text-foreground transition-colors"
+              >
+                or explore the demo first
               </button>
             </div>
           </div>
