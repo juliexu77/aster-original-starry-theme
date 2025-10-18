@@ -35,10 +35,10 @@ const Onboarding = () => {
 
           {/* Message */}
           <div className="space-y-4">
-            <h1 className="text-3xl md:text-4xl font-sans font-medium text-foreground tracking-tight leading-tight">
+            <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
               Understand your baby's rhythm — and your own.
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
+            <p className="text-base text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
               A calm, intelligent companion that helps you track feeds, naps, and patterns — then gently reflects what they mean.
             </p>
           </div>
