@@ -206,12 +206,15 @@
 
   /* Component base styles */
   .card {
-    background: hsl(var(--surface) / 0.5);
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
   }
 
   .dark .card {
+    background: hsl(var(--card) / 1);
+    backdrop-filter: none;
     border-radius: 8px;
     box-shadow: none;
     border: 1px solid hsl(0 0% 16%); /* #2A2A2A */
@@ -321,7 +324,7 @@
   }
   
   .supportive-card {
-    @apply rounded-2xl shadow-card bg-white/50 border border-border/20 backdrop-blur-sm;
+    @apply rounded-2xl shadow-card bg-card/50 border border-border/20 backdrop-blur-sm;
   }
   
   .dark .supportive-card {
@@ -355,13 +358,16 @@
   
   /* Component utilities */
   .pp-card {
-    background: hsl(var(--surface) / 0.5);
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(8px);
     border-radius: var(--card-radius);
     box-shadow: var(--elev-shadow);
     padding: var(--s-4) var(--s-5);
   }
   
   .dark .pp-card {
+    background: hsl(var(--card) / 1);
+    backdrop-filter: none;
     border-radius: 8px;
     box-shadow: none;
     border: 1px solid hsl(0 0% 16%);

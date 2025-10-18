@@ -598,7 +598,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   // Show prompt
   if (showPrompt && !showReview) {
     return (
-      <Card className="mb-6 bg-card border-border shadow-card">
+      <Card className="mb-6 bg-card/50 backdrop-blur border-border shadow-card">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -627,7 +627,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
   const todaysPhotos = getDayStats(new Date()).photos;
 
   return (
-    <Card className="mb-6 bg-card border-border shadow-card animate-fade-in">
+    <Card className="mb-6 bg-card/50 backdrop-blur border-border shadow-card animate-fade-in">
       <CardContent className="p-6">
         <div className="flex items-center gap-3 mb-4">
           <Moon className="w-6 h-6 text-primary" />
