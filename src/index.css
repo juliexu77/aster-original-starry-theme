@@ -26,15 +26,15 @@
     --s-7: 32px;
     
     /* Light Mode - "Sage & Serene" */
-    --bg: 120 10% 49%; /* #728a72 - sage green */
-    --surface: 35 18% 92%; /* #F2EDE8 - warm taupe/cream */
-    --surface-muted: 35 15% 87%; /* #E5DDD5 - muted taupe */
-    --text: 30 8% 18%; /* #2C2925 - dark taupe */
-    --text-muted: 30 6% 42%; /* #6B675F - medium taupe */
-    --divider: 35 12% 78%; /* #D0C6BB - light taupe */
-    --accent-1: 153 35% 50%; /* #54AF7D - sage mint */
-    --accent-2: 264 28% 65%; /* #A08DC5 - soft lavender */
-    --chart-feed: 153 40% 70%; /* #72D9A5 - mint tint */
+    --bg: 150 33% 96%; /* #F4F8F6 - soft sage background */
+    --surface: 30 33% 96%; /* #F6F4F2 - warm card surface */
+    --surface-muted: 141 35% 89%; /* #DDEBE2 - muted mint surface */
+    --text: 0 0% 18%; /* #2E2E2E - dark text */
+    --text-muted: 147 4% 44%; /* #6C7570 - sage subtext */
+    --divider: 156 26% 91%; /* #E2ECE8 - soft border */
+    --accent-1: 107 19% 66%; /* #A2B79C - sage primary */
+    --accent-2: 32 73% 91%; /* #F8E9D8 - warm accent */
+    --chart-feed: 107 19% 66%; /* #A2B79C - sage for charts */
     --chart-sleep: 264 32% 80%; /* #C2B0DD - lavender tint */
     
     /* Card elevation */
@@ -67,19 +67,19 @@
     --radius: 16px;
     
     /* Activity colors */
-    --feed-color: 153 35% 50%; /* sage mint */
+    --feed-color: 107 19% 66%; /* sage green */
     --diaper-color: 264 28% 65%; /* soft lavender */
     --nap-color: 264 28% 65%; /* soft lavender */
-    --note-color: 35 35% 75%; /* warm taupe */
-    --chat-color: 153 35% 50%; /* sage mint */
+    --note-color: 32 73% 91%; /* warm peach */
+    --chat-color: 107 19% 66%; /* sage green */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(153 35% 50%), hsl(153 32% 62%));
-    --gradient-feed: linear-gradient(135deg, hsl(153 40% 70%), hsl(153 38% 82%));
+    --gradient-primary: linear-gradient(135deg, hsl(107 19% 66%), hsl(107 19% 76%));
+    --gradient-feed: linear-gradient(135deg, hsl(107 19% 66%), hsl(107 19% 80%));
     --gradient-diaper: linear-gradient(135deg, hsl(264 32% 80%), hsl(264 28% 88%));
     --gradient-nap: linear-gradient(135deg, hsl(264 32% 80%), hsl(264 28% 88%));
-    --gradient-note: linear-gradient(135deg, hsl(35 35% 75%), hsl(35 30% 85%));
-    --gradient-chat: linear-gradient(135deg, hsl(153 35% 50%), hsl(153 32% 62%));
+    --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
+    --gradient-chat: linear-gradient(135deg, hsl(107 19% 66%), hsl(107 19% 76%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
