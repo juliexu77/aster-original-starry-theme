@@ -11,10 +11,10 @@
     --font-ui-dark: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-num: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     
-    /* Brand colors */
-    --pp-mint: 153 39% 55%; /* #4CAF7D */
-    --pp-lavender: 264 21% 63%; /* #9B89B3 */
-    --pp-coral: 6 77% 73%; /* #F28B82 */
+    /* Brand colors - Sage/Taupe/Lavender palette */
+    --pp-mint: 153 35% 50%; /* #54AF7D - sage mint */
+    --pp-lavender: 264 28% 65%; /* #A08DC5 - soft lavender */
+    --pp-coral: 15 55% 70%; /* #D89B82 - muted coral/taupe */
     
     /* Spacing scale (8pt grid) */
     --s-1: 4px;
@@ -25,17 +25,17 @@
     --s-6: 24px;
     --s-7: 32px;
     
-    /* Light Mode - "Calm & Supportive" */
-    --bg: 35 15% 98%; /* #FBF9F6 - warmer cream */
-    --surface: 0 0% 100%; /* #FFFFFF */
-    --surface-muted: 35 12% 97%; /* Reduced contrast from surface by 12% */
-    --text: 0 0% 18%; /* #2F2F2F */
-    --text-muted: 0 0% 46%; /* #757575 */
-    --divider: 0 0% 88%; /* #E0E0E0 */
-    --accent-1: var(--pp-mint); /* feeding */
-    --accent-2: var(--pp-lavender); /* sleep/insights */
-    --chart-feed: 153 45% 75%; /* #7ED9B5 - mint tint 60% */
-    --chart-sleep: 264 30% 84%; /* #C1B2D7 - lavender tint 60% */
+    /* Light Mode - "Sage & Serene" */
+    --bg: 120 10% 49%; /* #728a72 - sage green */
+    --surface: 35 18% 92%; /* #F2EDE8 - warm taupe/cream */
+    --surface-muted: 35 15% 87%; /* #E5DDD5 - muted taupe */
+    --text: 30 8% 18%; /* #2C2925 - dark taupe */
+    --text-muted: 30 6% 42%; /* #6B675F - medium taupe */
+    --divider: 35 12% 78%; /* #D0C6BB - light taupe */
+    --accent-1: 153 35% 50%; /* #54AF7D - sage mint */
+    --accent-2: 264 28% 65%; /* #A08DC5 - soft lavender */
+    --chart-feed: 153 40% 70%; /* #72D9A5 - mint tint */
+    --chart-sleep: 264 32% 80%; /* #C2B0DD - lavender tint */
     
     /* Card elevation */
     --elev-shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
@@ -67,19 +67,19 @@
     --radius: 16px;
     
     /* Activity colors */
-    --feed-color: var(--pp-mint);
-    --diaper-color: var(--pp-lavender);
-    --nap-color: var(--pp-lavender);
-    --note-color: 45 35% 80%;
-    --chat-color: var(--pp-mint);
+    --feed-color: 153 35% 50%; /* sage mint */
+    --diaper-color: 264 28% 65%; /* soft lavender */
+    --nap-color: 264 28% 65%; /* soft lavender */
+    --note-color: 35 35% 75%; /* warm taupe */
+    --chat-color: 153 35% 50%; /* sage mint */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(153 40% 85%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 20% 90%));
-    --gradient-note: linear-gradient(135deg, hsl(45 40% 85%), hsl(45 35% 90%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 35% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(153 35% 50%), hsl(153 32% 62%));
+    --gradient-feed: linear-gradient(135deg, hsl(153 40% 70%), hsl(153 38% 82%));
+    --gradient-diaper: linear-gradient(135deg, hsl(264 32% 80%), hsl(264 28% 88%));
+    --gradient-nap: linear-gradient(135deg, hsl(264 32% 80%), hsl(264 28% 88%));
+    --gradient-note: linear-gradient(135deg, hsl(35 35% 75%), hsl(35 30% 85%));
+    --gradient-chat: linear-gradient(135deg, hsl(153 35% 50%), hsl(153 32% 62%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
