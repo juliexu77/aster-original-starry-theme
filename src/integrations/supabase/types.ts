@@ -130,6 +130,7 @@ export type Database = {
           baby_birthday: string | null
           baby_name: string | null
           baby_photo_url: string | null
+          baby_sex: string | null
           created_at: string
           id: string
           name: string
@@ -139,6 +140,7 @@ export type Database = {
           baby_birthday?: string | null
           baby_name?: string | null
           baby_photo_url?: string | null
+          baby_sex?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -148,6 +150,7 @@ export type Database = {
           baby_birthday?: string | null
           baby_name?: string | null
           baby_photo_url?: string | null
+          baby_sex?: string | null
           created_at?: string
           id?: string
           name?: string

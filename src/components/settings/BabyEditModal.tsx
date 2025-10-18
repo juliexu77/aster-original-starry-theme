@@ -24,17 +24,20 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState<string | null>(null);
+  const [babySex, setBabySex] = useState<string>("");
   const [isInitialized, setIsInitialized] = useState(false);
   
   // Save status states
   const [babyNameSaveStatus, setBabyNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
   const [babyBirthdaySaveStatus, setBabyBirthdaySaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
+  const [babySexSaveStatus, setBabySexSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
 
   // Initialize values when modal opens
   useEffect(() => {
     if (open && household) {
       setBabyName(household.baby_name || "");
       setBabyBirthday(household.baby_birthday || null);
+      setBabySex(household.baby_sex || "");
       setIsInitialized(true);
     } else if (!open) {
       // Reset initialized state when modal closes
@@ -86,6 +89,27 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
 
     return () => clearTimeout(timeoutId);
   }, [babyBirthday, household, updateHousehold, user, isInitialized]);
+
+  // Auto-save baby sex changes
+  useEffect(() => {
+    if (!user || !household || !isInitialized) return;
+    if (babySex === household.baby_sex || babySex === "") return;
+    
+    setBabySexSaveStatus("unsaved");
+    setBabySexSaveStatus("saving");
+    const timeoutId = setTimeout(async () => {
+      try {
+        await updateHousehold({ baby_sex: babySex || null });
+        setBabySexSaveStatus("saved");
+        setTimeout(() => setBabySexSaveStatus("idle"), 3000);
+      } catch (error) {
+        setBabySexSaveStatus("error");
+        console.error('Error updating baby sex:', error);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [babySex, household, updateHousehold, user, isInitialized]);
 
   const handleBabyPhotoUpdate = async (photoUrl: string | null) => {
     try {
@@ -170,6 +194,37 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
                 placeholder={t('selectBirthday')}
               />
             </div>
+          </div>
+
+          {/* Baby Sex */}
+          <div>
+            <Label htmlFor="babySex" className="text-sm text-muted-foreground">
+              Sex (for growth percentiles)
+            </Label>
+            <div className="mt-2 flex gap-3">
+              <Button
+                type="button"
+                variant={babySex === "male" ? "default" : "outline"}
+                onClick={() => setBabySex("male")}
+                className="flex-1"
+              >
+                Male
+              </Button>
+              <Button
+                type="button"
+                variant={babySex === "female" ? "default" : "outline"}
+                onClick={() => setBabySex("female")}
+                className="flex-1"
+              >
+                Female
+              </Button>
+            </div>
+            {babySexSaveStatus === "saved" && (
+              <p className="text-xs text-green-600 mt-1">Saved</p>
+            )}
+            {babySexSaveStatus === "error" && (
+              <p className="text-xs text-destructive mt-1">Failed to save</p>
+            )}
           </div>
 
           <Button 

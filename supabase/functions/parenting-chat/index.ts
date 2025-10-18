@@ -9,8 +9,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, activities, babyName, babyAgeInWeeks, timezone, isInitial, userName, predictionIntent, predictionConfidence } = await req.json();
-    console.log('Edge function received:', { babyName, babyAgeInWeeks, timezone, isInitial, userName, predictionIntent, activitiesCount: activities?.length });
+    const { messages, activities, babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, predictionConfidence } = await req.json();
+    console.log('Edge function received:', { babyName, babyAgeInWeeks, babySex, timezone, isInitial, userName, predictionIntent, activitiesCount: activities?.length });
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -100,24 +100,26 @@ serve(async (req) => {
     };
     
     // Helper function to calculate WHO growth percentiles
-    const calculatePercentile = (value: number, ageInWeeks: number, gender: 'boy' | 'girl', measurementType: 'weight' | 'length' | 'headCirc'): number => {
-      // Simplified WHO percentile approximation (boy averages)
+    const calculatePercentile = (value: number, ageInWeeks: number, gender: 'male' | 'female', measurementType: 'weight' | 'length' | 'headCirc'): number => {
+      // Simplified WHO percentile approximation
       // In production, use actual WHO tables
+      const genderMultiplier = gender === 'male' ? 1.0 : 0.95; // Rough adjustment
+      
       if (measurementType === 'weight') {
         // Weight in kg, approximate 50th percentile
-        const expectedWeight = 3.5 + (ageInWeeks * 0.15); // rough approximation
+        const expectedWeight = (3.5 + (ageInWeeks * 0.15)) * genderMultiplier;
         const percentile = 50 + ((value - expectedWeight) / expectedWeight) * 30;
         return Math.max(5, Math.min(95, Math.round(percentile)));
       }
       if (measurementType === 'length') {
         // Height in cm, approximate 50th percentile
-        const expectedLength = 50 + (ageInWeeks * 0.5); // rough approximation
+        const expectedLength = (50 + (ageInWeeks * 0.5)) * genderMultiplier;
         const percentile = 50 + ((value - expectedLength) / expectedLength) * 30;
         return Math.max(5, Math.min(95, Math.round(percentile)));
       }
       if (measurementType === 'headCirc') {
         // Head circumference in cm, approximate 50th percentile
-        const expectedHead = 35 + (ageInWeeks * 0.2); // rough approximation
+        const expectedHead = (35 + (ageInWeeks * 0.2)) * genderMultiplier;
         const percentile = 50 + ((value - expectedHead) / expectedHead) * 30;
         return Math.max(5, Math.min(95, Math.round(percentile)));
       }
@@ -179,18 +181,21 @@ serve(async (req) => {
         const heightCm = heightInches * 2.54;
         const headCirc = parseFloat(details.headCircumference) || 0;
         
+        // Use provided sex or default to 'male'
+        const gender: 'male' | 'female' = (babySex === 'male' || babySex === 'female') ? babySex : 'male';
+        
         return {
           weight: weightKg > 0 ? {
             value: `${weightLbs}lb ${weightOz}oz`,
-            percentile: babyAgeInWeeks ? calculatePercentile(weightKg, babyAgeInWeeks, 'boy', 'weight') : null
+            percentile: babyAgeInWeeks ? calculatePercentile(weightKg, babyAgeInWeeks, gender, 'weight') : null
           } : null,
           length: heightCm > 0 ? {
             value: `${heightInches}"`,
-            percentile: babyAgeInWeeks ? calculatePercentile(heightCm, babyAgeInWeeks, 'boy', 'length') : null
+            percentile: babyAgeInWeeks ? calculatePercentile(heightCm, babyAgeInWeeks, gender, 'length') : null
           } : null,
           headCirc: headCirc > 0 ? {
             value: `${headCirc}"`,
-            percentile: babyAgeInWeeks ? calculatePercentile(headCirc, babyAgeInWeeks, 'boy', 'headCirc') : null
+            percentile: babyAgeInWeeks ? calculatePercentile(headCirc, babyAgeInWeeks, gender, 'headCirc') : null
           } : null
         };
       }) : [];

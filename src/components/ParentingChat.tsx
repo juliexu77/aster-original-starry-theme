@@ -24,6 +24,7 @@ interface ParentingChatProps {
   activities: Activity[];
   babyName?: string;
   babyAgeInWeeks?: number;
+  babySex?: string;
   userName?: string;
   predictionIntent?: string;
   predictionConfidence?: string;
@@ -55,7 +56,7 @@ const formatMarkdown = (text: string) => {
   });
 };
 
-export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, predictionIntent, predictionConfidence, onGoToSettings }: ParentingChatProps) => {
+export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, userName, predictionIntent, predictionConfidence, onGoToSettings }: ParentingChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -242,6 +243,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, userName, 
           activities,
           babyName,
           babyAgeInWeeks,
+          babySex,
           userName,
           predictionIntent,
           predictionConfidence,

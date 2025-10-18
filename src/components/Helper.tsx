@@ -76,6 +76,7 @@ export const Helper = ({ activities, babyBirthDate, onGoToSettings }: HelperProp
         activities={activities}
         babyName={household.baby_name || 'Baby'}
         babyAgeInWeeks={ageInWeeks}
+        babySex={household.baby_sex || undefined}
         userName={userName || 'Parent'}
         predictionIntent={predictionSignals.intent}
         predictionConfidence={predictionSignals.confidence}
