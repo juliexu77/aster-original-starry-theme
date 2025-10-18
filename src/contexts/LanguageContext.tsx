@@ -64,6 +64,8 @@ const translations = {
     
     // Onboarding
     welcomeToApp: "Stay in sync with your baby",
+    onboardingHeadline: "Stay in tune with your baby — and yourself.",
+    onboardingSubheadline: "A calm, intelligent companion that helps you understand your baby's rhythm, respond with confidence, and grow together.",
     simplestWay: "The simplest way to track your baby's daily activities and patterns.",
     trackEverything: "Track Everything",
     logFeeds: "Log feeds, diaper changes, naps, and notes with just a few taps.",
@@ -511,6 +513,8 @@ const translations = {
     
     // Onboarding
     welcomeToApp: "与您的宝宝保持同步",
+    onboardingHeadline: "与您的宝宝和自己保持同步。",
+    onboardingSubheadline: "一个平静、智能的伴侣，帮助您了解宝宝的节奏，自信地回应，共同成长。",
     simplestWay: "追踪宝宝日常活动和模式的最简单方法。",
     trackEverything: "记录所有活动",
     logFeeds: "只需几次点击即可记录喂养、换尿布、睡觉和笔记。",
