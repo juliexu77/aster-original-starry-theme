@@ -29,8 +29,8 @@
     --bg: 26 29% 87%; /* #E8DDD5 - oat milk background */
     --surface: 30 33% 96%; /* #F6F4F2 - warm card surface */
     --surface-muted: 28 30% 88%; /* #E5DED5 - warm taupe surface */
-    --text: 18 13% 21%; /* #3D3330 - mocha text */
-    --text-muted: 25 20% 45%; /* warm mid-tone */
+    --text: 0 0% 13%; /* #212121 - dark charcoal text */
+    --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
     
     /* Light mode color overrides - fall latte palette */
