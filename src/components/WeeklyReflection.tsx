@@ -97,9 +97,8 @@ export const WeeklyReflection = ({ activities }: WeeklyReflectionProps) => {
   };
   
   return (
-    <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-6 border border-primary/20">
-      <h3 className="text-base font-medium text-foreground mb-3">Weekly Reflection</h3>
-      <p className="text-sm text-foreground/90 leading-relaxed">
+    <div className="px-6 pb-2">
+      <p className="text-sm text-muted-foreground leading-relaxed italic">
         {generateReflection()}
       </p>
     </div>
