@@ -15,6 +15,8 @@ const translations = {
     // App name and core  
     appName: "Baby Tracker",
     welcome: "Welcome back",
+    authHeadline: "Welcome back to the flow.",
+    authSubheadline: "Each day, a little more in sync.",
     
     // Authentication
     signIn: "Sign In",
@@ -466,6 +468,8 @@ const translations = {
     // App name and core  
     appName: "宝宝追踪器",
     welcome: "欢迎回来",
+    authHeadline: "欢迎回到节奏中。",
+    authSubheadline: "每一天，更加同步。",
     
     // Authentication
     signIn: "登录",

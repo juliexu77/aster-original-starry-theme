@@ -8,7 +8,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Baby, Heart, Mail } from "lucide-react";
+import { Baby, Heart, Mail, Sprout } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
@@ -142,17 +142,14 @@ const Auth = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
-              <Baby className="w-6 h-6 text-foreground" />
-            </div>
-            <Heart className="w-5 h-5 text-accent/80" />
+          <div className="flex items-center justify-center mb-4">
+            <Sprout className="w-6 h-6 text-primary/60" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-sans font-semibold text-foreground mb-2 tracking-tight leading-tight dark:font-bold">
-            {t('appName')}
+          <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-relaxed">
+            {t('authHeadline')}
           </h1>
-          <p className="text-muted-foreground text-sm leading-relaxed">
-            {t('tagline')}
+          <p className="text-muted-foreground/80 text-sm leading-relaxed font-light">
+            {t('authSubheadline')}
           </p>
         </div>
 
