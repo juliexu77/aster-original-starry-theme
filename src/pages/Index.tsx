@@ -72,7 +72,7 @@ const Index = () => {
 
         return {
           id: dbActivity.id,
-          type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note',
+          type: dbActivity.type as 'feed' | 'diaper' | 'nap' | 'note' | 'measure' | 'photo',
           time: displayTime,
           loggedAt: dbActivity.logged_at, // Preserve the original timestamp
           details: dbActivity.details
