@@ -320,6 +320,93 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return t('growingIntoOwnPerson');
   };
 
+  // Calculate percentiles using WHO growth standards
+  const calculatePercentile = (value: number, ageInMonths: number, measurementType: 'weight' | 'length' | 'headCirc'): number => {
+    // WHO Growth Standards - selected percentile values (3rd, 15th, 50th, 85th, 97th)
+    // Assuming male for now (could be enhanced with baby sex)
+    const lengthTable: { [month: number]: number[] } = {
+      0: [46.1, 48.0, 49.9, 51.8, 53.7], 1: [50.8, 52.8, 54.7, 56.7, 58.6],
+      2: [54.4, 56.4, 58.4, 60.4, 62.4], 3: [57.3, 59.4, 61.4, 63.5, 65.5],
+      4: [59.7, 61.8, 63.9, 66.0, 68.0], 5: [61.7, 63.8, 65.9, 68.0, 70.1],
+      6: [63.3, 65.5, 67.6, 69.8, 71.9], 9: [67.7, 70.1, 72.0, 74.2, 76.5],
+      12: [71.0, 73.4, 75.7, 78.1, 80.5], 18: [76.0, 78.7, 81.3, 83.9, 86.5],
+      24: [79.9, 82.8, 85.6, 88.4, 91.2]
+    };
+    const weightTable: { [month: number]: number[] } = {
+      0: [2.5, 2.9, 3.3, 3.9, 4.4], 1: [3.4, 3.9, 4.5, 5.1, 5.8],
+      2: [4.3, 4.9, 5.6, 6.3, 7.1], 3: [5.0, 5.7, 6.4, 7.2, 8.0],
+      4: [5.6, 6.2, 7.0, 7.8, 8.7], 5: [6.0, 6.7, 7.5, 8.4, 9.3],
+      6: [6.4, 7.1, 7.9, 8.8, 9.8], 9: [7.1, 8.0, 8.9, 9.9, 10.9],
+      12: [7.7, 8.6, 9.6, 10.8, 11.9], 18: [8.8, 9.8, 10.9, 12.2, 13.5],
+      24: [9.7, 10.8, 12.2, 13.6, 15.3]
+    };
+    const headCircTable: { [month: number]: number[] } = {
+      0: [32.1, 33.2, 34.5, 35.7, 36.9], 1: [35.1, 36.3, 37.6, 38.9, 40.1],
+      2: [36.9, 38.1, 39.5, 40.8, 42.2], 3: [38.1, 39.4, 40.8, 42.2, 43.6],
+      4: [39.0, 40.4, 41.8, 43.3, 44.7], 5: [39.7, 41.1, 42.6, 44.1, 45.6],
+      6: [40.3, 41.7, 43.3, 44.8, 46.4], 9: [41.6, 43.1, 44.7, 46.3, 47.9],
+      12: [42.6, 44.1, 45.8, 47.5, 49.2], 18: [44.1, 45.8, 47.5, 49.2, 50.9],
+      24: [45.2, 46.9, 48.7, 50.5, 52.3]
+    };
+
+    const table = measurementType === 'weight' ? weightTable : measurementType === 'length' ? lengthTable : headCircTable;
+    const availableMonths = Object.keys(table).map(Number).sort((a, b) => a - b);
+    let closestMonth = availableMonths.reduce((prev, curr) => 
+      Math.abs(curr - ageInMonths) < Math.abs(prev - ageInMonths) ? curr : prev
+    );
+
+    const percentileValues = table[closestMonth];
+    if (!percentileValues) return 50;
+
+    if (value <= percentileValues[0]) return 3;
+    if (value <= percentileValues[1]) return Math.round(3 + ((value - percentileValues[0]) / (percentileValues[1] - percentileValues[0])) * 12);
+    if (value <= percentileValues[2]) return Math.round(15 + ((value - percentileValues[1]) / (percentileValues[2] - percentileValues[1])) * 35);
+    if (value <= percentileValues[3]) return Math.round(50 + ((value - percentileValues[2]) / (percentileValues[3] - percentileValues[2])) * 35);
+    if (value <= percentileValues[4]) return Math.round(85 + ((value - percentileValues[3]) / (percentileValues[4] - percentileValues[3])) * 12);
+    return 97;
+  };
+
+  // Get latest measurement from all activities
+  const getLatestMeasurement = () => {
+    const measurements = activities
+      .filter(a => a.type === 'measure' && a.loggedAt)
+      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime());
+    
+    if (measurements.length === 0) return null;
+    
+    const latest = measurements[0];
+    const details = latest.details || {};
+    const weightLbs = parseFloat(details.weightLbs || '0');
+    const weightOz = parseFloat(details.weightOz || '0');
+    const weightKg = (weightLbs * 0.453592) + (weightOz * 0.0283495);
+    const heightInches = parseFloat(details.heightInches || '0');
+    const heightCm = heightInches * 2.54;
+    const headCirc = parseFloat(details.headCircumference || '0');
+    
+    const result: any = { date: latest.loggedAt };
+    
+    if (weightKg > 0 && babyAgeMonths !== null) {
+      result.weight = {
+        display: `${weightLbs}lb ${weightOz}oz`,
+        percentile: calculatePercentile(weightKg, babyAgeMonths, 'weight')
+      };
+    }
+    if (heightCm > 0 && babyAgeMonths !== null) {
+      result.length = {
+        display: `${heightInches}"`,
+        percentile: calculatePercentile(heightCm, babyAgeMonths, 'length')
+      };
+    }
+    if (headCirc > 0 && babyAgeMonths !== null) {
+      result.headCirc = {
+        display: `${headCirc}"`,
+        percentile: calculatePercentile(headCirc, babyAgeMonths, 'headCirc')
+      };
+    }
+    
+    return Object.keys(result).length > 1 ? result : null;
+  };
+
   // Activity summary data
   const getDailySummary = () => {
     const feedCount = displayActivities.filter(a => a.type === 'feed').length;
@@ -487,8 +574,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   };
 
   const summary = getDailySummary();
+  const latestMeasurement = getLatestMeasurement();
   if (typeof window !== 'undefined') {
-    console.info('HomeTab - measurement count', { showingYesterday, measureCount: summary.measureCount });
+    console.info('HomeTab - measurement count', { showingYesterday, measureCount: summary.measureCount, latestMeasurement });
   }
   const awakeTime = getAwakeTime();
   const sleepStatus = getSleepStatus();
@@ -665,16 +753,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           </div>
           
-          {summary.measureCount > 0 && (
+          {latestMeasurement && (
             <div className="flex items-start gap-2">
               <span className="text-lg">📏</span>
               <div className="flex-1">
                 <p className="text-sm text-foreground">
-                  <span className="font-medium">{t('measurementsLabel') || 'Growth'}</span> {summary.measureCount} {summary.measureCount !== 1 ? 'measurements' : 'measurement'} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
+                  <span className="font-medium">{t('measurementsLabel') || 'Growth'}</span> {format(new Date(latestMeasurement.date), 'MMM d')}
                 </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Open the Guide for growth percentiles and developmental context.
-                </p>
+                <div className="text-xs text-muted-foreground leading-relaxed space-y-0.5">
+                  {latestMeasurement.weight && (
+                    <div>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th percentile)</div>
+                  )}
+                  {latestMeasurement.length && (
+                    <div>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th percentile)</div>
+                  )}
+                  {latestMeasurement.headCirc && (
+                    <div>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th percentile)</div>
+                  )}
+                </div>
               </div>
             </div>
           )}
