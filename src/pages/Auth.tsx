@@ -146,7 +146,7 @@ const Auth = () => {
             <Sprout className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
-            🌱 Step into the rhythm.
+            Step into the rhythm.
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed font-light">
             Create an account to start tracking and reflecting your baby's day.
