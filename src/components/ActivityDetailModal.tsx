@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Activity } from "./ActivityCard";
 import { Baby, Moon, Palette, StickyNote, Clock, Droplets, Heart, Milk } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ActivityDetailModalProps {
   activity: Activity | null;
@@ -9,6 +10,7 @@ interface ActivityDetailModalProps {
 }
 
 export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetailModalProps) => {
+  const { t } = useLanguage();
   if (!activity) return null;
 
   const getActivityIcon = (type: string) => {
@@ -49,20 +51,20 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             {activity.details?.feedType && (
               <div className="flex items-center gap-2">
                 <Milk className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Type: {activity.details.feedType}</span>
+                <span className="text-sm">{t('typeLabel')}: {activity.details.feedType}</span>
               </div>
             )}
             
             {activity.details?.quantity && activity.details?.unit && (
               <div className="flex items-center gap-2">
                 <Droplets className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Amount: {activity.details.quantity} {activity.details.unit}</span>
+                <span className="text-sm">{t('amount')}: {activity.details.quantity} {activity.details.unit}</span>
               </div>
             )}
             
             {activity.details?.note && (
               <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Notes:</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('notesLabel')}:</p>
                 <p className="text-sm">{activity.details.note}</p>
               </div>
             )}
@@ -77,7 +79,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
                 {getActivityIcon(activity.type)}
               </div>
               <div>
-                <h3 className="text-lg font-semibold capitalize">{activity.type} Change</h3>
+                <h3 className="text-lg font-semibold capitalize">{activity.type} {t('change')}</h3>
                 <p className="text-sm text-muted-foreground">{activity.time}</p>
               </div>
             </div>
@@ -85,22 +87,22 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
             {activity.details?.diaperType && (
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Type: {activity.details.diaperType}</span>
+                <span className="text-sm">{t('typeLabel')}: {activity.details.diaperType}</span>
               </div>
             )}
             
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm">Leak: {activity.details?.hasLeak ? "Yes" : "No"}</span>
+                <span className="text-sm">{t('leak')}: {activity.details?.hasLeak ? t('yes') : t('no')}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm">Cream: {activity.details?.hasCream ? "Yes" : "No"}</span>
+                <span className="text-sm">{t('diaperingCream')}: {activity.details?.hasCream ? t('yes') : t('no')}</span>
               </div>
             </div>
             
             {activity.details?.note && (
               <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Notes:</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('notesLabel')}:</p>
                 <p className="text-sm">{activity.details.note}</p>
               </div>
             )}
@@ -124,11 +126,11 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Start: {activity.details.startTime}</span>
+                  <span className="text-sm">{t('start')}: {activity.details.startTime}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">End: {activity.details.endTime}</span>
+                  <span className="text-sm">{t('end')}: {activity.details.endTime}</span>
                 </div>
               </div>
             )}
@@ -165,7 +167,7 @@ export const ActivityDetailModal = ({ activity, isOpen, onClose }: ActivityDetai
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md [&>button[data-state]]:hidden">
         <DialogHeader>
-          <DialogTitle>Activity Details</DialogTitle>
+          <DialogTitle>{t('activityDetails')}</DialogTitle>
         </DialogHeader>
         {renderActivityDetails()}
       </DialogContent>

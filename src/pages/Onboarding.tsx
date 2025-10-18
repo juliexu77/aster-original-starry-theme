@@ -51,13 +51,12 @@ const Onboarding = () => {
               {t('getStarted')}
             </Button>
             
-            {/* Sign In Link */}
             <div className="text-center">
               <button
                 onClick={() => navigate("/auth")}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
               >
-                Already have an account? Log in
+                {t('alreadyHaveAccount')}
               </button>
             </div>
           </div>

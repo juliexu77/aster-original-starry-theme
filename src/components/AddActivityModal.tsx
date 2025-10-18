@@ -274,8 +274,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (!user) {
         console.error('Upload failed: User not authenticated');
         toast({
-          title: "Authentication required",
-          description: "Please log in to upload photos.",
+          title: t('authenticationRequired'),
+          description: t('pleaseLogInToUpload'),
           variant: "destructive"
         });
         throw new Error('User not authenticated');
@@ -729,7 +729,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       }`}
                       onClick={() => setHasLeak(!hasLeak)}
                     >
-                      {hasLeak ? "Yes" : "No"}
+                      {hasLeak ? t('yes') : t('no')}
                     </Button>
                   </div>
                   <div className="flex items-center justify-between py-3">
@@ -744,7 +744,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       }`}
                       onClick={() => setHasCream(!hasCream)}
                     >
-                      {hasCream ? "Yes" : "No"}
+                      {hasCream ? t('yes') : t('no')}
                     </Button>
                   </div>
                 </div>

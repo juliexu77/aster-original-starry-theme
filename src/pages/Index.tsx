@@ -629,9 +629,9 @@ const ongoingNap = activities
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="max-w-md w-full text-center space-y-4">
-          <h2 className="text-xl font-semibold">No household found</h2>
-          <p className="text-muted-foreground">Let's set up your household to get started.</p>
-          <Button onClick={() => navigate('/onboarding')}>Go to Onboarding</Button>
+          <h2 className="text-xl font-semibold">{t('noHouseholdFound')}</h2>
+          <p className="text-muted-foreground">{t('letsSetupHousehold')}</p>
+          <Button onClick={() => navigate('/onboarding')}>{t('goToOnboarding')}</Button>
         </div>
       </div>
     );

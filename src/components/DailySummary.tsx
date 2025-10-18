@@ -1,6 +1,7 @@
 import { Activity } from "./ActivityCard";
 import { Calendar, Download, Share2, Baby, Clock, Moon, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DailySummaryProps {
   activities: Activity[];
@@ -8,6 +9,7 @@ interface DailySummaryProps {
 }
 
 export const DailySummary = ({ activities, date }: DailySummaryProps) => {
+  const { t } = useLanguage();
   const feedActivities = activities.filter(a => a.type === "feed");
   const napActivities = activities.filter(a => a.type === "nap");
   const diaperActivities = activities.filter(a => a.type === "diaper");
@@ -65,14 +67,14 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
           <div className="flex items-center gap-2 mb-2">
             <Baby className="w-4 h-4 text-rose-600" />
             <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Feeds
+              {t('feeds')}
             </span>
           </div>
           <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {feedActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
-            {totalOunces.toFixed(1)} oz total
+            {totalOunces.toFixed(1)} {t('ozTotal')}
           </div>
         </div>
 
@@ -81,14 +83,14 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
           <div className="flex items-center gap-2 mb-2">
             <Moon className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Naps
+              {t('naps')}
             </span>
           </div>
           <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {napActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
-            {napActivities.length > 0 ? "Great sleep!" : "No naps yet"}
+            {napActivities.length > 0 ? t('greatSleep') : t('noNapsYet')}
           </div>
         </div>
 
@@ -97,14 +99,14 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-amber-600" />
             <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Diapers
+              {t('diaper')}
             </span>
           </div>
           <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {diaperActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
-            Changes today
+            {t('changesToday')}
           </div>
         </div>
 
@@ -113,30 +115,30 @@ export const DailySummary = ({ activities, date }: DailySummaryProps) => {
           <div className="flex items-center gap-2 mb-2">
             <StickyNote className="w-4 h-4 text-purple-600" />
             <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Notes
+              {t('notes')}
             </span>
           </div>
           <div className="text-2xl font-sans font-semibold text-foreground dark:font-bold">
             {noteActivities.length}
           </div>
           <div className="text-sm text-muted-foreground">
-            Observations
+            {t('observations')}
           </div>
         </div>
       </div>
 
       {/* Insights */}
       <div className="bg-white/30 rounded-lg p-4 border border-white/20">
-        <h3 className="text-sm font-semibold text-foreground mb-2">Today's Insights</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-2">{t('todaysInsights')}</h3>
         <div className="space-y-1 text-sm text-muted-foreground">
           {feedActivities.length >= 6 && (
-            <p>• Feeding schedule looks great - {feedActivities.length} feeds today</p>
+            <p>• {t('feedingScheduleLooksGreat')} - {feedActivities.length} {t('feeds').toLowerCase()} {t('today').toLowerCase()}</p>
           )}
           {napActivities.length >= 3 && (
-            <p>• Excellent nap routine with {napActivities.length} naps</p>
+            <p>• {t('excellentNapRoutine')} {napActivities.length} {t('naps').toLowerCase()}</p>
           )}
           {activities.length === 0 && (
-            <p>• Start logging activities to see personalized insights</p>
+            <p>• {t('startLoggingForInsights')}</p>
           )}
         </div>
       </div>
