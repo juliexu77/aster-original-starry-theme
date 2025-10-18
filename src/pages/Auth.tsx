@@ -133,11 +133,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Subtle plum brand accent in top corner */}
-      <div className="absolute top-8 right-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl animate-pulse-plum pointer-events-none" />
-      
-      <div className="w-full max-w-md relative z-10">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
         {/* Language Toggle */}
         <div className="flex justify-end mb-6">
           <LanguageToggle />
@@ -148,10 +145,10 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-4">
             <Sprout className="w-6 h-6 text-primary/60" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-heading font-semibold text-foreground mb-2 tracking-tight leading-relaxed">
+          <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-relaxed">
             {t('authHeadline')}
           </h1>
-          <p className="text-warm-gray text-sm leading-relaxed font-body font-light italic">
+          <p className="text-muted-foreground/80 text-sm leading-relaxed font-light">
             {t('authSubheadline')}
           </p>
         </div>
@@ -159,10 +156,10 @@ const Auth = () => {
         {/* Auth Forms */}
         <Card className="border-border bg-card/50 backdrop-blur shadow-card">
           <CardHeader className="pb-4">
-            <CardTitle className="text-center text-foreground text-xl font-heading font-semibold">
+            <CardTitle className="text-center text-foreground text-xl font-sans font-medium">
               {t('welcome')}
             </CardTitle>
-            <CardDescription className="text-center text-warm-gray text-sm leading-relaxed font-body">
+            <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
               {t('signInToAccount')}
             </CardDescription>
           </CardHeader>
@@ -198,7 +195,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="font-body">{t('email')}</Label>
+                    <Label htmlFor="signin-email">{t('email')}</Label>
                     <Input
                       id="signin-email"
                       name="signin-email"
@@ -206,11 +203,10 @@ const Auth = () => {
                       placeholder={t('enterEmail')}
                       required
                       disabled={isLoading}
-                      className="font-body"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-sm font-body">{t('password')}</Label>
+                    <Label htmlFor="signin-password" className="text-sm font-medium">{t('password')}</Label>
                     <Input
                       id="signin-password"
                       name="signin-password"
@@ -218,12 +214,12 @@ const Auth = () => {
                       placeholder={t('enterPassword')}
                       required
                       disabled={isLoading}
-                      className="text-sm font-body"
+                      className="text-sm"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full font-heading font-semibold relative" 
+                    className="w-full font-semibold" 
                     disabled={isLoading}
                   >
                     {isLoading ? t('loading') : t('signIn')}
@@ -256,7 +252,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="full-name" className="font-body">{t('fullName')}</Label>
+                    <Label htmlFor="full-name">{t('fullName')}</Label>
                     <Input
                       id="full-name"
                       name="full-name"
@@ -264,11 +260,10 @@ const Auth = () => {
                       placeholder={t('fullName')}
                       required
                       disabled={isLoading}
-                      className="font-body"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="font-body">{t('email')}</Label>
+                    <Label htmlFor="signup-email">{t('email')}</Label>
                     <Input
                       id="signup-email"
                       name="signup-email"
@@ -276,11 +271,10 @@ const Auth = () => {
                       placeholder={t('enterEmail')}
                       required
                       disabled={isLoading}
-                      className="font-body"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-body">{t('password')}</Label>
+                    <Label htmlFor="signup-password" className="text-sm font-medium">{t('password')}</Label>
                     <Input
                       id="signup-password"
                       name="signup-password"
@@ -288,12 +282,12 @@ const Auth = () => {
                       placeholder={t('enterPassword')}
                       required
                       disabled={isLoading}
-                      className="text-sm font-body"
+                      className="text-sm"
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full font-heading font-semibold relative" 
+                    className="w-full font-semibold" 
                     disabled={isLoading}
                   >
                     {isLoading ? t('settingUp') : t('createAccount')}
