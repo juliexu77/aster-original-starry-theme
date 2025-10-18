@@ -75,13 +75,13 @@ const BabySetup = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center">
-            <Sprout className="w-6 h-6 text-primary/60" />
+            <div className="text-4xl">👶</div>
           </div>
           <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
-            {t('babySetupHeadline')}
+            Let's meet your baby.
           </h1>
-          <p className="text-sm text-warm-gray italic font-light leading-relaxed">
-            {t('babySetupSubheadline')}
+          <p className="text-sm text-muted-foreground font-light leading-relaxed">
+            So we can understand their rhythm and help you stay in tune.
           </p>
         </div>
 
@@ -121,15 +121,15 @@ const BabySetup = () => {
               </div>
 
               <div className="pt-2">
-                <p className="text-xs text-warm-gray italic mb-4 leading-relaxed">
-                  {t('babySetupNote')}
+                <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">
+                  You can always change this later.
                 </p>
                 <Button
                   type="submit"
                   className="w-full font-semibold"
                   disabled={isLoading}
                 >
-                  {isLoading ? t('loading') : t('continue')}
+                  {isLoading ? "Creating..." : "Continue"}
                 </Button>
               </div>
             </form>

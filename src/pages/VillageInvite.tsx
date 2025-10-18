@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Users, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const VillageInvite = () => {
@@ -14,47 +13,37 @@ const VillageInvite = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center">
-            <Users className="w-8 h-8 text-primary/60" />
+            <div className="text-4xl">👩‍👩‍👧‍👦</div>
           </div>
           <h1 className="text-2xl font-heading font-semibold text-foreground leading-tight">
-            {t('villageHeadline')}
+            Who's in your village?
           </h1>
-          <p className="text-base text-foreground font-light leading-relaxed">
-            {t('villageSubheadline')}
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {t('villageDescription')}
+          <p className="text-sm text-muted-foreground font-light leading-relaxed">
+            Parenting is easier when shared.<br />
+            Invite your partner, grandparent, or nanny to stay in sync.
           </p>
         </div>
 
-        {/* Content */}
         <Card className="border-border bg-card/50 backdrop-blur shadow-card">
-          <CardContent className="pt-6 space-y-6">
+          <CardContent className="pt-6 space-y-4">
             <Button
-              onClick={() => navigate("/app?openSettings=caregivers")}
-              variant="outline"
-              className="w-full justify-center gap-2 h-12 text-base font-medium"
+              onClick={() => navigate("/app?tab=settings")}
+              className="w-full font-semibold"
             >
-              <Users className="w-4 h-4" />
-              {t('addSomeone')}
+              + Add someone
             </Button>
-
-            <div className="space-y-4">
-              <p className="text-xs text-warm-gray italic leading-relaxed">
-                {t('villageSkip')}
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {t('villageMicrocopy')}
-              </p>
-            </div>
-
+            
             <Button
               onClick={() => navigate("/onboarding/ready")}
-              className="w-full font-semibold gap-2"
+              variant="ghost"
+              className="w-full font-normal text-muted-foreground"
             >
-              {t('continue')}
-              <ArrowRight className="w-4 h-4" />
+              Skip for now — you can invite them anytime
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground italic leading-relaxed pt-2">
+              Everyone sees the same daily rhythm — so care feels consistent and connected.
+            </p>
           </CardContent>
         </Card>
       </div>

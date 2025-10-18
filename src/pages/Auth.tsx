@@ -143,22 +143,19 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <Sprout className="w-6 h-6 text-primary/60" />
+            <Sprout className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-relaxed">
-            {t('authHeadline')}
+          <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
+            🌱 Step into the rhythm.
           </h1>
-          <p className="text-muted-foreground/80 text-sm leading-relaxed font-light">
-            {t('authSubheadline')}
+          <p className="text-muted-foreground text-sm leading-relaxed font-light">
+            Create an account to start tracking and reflecting your baby's day.
           </p>
         </div>
 
         {/* Auth Forms */}
         <Card className="border-border bg-card/50 backdrop-blur shadow-card">
           <CardHeader className="pb-4">
-            <CardDescription className="text-center text-muted-foreground text-sm leading-relaxed">
-              {t('signInToAccount')}
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">

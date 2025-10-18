@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Heart } from "lucide-react";
+import { Baby } from "lucide-react";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -23,41 +23,48 @@ const Onboarding = () => {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md mx-auto text-center space-y-8">
-          {/* App Icon & Branding */}
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
-              <Baby className="w-8 h-8 text-foreground" />
+          {/* Icon with animation */}
+          <div className="flex items-center justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+              <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center backdrop-blur-sm">
+                <Baby className="w-8 h-8 text-primary" />
+              </div>
             </div>
-            <Heart className="w-6 h-6 text-accent/80" />
           </div>
 
-          {/* Mission Statement */}
-          <div className="space-y-6">
-            <h1 className="text-3xl font-heading font-semibold text-foreground leading-tight">
-              {t('onboardingHeadline')}
+          {/* Message */}
+          <div className="space-y-4">
+            <h1 className="text-3xl md:text-4xl font-sans font-medium text-foreground tracking-tight leading-tight">
+              Understand your baby's rhythm — and your own.
             </h1>
-            <p className="text-base text-warm-gray italic leading-relaxed font-light">
-              {t('onboardingSubheadline')}
+            <p className="text-base md:text-lg text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
+              A calm, intelligent companion that helps you track feeds, naps, and patterns — then gently reflects what they mean.
             </p>
           </div>
 
           {/* CTA */}
-          <div className="pt-8 space-y-4">
-            <Button 
+          <div className="space-y-6">
+            <Button
               onClick={() => navigate("/auth")}
               size="lg"
               className="w-full h-12 text-base font-bold rounded-full"
             >
-              {t('getStarted')}
+              Get Started
             </Button>
-            
-            <div className="text-center">
-              <button
-                onClick={() => navigate("/auth")}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-              >
-                {t('alreadyHaveAccount')}
-              </button>
+            <div className="space-y-2">
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Log in
+                </button>
+              </p>
+              <p className="text-center text-xs text-muted-foreground/70 italic leading-relaxed max-w-md mx-auto pt-4">
+                Built for parents, partners, and caregivers — your whole village in sync.
+              </p>
             </div>
           </div>
         </div>
