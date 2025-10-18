@@ -196,7 +196,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   return (
     <div className="space-y-6">
       {/* Daily Feed Totals */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-muted-foreground" />
@@ -260,7 +260,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       </div>
 
       {/* Daily Sleep Totals */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-muted-foreground" />

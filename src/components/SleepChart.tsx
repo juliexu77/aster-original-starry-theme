@@ -88,7 +88,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>

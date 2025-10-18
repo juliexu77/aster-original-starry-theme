@@ -12,7 +12,7 @@
     --font-num: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     
     /* Brand colors - Warm Sage/Taupe/Lavender palette */
-    --pp-mint: 145 28% 52%; /* #6FAF7E - warmer sage with golden undertone */
+    --pp-mint: 138 22% 48%; /* #62A076 - muted warm sage */
     --pp-lavender: 280 25% 68%; /* #B89DC5 - warmer lavender with peachy undertone */
     --pp-coral: 20 60% 68%; /* #E09B7E - warmer coral */
     
@@ -74,12 +74,12 @@
     --chat-color: var(--pp-mint); /* warmer sage green */
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(145 28% 62%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(145 28% 65%));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(138 22% 58%));
+    --gradient-feed: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(138 22% 62%));
     --gradient-diaper: linear-gradient(135deg, hsl(var(--pp-lavender)), hsl(280 25% 78%));
     --gradient-nap: linear-gradient(135deg, hsl(var(--pp-lavender)), hsl(280 25% 78%));
     --gradient-note: linear-gradient(135deg, hsl(32 73% 91%), hsl(32 65% 95%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(145 28% 62%));
+    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(138 22% 58%));
     
     /* Shadows */
     --shadow-soft: var(--elev-shadow);
