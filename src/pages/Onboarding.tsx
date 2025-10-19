@@ -14,7 +14,7 @@ const Onboarding = () => {
   const [error, setError] = useState("");
 
   const handleGetStarted = () => {
-    if (inviteCode.toLowerCase() === "calebsage") {
+    if (inviteCode.toLowerCase() === "village") {
       navigate("/auth");
     } else {
       setError("Invalid invite code");
