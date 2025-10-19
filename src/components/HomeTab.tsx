@@ -981,15 +981,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         )}
       </Card>
 
-      {/* Emotional Reassurance */}
-      {displayActivities.length > 0 && (
-        <div className="flex items-start gap-2 px-2">
-          <span className="text-lg">💚</span>
-          <p className="text-sm text-muted-foreground leading-relaxed italic">
-            {t('youreDoingGreat')}{userName ? `, ${userName}` : ''}. {t('smallRhythmsAddingUp')}
-          </p>
-        </div>
-      )}
 
     </div>
   );
