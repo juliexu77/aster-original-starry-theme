@@ -49,6 +49,7 @@ const Index = () => {
   const { trackCreate, trackUpdate, trackDelete, undo, canUndo, undoCount } = useActivityUndo();
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
+  const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
 
   // Convert database activities to UI activities
   const activities: Activity[] = user && household && dbActivities 
@@ -117,9 +118,30 @@ const ongoingNap = activities
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Check if user has ever been a collaborator (reliable indicator they're not new)
+  useEffect(() => {
+    if (!user) {
+      setHasEverBeenCollaborator(null);
+      return;
+    }
+
+    const checkCollaboratorHistory = async () => {
+      const { data } = await supabase
+        .from('collaborators')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      
+      setHasEverBeenCollaborator(!!data);
+    };
+
+    checkCollaboratorHistory();
+  }, [user]);
+
   // Check household status and redirect new users to setup
   useEffect(() => {
-    if (loading || householdLoading || activitiesLoading) return;
+    if (loading || householdLoading || hasEverBeenCollaborator === null) return;
     if (!user) return;
 
     if (household) {
@@ -129,11 +151,11 @@ const ongoingNap = activities
         birthday: household.baby_birthday || undefined 
       });
       setHasProfile(true);
-    } else if (!householdError && activities.length === 0) {
-      // New user with no household and no activities - needs setup
+    } else if (!householdError && !hasEverBeenCollaborator) {
+      // Truly new user (never been a collaborator) with no household - needs setup
       navigate('/onboarding/baby-setup');
     }
-  }, [user, loading, householdLoading, activitiesLoading, household, householdError, activities.length, navigate]);
+  }, [user, loading, householdLoading, household, householdError, hasEverBeenCollaborator, navigate]);
 
   // Clear stale local profile if no user
   useEffect(() => {
