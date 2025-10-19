@@ -739,15 +739,46 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           )}
         </div>
 
-        {/* Subtle Add Prompt */}
-        {!showingYesterday && todayActivities.length === 0 && (
+        {/* First-Time Welcome or Subtle Add Prompt */}
+        {!showingYesterday && todayActivities.length === 0 && activities.length === 0 ? (
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <p className="text-base text-foreground font-medium">
+                Welcome{userName ? `, ${userName}` : ''}. {babyName ? `${babyName}'s` : "Your baby's"} rhythm begins today.
+              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Try logging a feeding or nap to start building your flow.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={onAddActivity}
+                variant="default"
+                size="sm"
+                className="flex-1"
+              >
+                <Baby className="w-4 h-4 mr-2" />
+                Add a Feeding
+              </Button>
+              <Button
+                onClick={onAddActivity}
+                variant="default"
+                size="sm"
+                className="flex-1"
+              >
+                <Moon className="w-4 h-4 mr-2" />
+                Add a Nap
+              </Button>
+            </div>
+          </div>
+        ) : !showingYesterday && todayActivities.length === 0 ? (
           <button
             onClick={onAddActivity}
             className="w-full py-3 text-sm text-muted-foreground hover:text-foreground transition-colors border border-dashed border-border rounded-lg"
           >
             {t('tapGreenToLog')}
           </button>
-        )}
+        ) : null}
 
         {/* Daily Progress & Comparisons */}
         {displayActivities.length > 0 && (

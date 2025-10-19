@@ -13,7 +13,6 @@ import InviteAccept from "./pages/InviteAccept";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
 import VillageInvite from "./pages/VillageInvite";
-import ReadyScreen from "./pages/ReadyScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,7 +37,6 @@ const App = () => (
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/onboarding/baby-setup" element={<BabySetup />} />
                   <Route path="/onboarding/village" element={<VillageInvite />} />
-                  <Route path="/onboarding/ready" element={<ReadyScreen />} />
                   <Route path="/app" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/login" element={<Auth />} />
