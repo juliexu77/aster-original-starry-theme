@@ -29,7 +29,7 @@ interface AddActivityModalProps {
   onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => Promise<void>;
   onDeleteActivity?: (activityId: string) => void; // Add delete support
   householdId?: string; // Add household ID for photo uploads
-  quickAddType?: 'feed' | 'nap' | null; // Quick add type
+  quickAddType?: 'feed' | 'nap' | 'diaper' | null; // Quick add type
   prefillActivity?: Activity | null; // Activity to prefill from
 }
 

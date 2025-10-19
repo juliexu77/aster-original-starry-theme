@@ -12,7 +12,7 @@ interface HomeTabProps {
   babyName?: string;
   userName?: string;
   babyBirthday?: string;
-  onAddActivity: (type?: 'feed' | 'nap', prefillActivity?: Activity) => void;
+  onAddActivity: (type?: 'feed' | 'nap' | 'diaper', prefillActivity?: Activity) => void;
   onEndNap?: () => void;
   ongoingNap?: Activity | null;
   userRole?: string;
@@ -742,6 +742,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     </span>
                   )}
                 </p>
+                <Button
+                  onClick={() => {
+                    onAddActivity('diaper', lastDiaper);
+                  }}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             )}
           </div>

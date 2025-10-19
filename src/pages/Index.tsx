@@ -103,7 +103,7 @@ const ongoingNap = activities
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [prefillActivity, setPrefillActivity] = useState<Activity | null>(null);
-  const [quickAddType, setQuickAddType] = useState<'feed' | 'nap' | null>(null);
+  const [quickAddType, setQuickAddType] = useState<'feed' | 'nap' | 'diaper' | null>(null);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   
