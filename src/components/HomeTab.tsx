@@ -484,10 +484,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get status indicator for feeds
   const getFeedStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return '🌿'; // Default to on track if no baseline
+    if (!expected) return '☀️'; // Default to on track if no baseline
     
     if (count >= expected.min && count <= expected.max) {
-      return '🌿'; // On track
+      return '☀️'; // On track
     } else if (count < expected.min && count === 0) {
       return '⚙️'; // Just starting the day
     } else if (count < expected.min) {
@@ -502,10 +502,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get status indicator for sleep
   const getSleepStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
-    if (!expected) return '🌿'; // Default to on track if no baseline
+    if (!expected) return '☀️'; // Default to on track if no baseline
     
     if (count >= expected.min && count <= expected.max) {
-      return '🌿'; // On track
+      return '☀️'; // On track
     } else if (count < expected.min && count === 0) {
       return '⚙️'; // Just starting the day
     } else if (count < expected.min) {
@@ -517,17 +517,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Get status indicator for growth
   const getGrowthStatusIndicator = (measurement: any) => {
-    if (!measurement) return '⚙️';
-    
-    // Check if any percentile is concerning (< 5 or > 95)
-    const hasWarning = 
-      (measurement.weight && (measurement.weight.percentile < 5 || measurement.weight.percentile > 95)) ||
-      (measurement.length && (measurement.length.percentile < 5 || measurement.length.percentile > 95)) ||
-      (measurement.headCirc && (measurement.headCirc.percentile < 5 || measurement.headCirc.percentile > 95));
-    
-    if (hasWarning) return '⚠️';
-    
-    return '🌿'; // Normal percentiles
+    return '🌱'; // Growth sprout emoji
   };
   
   // Use unified prediction engine
