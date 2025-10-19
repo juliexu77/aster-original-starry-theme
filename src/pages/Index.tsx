@@ -585,12 +585,8 @@ const ongoingNap = activities
                             {activities.length >= 75 && (
                               <p className="text-xs text-muted-foreground/80">
                                 {"You're in the top "}
-                                <span className="font-medium text-primary">
-                                  {activities.length >= 500 ? "1" : 
-                                   activities.length >= 300 ? "3" : 
-                                   activities.length >= 150 ? "5" : "10"}%
-                                </span>
-                                {" of most present parents"}
+                                <span className="font-medium text-primary">1%</span>
+                                {" of users"}
                               </p>
                             )}
                           </div>
