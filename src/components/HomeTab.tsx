@@ -27,6 +27,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showFeedDetails, setShowFeedDetails] = useState(false);
   const [showSleepDetails, setShowSleepDetails] = useState(false);
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
+  const [showToneInsight, setShowToneInsight] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -311,6 +312,52 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (months < 12) return t('becomingMobile');
     if (months < 18) return t('learningToCommunicate');
     return t('growingIntoOwnPerson');
+  };
+
+  // Get detailed insight for the current sentiment
+  const getToneInsight = (sentiment: { emoji: string; text: string }) => {
+    const summary = getDailySummary();
+    const expected = getExpectedFeeds(babyAgeMonths);
+    const expectedNaps = getExpectedNaps(babyAgeMonths);
+
+    switch (sentiment.text) {
+      case "Growth Spurt Week":
+        return `${babyName || 'Baby'} is showing signs of a growth spurt with ${summary.feedCount} feeds today, which is above the typical range. Growth spurts often mean increased hunger and may affect sleep patterns. This is completely normal and usually lasts a few days.`;
+      
+      case "Feed-Heavy Day":
+        return `Today has ${summary.feedCount} feeds, slightly above average. This could indicate increased hunger, a developmental leap, or simply a hungrier day. Keep offering feeds on demand.`;
+      
+      case "Extra Sleepy Day":
+        return `${babyName || 'Baby'} has had ${summary.napCount} naps today, more than usual. Extra sleep can indicate a growth spurt, fighting off illness, or catching up on rest. Monitor for other symptoms if concerned.`;
+      
+      case "Smooth Flow":
+        return `Everything is flowing naturally today with ${summary.feedCount} feeds and ${summary.napCount} naps, all within expected ranges for ${babyName}'s age. This balanced rhythm suggests ${babyName?.split(' ')[0] || 'baby'} is well-regulated.`;
+      
+      case "In Sync":
+        return `${babyName || 'Baby'} is perfectly aligned with developmental expectations today. This harmonious pattern suggests a well-established routine and good sleep-wake balance.`;
+      
+      case "Mixed Patterns":
+        return `Today shows some variations from typical patterns. This is normal and often reflects ${babyName}'s changing needs as they grow and develop. Every day is different.`;
+      
+      case "Adjusting Rhythm":
+        return `${babyName}'s patterns are shifting slightly from the usual range. This often happens during transitions like sleep regressions, developmental leaps, or routine changes.`;
+      
+      case "High-Energy Day":
+        return `With ${summary.feedCount + summary.napCount + summary.diaperCount} total activities logged, this has been an active day! High-energy days are normal and show ${babyName} is engaged and thriving.`;
+      
+      case "Growth Transition":
+        return `At ${babyAgeMonths} months, ${babyName} is in a key developmental window. Patterns may shift as new milestones emerge. These transitions are part of healthy growth.`;
+      
+      case "New Discovery":
+        return `The day is just beginning with ${summary.feedCount + summary.napCount} activities so far. Every day brings new moments to discover ${babyName}'s evolving rhythm.`;
+      
+      case "Off Rhythm Day":
+        return `Today's patterns are notably different from usual. This can happen due to schedule changes, environment shifts, or developmental adjustments. Tomorrow often brings back familiar rhythms.`;
+      
+      case "Building Rhythm":
+      default:
+        return `${babyName} is establishing their unique daily patterns. With ${summary.feedCount} feeds and ${summary.napCount} naps logged, you're learning their natural rhythm together.`;
+    }
   };
 
   // Calculate percentiles using WHO growth standards
@@ -662,11 +709,24 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="px-4 space-y-6 pt-6">
 
         {/* Tone Card */}
-        <div className="flex items-center justify-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-            <span className="text-sm">{sentiment.emoji}</span>
-            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-          </div>
+        <div className="space-y-3">
+          <button 
+            onClick={() => setShowToneInsight(!showToneInsight)}
+            className="mx-auto block"
+          >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+              <span className="text-sm">{sentiment.emoji}</span>
+              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+            </div>
+          </button>
+          
+          {showToneInsight && (
+            <Card className="p-4">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {getToneInsight(sentiment)}
+              </p>
+            </Card>
+          )}
         </div>
 
         {/* 2. Current State */}
