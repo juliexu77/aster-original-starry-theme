@@ -1223,7 +1223,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     }
                     
                     return (
-                      <div key={index} className="relative flex items-center gap-2 py-0.5">
+                      <button
+                        key={index}
+                        onClick={() => onAddActivity(activity.type as 'feed' | 'nap' | 'diaper', activity)}
+                        className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
+                      >
                         {/* Timeline line */}
                         {index < displayActivities.length - 1 && (
                           <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
@@ -1241,7 +1245,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                             {activity.type}{details}
                           </span>
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
               </div>
