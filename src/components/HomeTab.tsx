@@ -522,8 +522,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return '🌱'; // Growth sprout emoji
   };
   
-  // Use unified prediction engine
-  const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
   
   // Legacy helper for backward compatibility
   const getNextPredictedAction_LEGACY = () => {
@@ -641,6 +639,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return `Watch for sleepy cues — typical wake window is ${Math.floor(expectedAwakeWindow / 60)}h ${expectedAwakeWindow % 60}m.`;
     }
   };
+
+  // Use unified prediction engine, but fallback to legacy for ongoing naps
+  const legacyNextAction = getNextPredictedAction_LEGACY();
+  const nextAction = ongoingNap ? legacyNextAction : (prediction ? getIntentCopy(prediction, babyName) : null);
 
   const summary = getDailySummary();
   const latestMeasurement = getLatestMeasurement();
