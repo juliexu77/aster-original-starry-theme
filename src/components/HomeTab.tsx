@@ -797,29 +797,41 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         {/* Daily Progress & Comparisons */}
         {displayActivities.length > 0 && (
         <div className="space-y-2.5 pt-3">
-          <div className="flex items-start gap-2">
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
+          >
             <span className="text-lg">🌤️</span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground truncate">
                 {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
               </p>
             </div>
-          </div>
+            <ChevronDown 
+              className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showTimeline ? 'rotate-180' : ''}`}
+            />
+          </button>
 
-          <div className="flex items-start gap-2">
+          <button
+            onClick={() => setShowTimeline(!showTimeline)}
+            className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
+          >
             <span className="text-lg">🌈</span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
+              <p className="text-xs text-muted-foreground truncate">
                 {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
               </p>
             </div>
-          </div>
+            <ChevronDown 
+              className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showTimeline ? 'rotate-180' : ''}`}
+            />
+          </button>
           
           {latestMeasurement && (
             <button
@@ -827,11 +839,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
             >
               <span className="text-lg">🌱</span>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground">
                   <span className="font-medium">Growth</span>
                 </p>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-xs text-muted-foreground truncate">
                   {latestMeasurement.summary || 'Tracked recently'}
                 </p>
                 {showGrowthDetails && (
@@ -858,14 +870,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 )}
               </div>
               <ChevronDown 
-                className={`h-4 w-4 text-muted-foreground transition-transform ${showGrowthDetails ? 'rotate-180' : ''}`}
+                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showGrowthDetails ? 'rotate-180' : ''}`}
               />
             </button>
           )}
 
           <div className="flex items-start gap-2">
             <span className="text-lg">💫</span>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{t('overallLabel')}</span> {t('calmAndSteady')}
               </p>
