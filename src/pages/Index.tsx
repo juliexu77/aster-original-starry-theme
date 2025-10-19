@@ -129,7 +129,14 @@ const ongoingNap = activities
         localStorage.removeItem('babyProfileCompleted');
       } else if (!householdError) {
         // Only redirect to baby setup if there's no error AND no household
-        // (If there's an error, we want to stay here and let the error boundary handle it)
+        // Prevent redirect loop by checking if we're not coming from onboarding
+        const fromOnboarding = sessionStorage.getItem('from_baby_setup');
+        if (fromOnboarding) {
+          console.log('Skipping redirect - already came from baby setup');
+          sessionStorage.removeItem('from_baby_setup');
+          return;
+        }
+        console.log('No household found, redirecting to baby setup');
         navigate('/onboarding/baby-setup');
         return;
       }

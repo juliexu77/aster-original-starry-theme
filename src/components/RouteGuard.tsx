@@ -35,8 +35,17 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     const onboardingFlowPages = ['/onboarding/baby-setup', '/onboarding/village', '/onboarding/ready'];
     const isOnboardingFlow = onboardingFlowPages.some(route => location.pathname === route);
     
-    if (user && !isAuthWithRedirect && !isOnboardingFlow && (location.pathname === "/auth" || location.pathname === "/onboarding")) {
-      console.log('Redirecting authenticated user to main app');
+    // Only redirect from /onboarding if not already in the flow and user is authenticated
+    // This prevents redirect loops when coming from /app
+    if (user && !isAuthWithRedirect && !isOnboardingFlow && location.pathname === "/onboarding") {
+      console.log('Redirecting authenticated user from onboarding landing to main app');
+      navigate("/app", { replace: true });
+      return;
+    }
+    
+    // Redirect from /auth to /app if authenticated and no redirect param
+    if (user && !isAuthWithRedirect && location.pathname === "/auth") {
+      console.log('Redirecting authenticated user from auth to main app');
       navigate("/app", { replace: true });
       return;
     }

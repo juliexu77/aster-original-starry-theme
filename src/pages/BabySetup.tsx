@@ -56,6 +56,8 @@ const BabySetup = () => {
         description: `Welcome to ${babyName}'s journey.`,
       });
 
+      // Mark that we're coming from baby setup to prevent redirect loops
+      sessionStorage.setItem('from_baby_setup', 'true');
       navigate("/onboarding/village");
     } catch (error: any) {
       console.error("Error creating baby profile:", error);

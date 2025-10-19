@@ -822,9 +822,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-sm text-foreground">
                   <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
-                </p>
               </div>
               <ChevronDown 
                 className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showFeedDetails ? 'rotate-180' : ''}`}
@@ -874,9 +871,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground">
                   <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
                 </p>
               </div>
               <ChevronDown 
@@ -945,9 +939,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground">
                   <span className="font-medium">Growth</span>
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {latestMeasurement.summary || 'Tracked recently'}
                 </p>
                 {showGrowthDetails && (
                   <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
