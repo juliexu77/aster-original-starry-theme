@@ -685,7 +685,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       {/* 2. Current State (Right Now) */}
       <div className="space-y-3 pb-5 border-b border-border">
         <h2 className="text-base font-semibold text-foreground">
-          Current State (Right Now)
+          Current State
         </h2>
         
         <div className="space-y-2.5">
@@ -742,7 +742,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       {(nextAction && !showingYesterday) || ongoingNap ? (
         <div className="space-y-3 pb-5 border-b border-border">
           <h2 className="text-base font-semibold text-foreground">
-            What's Next (Predictive Insight)
+            What's Next
           </h2>
           
           {nextAction && (
