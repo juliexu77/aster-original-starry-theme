@@ -661,17 +661,16 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
       <div className="px-4 space-y-6 pt-6">
 
+        {/* Tone Card */}
+        <div className="flex items-center justify-center">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+            <span className="text-sm">{sentiment.emoji}</span>
+            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+          </div>
+        </div>
+
         {/* 2. Current State */}
         <div className="space-y-4 pb-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-medium text-foreground">
-              Current State
-            </h2>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-              <span className="text-sm">{sentiment.emoji}</span>
-              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-            </div>
-          </div>
           
           <div className="space-y-3.5">
             {/* Last Feed */}
@@ -862,7 +861,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             {showTimeline && (
               <div className="pt-3 border-t border-border/50 space-y-1">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Today's Log Timeline
+                  Today's Timeline
                 </p>
                 {displayActivities
                   .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
