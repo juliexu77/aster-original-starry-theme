@@ -22,14 +22,14 @@ const Onboarding = () => {
       
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-6">
-        <div className="max-w-md mx-auto text-center space-y-8">
+        <div className="max-w-md mx-auto text-center space-y-12">
           {/* Icon */}
           <div className="flex items-center justify-center">
             <Sprout className="w-6 h-6 text-primary" />
           </div>
 
           {/* Message */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
               Stay in sync with your baby.
             </h1>
@@ -39,7 +39,7 @@ const Onboarding = () => {
           </div>
 
           {/* CTA */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <Button
               onClick={() => navigate("/auth")}
               size="lg"
@@ -47,20 +47,15 @@ const Onboarding = () => {
             >
               Get Started
             </Button>
-            <div className="space-y-2">
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <button
-                  onClick={() => navigate("/auth")}
-                  className="text-primary hover:underline font-medium"
-                >
-                  Log in
-                </button>
-              </p>
-              <p className="text-center text-xs text-muted-foreground/70 italic leading-relaxed max-w-md mx-auto pt-4">
-                Built for parents, partners, and caregivers — your whole village in sync.
-              </p>
-            </div>
+            <p className="text-center text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <button
+                onClick={() => navigate("/auth")}
+                className="text-primary hover:underline font-medium"
+              >
+                Log in
+              </button>
+            </p>
           </div>
         </div>
       </div>
