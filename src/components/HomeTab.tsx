@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
@@ -643,17 +643,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           onClick={onAddActivity}
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="flex-1 gap-2"
         >
-          + 🍼
+          <Milk className="w-4 h-4" />
+          Add Feed
         </Button>
         <Button
           onClick={onAddActivity}
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="flex-1 gap-2"
         >
-          + 💤
+          <Moon className="w-4 h-4" />
+          Add Sleep
         </Button>
       </div>
 
@@ -685,7 +687,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Last Feed */}
           {lastFeed && (
             <div className="flex items-center gap-3 text-foreground">
-              <span className="text-lg">🍼</span>
+              <Milk className="w-5 h-5 text-primary" />
               <p className="text-sm flex-1">
                 Last feed — <span className="font-medium">{lastFeed.time}</span>
                 {lastFeed.details?.quantity && (
@@ -700,14 +702,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Sleep Status */}
           {ongoingNap ? (
             <div className="flex items-center gap-3 text-foreground">
-              <span className="text-lg">💤</span>
+              <Moon className="w-5 h-5 text-primary" />
               <p className="text-sm flex-1">
                 Sleeping since — <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
               </p>
             </div>
           ) : awakeTime && (
             <div className="flex items-center gap-3 text-foreground">
-              <span className="text-lg">👁️</span>
+              <Eye className="w-5 h-5 text-primary" />
               <p className="text-sm flex-1">
                 Awake for — <span className="font-medium">{awakeTime}</span>
               </p>
@@ -717,7 +719,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Last Diaper */}
           {lastDiaper && (
             <div className="flex items-center gap-3 text-foreground">
-              <span className="text-lg">💩</span>
+              <Baby className="w-5 h-5 text-primary" />
               <p className="text-sm flex-1">
                 Last diaper — <span className="font-medium">{lastDiaper.time}</span>
                 {lastDiaper.details?.diaperType && (
@@ -739,8 +741,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </h2>
           
           {nextAction && (
-            <div className="flex items-start gap-2">
-              <span className="text-lg">⏰</span>
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-primary mt-0.5" />
               <p className="text-sm text-foreground leading-relaxed flex-1">
                 {nextAction}
               </p>
@@ -827,7 +829,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             )}
             
             <div className="flex items-center gap-2 text-sm text-foreground">
-              <span className="font-medium">⚖️ Overall:</span>
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <span className="font-medium">Overall:</span>
               <span>Calm and steady</span>
             </div>
           </div>
@@ -841,11 +844,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               {displayActivities
                 .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
                 .map((activity, index) => {
-                  const typeEmojis: { [key: string]: string } = {
-                    feed: '🍼',
-                    nap: '💤',
-                    diaper: '💩',
-                    measure: '📏'
+                  const getActivityIcon = (type: string) => {
+                    switch(type) {
+                      case 'feed': return <Milk className="w-4 h-4 text-primary" />;
+                      case 'nap': return <Moon className="w-4 h-4 text-primary" />;
+                      case 'diaper': return <Baby className="w-4 h-4 text-primary" />;
+                      case 'measure': return <Ruler className="w-4 h-4 text-primary" />;
+                      default: return <TrendingUp className="w-4 h-4 text-primary" />;
+                    }
                   };
                   
                   let details = '';
@@ -877,7 +883,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   
                   return (
                     <div key={index} className="text-sm text-foreground py-1.5 border-l-2 border-border/50 pl-3 flex items-center gap-2">
-                      <span className="text-base">{typeEmojis[activity.type] || '📝'}</span>
+                      {getActivityIcon(activity.type)}
                       <span className="font-medium">{activity.time}</span>
                       <span className="text-muted-foreground text-xs capitalize">
                         {activity.type}{details}
