@@ -489,13 +489,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (count >= expected.min && count <= expected.max) {
       return '☀️'; // On track
     } else if (count < expected.min && count === 0) {
-      return '⚙️'; // Just starting the day
+      return '🌤️'; // Just starting the day
     } else if (count < expected.min) {
       return '⚠️'; // Below expected
     } else if (count > expected.max + 2) {
       return '⚠️'; // Significantly above (growth spurt)
     } else {
-      return '⚙️'; // Adjusting (slightly above normal)
+      return '🌤️'; // Adjusting (slightly above normal)
     }
   };
 
@@ -507,11 +507,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (count >= expected.min && count <= expected.max) {
       return '☀️'; // On track
     } else if (count < expected.min && count === 0) {
-      return '⚙️'; // Just starting the day
+      return '🌤️'; // Just starting the day
     } else if (count < expected.min) {
       return '⚠️'; // Below expected
     } else {
-      return '⚙️'; // Extra rest day
+      return '🌤️'; // Extra rest day
     }
   };
 
