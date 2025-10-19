@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface AddActivityModalProps {
-  onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => void;
+  onAddActivity: (activity: Omit<Activity, "id">, activityDate?: Date, activityTime?: string) => Promise<void> | void;
   isOpen?: boolean;
   onClose?: () => void;
   showFixedButton?: boolean; // Add prop to control fixed button visibility
   editingActivity?: Activity | null; // Add editing support
-  onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => void;
+  onEditActivity?: (activity: Activity, selectedDate: Date, activityTime: string) => Promise<void>;
   onDeleteActivity?: (activityId: string) => void; // Add delete support
   householdId?: string; // Add household ID for photo uploads
 }
@@ -333,7 +333,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     }
   };
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSubmit = async () => {
+    if (isSaving) return; // Prevent double submission
+    
     if (!activityType) {
       toast({
         title: "Activity type required",
@@ -475,32 +479,45 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       }
     }
 
-    if (editingActivity && onEditActivity) {
-      // Update existing activity
-      const updatedActivity: Activity = {
-        ...editingActivity,
-        type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
-        time: activityType === "nap" ? startTime : time,
-        details,
-      };
-      
-      onEditActivity(updatedActivity, selectedDate, activityType === "nap" ? startTime : time);
-    } else {
-      // Create new activity
-      const newActivity: Omit<Activity, "id"> = {
-        type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
-        time: activityType === "nap" ? startTime : time,
-        details,
-      };
-
-      onAddActivity(newActivity, selectedDate, activityTime);
-    }
+    setIsSaving(true);
     
-    resetForm();
-    if (onClose) {
-      onClose();
-    } else {
-      setInternalOpen(false);
+    try {
+      if (editingActivity && onEditActivity) {
+        // Update existing activity
+        const updatedActivity: Activity = {
+          ...editingActivity,
+          type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
+          time: activityType === "nap" ? startTime : time,
+          details,
+        };
+        
+        await onEditActivity(updatedActivity, selectedDate, activityType === "nap" ? startTime : time);
+      } else {
+        // Create new activity
+        const newActivity: Omit<Activity, "id"> = {
+          type: activityType as "feed" | "diaper" | "nap" | "note" | "measure" | "photo",
+          time: activityType === "nap" ? startTime : time,
+          details,
+        };
+
+        await onAddActivity(newActivity, selectedDate, activityTime);
+      }
+      
+      resetForm();
+      if (onClose) {
+        onClose();
+      } else {
+        setInternalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error saving activity:', error);
+      toast({
+        title: "Save failed",
+        description: "Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -1105,10 +1122,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={uploadingPhoto}
+                  disabled={uploadingPhoto || isSaving}
                   className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  {uploadingPhoto ? 'Uploading...' : (editingActivity ? 'Update' : 'Save')}
+                  {uploadingPhoto ? 'Uploading...' : isSaving ? 'Saving...' : (editingActivity ? 'Update' : 'Save')}
                 </Button>
               </div>
               

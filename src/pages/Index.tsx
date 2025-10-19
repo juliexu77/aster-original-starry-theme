@@ -725,8 +725,8 @@ return (
           }}
           editingActivity={editingActivity}
           householdId={household?.id}
-          onAddActivity={(activity, activityDate, activityTime) => {
-            addActivity(activity.type, activity.details, activityDate, activityTime);
+          onAddActivity={async (activity, activityDate, activityTime) => {
+            await addActivity(activity.type, activity.details, activityDate, activityTime);
             setShowAddActivity(false);
           }}
           onEditActivity={async (updatedActivity, selectedDate, activityTime) => {
