@@ -639,21 +639,23 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   return (
     <div className="pb-24">
-      {/* 1. Greeting Section - Sticky Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-4 border-b border-border/40">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-          <span className="text-sm">{sentiment.emoji}</span>
-          <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-        </div>
+      {/* 1. Sticky Header - Empty for now */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 border-b border-border/40">
       </div>
 
       <div className="px-4 space-y-6 pt-6">
 
         {/* 2. Current State */}
         <div className="space-y-4 pb-6 border-b border-border">
-          <h2 className="text-base font-medium text-foreground">
-            Current State
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-medium text-foreground">
+              Current State
+            </h2>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+              <span className="text-sm">{sentiment.emoji}</span>
+              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+            </div>
+          </div>
           
           <div className="space-y-3.5">
             {/* Last Feed */}
