@@ -487,14 +487,63 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (count >= expected.min && count <= expected.max) {
       return t('solidNapRhythm').replace('{baby}', babyName?.split(' ')[0] || t('baby'));
     } else if (count < expected.min && count === 0) {
-      return t('workingOnFirstNap');
+      return t('earlyInDay');
     } else if (count < expected.min) {
-      return t('shorterNapDay');
+      return t('moreRestComing');
     } else {
-      return t('extraRestfulDay');
+      return t('extraRestToday');
     }
   };
 
+  // Get status indicator for feeds
+  const getFeedStatusIndicator = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return '✅'; // Default to on track if no baseline
+    
+    if (count >= expected.min && count <= expected.max) {
+      return '✅'; // On track
+    } else if (count < expected.min && count === 0) {
+      return '🔄'; // Just starting the day
+    } else if (count < expected.min) {
+      return '⚠️'; // Below expected
+    } else if (count > expected.max + 2) {
+      return '⚠️'; // Significantly above (growth spurt)
+    } else {
+      return '🔄'; // Adjusting (slightly above normal)
+    }
+  };
+
+  // Get status indicator for sleep
+  const getSleepStatusIndicator = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return '✅'; // Default to on track if no baseline
+    
+    if (count >= expected.min && count <= expected.max) {
+      return '✅'; // On track
+    } else if (count < expected.min && count === 0) {
+      return '🔄'; // Just starting the day
+    } else if (count < expected.min) {
+      return '⚠️'; // Below expected
+    } else {
+      return '🔄'; // Extra rest day
+    }
+  };
+
+  // Get status indicator for growth
+  const getGrowthStatusIndicator = (measurement: any) => {
+    if (!measurement) return '🔄';
+    
+    // Check if any percentile is concerning (< 5 or > 95)
+    const hasWarning = 
+      (measurement.weight && (measurement.weight.percentile < 5 || measurement.weight.percentile > 95)) ||
+      (measurement.length && (measurement.length.percentile < 5 || measurement.length.percentile > 95)) ||
+      (measurement.headCirc && (measurement.headCirc.percentile < 5 || measurement.headCirc.percentile > 95));
+    
+    if (hasWarning) return '⚠️';
+    
+    return '✅'; // Normal percentiles
+  };
+  
   // Use unified prediction engine
   const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
   
@@ -801,7 +850,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             onClick={() => setShowTimeline(!showTimeline)}
             className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
           >
-            <span className="text-lg">🌤️</span>
+            <span className="text-lg">{getFeedStatusIndicator(summary.feedCount, babyAgeMonths)}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
@@ -819,7 +868,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             onClick={() => setShowTimeline(!showTimeline)}
             className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
           >
-            <span className="text-lg">🌈</span>
+            <span className="text-lg">{getSleepStatusIndicator(summary.napCount, babyAgeMonths)}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">
                 <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
@@ -838,7 +887,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               onClick={() => setShowGrowthDetails(!showGrowthDetails)}
               className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
             >
-              <span className="text-lg">🌱</span>
+              <span className="text-lg">{getGrowthStatusIndicator(latestMeasurement)}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-foreground">
                   <span className="font-medium">Growth</span>
