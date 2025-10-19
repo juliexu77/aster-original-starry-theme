@@ -31,7 +31,7 @@ const Onboarding = () => {
           {/* Message */}
           <div className="space-y-5">
             <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
-              Stay in sync with your baby.
+              Intelligence meets intuition
             </h1>
             <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
               Powered by the shared wisdom of parents, experts, and caregivers — tailored to your baby's unique rhythm.
