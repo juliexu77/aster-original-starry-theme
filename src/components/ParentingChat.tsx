@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, User, Send, Calendar, Heart } from "lucide-react";
+import { Bot, User, Send, Calendar, Heart, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 
@@ -67,6 +68,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
   const [inputFocused, setInputFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [turnCount, setTurnCount] = useState(0);
+  const [historyCollapsed, setHistoryCollapsed] = useState(true);
+  const [sessionStartIndex, setSessionStartIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const savedGreetingRef = useRef(false);
   const { toast } = useToast();
@@ -101,7 +104,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      // Smooth scroll to bottom on new messages
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [messages, greetingMessage]);
 
@@ -136,6 +143,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
           }));
           setMessages(loadedMessages);
           setHasHistory(true);
+          // Mark where this session starts (all loaded messages are "history")
+          setSessionStartIndex(loadedMessages.length);
         } else {
           setHasHistory(false);
         }
@@ -439,6 +448,10 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
     
     setInput("");
     setIsLoading(true);
+    
+    // Collapse history when sending new message to focus on new interaction
+    setHistoryCollapsed(true);
+    
     streamChat(userMessage, false, false);
   };
 
@@ -517,9 +530,73 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
       {/* Conversation History */}
       <ScrollArea className="flex-1 p-4">
         <div ref={scrollRef} className="space-y-4 pb-4">
-          {messages.map((msg, idx) => (
+          {/* Earlier History (Collapsible) */}
+          {sessionStartIndex > 0 && (
+            <Collapsible open={!historyCollapsed} onOpenChange={() => setHistoryCollapsed(!historyCollapsed)}>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full mb-4 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {historyCollapsed ? (
+                    <>
+                      <ChevronDown className="h-3 w-3 mr-2" />
+                      Show earlier conversation ({sessionStartIndex} messages)
+                    </>
+                  ) : (
+                    <>
+                      <ChevronUp className="h-3 w-3 mr-2" />
+                      Hide earlier conversation
+                    </>
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 mb-4">
+                {messages.slice(0, sessionStartIndex).map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-start gap-3 opacity-70 ${
+                      msg.role === "user" ? "justify-end" : ""
+                    }`}
+                  >
+                    {msg.role === "assistant" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-4 h-4 text-primary" />
+                      </div>
+                    )}
+                    <div
+                      onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(idx)}
+                      className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
+                        msg.role === "user"
+                          ? "bg-primary/80 text-primary-foreground"
+                          : "bg-muted cursor-pointer select-none transition-all hover:bg-muted/80"
+                      }`}
+                    >
+                      <div className="text-sm leading-relaxed">
+                        {formatMarkdown(emphasizeMicrolearning(msg.content))}
+                      </div>
+                      {msg.role === "assistant" && msg.liked && (
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                          <Heart className="w-3.5 h-3.5 text-white fill-white" />
+                        </div>
+                      )}
+                    </div>
+                    {msg.role === "user" && (
+                      <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+
+          {/* Current Session Messages */}
+          {messages.slice(sessionStartIndex).map((msg, idx) => (
             <div
-              key={idx}
+              key={sessionStartIndex + idx}
               className={`flex items-start gap-3 ${
                 msg.role === "user" ? "justify-end" : ""
               }`}
@@ -530,7 +607,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                 </div>
               )}
               <div
-                onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(idx)}
+                onDoubleClick={() => msg.role === "assistant" && handleLikeMessage(sessionStartIndex + idx)}
                 className={`relative max-w-[85%] rounded-2xl px-4 py-3 ${
                   msg.role === "user"
                     ? "bg-primary text-primary-foreground"
@@ -553,6 +630,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               )}
             </div>
           ))}
+
+          {/* Loading Indicator */}
           {isLoading && (
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
