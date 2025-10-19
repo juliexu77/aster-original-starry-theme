@@ -24,6 +24,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { t } = useLanguage();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showFeedDetails, setShowFeedDetails] = useState(false);
+  const [showSleepDetails, setShowSleepDetails] = useState(false);
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
   const [dailyRecapDismissed, setDailyRecapDismissed] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
@@ -846,41 +848,129 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         {/* Daily Progress & Comparisons */}
         {displayActivities.length > 0 && (
         <div className="space-y-2.5 pt-3">
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
-          >
-            <span className="text-lg">{getFeedStatusIndicator(summary.feedCount, babyAgeMonths)}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">
-                <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
-              </p>
-            </div>
-            <ChevronDown 
-              className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showTimeline ? 'rotate-180' : ''}`}
-            />
-          </button>
+          <div>
+            <button
+              onClick={() => setShowFeedDetails(!showFeedDetails)}
+              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
+            >
+              <span className="text-lg">{getFeedStatusIndicator(summary.feedCount, babyAgeMonths)}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">{t('feedsLabel')}</span> {summary.feedCount} {t('logged')} {showingYesterday ? t('yesterday') : t('today')}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {prediction ? getProgressText(prediction, 'feeds') : getFeedComparison(summary.feedCount, babyAgeMonths)}
+                </p>
+              </div>
+              <ChevronDown 
+                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showFeedDetails ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {showFeedDetails && displayActivities.filter(a => a.type === 'feed').length > 0 && (
+              <div className="mt-2 pl-8 space-y-1.5">
+                {displayActivities
+                  .filter(a => a.type === 'feed')
+                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                  .map((activity, index) => {
+                    const { feedType, quantity, unit, minutesLeft, minutesRight, solidDescription } = activity.details;
+                    let feedDetail = '';
+                    
+                    if (feedType === 'bottle' && quantity && unit) {
+                      feedDetail = `${quantity} ${unit}`;
+                    } else if (feedType === 'nursing') {
+                      const leftTime = minutesLeft ? parseInt(minutesLeft) : 0;
+                      const rightTime = minutesRight ? parseInt(minutesRight) : 0;
+                      const totalTime = leftTime + rightTime;
+                      feedDetail = totalTime > 0 ? `${totalTime}min nursing` : 'Nursing';
+                    } else if (feedType === 'solid' && solidDescription) {
+                      feedDetail = solidDescription;
+                    }
+                    
+                    return (
+                      <div key={index} className="text-xs text-muted-foreground py-1 border-l-2 border-border/50 pl-3">
+                        <div className="flex justify-between items-start">
+                          <span className="font-medium text-foreground">{activity.time}</span>
+                          {feedDetail && (
+                            <span>{feedDetail}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
 
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
-          >
-            <span className="text-lg">{getSleepStatusIndicator(summary.napCount, babyAgeMonths)}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">
-                <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
-              </p>
-            </div>
-            <ChevronDown 
-              className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showTimeline ? 'rotate-180' : ''}`}
-            />
-          </button>
+          <div>
+            <button
+              onClick={() => setShowSleepDetails(!showSleepDetails)}
+              className="flex items-start gap-2 w-full text-left hover:opacity-80 transition-opacity"
+            >
+              <span className="text-lg">{getSleepStatusIndicator(summary.napCount, babyAgeMonths)}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-foreground">
+                  <span className="font-medium">{t('sleepLabel')}</span> {summary.napCount} {summary.napCount !== 1 ? t('napsCompleted') : t('napCompleted')}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {prediction ? getProgressText(prediction, 'naps') : getNapComparison(summary.napCount, babyAgeMonths)}
+                </p>
+              </div>
+              <ChevronDown 
+                className={`h-4 w-4 text-muted-foreground transition-transform flex-shrink-0 ${showSleepDetails ? 'rotate-180' : ''}`}
+              />
+            </button>
+            {showSleepDetails && displayActivities.filter(a => a.type === 'nap').length > 0 && (
+              <div className="mt-2 pl-8 space-y-1.5">
+                {displayActivities
+                  .filter(a => a.type === 'nap')
+                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                  .map((activity, index) => {
+                    const { startTime, endTime } = activity.details;
+                    const isOngoing = !endTime;
+                    
+                    // Calculate duration for completed naps
+                    let durationText = '';
+                    if (startTime && endTime) {
+                      try {
+                        const parseTime = (timeStr: string) => {
+                          const [time, period] = timeStr.split(' ');
+                          const [hours, minutes] = time.split(':').map(Number);
+                          let hour24 = hours;
+                          if (period === 'PM' && hours !== 12) hour24 += 12;
+                          if (period === 'AM' && hours === 12) hour24 = 0;
+                          return hour24 * 60 + minutes;
+                        };
+                        
+                        const startMinutes = parseTime(startTime);
+                        const endMinutes = parseTime(endTime);
+                        const durationMinutes = endMinutes >= startMinutes 
+                          ? endMinutes - startMinutes 
+                          : (24 * 60) - startMinutes + endMinutes;
+                        
+                        const hours = Math.floor(durationMinutes / 60);
+                        const mins = durationMinutes % 60;
+                        durationText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                      } catch (error) {
+                        durationText = '';
+                      }
+                    }
+                    
+                    return (
+                      <div key={index} className="text-xs text-muted-foreground py-1 border-l-2 border-border/50 pl-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="font-medium text-foreground">
+                            {startTime} - {endTime || 'ongoing'}
+                          </span>
+                          {durationText && (
+                            <span className="text-xs">{durationText}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
           
           {latestMeasurement && (
             <button
