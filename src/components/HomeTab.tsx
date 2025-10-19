@@ -644,7 +644,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </h1>
         
         {developmentalPhase && babyName && (
-          <p className="text-[15px] text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             {babyName} is {developmentalPhase}
           </p>
         )}

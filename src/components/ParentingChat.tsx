@@ -439,8 +439,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSend = async (e?: React.MouseEvent | React.TouchEvent) => {
+    // Prevent blur from interfering with click
+    e?.preventDefault();
+    
+    if (!input.trim() || isLoading) return;
     
     const userMessage = input.trim();
     const msg: Message = { role: "user", content: userMessage };
@@ -466,7 +469,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background" style={{ paddingBottom: 'env(keyboard-inset-height, 0px)' }}>
       {/* Birthday Setup Prompt */}
       {needsBirthdaySetup && (
         <div className="p-4 bg-gradient-to-br from-accent/50 to-accent/30 border-b border-border">
@@ -668,7 +671,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         )}
 
         {/* Input area */}
-        <div className="p-4 pb-[max(env(safe-area-inset-bottom),0px)]">
+        <div className="p-4 pb-[calc(max(env(safe-area-inset-bottom),16px))]">
           <div className="relative flex gap-3 items-end">
             <Textarea
               value={input}
@@ -687,7 +690,8 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
               className="flex-1 min-h-[48px] max-h-36 transition-all duration-200 rounded-2xl border-border/40 bg-muted/50 dark:bg-muted/30 resize-none px-4 py-3 text-[16px] leading-6 placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50"
             />
             <Button
-              onClick={handleSend}
+              onMouseDown={handleSend}
+              onTouchStart={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
               aria-label="Send message"
