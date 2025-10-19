@@ -273,6 +273,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      transfer_parent_role: {
+        Args: { _target_user_id: string; _to_household_id: string }
+        Returns: undefined
+      }
       user_has_household_access: {
         Args: { _household_id: string; _user_id: string }
         Returns: boolean
