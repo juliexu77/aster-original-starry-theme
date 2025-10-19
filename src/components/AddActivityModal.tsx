@@ -39,14 +39,23 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const open = isOpen !== undefined ? isOpen : internalOpen;
   const setOpen = onClose ? onClose : setInternalOpen;
   const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "measure" | "photo" | "">(""); 
-  const [time, setTime] = useState(() => {
-    const now = new Date();
-    return now.toLocaleTimeString("en-US", { 
+  
+  // Helper function to round time to nearest 5 minutes
+  const getRoundedTime = (date: Date = new Date()) => {
+    const minutes = date.getMinutes();
+    const roundedMinutes = Math.round(minutes / 5) * 5;
+    const roundedDate = new Date(date);
+    roundedDate.setMinutes(roundedMinutes);
+    roundedDate.setSeconds(0);
+    roundedDate.setMilliseconds(0);
+    return roundedDate.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
     });
-  });
+  };
+  
+  const [time, setTime] = useState(() => getRoundedTime());
   
   // Feed state
   const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
@@ -171,12 +180,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Ensure new entries default to current local time when opening
   useEffect(() => {
     if (open && !editingActivity) {
-      const now = new Date();
-      const current = now.toLocaleTimeString("en-US", { 
-        hour: "numeric", 
-        minute: "2-digit", 
-        hour12: true 
-      });
+      const current = getRoundedTime();
       setTime(current);
       if (!startTime) setStartTime(current);
     }
@@ -188,13 +192,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       // Set activity type
       setActivityType(quickAddType);
       
-      // Keep current time (don't use prefill time)
-      const now = new Date();
-      const currentTime = now.toLocaleTimeString("en-US", { 
-        hour: "numeric", 
-        minute: "2-digit", 
-        hour12: true 
-      });
+      // Keep current time (don't use prefill time), rounded to nearest 5 minutes
+      const currentTime = getRoundedTime();
       setTime(currentTime);
       
       // Pre-fill details based on type
@@ -220,12 +219,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   }, [open, quickAddType, prefillActivity, editingActivity]);
 
   const resetForm = () => {
-    const now = new Date();
-    setTime(now.toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true 
-    }));
+    setTime(getRoundedTime());
     setFeedType("bottle");
     setQuantity("");
     setMinutesLeft("");
@@ -254,11 +248,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const startNapTimer = async () => {
     setIsTimerActive(true);
     setTimerStart(new Date());
-    const startTime = new Date().toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true 
-    });
+    const startTime = getRoundedTime();
     setStartTime(startTime);
     setHasEndTime(false); // Don't include end time when using timer
     
@@ -285,14 +275,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const stopNapTimer = () => {
     setIsTimerActive(false);
-    const now = new Date();
-    const mins = now.getMinutes();
-    const safeMins = Math.min(59, Math.max(0, mins));
-    setEndTime(new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), safeMins, 0, 0).toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true 
-    }));
+    setEndTime(getRoundedTime());
   };
 
   const handleQuantityShortcut = (value: string) => {
