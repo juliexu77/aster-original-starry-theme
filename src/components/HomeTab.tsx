@@ -638,11 +638,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const developmentalPhase = getDevelopmentalPhase();
 
   return (
-    <div className="px-4 py-6 space-y-4 pb-24">
-
-      {/* 1. Greeting Section */}
-      <div className="space-y-1.5">
-        <h1 className="text-[22px] font-bold text-foreground dark:text-white">
+    <div className="pb-24">
+      {/* 1. Greeting Section - Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-6 space-y-2 border-b border-border/40">
+        <h1 className="text-[22px] font-semibold text-foreground">
           {getGreetingLine()}
         </h1>
         
@@ -682,129 +681,197 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         </div>
       </div>
 
-      {/* 2. Current State (Right Now) */}
-      <div className="space-y-3 pb-5 border-b border-border">
-        <h2 className="text-base font-semibold text-foreground">
-          Current State
-        </h2>
-        
-        <div className="space-y-2.5">
-          {/* Last Feed */}
-          {lastFeed && (
-            <div className="flex items-center gap-3 text-foreground">
-              <Milk className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1">
-                Last feed — <span className="font-medium">{lastFeed.time}</span>
-                {lastFeed.details?.quantity && (
-                  <span className="text-muted-foreground ml-1">
-                    {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
+      <div className="px-4 space-y-6 pt-6">
 
-          {/* Sleep Status */}
-          {ongoingNap ? (
-            <div className="flex items-center gap-3 text-foreground">
-              <Moon className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1">
-                Sleeping since — <span className="font-medium">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-              </p>
-            </div>
-          ) : awakeTime && (
-            <div className="flex items-center gap-3 text-foreground">
-              <Eye className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1">
-                Awake for — <span className="font-medium">{awakeTime}</span>
-              </p>
-            </div>
-          )}
-
-          {/* Last Diaper */}
-          {lastDiaper && (
-            <div className="flex items-center gap-3 text-foreground">
-              <Baby className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1">
-                Last diaper — <span className="font-medium">{lastDiaper.time}</span>
-                {lastDiaper.details?.diaperType && (
-                  <span className="text-muted-foreground ml-1">
-                    {lastDiaper.details.diaperType}
-                  </span>
-                )}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 3. What's Next (Predictive Insight) */}
-      {(nextAction && !showingYesterday) || ongoingNap ? (
-        <div className="space-y-3 pb-5 border-b border-border">
-          <h2 className="text-base font-semibold text-foreground">
-            What's Next
+        {/* 2. Current State */}
+        <div className="space-y-4 pb-6 border-b border-border">
+          <h2 className="text-base font-medium text-foreground">
+            Current State
           </h2>
           
-          {nextAction && (
-            <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-primary mt-0.5" />
-              <p className="text-sm text-foreground leading-relaxed flex-1">
-                {nextAction}
-              </p>
-            </div>
-          )}
-          
-          {/* Wake-up button if sleeping */}
-          {ongoingNap && onEndNap && (
-            <Button
-              onClick={() => {
-                console.log('Wake up button clicked in HomeTab');
-                console.log('onEndNap exists:', !!onEndNap);
-                console.log('ongoingNap:', ongoingNap);
-                onEndNap();
-              }}
-              className="w-full mt-2"
-              size="sm"
-            >
-              {babyName?.split(' ')[0] || 'Baby'} woke up
-            </Button>
-          )}
+          <div className="space-y-3.5">
+            {/* Last Feed */}
+            {lastFeed && (
+              <div className="flex items-center gap-3">
+                <Milk className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Last feed — <span className="font-medium text-foreground">{lastFeed.time}</span>
+                  {lastFeed.details?.quantity && (
+                    <span className="ml-1">
+                      {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+
+            {/* Sleep Status */}
+            {ongoingNap ? (
+              <div className="flex items-center gap-3">
+                <Moon className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                </p>
+              </div>
+            ) : awakeTime && (
+              <div className="flex items-center gap-3">
+                <Eye className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Awake for — <span className="font-medium text-foreground">{awakeTime}</span>
+                </p>
+              </div>
+            )}
+
+            {/* Last Diaper */}
+            {lastDiaper && (
+              <div className="flex items-center gap-3">
+                <Baby className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Last diaper — <span className="font-medium text-foreground">{lastDiaper.time}</span>
+                  {lastDiaper.details?.diaperType && (
+                    <span className="ml-1">
+                      {lastDiaper.details.diaperType}
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      ) : null}
 
-      {/* 4. Daily Summary */}
-      {displayActivities.length > 0 && (
-        <div className="space-y-3">
-          <button
-            onClick={() => setShowTimeline(!showTimeline)}
-            className="w-full flex items-center justify-between"
-          >
-            <h2 className="text-base font-semibold text-foreground">
-              Daily Summary
+        {/* 3. What's Next */}
+        {(nextAction && !showingYesterday) || ongoingNap ? (
+          <div className="space-y-4 pb-6 border-b border-border">
+            <h2 className="text-base font-medium text-foreground">
+              What's Next
             </h2>
-            <ChevronDown 
-              className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
-            />
-          </button>
-
-          {/* Summary Stats */}
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2 text-sm text-foreground">
-              <span className="font-medium">Feeds:</span>
-              <span>{summary.feedCount} total</span>
-            </div>
             
-            {summary.napCount > 0 && (
-              <div className="flex items-center gap-2 text-sm text-foreground">
-                <span className="font-medium">Sleep:</span>
-                <span>
-                  {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
-                  {(() => {
-                    const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
-                    if (naps.length === 0) return '';
+            {nextAction && (
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-primary mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  {nextAction}
+                </p>
+              </div>
+            )}
+            
+            {/* Wake-up button if sleeping */}
+            {ongoingNap && onEndNap && (
+              <Button
+                onClick={() => {
+                  console.log('Wake up button clicked in HomeTab');
+                  console.log('onEndNap exists:', !!onEndNap);
+                  console.log('ongoingNap:', ongoingNap);
+                  onEndNap();
+                }}
+                className="w-full mt-2"
+                size="sm"
+              >
+                {babyName?.split(' ')[0] || 'Baby'} woke up
+              </Button>
+            )}
+          </div>
+        ) : null}
+
+        {/* 4. Daily Summary */}
+        {displayActivities.length > 0 && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setShowTimeline(!showTimeline)}
+              className="w-full flex items-center justify-between"
+            >
+              <h2 className="text-base font-medium text-foreground">
+                Daily Summary
+              </h2>
+              <ChevronDown 
+                className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
+              />
+            </button>
+
+            {/* Summary Stats */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium text-foreground">Feeds:</span>
+                <span className="text-muted-foreground">{summary.feedCount} total</span>
+            </div>
+              
+              {summary.napCount > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-foreground">Sleep:</span>
+                  <span className="text-muted-foreground">
+                    {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
+                    {(() => {
+                      const naps = displayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+                      if (naps.length === 0) return '';
+                      
+                      let totalMinutes = 0;
+                      naps.forEach(nap => {
+                        const parseTime = (timeStr: string) => {
+                          const [time, period] = timeStr.split(' ');
+                          const [hStr, mStr] = time.split(':');
+                          let h = parseInt(hStr, 10);
+                          const m = parseInt(mStr || '0', 10);
+                          if (period === 'PM' && h !== 12) h += 12;
+                          if (period === 'AM' && h === 12) h = 0;
+                          return h * 60 + m;
+                        };
+                        
+                        const startMinutes = parseTime(nap.details.startTime || nap.time);
+                        const endMinutes = parseTime(nap.details.endTime!);
+                        let duration = endMinutes >= startMinutes 
+                          ? endMinutes - startMinutes 
+                          : (24 * 60) - startMinutes + endMinutes;
+                        totalMinutes += duration;
+                      });
+                      
+                      const hours = Math.floor(totalMinutes / 60);
+                      const mins = totalMinutes % 60;
+                      return ` (${hours}h ${mins}m)`;
+                    })()}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 text-sm">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <span className="font-medium text-foreground">Overall:</span>
+                <span className="text-muted-foreground">Calm and steady</span>
+              </div>
+            </div>
+
+            {/* Expandable Timeline */}
+            {showTimeline && (
+              <div className="pt-3 border-t border-border/50 space-y-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  Today's Log Timeline
+                </p>
+                {displayActivities
+                  .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
+                  .map((activity, index) => {
+                    const getActivityIcon = (type: string) => {
+                      switch(type) {
+                        case 'feed': return <Baby className="h-4 w-4" />;
+                        case 'nap': return <Moon className="h-4 w-4" />;
+                        case 'diaper': return <Palette className="h-4 w-4" />;
+                        case 'measure': return <Ruler className="h-4 w-4" />;
+                        default: return <Clock className="h-4 w-4" />;
+                      }
+                    };
+
+                    const getActivityGradient = (type: string) => {
+                      switch (type) {
+                        case "feed": return "bg-gradient-feed";
+                        case "diaper": return "bg-gradient-diaper";
+                        case "nap": return "bg-gradient-nap";
+                        case "measure": return "bg-gradient-primary";
+                        default: return "bg-gradient-primary";
+                      }
+                    };
                     
-                    let totalMinutes = 0;
-                    naps.forEach(nap => {
+                    let details = '';
+                    if (activity.type === 'feed' && activity.details?.quantity) {
+                      details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
+                    } else if (activity.type === 'nap' && activity.details?.endTime) {
                       const parseTime = (timeStr: string) => {
                         const [time, period] = timeStr.split(' ');
                         const [hStr, mStr] = time.split(':');
@@ -815,130 +882,65 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                         return h * 60 + m;
                       };
                       
-                      const startMinutes = parseTime(nap.details.startTime || nap.time);
-                      const endMinutes = parseTime(nap.details.endTime!);
+                      const startMinutes = parseTime(activity.details.startTime || activity.time);
+                      const endMinutes = parseTime(activity.details.endTime);
                       let duration = endMinutes >= startMinutes 
                         ? endMinutes - startMinutes 
                         : (24 * 60) - startMinutes + endMinutes;
-                      totalMinutes += duration;
-                    });
+                      
+                      const hours = Math.floor(duration / 60);
+                      const mins = duration % 60;
+                      details = ` • ${hours}h ${mins}m`;
+                    } else if (activity.type === 'diaper' && activity.details?.diaperType) {
+                      details = ` • ${activity.details.diaperType}`;
+                    }
                     
-                    const hours = Math.floor(totalMinutes / 60);
-                    const mins = totalMinutes % 60;
-                    return ` (${hours}h ${mins}m)`;
-                  })()}
-                </span>
+                    return (
+                      <div key={index} className="relative flex items-center gap-2 py-0.5">
+                        {/* Timeline line */}
+                        {index < displayActivities.length - 1 && (
+                          <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
+                        )}
+                        
+                        {/* Timeline marker with circle */}
+                        <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="flex-1 flex items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">{activity.time}</span>
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {activity.type}{details}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
             )}
-            
-            <div className="flex items-center gap-2 text-sm text-foreground">
-              <TrendingUp className="w-4 h-4 text-primary" />
-              <span className="font-medium">Overall:</span>
-              <span>Calm and steady</span>
-            </div>
           </div>
+        )}
 
-          {/* Expandable Timeline */}
-          {showTimeline && (
-            <div className="pt-3 border-t border-border/50 space-y-1">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Today's Log Timeline
-              </p>
-              {displayActivities
-                .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())
-                .map((activity, index) => {
-                  const getActivityIcon = (type: string) => {
-                    switch(type) {
-                      case 'feed': return <Baby className="h-4 w-4" />;
-                      case 'nap': return <Moon className="h-4 w-4" />;
-                      case 'diaper': return <Palette className="h-4 w-4" />;
-                      case 'measure': return <Ruler className="h-4 w-4" />;
-                      default: return <Clock className="h-4 w-4" />;
-                    }
-                  };
-
-                  const getActivityGradient = (type: string) => {
-                    switch (type) {
-                      case "feed": return "bg-gradient-feed";
-                      case "diaper": return "bg-gradient-diaper";
-                      case "nap": return "bg-gradient-nap";
-                      case "measure": return "bg-gradient-primary";
-                      default: return "bg-gradient-primary";
-                    }
-                  };
-                  
-                  let details = '';
-                  if (activity.type === 'feed' && activity.details?.quantity) {
-                    details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
-                  } else if (activity.type === 'nap' && activity.details?.endTime) {
-                    const parseTime = (timeStr: string) => {
-                      const [time, period] = timeStr.split(' ');
-                      const [hStr, mStr] = time.split(':');
-                      let h = parseInt(hStr, 10);
-                      const m = parseInt(mStr || '0', 10);
-                      if (period === 'PM' && h !== 12) h += 12;
-                      if (period === 'AM' && h === 12) h = 0;
-                      return h * 60 + m;
-                    };
-                    
-                    const startMinutes = parseTime(activity.details.startTime || activity.time);
-                    const endMinutes = parseTime(activity.details.endTime);
-                    let duration = endMinutes >= startMinutes 
-                      ? endMinutes - startMinutes 
-                      : (24 * 60) - startMinutes + endMinutes;
-                    
-                    const hours = Math.floor(duration / 60);
-                    const mins = duration % 60;
-                    details = ` • ${hours}h ${mins}m`;
-                  } else if (activity.type === 'diaper' && activity.details?.diaperType) {
-                    details = ` • ${activity.details.diaperType}`;
-                  }
-                  
-                  return (
-                    <div key={index} className="relative flex items-center gap-2 py-0.5">
-                      {/* Timeline line */}
-                      {index < displayActivities.length - 1 && (
-                        <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
-                      )}
-                      
-                      {/* Timeline marker with circle */}
-                      <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      
-                      {/* Content */}
-                      <div className="flex-1 flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground">{activity.time}</span>
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {activity.type}{details}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Total moments counter */}
-      {activities.length > 0 && (
-        <div className="text-center pt-8 pb-4 space-y-1">
-          <p className="text-sm text-muted-foreground">
-            {"You've logged "}
-            <span className="font-medium text-foreground">{activities.length}</span>
-            {" moments together so far 🌿"}
-          </p>
-          {showBadge && percentile !== null && (
-            <p className="text-xs text-muted-foreground/80">
-              {"You're in the top "}
-              <span className="font-medium text-primary">{percentile}%</span>
-              {" of users"}
+        {/* Total moments counter */}
+        {activities.length > 0 && (
+          <div className="text-center pt-8 pb-4 space-y-1">
+            <p className="text-sm text-muted-foreground">
+              {"You've logged "}
+              <span className="font-medium text-foreground">{activities.length}</span>
+              {" moments together so far 🌿"}
             </p>
-          )}
-        </div>
-      )}
+            {showBadge && percentile !== null && (
+              <p className="text-xs text-muted-foreground/80">
+                {"You're in the top "}
+                <span className="font-medium text-primary">{percentile}%</span>
+                {" of users"}
+              </p>
+            )}
+          </div>
+        )}
 
+      </div>
     </div>
   );
 };
