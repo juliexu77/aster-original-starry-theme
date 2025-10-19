@@ -30,6 +30,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
   const [showToneInsight, setShowToneInsight] = useState(false);
   const [showPredictionInsight, setShowPredictionInsight] = useState(false);
+  const [showFeedStatusInsight, setShowFeedStatusInsight] = useState(false);
+  const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -555,35 +557,92 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   };
 
-  // Get status indicator for feeds
+  // Get status indicator for feeds (time-aware)
   const getFeedStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
     if (!expected) return 'on-track';
     
-    if (count >= expected.min && count <= expected.max) {
+    const hour = currentTime.getHours();
+    // Calculate expected feeds by this time of day (proportional to time elapsed)
+    const dayProgress = hour / 24;
+    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Early in the day (before 10am), be lenient
+    if (hour < 10) {
+      return count >= 1 ? 'on-track' : 'on-track'; // Having any feed in morning is fine
+    }
+    
+    // Mid to late day: compare to proportional expectations
+    if (count >= expectedByNow) {
       return 'on-track';
-    } else if (count < expected.min && count === 0) {
-      return 'on-track'; // Just starting the day
-    } else if (count < expected.min || count > expected.max + 2) {
-      return 'attention';
+    } else if (count < expectedByNow && count >= expectedByNow - 1) {
+      return 'on-track'; // Within 1 of expected is still ok
     } else {
-      return 'on-track'; // Slightly above but adjusting
+      return 'attention'; // More than 1 behind
     }
   };
 
-  // Get status indicator for sleep
+  // Get status indicator for sleep (time-aware)
   const getSleepStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
     if (!expected) return 'on-track';
     
-    if (count >= expected.min && count <= expected.max) {
+    const hour = currentTime.getHours();
+    const dayProgress = hour / 24;
+    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Early in the day (before 10am), be lenient
+    if (hour < 10) {
+      return 'on-track'; // No pressure for naps early
+    }
+    
+    // Mid to late day: compare to proportional expectations
+    if (count >= expectedByNow) {
       return 'on-track';
-    } else if (count < expected.min && count === 0) {
-      return 'on-track'; // Just starting the day
-    } else if (count < expected.min) {
-      return 'attention';
+    } else if (count < expectedByNow && count >= expectedByNow - 1) {
+      return 'on-track'; // Within 1 of expected is still ok
     } else {
-      return 'on-track'; // Extra rest day is okay
+      return 'attention'; // More than 1 behind
+    }
+  };
+
+  // Get detailed explanation for feed status
+  const getFeedStatusExplanation = (count: number, months: number | null) => {
+    const expected = getExpectedFeeds(months);
+    if (!expected) return "We're learning your baby's feeding patterns.";
+    
+    const hour = currentTime.getHours();
+    const dayProgress = hour / 24;
+    const expectedByNow = Math.floor(expected.min * dayProgress);
+    const status = getFeedStatusIndicator(count, months);
+    
+    if (status === 'on-track') {
+      if (hour < 10) {
+        return `${count} feed${count !== 1 ? 's' : ''} so far this morning is on track. Babies typically need ${expected.typical} feeds throughout the entire day.`;
+      }
+      return `${count} feed${count !== 1 ? 's' : ''} is great progress. Based on the time of day, we'd expect around ${expectedByNow} feeds by now, and you're right on track for ${expected.typical} total feeds today.`;
+    } else {
+      return `${count} feed${count !== 1 ? 's' : ''} by this time might be slightly behind. Based on typical patterns for ${months}-month-olds (${expected.typical} per day), we'd expect around ${expectedByNow} by now. Consider offering a feed if baby shows hunger cues.`;
+    }
+  };
+
+  // Get detailed explanation for sleep status
+  const getSleepStatusExplanation = (count: number, months: number | null) => {
+    const expected = getExpectedNaps(months);
+    if (!expected) return "We're learning your baby's sleep patterns.";
+    
+    const hour = currentTime.getHours();
+    const dayProgress = hour / 24;
+    const expectedByNow = Math.floor(expected.min * dayProgress);
+    const status = getSleepStatusIndicator(count, months);
+    
+    if (status === 'on-track') {
+      if (hour < 10) {
+        return `${count} nap${count !== 1 ? 's' : ''} so far is perfectly fine for the morning. Babies typically need ${expected.typical} naps throughout the entire day.`;
+      }
+      return `${count} nap${count !== 1 ? 's' : ''} is great progress. Based on the time of day, we'd expect around ${expectedByNow} naps by now, and you're right on track for ${expected.typical} total naps today.`;
+    } else {
+      return `${count} nap${count !== 1 ? 's' : ''} by this time might be slightly behind. Based on typical patterns for ${months}-month-olds (${expected.typical} per day), we'd expect around ${expectedByNow} by now. Watch for sleepy cues.`;
     }
   };
 
@@ -893,6 +952,28 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </DialogContent>
         </Dialog>
 
+        <Dialog open={showFeedStatusInsight} onOpenChange={setShowFeedStatusInsight}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Feeding Status</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {getFeedStatusExplanation(summary.feedCount, babyAgeMonths)}
+            </p>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showSleepStatusInsight} onOpenChange={setShowSleepStatusInsight}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Sleep Status</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {getSleepStatusExplanation(summary.napCount, babyAgeMonths)}
+            </p>
+          </DialogContent>
+        </Dialog>
+
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
           <div className="space-y-4">
@@ -910,22 +991,28 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
             {/* Summary Stats */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
+              <button 
+                onClick={() => setShowFeedStatusInsight(true)}
+                className="flex items-center gap-2 text-sm w-full text-left"
+              >
                 {getFeedStatusIndicator(summary.feedCount, babyAgeMonths) === 'on-track' ? (
-                  <Circle className="w-3 h-3 fill-green-500 text-green-500" />
+                  <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
                 ) : (
-                  <AlertCircle className="w-3 h-3 text-amber-500" />
+                  <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
                 )}
                 <span className="font-medium text-foreground">Feeds:</span>
                 <span className="text-muted-foreground">{summary.feedCount} total</span>
-            </div>
+              </button>
               
               {summary.napCount > 0 && (
-                <div className="flex items-center gap-2 text-sm">
+                <button 
+                  onClick={() => setShowSleepStatusInsight(true)}
+                  className="flex items-center gap-2 text-sm w-full text-left"
+                >
                   {getSleepStatusIndicator(summary.napCount, babyAgeMonths) === 'on-track' ? (
-                    <Circle className="w-3 h-3 fill-green-500 text-green-500" />
+                    <Circle className="w-3 h-3 fill-green-500 text-green-500 flex-shrink-0" />
                   ) : (
-                    <AlertCircle className="w-3 h-3 text-amber-500" />
+                    <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
                   )}
                   <span className="font-medium text-foreground">Sleep:</span>
                   <span className="text-muted-foreground">
@@ -959,7 +1046,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       return ` (${hours}h ${mins}m)`;
                     })()}
                   </span>
-                </div>
+                </button>
               )}
               
               <div className="flex items-center gap-2 text-sm">
