@@ -226,8 +226,9 @@ function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
       const timeSinceStart = (now.getTime() - segment.start.getTime()) / 60000; // minutes
       const nextAfter = eventsAsc.find(e => e.timestamp > segment.start);
       
-      // Don't auto-close night sleep or very recent sleep (< 30 min)
-      if (nextAfter && segment.type !== 'night' && timeSinceStart > 30) {
+      // Don't auto-close any sleep that's ongoing (within last 2 hours) or night sleep
+      // Only infer closure for old unclosed naps (likely user forgot to log wake time)
+      if (nextAfter && segment.type !== 'night' && timeSinceStart > 120) {
         segment.end = nextAfter.timestamp;
       }
     }

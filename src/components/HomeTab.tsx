@@ -640,9 +640,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   };
 
-  // Use unified prediction engine, but fallback to legacy for ongoing naps
-  const legacyNextAction = getNextPredictedAction_LEGACY();
-  const nextAction = ongoingNap ? legacyNextAction : (prediction ? getIntentCopy(prediction, babyName) : null);
+  // Use unified prediction engine
+  const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
 
   const summary = getDailySummary();
   const latestMeasurement = getLatestMeasurement();
@@ -695,8 +694,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     onAddActivity('feed', lastFeed);
                   }}
                   size="sm"
-                  variant="ghost"
-                  className="h-8 px-2"
+                  className="h-8 px-3"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
@@ -725,8 +723,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     onAddActivity('nap', lastNap);
                   }}
                   size="sm"
-                  variant="ghost"
-                  className="h-8 px-2"
+                  className="h-8 px-3"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
