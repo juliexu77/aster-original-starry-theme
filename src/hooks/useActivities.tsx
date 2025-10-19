@@ -169,9 +169,15 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // Create date object for today and set the specific time in local timezone
-      const loggedAt = new Date();
-      loggedAt.setHours(hour24, minutes, 0, 0);
+      // Create date object for today in LOCAL timezone, then convert to ISO for storage
+      // This ensures that activities logged "today" at any time remain "today" regardless of UTC offset
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const day = now.getDate();
+      
+      // Create a new date with explicit local date components and selected time
+      const loggedAt = new Date(year, month, day, hour24, minutes, 0, 0);
 
       const { data, error } = await supabase
         .from('activities')
