@@ -29,6 +29,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showSleepDetails, setShowSleepDetails] = useState(false);
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
   const [showToneInsight, setShowToneInsight] = useState(false);
+  const [showPredictionInsight, setShowPredictionInsight] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Calculate baby's age in months and weeks
@@ -359,6 +360,29 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       default:
         return `${babyName} is establishing their unique daily patterns. With ${summary.feedCount} feeds and ${summary.napCount} naps logged, you're learning their natural rhythm together.`;
     }
+  };
+
+  // Get detailed reasoning for the prediction
+  const getPredictionReasoning = () => {
+    if (!prediction) return "We're analyzing your baby's patterns to provide predictions.";
+
+    const summary = getDailySummary();
+    const awakeMinutes = awakeTime ? parseInt(awakeTime.split('h')[0]) * 60 + parseInt(awakeTime.split('h')[1]?.split('m')[0] || '0') : 0;
+    
+    if (prediction.intent === 'START_WIND_DOWN' || prediction.intent === 'LET_SLEEP_CONTINUE') {
+      const expectedWindow = babyAgeMonths !== null && babyAgeMonths < 3 ? 90 : 
+                           babyAgeMonths !== null && babyAgeMonths < 6 ? 120 : 
+                           babyAgeMonths !== null && babyAgeMonths < 9 ? 150 : 180;
+      
+      return `Based on ${babyName}'s age (${babyAgeMonths || 0} months) and current wake window of ${awakeTime || '0m'}, we predict a nap is coming soon. Typical wake windows for this age are around ${Math.floor(expectedWindow / 60)}h ${expectedWindow % 60}m. ${babyName} has had ${summary.napCount} nap${summary.napCount !== 1 ? 's' : ''} today, and babies at this age typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day.`;
+    } else if (prediction.intent === 'FEED_SOON') {
+      const lastFeedTime = lastFeed ? lastFeed.time : 'earlier';
+      const avgFeedAmount = lastFeed?.details?.quantity ? `around ${lastFeed.details.quantity}${lastFeed.details.unit || 'ml'}` : 'their usual amount';
+      
+      return `Based on recent feeding patterns, ${babyName} typically feeds every 2-3 hours. The last feed was at ${lastFeedTime}. Today has had ${summary.feedCount} feed${summary.feedCount !== 1 ? 's' : ''}, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedFeeds(babyAgeMonths)?.typical || '6-8'} feeds per day. We predict a feed of ${avgFeedAmount}.`;
+    }
+    
+    return `This prediction is based on ${babyName}'s established patterns from ${activities.length} logged moments, considering age-appropriate wake windows and feeding intervals.`;
   };
 
   // Calculate percentiles using WHO growth standards
@@ -823,9 +847,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         {(nextAction && !showingYesterday) || ongoingNap ? (
           <Card className="p-4">
             <div className="space-y-4">
-              <h2 className="text-base font-medium text-foreground">
-                What's Next
-              </h2>
+              <button 
+                onClick={() => prediction && setShowPredictionInsight(true)}
+                className="w-full text-left group"
+              >
+                <h2 className="text-base font-medium text-foreground group-hover:text-primary transition-colors">
+                  What's Next
+                </h2>
+              </button>
               
               {nextAction && (
                 <div className="flex items-start gap-3">
@@ -854,6 +883,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             </div>
           </Card>
         ) : null}
+        
+        <Dialog open={showPredictionInsight} onOpenChange={setShowPredictionInsight}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Why This Prediction?</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {getPredictionReasoning()}
+            </p>
+          </DialogContent>
+        </Dialog>
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
