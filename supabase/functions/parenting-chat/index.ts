@@ -445,8 +445,17 @@ ${dailySummaries.map(day => {
   const lines = [`${day.isToday ? '📅 TODAY' : day.date}:`];
   if (day.feedCount > 0)
     lines.push(`• Feeds: ${day.feedCount} (${day.totalFeedVolume}${day.feedUnit} total)`);
-  if (day.napCount > 0)
+  if (day.napCount > 0) {
     lines.push(`• Naps: ${day.napCount} (${formatDuration(day.totalNapMinutes)} total, avg ${formatDuration(day.avgNapLength)})`);
+    // Add individual nap details
+    day.napDetails.forEach(nap => {
+      lines.push(`  - Nap ${nap.index}: ${formatDuration(nap.duration)} starting at ${nap.startTime}`);
+    });
+    // Add wake windows
+    if (day.wakeWindows.length > 0) {
+      lines.push(`• Wake windows: ${day.wakeWindows.map(ww => formatDuration(ww)).join(', ')} (avg ${formatDuration(day.avgWakeWindow)})`);
+    }
+  }
   if (day.diaperCount > 0)
     lines.push(`• Diapers: ${day.diaperCount}`);
   if (day.measurements && day.measurements.length > 0) {
