@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -8,6 +10,16 @@ import { Sprout } from "lucide-react";
 const Onboarding = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const [inviteCode, setInviteCode] = useState("");
+  const [error, setError] = useState("");
+
+  const handleGetStarted = () => {
+    if (inviteCode.toLowerCase() === "calebsage") {
+      navigate("/auth");
+    } else {
+      setError("Invalid invite code");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
@@ -40,8 +52,28 @@ const Onboarding = () => {
 
           {/* CTA */}
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                type="text"
+                placeholder="Enter invite code"
+                value={inviteCode}
+                onChange={(e) => {
+                  setInviteCode(e.target.value);
+                  setError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleGetStarted();
+                  }
+                }}
+                className="h-12 text-center rounded-full"
+              />
+              {error && (
+                <p className="text-sm text-destructive text-center">{error}</p>
+              )}
+            </div>
             <Button
-              onClick={() => navigate("/auth")}
+              onClick={handleGetStarted}
               size="lg"
               className="w-full h-12 text-base font-bold rounded-full"
             >
