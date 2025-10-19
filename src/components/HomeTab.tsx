@@ -500,40 +500,40 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Get status indicator for feeds
   const getFeedStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedFeeds(months);
-    if (!expected) return '✅'; // Default to on track if no baseline
+    if (!expected) return '🌿'; // Default to on track if no baseline
     
     if (count >= expected.min && count <= expected.max) {
-      return '✅'; // On track
+      return '🌿'; // On track
     } else if (count < expected.min && count === 0) {
-      return '🔄'; // Just starting the day
+      return '⚙️'; // Just starting the day
     } else if (count < expected.min) {
       return '⚠️'; // Below expected
     } else if (count > expected.max + 2) {
       return '⚠️'; // Significantly above (growth spurt)
     } else {
-      return '🔄'; // Adjusting (slightly above normal)
+      return '⚙️'; // Adjusting (slightly above normal)
     }
   };
 
   // Get status indicator for sleep
   const getSleepStatusIndicator = (count: number, months: number | null) => {
     const expected = getExpectedNaps(months);
-    if (!expected) return '✅'; // Default to on track if no baseline
+    if (!expected) return '🌿'; // Default to on track if no baseline
     
     if (count >= expected.min && count <= expected.max) {
-      return '✅'; // On track
+      return '🌿'; // On track
     } else if (count < expected.min && count === 0) {
-      return '🔄'; // Just starting the day
+      return '⚙️'; // Just starting the day
     } else if (count < expected.min) {
       return '⚠️'; // Below expected
     } else {
-      return '🔄'; // Extra rest day
+      return '⚙️'; // Extra rest day
     }
   };
 
   // Get status indicator for growth
   const getGrowthStatusIndicator = (measurement: any) => {
-    if (!measurement) return '🔄';
+    if (!measurement) return '⚙️';
     
     // Check if any percentile is concerning (< 5 or > 95)
     const hasWarning = 
@@ -543,7 +543,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     
     if (hasWarning) return '⚠️';
     
-    return '✅'; // Normal percentiles
+    return '🌿'; // Normal percentiles
   };
   
   // Use unified prediction engine
