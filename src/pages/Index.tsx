@@ -17,6 +17,7 @@ import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +80,9 @@ const Index = () => {
         };
       })
     : [];
+
+  // Calculate activity percentile
+  const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
 // Show wake-up for open naps from today or yesterday only (ignore older accidentally open naps)
@@ -582,10 +586,10 @@ const ongoingNap = activities
                               <span className="font-medium text-foreground">{activities.length}</span>
                               {" moments together so far 🌿"}
                             </p>
-                            {activities.length >= 75 && (
+                            {showBadge && percentile !== null && (
                               <p className="text-xs text-muted-foreground/80">
                                 {"You're in the top "}
-                                <span className="font-medium text-primary">1%</span>
+                                <span className="font-medium text-primary">{percentile}%</span>
                                 {" of users"}
                               </p>
                             )}
