@@ -33,6 +33,7 @@ const Index = () => {
   const { userProfile } = useUserProfile();
   const { 
     household, 
+    collaborators,
     loading: householdLoading,
     error: householdError,
     refetch: refetchHousehold
@@ -92,6 +93,10 @@ yesterdayStart.setHours(0, 0, 0, 0);
 const ongoingNap = activities
   .filter(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime && a.id !== justEndedNapId && new Date(a.loggedAt!) >= yesterdayStart)
   .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+
+  // Get current user's role from collaborators
+  const currentUserRole = collaborators.find(c => c.user_id === user?.id)?.role;
+  
   const [activeTab, setActiveTab] = useState("home");
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
@@ -318,6 +323,8 @@ const ongoingNap = activities
           onAddActivity={() => setShowAddActivity(true)}
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}
+          userRole={currentUserRole}
+          dailyRecapEnabled={userProfile?.daily_recap_enabled ?? true}
         />;
       case "trends":
         return (

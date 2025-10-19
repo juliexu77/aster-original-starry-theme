@@ -10,7 +10,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PhotoUpload } from "@/components/PhotoUpload";
-import { UserRoleSelectorWithStatus } from "@/components/ui/user-role-selector-with-status";
 import { User } from "lucide-react";
 
 interface ProfileEditModalProps {
@@ -25,17 +24,14 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
   const { toast } = useToast();
   
   const [fullName, setFullName] = useState("");
-  const [userRole, setUserRole] = useState<"parent" | "caregiver">("parent");
   
   // Save status states
   const [fullNameSaveStatus, setFullNameSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
-  const [userRoleSaveStatus, setUserRoleSaveStatus] = useState<"idle" | "unsaved" | "saving" | "saved" | "error">("idle");
 
   // Initialize values when modal opens
   useEffect(() => {
     if (open) {
       setFullName(user?.user_metadata?.full_name || userProfile?.full_name || "");
-      setUserRole(userProfile?.role || "parent");
     }
   }, [open, user, userProfile]);
 
@@ -63,27 +59,6 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
 
     return () => clearTimeout(timeoutId);
   }, [fullName, user]);
-
-  // Auto-save user role changes
-  useEffect(() => {
-    if (!userProfile || userRole === userProfile.role) return;
-    
-    setUserRoleSaveStatus("unsaved");
-    setUserRoleSaveStatus("saving");
-    const timeoutId = setTimeout(async () => {
-      try {
-        await updateUserProfile({ role: userRole });
-        setUserRoleSaveStatus("saved");
-        setTimeout(() => setUserRoleSaveStatus("idle"), 3000);
-      } catch (error) {
-        setUserRoleSaveStatus("error");
-        console.error('Error updating user role:', error);
-        setUserRole(userProfile.role);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [userRole, userProfile, updateUserProfile]);
 
   const handleUserPhotoUpdate = async (photoUrl: string | null) => {
     try {
@@ -141,20 +116,7 @@ export const ProfileEditModal = ({ open, onOpenChange }: ProfileEditModalProps) 
             />
           </div>
 
-          {/* Role */}
-          <div>
-            <Label className="text-sm text-muted-foreground">{t('youAre')}</Label>
-            <div className="mt-2">
-              <UserRoleSelectorWithStatus
-                value={userRole} 
-                onChange={setUserRole}
-                saveStatus={userRoleSaveStatus}
-                errorMessage={t('failedToUpdateRole')}
-              />
-            </div>
-          </div>
-
-          <Button 
+          <Button
             onClick={() => onOpenChange(false)} 
             className="w-full"
           >

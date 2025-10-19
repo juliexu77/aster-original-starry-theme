@@ -16,8 +16,10 @@ import {
   Share,
   Users,
   Baby,
-  Globe
+  Globe,
+  Calendar
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
 import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
@@ -28,7 +30,7 @@ import { SettingsSection } from "@/components/settings/SettingsSection";
 export const Settings = () => {
   const { user, signOut } = useAuth();
   const { household, generateInviteLink } = useHousehold();
-  const { userProfile } = useUserProfile();
+  const { userProfile, updateUserProfile } = useUserProfile();
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -202,6 +204,29 @@ export const Settings = () => {
               <LanguageToggle />
             </SettingsRow>
           </SettingsSection>
+
+          {/* Home Section */}
+          {user && (
+            <SettingsSection title="Home">
+              <SettingsRow
+                icon={<Calendar className="w-5 h-5" />}
+                title="Daily Recap"
+                subtitle="Show at 5 PM"
+                showChevron={false}
+              >
+                <Switch
+                  checked={userProfile?.daily_recap_enabled ?? true}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updateUserProfile({ daily_recap_enabled: checked });
+                    } catch (error) {
+                      console.error('Error updating daily recap setting:', error);
+                    }
+                  }}
+                />
+              </SettingsRow>
+            </SettingsSection>
+          )}
 
           {/* Account Section */}
           {user && (

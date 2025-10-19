@@ -8,9 +8,11 @@ interface UserProfile {
   user_id: string;
   full_name?: string;
   photo_url?: string;
-  role: 'parent' | 'caregiver';
   baby_name?: string;
   baby_birth_date?: string;
+  daily_recap_enabled?: boolean;
+  daily_recap_notifications?: boolean;
+  daily_recap_include_notes?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -46,7 +48,7 @@ export const useUserProfile = () => {
   };
 
   // Update user profile
-  const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'full_name' | 'photo_url' | 'role' | 'baby_name' | 'baby_birth_date'>>) => {
+  const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'full_name' | 'photo_url' | 'baby_name' | 'baby_birth_date' | 'daily_recap_enabled' | 'daily_recap_notifications' | 'daily_recap_include_notes'>>) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
@@ -72,7 +74,7 @@ export const useUserProfile = () => {
   };
 
   // Create user profile (called from auth trigger, but can be called manually)
-  const createUserProfile = async (profile: Partial<Pick<UserProfile, 'full_name' | 'photo_url' | 'role'>>) => {
+  const createUserProfile = async (profile: Partial<Pick<UserProfile, 'full_name' | 'photo_url'>>) => {
     if (!user) throw new Error('User not authenticated');
 
     try {
@@ -84,8 +86,7 @@ export const useUserProfile = () => {
         .insert({
           user_id: session.user.id,
           full_name: profile.full_name || null,
-          photo_url: profile.photo_url || null,
-          role: profile.role || 'parent'
+          photo_url: profile.photo_url || null
         })
         .select()
         .single();

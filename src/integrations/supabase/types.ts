@@ -210,6 +210,9 @@ export type Database = {
           baby_birth_date: string | null
           baby_name: string | null
           created_at: string
+          daily_recap_enabled: boolean | null
+          daily_recap_include_notes: boolean | null
+          daily_recap_notifications: boolean | null
           full_name: string | null
           id: string
           photo_url: string | null
@@ -220,6 +223,9 @@ export type Database = {
           baby_birth_date?: string | null
           baby_name?: string | null
           created_at?: string
+          daily_recap_enabled?: boolean | null
+          daily_recap_include_notes?: boolean | null
+          daily_recap_notifications?: boolean | null
           full_name?: string | null
           id?: string
           photo_url?: string | null
@@ -230,6 +236,9 @@ export type Database = {
           baby_birth_date?: string | null
           baby_name?: string | null
           created_at?: string
+          daily_recap_enabled?: boolean | null
+          daily_recap_include_notes?: boolean | null
+          daily_recap_notifications?: boolean | null
           full_name?: string | null
           id?: string
           photo_url?: string | null
