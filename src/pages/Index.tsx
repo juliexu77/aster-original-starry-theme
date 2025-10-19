@@ -132,7 +132,8 @@ const ongoingNap = activities
         localStorage.removeItem('babyProfile');
         localStorage.removeItem('babyProfileCompleted');
       } else if (!householdError) {
-        // Only redirect to baby setup if there's no error AND no household
+        // Only redirect to baby setup for truly new users with no profile info
+        const profileIncomplete = !userProfile?.baby_name && !userProfile?.baby_birth_date;
         // Prevent redirect loop by checking if we're not coming from onboarding
         const fromOnboarding = sessionStorage.getItem('from_baby_setup');
         if (fromOnboarding) {
@@ -140,13 +141,17 @@ const ongoingNap = activities
           sessionStorage.removeItem('from_baby_setup');
           return;
         }
-        console.log('No household found, redirecting to baby setup');
-        navigate('/onboarding/baby-setup');
-        return;
+        if (profileIncomplete) {
+          console.log('No household and profile incomplete, redirecting to baby setup');
+          navigate('/onboarding/baby-setup');
+          return;
+        } else {
+          console.log('No household but profile exists - not redirecting');
+        }
       }
     }
     // Note: Unauthenticated users are handled by RouteGuard
-  }, [user, loading, householdLoading, household, householdError, navigate]);
+  }, [user, loading, householdLoading, household, householdError, navigate, userProfile]);
 
   // Clear stale local profile if no user
   useEffect(() => {
