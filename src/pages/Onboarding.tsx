@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby } from "lucide-react";
+import { Sprout } from "lucide-react";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const Onboarding = () => {
         <div className="max-w-md mx-auto text-center space-y-8">
           {/* Icon */}
           <div className="flex items-center justify-center">
-            <Baby className="w-6 h-6 text-primary" />
+            <Sprout className="w-6 h-6 text-primary" />
           </div>
 
           {/* Message */}
@@ -33,7 +33,7 @@ const Onboarding = () => {
             <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground tracking-tight leading-tight">
               Understand your baby's rhythm — and your own.
             </h1>
-            <p className="text-base text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
+            <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
               A calm, intelligent companion that helps you track feeds, naps, and patterns — then gently reflects what they mean.
             </p>
           </div>
