@@ -34,7 +34,7 @@ const Onboarding = () => {
               Stay in sync with your baby.
             </h1>
             <p className="text-sm text-muted-foreground font-light leading-relaxed max-w-lg mx-auto">
-              A calm, intelligent companion for your daily rhythm.
+              Powered by the shared wisdom of parents, experts, and caregivers — tailored to your baby's unique rhythm.
             </p>
           </div>
 
