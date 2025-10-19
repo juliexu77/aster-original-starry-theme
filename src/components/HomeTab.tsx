@@ -706,13 +706,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 border-b border-border/40">
       </div>
 
-      <div className="px-4 space-y-6 pt-6">
+      <div className="px-4 space-y-6 pt-3">
 
         {/* Tone Card */}
         <div className="space-y-3">
           <button 
             onClick={() => setShowToneInsight(!showToneInsight)}
-            className="mx-auto block"
           >
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
               <span className="text-sm">{sentiment.emoji}</span>
