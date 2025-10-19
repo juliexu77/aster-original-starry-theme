@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
@@ -709,24 +710,28 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="px-4 space-y-6 pt-3">
 
         {/* Tone Card */}
-        <div className="space-y-3">
-          <button 
-            onClick={() => setShowToneInsight(!showToneInsight)}
-          >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-              <span className="text-sm">{sentiment.emoji}</span>
-              <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
-            </div>
-          </button>
-          
-          {showToneInsight && (
-            <Card className="p-4">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {getToneInsight(sentiment)}
-              </p>
-            </Card>
-          )}
-        </div>
+        <button 
+          onClick={() => setShowToneInsight(true)}
+        >
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+            <span className="text-sm">{sentiment.emoji}</span>
+            <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+          </div>
+        </button>
+        
+        <Dialog open={showToneInsight} onOpenChange={setShowToneInsight}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <span>{sentiment.emoji}</span>
+                <span>{sentiment.text}</span>
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {getToneInsight(sentiment)}
+            </p>
+          </DialogContent>
+        </Dialog>
 
         {/* 2. Current State */}
         <div className="space-y-4 pb-6 border-b border-border">
