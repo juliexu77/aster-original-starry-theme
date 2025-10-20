@@ -99,6 +99,13 @@ const ongoingNap = activities
   const currentUserRole = collaborators.find(c => c.user_id === user?.id)?.role;
   
   const [activeTab, setActiveTab] = useState("home");
+  
+  // Set default tab based on user role
+  useEffect(() => {
+    if (currentUserRole === 'caregiver') {
+      setActiveTab("insights");
+    }
+  }, [currentUserRole]);
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
   const [showAddActivity, setShowAddActivity] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
