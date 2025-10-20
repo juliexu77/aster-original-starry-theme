@@ -31,9 +31,10 @@ interface AddActivityModalProps {
   householdId?: string; // Add household ID for photo uploads
   quickAddType?: 'feed' | 'nap' | 'diaper' | null; // Quick add type
   prefillActivity?: Activity | null; // Activity to prefill from
+  activities?: Activity[]; // Activities for household defaults
 }
 
-export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId, quickAddType, prefillActivity }: AddActivityModalProps) => {
+export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButton = false, editingActivity, onEditActivity, onDeleteActivity, householdId, quickAddType, prefillActivity, activities }: AddActivityModalProps) => {
   const { t } = useLanguage();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = isOpen !== undefined ? isOpen : internalOpen;
@@ -60,7 +61,24 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Feed state
   const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
   const [quantity, setQuantity] = useState("");
-  const [unit, setUnit] = useState<"oz" | "ml">("oz");
+  
+  // Get last bottle feed unit from household activities
+  const getLastBottleUnit = (): "oz" | "ml" => {
+    if (!activities || activities.length === 0) return "oz";
+    
+    // Find the most recent bottle feed activity
+    const lastBottleFeed = activities
+      .filter(a => a.type === 'feed' && a.details?.feedType === 'bottle' && a.details?.unit)
+      .sort((a, b) => {
+        const timeA = a.loggedAt ? new Date(a.loggedAt).getTime() : 0;
+        const timeB = b.loggedAt ? new Date(b.loggedAt).getTime() : 0;
+        return timeB - timeA;
+      })[0];
+    
+    return lastBottleFeed?.details?.unit || "oz";
+  };
+  
+  const [unit, setUnit] = useState<"oz" | "ml">(() => getLastBottleUnit());
   const [minutesLeft, setMinutesLeft] = useState("");
   const [minutesRight, setMinutesRight] = useState("");
   const [solidDescription, setSolidDescription] = useState("");
@@ -183,8 +201,12 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       const current = getRoundedTime();
       setTime(current);
       if (!startTime) setStartTime(current);
+      // Reset unit to household default for new bottle feeds
+      if (!quickAddType || (quickAddType === 'feed' && !prefillActivity)) {
+        setUnit(getLastBottleUnit());
+      }
     }
-  }, [open, editingActivity]);
+  }, [open, editingActivity, quickAddType, prefillActivity]);
 
   // Handle quick add with prefilled data
   useEffect(() => {
@@ -222,6 +244,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setTime(getRoundedTime());
     setFeedType("bottle");
     setQuantity("");
+    setUnit(getLastBottleUnit()); // Reset to household default unit
     setMinutesLeft("");
     setMinutesRight("");
     setSolidDescription("");
