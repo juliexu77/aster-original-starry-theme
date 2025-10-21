@@ -214,9 +214,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       // Set activity type
       setActivityType(quickAddType);
       
-      // Keep current time (don't use prefill time), rounded to nearest 5 minutes
+      // ALWAYS use current time for quick add (never prefill time)
       const currentTime = getRoundedTime();
       setTime(currentTime);
+      setStartTime(currentTime); // Also set start time
       
       // Pre-fill details based on type
       if (quickAddType === 'feed' && prefillActivity.type === 'feed') {

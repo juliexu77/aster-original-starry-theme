@@ -782,6 +782,10 @@ return (
                 .eq('id', updatedActivity.id)
                 .single();
 
+              if (!currentActivity) {
+                throw new Error('Activity not found');
+              }
+
               // Convert time string to timestamp for database update
               const [time, period] = activityTime.split(' ');
               const [hours, minutes] = time.split(':').map(Number);
@@ -802,6 +806,7 @@ return (
               );
               const loggedAt = combinedDateTime.toISOString();
 
+              // Preserve household_id and created_by from original activity
               const { error } = await supabase
                 .from('activities')
                 .update({
@@ -810,11 +815,17 @@ return (
                   details: {
                     ...updatedActivity.details,
                     displayTime: activityTime // Store display time for consistent display
-                  }
+                  },
+                  household_id: currentActivity.household_id,
+                  created_by: currentActivity.created_by
                 })
-                .eq('id', updatedActivity.id);
+                .eq('id', updatedActivity.id)
+                .eq('household_id', currentActivity.household_id); // Additional safety check
               
-              if (error) throw error;
+              if (error) {
+                console.error('Update error:', error);
+                throw error;
+              }
 
               // Track for undo
               if (currentActivity) {
