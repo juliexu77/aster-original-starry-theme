@@ -141,6 +141,14 @@ serve(async (req) => {
       }
     };
     
+    // Helper to format duration in hours and minutes
+    const formatDuration = (minutes: number): string => {
+      if (minutes < 60) return `${minutes}min`;
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+    };
+    
     // Helper to detect if a sleep session is overnight/nighttime sleep (not a daytime nap)
     const isOvernightSleep = (startTime: string, endTime: string): boolean => {
       const startMinutes = parseTimeToMinutes(startTime);
@@ -431,14 +439,6 @@ serve(async (req) => {
 
 
     console.log("Daily summaries:", JSON.stringify(dailySummaries));
-
-    // Helper to format duration in hours and minutes
-    const formatDuration = (minutes: number): string => {
-      if (minutes < 60) return `${minutes}min`;
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
-    };
     
     // Calculate age in months for developmental context
     const ageInMonths = Math.floor((babyAgeInWeeks || 0) / 4.33);
