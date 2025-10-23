@@ -66,7 +66,7 @@ serve(async (req) => {
     console.log("Is initial request:", isInitial);
     console.log("Total activities received:", activities?.length || 0);
 
-    // Build context from recent activities to analyze trends
+    // Build context from recent activities to analyze trends (limit to last 10 days for performance)
     const getUserTzDayKey = (date: Date, tz: string) => {
       // ISO-style day key that's safe for sorting (YYYY-MM-DD)
       return date.toLocaleDateString('en-CA', { timeZone: tz || 'UTC' });
@@ -74,8 +74,12 @@ serve(async (req) => {
     
     const userToday = getUserTzDayKey(new Date(), timezone || 'UTC');
     
-    // Include ALL activities for complete pattern analysis
-    const recentActivities = activities || [];
+    // Limit to last 10 days for faster processing
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    const recentActivities = (activities || []).filter((a: any) => 
+      new Date(a.logged_at) >= tenDaysAgo
+    );
     
     // Group activities by day (in user's timezone)
     const activitiesByDay: { [key: string]: any[] } = {};

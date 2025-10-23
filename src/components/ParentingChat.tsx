@@ -244,6 +244,13 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+      // Send only last 14 days of activities to reduce payload and processing time
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const recentActivities = activities.filter(a => 
+        new Date(a.logged_at) >= twoWeeksAgo
+      );
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -252,7 +259,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         },
         body: JSON.stringify({ 
           messages: isGreeting ? [] : [...messages, { role: "user", content: userMessage }],
-          activities,
+          activities: recentActivities,
           babyName,
           babyAgeInWeeks,
           babySex,
