@@ -109,16 +109,16 @@ export function useActivities() {
     }
 
     try {
-      // Get activities from the past 7 days for continuous scrolling
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+      // Get activities from the past 30 days for better historical view
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setHours(0, 0, 0, 0);
 
       const { data, error } = await supabase
         .from('activities')
         .select('*')
         .eq('household_id', household.id)
-        .gte('logged_at', sevenDaysAgo.toISOString())
+        .gte('logged_at', thirtyDaysAgo.toISOString())
         .order('logged_at', { ascending: false });
 
       if (error) throw error;
