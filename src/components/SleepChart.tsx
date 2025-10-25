@@ -1,11 +1,13 @@
 import { Activity } from "./ActivityCard";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSleepData } from "@/hooks/useSleepData";
 import { SleepChartVisualization } from "./sleep/SleepChartVisualization";
 import { SleepStats } from "./sleep/SleepStats";
 import { SleepChartControls } from "./sleep/SleepChartControls";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { Share } from "lucide-react";
+import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
 
 interface SleepChartProps {
   activities: Activity[];
@@ -15,8 +17,18 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   const { t } = useLanguage();
   const [showFullDay, setShowFullDay] = useState(false);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+  const sleepChartRef = useRef<HTMLDivElement>(null);
   
   const { sleepData, averageDailySummary } = useSleepData(activities, showFullDay, currentWeekOffset);
+
+  const onShare = async () => {
+    if (!sleepChartRef.current) return;
+    try {
+      await shareElement(sleepChartRef.current, 'Weekly Sleep Schedule', getWeekCaption(currentWeekOffset));
+    } catch (e) {
+      console.error('Share failed', e);
+    }
+  };
   
   // Generate interpretation based on sleep patterns
   const getSleepScheduleInterpretation = () => {
@@ -88,11 +100,14 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
-      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div ref={sleepChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>
             <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onShare}>
+                <Share className="h-4 w-4" />
+              </Button>
               <div className="flex bg-muted/30 rounded-lg p-1">
                 <Button
                   variant={currentWeekOffset === 0 ? "default" : "ghost"}

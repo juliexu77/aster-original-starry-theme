@@ -1,8 +1,10 @@
 import { Activity } from "./ActivityCard";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Share } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -11,6 +13,17 @@ interface TrendChartProps {
 export const TrendChart = ({ activities }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
+  const feedChartRef = useRef<HTMLDivElement>(null);
+  const napChartRef = useRef<HTMLDivElement>(null);
+
+  const onShare = async (ref: React.RefObject<HTMLDivElement>, title: string) => {
+    if (!ref.current) return;
+    try {
+      await shareElement(ref.current, title, getWeekCaption(0));
+    } catch (e) {
+      console.error('Share failed', e);
+    }
+  };
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
@@ -196,13 +209,18 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   return (
     <div className="space-y-6">
       {/* Daily Feed Totals */}
-      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div ref={feedChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-muted-foreground" />
-            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-              {t('dailyFeedTotals')}
-            </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-muted-foreground" />
+              <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+                {t('dailyFeedTotals')}
+              </h3>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onShare(feedChartRef, 'Daily Feed Totals')}>
+              <Share className="h-4 w-4" />
+            </Button>
           </div>
           <p className="text-[13px] text-muted-foreground pl-7">
             {getFeedInterpretation()}
@@ -260,13 +278,18 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       </div>
 
       {/* Daily Sleep Totals */}
-      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div ref={napChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-muted-foreground" />
-            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-              {t('dailySleepTotalsChart')}
-            </h3>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-muted-foreground" />
+              <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+                {t('dailySleepTotalsChart')}
+              </h3>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onShare(napChartRef, 'Daily Sleep Totals')}>
+              <Share className="h-4 w-4" />
+            </Button>
           </div>
           <p className="text-[13px] text-muted-foreground pl-7">
             {getSleepInterpretation()}
