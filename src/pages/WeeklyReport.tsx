@@ -426,6 +426,44 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
 
     const feedsPerDayAvg = includedDays > 0 ? incTotalFeeds / includedDays : 0;
 
+    // Detect sustained nap pattern transition (not just daily variation)
+    const napTransition = (() => {
+      if (incNapCounts.length < 5) return null; // Need sufficient data
+      const firstHalf = incNapCounts.slice(0, Math.floor(incNapCounts.length / 2));
+      const secondHalf = incNapCounts.slice(Math.floor(incNapCounts.length / 2));
+      if (firstHalf.length === 0 || secondHalf.length === 0) return null;
+      
+      const avgFirst = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
+      const avgSecond = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
+      
+      // Only flag if there's a clear sustained drop of at least 1 nap
+      if (avgFirst - avgSecond >= 1) {
+        return { from: Math.round(avgFirst), to: Math.round(avgSecond) };
+      }
+      return null;
+    })();
+
+    // Detect stable bedtime (consistently within ±15 min)
+    const stableBedtime = weekStats.bedtimeVariance !== null && weekStats.bedtimeVariance <= 15 && bedtimes.length >= 5
+      ? weekStats.avgBedtimeMinutes
+      : null;
+
+    // Detect solids dominance (>25% of feeds are solids for this period)
+    const totalFeedsInPeriod = feeds.length;
+    const solidFeedsInPeriod = feeds.filter(f => f.details.feedType === 'solid').length;
+    const solidsDominant = totalFeedsInPeriod > 0 && (solidFeedsInPeriod / totalFeedsInPeriod) > 0.25;
+
+    // Detect feed frequency stabilization (feeds/day consistent across period)
+    const dailyFeedCounts = includedDailyData.map(d => d.feeds).filter(f => f > 0);
+    const feedFrequencyStable = (() => {
+      if (dailyFeedCounts.length < 5) return false;
+      const avgFeeds = dailyFeedCounts.reduce((a, b) => a + b, 0) / dailyFeedCounts.length;
+      const variance = Math.sqrt(
+        dailyFeedCounts.reduce((sum, count) => sum + Math.pow(count - avgFeeds, 2), 0) / dailyFeedCounts.length
+      );
+      return variance < 1.5; // Low variance = stable pattern
+    })();
+
     console.log('WeeklyReport: Final stats (included days)', {
       includedDays,
       incTotalFeeds,
@@ -434,7 +472,11 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       incMinVolume,
       incMaxVolume,
       incTotalSleepHours,
-      incAvgDailySleep
+      incAvgDailySleep,
+      napTransition,
+      stableBedtime,
+      solidsDominant,
+      feedFrequencyStable
     });
     
     return {
@@ -448,6 +490,10 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       avgOvernightMinutes,
       avgBedtimeMinutes,
       bedtimeVariance,
+      stableBedtime,
+      napTransition,
+      solidsDominant,
+      feedFrequencyStable,
       totalSleepHours: incTotalSleepHours,
       avgDailySleep: incAvgDailySleep,
       totalNaps: incTotalNaps,
@@ -625,21 +671,33 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
         <Separator className="my-6 border-gray-300" />
 
         {/* Milestones & Key Changes */}
+        {(firstSolidDate || weekStats.solidsDominant || weekStats.feedFrequencyStable || 
+          weekStats.napTransition || weekStats.stableBedtime !== null || 
+          (weekStats.longestOvernightMinutes > 0 && weekStats.longestOvernightDate)) && (
         <section className="mb-8">
           <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Milestones & Key Changes</h3>
           <div className="border-t-2 border-b-2 border-gray-400 py-3">
             <ul className="space-y-1.5 text-sm">
+              {/* Feeding Milestones */}
               {firstSolidDate && (
                 <li>• First solids introduced on {format(firstSolidDate, 'MMMM dd, yyyy')}</li>
               )}
-              {weekStats.napCountMin !== weekStats.napCountMax && weekStats.napCountMax - weekStats.napCountMin > 1 && (
-                <li>• Nap pattern shifted from {weekStats.napCountMax} → {weekStats.napCountMin} naps/day</li>
+              {weekStats.solidsDominant && (
+                <li>• Transition to solids-dominant diet ({">"}25% of feeds include solids)</li>
               )}
-              {weekStats.avgBedtimeMinutes !== null && weekStats.bedtimeVariance !== null && (
+              {weekStats.feedFrequencyStable && weekStats.feedsPerDayAvg > 0 && (
+                <li>• Feed frequency stabilized at {weekStats.feedsPerDayAvg.toFixed(1)} feeds/day</li>
+              )}
+              
+              {/* Sleep Milestones */}
+              {weekStats.napTransition && (
+                <li>• Nap pattern transitioned from {weekStats.napTransition.from} → {weekStats.napTransition.to} naps/day</li>
+              )}
+              {weekStats.stableBedtime !== null && (
                 <li>
-                  • Average bedtime now {weekStats.bedtimeVariance < 20 ? 'consistent' : 'variable'} at{' '}
-                  {format(new Date(0, 0, 0, Math.floor(weekStats.avgBedtimeMinutes / 60), weekStats.avgBedtimeMinutes % 60), 'h:mm a')}{' '}
-                  (±{Math.round(weekStats.bedtimeVariance)} min)
+                  • Stable bedtime achieved at{' '}
+                  {format(new Date(0, 0, 0, Math.floor(weekStats.stableBedtime / 60), weekStats.stableBedtime % 60), 'h:mm a')}{' '}
+                  (±15 min)
                 </li>
               )}
               {weekStats.longestOvernightMinutes > 0 && weekStats.longestOvernightDate && (
@@ -650,8 +708,13 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
             </ul>
           </div>
         </section>
+        )}
 
+        {(firstSolidDate || weekStats.solidsDominant || weekStats.feedFrequencyStable || 
+          weekStats.napTransition || weekStats.stableBedtime !== null || 
+          (weekStats.longestOvernightMinutes > 0 && weekStats.longestOvernightDate)) && (
         <Separator className="my-6 border-gray-300" />
+        )}
 
         {/* Observations */}
         <section className="mb-8">
