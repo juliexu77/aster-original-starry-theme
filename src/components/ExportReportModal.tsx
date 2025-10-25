@@ -70,10 +70,74 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
     if (!dateRange) return [];
 
     const { startDate, endDate } = dateRange;
-    return activities.filter(activity => {
+    const filtered = activities.filter(activity => {
       const activityDate = new Date(activity.loggedAt!);
       return activityDate >= startDate && activityDate <= endDate;
     });
+
+    // If hideOutliers is enabled, filter out days with incomplete data
+    if (hideOutliers && filtered.length > 0) {
+      const { startDate: start, endDate: end } = dateRange;
+      const days = new Map<string, Activity[]>();
+      
+      // Group activities by day
+      filtered.forEach(activity => {
+        const dayKey = format(new Date(activity.loggedAt!), 'yyyy-MM-dd');
+        if (!days.has(dayKey)) {
+          days.set(dayKey, []);
+        }
+        days.get(dayKey)!.push(activity);
+      });
+
+      // Calculate average feed volume and sleep per day
+      const dayStats = Array.from(days.entries()).map(([date, dayActivities]) => {
+        const feeds = dayActivities.filter(a => a.type === 'feed');
+        const naps = dayActivities.filter(a => a.type === 'nap' && a.details?.endTime);
+        
+        const feedVolume = feeds.reduce((sum, f) => {
+          const qty = parseFloat(f.details?.quantity || '0');
+          const unit = f.details?.unit || 'ml';
+          return sum + (unit === 'oz' ? qty : qty / 29.5735);
+        }, 0);
+
+        const sleepMinutes = naps.reduce((sum, n) => {
+          const startMins = parseTimeToMinutes(n.details.startTime || n.time);
+          const endMins = parseTimeToMinutes(n.details.endTime!);
+          let duration = endMins - startMins;
+          if (duration < 0) duration += 24 * 60;
+          return sum + duration;
+        }, 0);
+
+        return { date, feedVolume, sleepMinutes, activities: dayActivities };
+      });
+
+      // Calculate averages (excluding days with no data)
+      const feedVolumes = dayStats.filter(d => d.feedVolume > 0).map(d => d.feedVolume);
+      const sleepTimes = dayStats.filter(d => d.sleepMinutes > 0).map(d => d.sleepMinutes);
+      
+      const avgFeedVolume = feedVolumes.length > 0
+        ? feedVolumes.reduce((a, b) => a + b, 0) / feedVolumes.length
+        : 0;
+      
+      const avgSleep = sleepTimes.length > 0
+        ? sleepTimes.reduce((a, b) => a + b, 0) / sleepTimes.length
+        : 0;
+
+      // Filter out outlier days (less than 50% of average)
+      const threshold = 0.5;
+      const includedDays = dayStats.filter(day => {
+        const isFeedOutlier = avgFeedVolume > 0 && day.feedVolume > 0 && day.feedVolume < avgFeedVolume * threshold;
+        const isSleepOutlier = avgSleep > 0 && day.sleepMinutes > 0 && day.sleepMinutes < avgSleep * threshold;
+        const hasNoData = day.feedVolume === 0 && day.sleepMinutes === 0;
+        
+        return !(isFeedOutlier || isSleepOutlier || hasNoData);
+      });
+
+      // Return activities from non-outlier days only
+      return includedDays.flatMap(day => day.activities);
+    }
+
+    return filtered;
   };
 
   const parseTimeToMinutes = (timeStr: string) => {
@@ -107,11 +171,14 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
     }
 
     setIsGenerating(true);
-    
-    toast({
-      title: "Generating Report",
-      description: "Please wait while we create your activity report...",
-    });
+
+    // Small delay to ensure the modal updates before showing toast
+    setTimeout(() => {
+      toast({
+        title: "Generating Report",
+        description: "Please wait while we create your activity report...",
+      });
+    }, 100);
 
     try {
       const filteredActivities = filterActivitiesByDate();
