@@ -817,7 +817,13 @@ return (
                     const birthDate = new Date(babyProfile.birthday);
                     const today = new Date();
                     const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
-                    const weeks = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) % 4;
+                    
+                    // Calculate weeks from the last full month boundary
+                    const lastMonthDate = new Date(birthDate);
+                    lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
+                    const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const weeks = Math.floor(daysSinceLastMonth / 7);
+                    
                     return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
                   })() : 'age unknown'}
                 </p>
