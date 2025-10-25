@@ -5,15 +5,17 @@ import html2canvas from "html2canvas";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { format } from "date-fns";
+import { ReportConfig } from "./ReportConfigModal";
 
 interface ReportShareCaptureProps {
   open: boolean;
   onDone: () => void;
   babyName?: string;
+  config?: ReportConfig;
 }
 
 // Renders the WeeklyReport off-screen, captures it to a multi-page PDF, then shares via Capacitor (fallback: download)
-export function ReportShareCapture({ open, onDone, babyName }: ReportShareCaptureProps) {
+export function ReportShareCapture({ open, onDone, babyName, config }: ReportShareCaptureProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,7 +114,7 @@ export function ReportShareCapture({ open, onDone, babyName }: ReportShareCaptur
         zIndex: -1,
       }}
     >
-      <WeeklyReport />
+      <WeeklyReport config={config} />
     </div>
   ) : null;
 }

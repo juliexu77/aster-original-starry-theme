@@ -9,6 +9,7 @@ import { Settings as SettingsPage } from "@/pages/Settings";
 import { Helper } from "@/components/Helper";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ReportShareCapture } from "@/components/ReportShareCapture";
+import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -122,6 +123,8 @@ const ongoingNap = activities
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
+  const [showReportConfig, setShowReportConfig] = useState(false);
+  const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
   const [showReportShare, setShowReportShare] = useState(false);
   
 
@@ -506,7 +509,7 @@ const ongoingNap = activities
                     variant="outline" 
                     size="sm" 
                     className="h-8 w-8 p-0"
-                    onClick={() => setShowReportShare(true)}
+                    onClick={() => setShowReportConfig(true)}
                   >
                     <Share className="h-4 w-4" />
                   </Button>
@@ -1016,10 +1019,25 @@ return (
           }}
         />
 
+        <ReportConfigModal
+          open={showReportConfig}
+          onOpenChange={setShowReportConfig}
+          babyName={babyProfile?.name}
+          onGenerate={(config) => {
+            setReportConfig(config);
+            setShowReportConfig(false);
+            setShowReportShare(true);
+          }}
+        />
+
         <ReportShareCapture
           open={showReportShare}
-          onDone={() => setShowReportShare(false)}
+          onDone={() => {
+            setShowReportShare(false);
+            setReportConfig(undefined);
+          }}
           babyName={babyProfile?.name}
+          config={reportConfig}
         />
 
       </div>

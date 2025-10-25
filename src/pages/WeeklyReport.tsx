@@ -5,35 +5,72 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getWeekCaption } from "@/utils/share/chartShare";
 import { startOfWeek, endOfWeek, eachDayOfInterval, format, parseISO, differenceInMinutes } from "date-fns";
+import { ReportConfig } from "@/components/ReportConfigModal";
+
+interface WeeklyReportProps {
+  config?: ReportConfig;
+}
 
 function formatAge(birthday?: string | null) {
   if (!birthday) return "";
   const dob = new Date(birthday);
   const now = new Date();
-  let months = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
-  const daysIntoMonth = now.getDate() - dob.getDate();
-  if (daysIntoMonth < 0) months -= 1;
+  
+  // Calculate total months
+  const totalMonths = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
+  const months = Math.max(0, totalMonths);
+  
+  // Calculate remaining weeks from the month anniversary
   const monthsDate = new Date(dob);
-  monthsDate.setMonth(dob.getMonth() + months);
-  const diffMs = now.getTime() - monthsDate.getTime();
-  const weeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+  monthsDate.setMonth(dob.getMonth() + totalMonths);
+  const daysDiff = Math.floor((now.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(daysDiff / 7);
+  
   return `${months} months ${weeks} weeks`;
 }
 
-export default function WeeklyReport() {
+export default function WeeklyReport({ config }: WeeklyReportProps) {
   const { activities, loading } = useActivities();
   const { household } = useHousehold();
 
   const babyName = household?.baby_name || "Baby";
   const ageText = formatAge(household?.baby_birthday);
-  const weekCaption = getWeekCaption(0);
+  
+  // Determine date range based on config
+  const getDateRange = () => {
+    const now = new Date();
+    
+    if (config?.dateRange === 'custom' && config.customStartDate && config.customEndDate) {
+      return {
+        start: config.customStartDate,
+        end: config.customEndDate
+      };
+    }
+    
+    if (config?.dateRange === 'last-week') {
+      const lastWeekStart = startOfWeek(now, { weekStartsOn: 0 });
+      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+      const lastWeekEnd = endOfWeek(lastWeekStart, { weekStartsOn: 0 });
+      return { start: lastWeekStart, end: lastWeekEnd };
+    }
+    
+    // Default: this week
+    return {
+      start: startOfWeek(now, { weekStartsOn: 0 }),
+      end: endOfWeek(now, { weekStartsOn: 0 })
+    };
+  };
+
+  const { start: weekStart, end: weekEnd } = getDateRange();
+  
+  const weekCaption = config?.dateRange === 'custom' && config.customStartDate && config.customEndDate
+    ? `${format(config.customStartDate, 'MMM dd')} – ${format(config.customEndDate, 'MMM dd, yyyy')}`
+    : config?.dateRange === 'last-week'
+    ? getWeekCaption(1)
+    : getWeekCaption(0);
 
   // Calculate weekly stats
   const weekStats = useMemo(() => {
-    const now = new Date();
-    const weekStart = startOfWeek(now, { weekStartsOn: 0 });
-    const weekEnd = endOfWeek(now, { weekStartsOn: 0 });
-    
     const weekActivities = activities.filter(a => {
       const actDate = new Date(a.logged_at);
       return actDate >= weekStart && actDate <= weekEnd;
@@ -41,6 +78,8 @@ export default function WeeklyReport() {
 
     const feeds = weekActivities.filter(a => a.type === 'feed');
     const sleeps = weekActivities.filter(a => a.type === 'nap');
+    const diapers = weekActivities.filter(a => a.type === 'diaper');
+    const notes = weekActivities.filter(a => a.type === 'note');
     
     // Feeding stats
     const totalFeeds = feeds.length;
@@ -243,9 +282,11 @@ export default function WeeklyReport() {
       napCountMax,
       napCountMedian,
       hasIncompleteSleepData,
-      dailyData
+      dailyData,
+      totalDiapers: diapers.length,
+      totalNotes: notes.length
     };
-  }, [activities]);
+  }, [activities, weekStart, weekEnd]);
 
   useEffect(() => {
     document.title = `${babyName}'s Weekly Summary Report`;
@@ -281,6 +322,7 @@ export default function WeeklyReport() {
         <Separator className="my-6 border-gray-300" />
 
         {/* Feeding Summary */}
+        {(config?.includeFeeds ?? true) && (
         <section className="mb-8">
           <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Feeding Summary</h3>
           <div className="space-y-2 text-sm leading-relaxed">
@@ -294,10 +336,12 @@ export default function WeeklyReport() {
             <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.
           </p>
         </section>
+        )}
 
-        <Separator className="my-6 border-gray-300" />
+        {(config?.includeFeeds ?? true) && <Separator className="my-6 border-gray-300" />}
 
         {/* Sleep Summary */}
+        {(config?.includeSleep ?? true) && (
         <section className="mb-8">
           <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Sleep Summary</h3>
           <div className="space-y-2 text-sm leading-relaxed">
@@ -313,8 +357,32 @@ export default function WeeklyReport() {
             <strong>Notes:</strong> {weekStats.avgOvernightMinutes >= 600 ? 'Consistent overnight sleep (~10–11h) with' : 'Overnight sleep with'} daytime nap count {weekStats.napCountMax > weekStats.napCountMin + 1 ? 'showing variation' : 'relatively stable'}, likely age-appropriate {weekStats.napCountMedian <= 2 ? 'transition toward 2-nap pattern' : 'sleep development'}.
           </p>
         </section>
+        )}
 
-        <Separator className="my-6 border-gray-300" />
+        {(config?.includeSleep ?? true) && <Separator className="my-6 border-gray-300" />}
+
+        {/* Diaper Summary */}
+        {config?.includeDiapers && weekStats.totalDiapers > 0 && (
+        <section className="mb-8">
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Diaper Summary</h3>
+          <div className="space-y-2 text-sm leading-relaxed">
+            <p><strong>Total Diapers:</strong> {weekStats.totalDiapers}</p>
+            <p><strong>Daily Average:</strong> {(weekStats.totalDiapers / 7).toFixed(1)} diapers/day</p>
+          </div>
+        </section>
+        )}
+
+        {config?.includeDiapers && weekStats.totalDiapers > 0 && <Separator className="my-6 border-gray-300" />}
+
+        {/* Notes Summary */}
+        {config?.includeNotes && weekStats.totalNotes > 0 && (
+        <section className="mb-8">
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Notes</h3>
+          <p className="text-sm text-gray-700">{weekStats.totalNotes} note{weekStats.totalNotes !== 1 ? 's' : ''} logged during this period.</p>
+        </section>
+        )}
+
+        {config?.includeNotes && weekStats.totalNotes > 0 && <Separator className="my-6 border-gray-300" />}
 
         {/* Daily Log Summary Table */}
         <section className="mb-8">
