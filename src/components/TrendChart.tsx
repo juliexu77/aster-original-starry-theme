@@ -1,12 +1,8 @@
 import { Activity } from "./ActivityCard";
-import { TrendingUp, Share2 } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { normalizeVolume } from "@/utils/unitConversion";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-/* Share functionality for chart snapshots */
-import html2canvas from 'html2canvas';
 
 interface TrendChartProps {
   activities: Activity[];
@@ -15,91 +11,6 @@ interface TrendChartProps {
 export const TrendChart = ({ activities }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const handleShareFeedChart = async () => {
-    try {
-      const element = document.getElementById('feed-chart');
-      if (!element) return;
-
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false
-      });
-
-      const dataUrl = canvas.toDataURL('image/png');
-      const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - 6);
-      const caption = `Week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-
-      if (typeof navigator !== 'undefined' && 'share' in navigator) {
-        try {
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          const file = new File([blob], 'feed-chart.png', { type: 'image/png' });
-          await navigator.share({
-            title: 'Daily Feed Totals',
-            text: caption,
-            files: [file]
-          });
-          toast({ title: "Shared!", description: "Chart shared successfully" });
-          return;
-        } catch (err) { }
-      }
-
-      const link = document.createElement('a');
-      link.download = `feed-chart-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast({ title: "Downloaded!", description: "Chart saved to your device" });
-    } catch (error) {
-      toast({ title: "Share Failed", description: "Could not share chart", variant: "destructive" });
-    }
-  };
-
-  const handleShareSleepChart = async () => {
-    try {
-      const element = document.getElementById('sleep-chart');
-      if (!element) return;
-
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false
-      });
-
-      const dataUrl = canvas.toDataURL('image/png');
-      const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - 6);
-      const caption = `Week of ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-
-      if (typeof navigator !== 'undefined' && 'share' in navigator) {
-        try {
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          const file = new File([blob], 'sleep-chart.png', { type: 'image/png' });
-          await navigator.share({
-            title: 'Daily Sleep Totals',
-            text: caption,
-            files: [file]
-          });
-          toast({ title: "Shared!", description: "Chart shared successfully" });
-          return;
-        } catch (err) { }
-      }
-
-      const link = document.createElement('a');
-      link.download = `sleep-chart-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast({ title: "Downloaded!", description: "Chart saved to your device" });
-    } catch (error) {
-      toast({ title: "Share Failed", description: "Could not share chart", variant: "destructive" });
-    }
-  };
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
@@ -285,23 +196,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   return (
     <div className="space-y-6">
       {/* Daily Feed Totals */}
-      <div id="feed-chart" className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-muted-foreground" />
-              <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-                {t('dailyFeedTotals')}
-              </h3>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShareFeedChart}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+              {t('dailyFeedTotals')}
+            </h3>
           </div>
           <p className="text-[13px] text-muted-foreground pl-7">
             {getFeedInterpretation()}
@@ -359,23 +260,13 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       </div>
 
       {/* Daily Sleep Totals */}
-      <div id="sleep-chart" className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-muted-foreground" />
-              <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
-                {t('dailySleepTotalsChart')}
-              </h3>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleShareSleepChart}
-              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-muted-foreground" />
+            <h3 className="text-lg font-sans font-medium text-foreground dark:font-bold">
+              {t('dailySleepTotalsChart')}
+            </h3>
           </div>
           <p className="text-[13px] text-muted-foreground pl-7">
             {getSleepInterpretation()}

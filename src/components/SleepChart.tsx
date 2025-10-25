@@ -6,9 +6,6 @@ import { SleepStats } from "./sleep/SleepStats";
 import { SleepChartControls } from "./sleep/SleepChartControls";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { Share2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import html2canvas from 'html2canvas';
 
 interface SleepChartProps {
   activities: Activity[];
@@ -18,54 +15,8 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   const { t } = useLanguage();
   const [showFullDay, setShowFullDay] = useState(false);
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
-  const { toast } = useToast();
   
   const { sleepData, averageDailySummary } = useSleepData(activities, showFullDay, currentWeekOffset);
-
-  const handleShareSchedule = async () => {
-    try {
-      const element = document.getElementById('weekly-sleep-chart');
-      if (!element) return;
-
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false
-      });
-
-      const dataUrl = canvas.toDataURL('image/png');
-      const weekLabel = currentWeekOffset === 0 ? 'This Week' : 'Last Week';
-      const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - (currentWeekOffset * 7) - 6);
-      const weekEnd = new Date(today);
-      weekEnd.setDate(today.getDate() - (currentWeekOffset * 7));
-      const caption = `${weekLabel}: ${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-
-      if (typeof navigator !== 'undefined' && 'share' in navigator) {
-        try {
-          const response = await fetch(dataUrl);
-          const blob = await response.blob();
-          const file = new File([blob], 'sleep-schedule.png', { type: 'image/png' });
-          await navigator.share({
-            title: 'Weekly Sleep Schedule',
-            text: caption,
-            files: [file]
-          });
-          toast({ title: "Shared!", description: "Sleep schedule shared successfully" });
-          return;
-        } catch (err) { }
-      }
-
-      const link = document.createElement('a');
-      link.download = `sleep-schedule-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = dataUrl;
-      link.click();
-      toast({ title: "Downloaded!", description: "Chart saved to your device" });
-    } catch (error) {
-      toast({ title: "Share Failed", description: "Could not share chart", variant: "destructive" });
-    }
-  };
   
   // Generate interpretation based on sleep patterns
   const getSleepScheduleInterpretation = () => {
@@ -137,19 +88,11 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
-      <div id="weekly-sleep-chart" className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
         <div className="space-y-1 mb-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleShareSchedule}
-                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-              >
-                <Share2 className="h-4 w-4" />
-              </Button>
               <div className="flex bg-muted/30 rounded-lg p-1">
                 <Button
                   variant={currentWeekOffset === 0 ? "default" : "ghost"}
