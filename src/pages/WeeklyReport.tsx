@@ -728,7 +728,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
           <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Observations</h3>
           <ul className="list-disc list-inside space-y-2 text-sm text-gray-700">
             <li>Feeding and sleep remain within expected range for age</li>
-            {weekStats.napCountMin === 1 && weekStats.napCountMax > 2 && (
+            {weekStats.napCountMin === 1 && weekStats.napCountMax > 2 && weekStats.sleepIncludedDays >= 5 && (
               <li>One-day drop to single nap observed; monitor persistence</li>
             )}
             <li>No abnormal feeding gaps or nighttime waking reported</li>
