@@ -24,7 +24,6 @@ export interface ReportConfig {
   includeFeeds: boolean;
   includeSleep: boolean;
   includeDiapers: boolean;
-  includeNotes: boolean;
   hideOutliers: boolean;
 }
 
@@ -35,7 +34,6 @@ export function ReportConfigModal({ open, onOpenChange, onGenerate, babyName }: 
   const [includeFeeds, setIncludeFeeds] = useState(true);
   const [includeSleep, setIncludeSleep] = useState(true);
   const [includeDiapers, setIncludeDiapers] = useState(false);
-  const [includeNotes, setIncludeNotes] = useState(false);
   const [hideOutliers, setHideOutliers] = useState(false);
 
   const handleGenerate = () => {
@@ -46,14 +44,13 @@ export function ReportConfigModal({ open, onOpenChange, onGenerate, babyName }: 
       includeFeeds,
       includeSleep,
       includeDiapers,
-      includeNotes,
       hideOutliers
     });
   };
 
   const canGenerate = 
     (dateRange !== 'custom' || (customStartDate && customEndDate)) &&
-    (includeFeeds || includeSleep || includeDiapers || includeNotes);
+    (includeFeeds || includeSleep || includeDiapers);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -170,14 +167,6 @@ export function ReportConfigModal({ open, onOpenChange, onGenerate, babyName }: 
                   onCheckedChange={(checked) => setIncludeDiapers(checked as boolean)}
                 />
                 <Label htmlFor="diapers" className="font-normal cursor-pointer">Diaper Summary</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="notes" 
-                  checked={includeNotes} 
-                  onCheckedChange={(checked) => setIncludeNotes(checked as boolean)}
-                />
-                <Label htmlFor="notes" className="font-normal cursor-pointer">Notes</Label>
               </div>
             </div>
           </div>

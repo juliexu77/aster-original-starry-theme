@@ -353,7 +353,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     const daysWithSleepData = dailyData.filter(d => d.sleepHours > 0).length;
     const hasIncompleteSleepData = daysWithSleepData < 7;
 
-    // Outlier detection
+    // Outlier detection per activity type
     const detectOutliers = (data: typeof dailyData) => {
       // Calculate average feed volume for days with data
       const feedVolumes = data.map(d => d.feedVolume).filter(v => v > 0);
@@ -367,27 +367,38 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
         ? sleepHours.reduce((a, b) => a + b, 0) / sleepHours.length
         : 0;
 
-      // Mark days as outliers if they have significantly less data than average
+      // Mark which activity types are outliers for each day (not the whole day)
       const threshold = 0.5; // 50% of average
       
       return data.map(day => {
-        const isFeedOutlier = avgFeedVolume > 0 && day.feedVolume > 0 && day.feedVolume < avgFeedVolume * threshold;
-        const isSleepOutlier = avgSleepHours > 0 && day.sleepHours > 0 && day.sleepHours < avgSleepHours * threshold;
-        const hasNoData = day.feedVolume === 0 && day.sleepHours === 0;
+        const isFeedOutlier = (config?.includeFeeds ?? true) && 
+          (avgFeedVolume > 0 && day.feedVolume > 0 && day.feedVolume < avgFeedVolume * threshold) ||
+          (day.feedVolume === 0);
+        const isSleepOutlier = (config?.includeSleep ?? true) &&
+          (avgSleepHours > 0 && day.sleepHours > 0 && day.sleepHours < avgSleepHours * threshold) ||
+          (day.sleepHours === 0);
         
         return {
           ...day,
-          isOutlier: isFeedOutlier || isSleepOutlier || hasNoData
+          isFeedOutlier,
+          isSleepOutlier
         };
       });
     };
 
     const dailyDataWithOutliers = detectOutliers(dailyData);
-    const filteredDailyData = config?.hideOutliers 
-      ? dailyDataWithOutliers.filter(d => !d.isOutlier)
-      : dailyDataWithOutliers;
     
-    const outlierDays = dailyDataWithOutliers.filter(d => d.isOutlier).map(d => d.date);
+    // For display, only mark a day as fully excluded if ALL selected activity types are outliers
+    const outlierDays = config?.hideOutliers 
+      ? dailyDataWithOutliers.filter(d => {
+          const selectedTypes = [
+            config.includeFeeds && d.isFeedOutlier,
+            config.includeSleep && d.isSleepOutlier
+          ].filter(Boolean);
+          // Only exclude if all selected types are outliers
+          return selectedTypes.length > 0 && selectedTypes.every(v => v);
+        }).map(d => d.date)
+      : [];
 
     console.log('WeeklyReport: Final stats (pre-filter)', {
       totalFeeds,
@@ -397,34 +408,38 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       avgDailySleep: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
       daysWithSleepData,
       outlierDays,
-      dailyData: filteredDailyData
+      dailyData: dailyDataWithOutliers
     });
 
-    // Use only included (non-outlier) days for summary calculations when requested
-    const includedDailyData = filteredDailyData;
-    const includedDays = includedDailyData.length;
-
-    const incFeedVolumes = includedDailyData.map(d => d.feedVolume).filter(v => v > 0);
+    // Calculate stats using only non-outlier days FOR EACH ACTIVITY TYPE
+    // Feed stats - exclude days that are feed outliers
+    const feedIncludedDays = config?.hideOutliers
+      ? dailyDataWithOutliers.filter(d => !d.isFeedOutlier)
+      : dailyDataWithOutliers;
+    
+    const incFeedVolumes = feedIncludedDays.map(d => d.feedVolume).filter(v => v > 0);
     const incMinVolume = incFeedVolumes.length > 0 ? Math.min(...incFeedVolumes) : 0;
     const incMaxVolume = incFeedVolumes.length > 0 ? Math.max(...incFeedVolumes) : 0;
-
-    const incTotalFeeds = includedDailyData.reduce((sum, d) => sum + d.feeds, 0);
-    const incTotalVolume = includedDailyData.reduce((sum, d) => sum + d.feedVolume, 0);
+    const incTotalFeeds = feedIncludedDays.reduce((sum, d) => sum + d.feeds, 0);
+    const incTotalVolume = feedIncludedDays.reduce((sum, d) => sum + d.feedVolume, 0);
     const incAvgPerFeed = incTotalFeeds > 0 ? incTotalVolume / incTotalFeeds : 0;
+    const feedsPerDayAvg = feedIncludedDays.length > 0 ? incTotalFeeds / feedIncludedDays.length : 0;
 
-    const incTotalSleepHours = includedDailyData.reduce((sum, d) => sum + d.sleepHours, 0);
-    const incDaysWithSleepData = includedDailyData.filter(d => d.sleepHours > 0).length;
+    // Sleep stats - exclude days that are sleep outliers
+    const sleepIncludedDays = config?.hideOutliers
+      ? dailyDataWithOutliers.filter(d => !d.isSleepOutlier)
+      : dailyDataWithOutliers;
+    
+    const incTotalSleepHours = sleepIncludedDays.reduce((sum, d) => sum + d.sleepHours, 0);
+    const incDaysWithSleepData = sleepIncludedDays.filter(d => d.sleepHours > 0).length;
     const incAvgDailySleep = incDaysWithSleepData > 0 ? incTotalSleepHours / incDaysWithSleepData : 0;
-
-    const incTotalNaps = includedDailyData.reduce((sum, d) => sum + d.naps, 0);
-    const incNapCounts = includedDailyData.map(d => d.naps).filter(n => n > 0);
+    const incTotalNaps = sleepIncludedDays.reduce((sum, d) => sum + d.naps, 0);
+    const incNapCounts = sleepIncludedDays.map(d => d.naps).filter(n => n > 0);
     const incNapCountMin = incNapCounts.length > 0 ? Math.min(...incNapCounts) : 0;
     const incNapCountMax = incNapCounts.length > 0 ? Math.max(...incNapCounts) : 0;
     const incNapCountMedian = incNapCounts.length > 0
       ? incNapCounts.slice().sort((a, b) => a - b)[Math.floor(incNapCounts.length / 2)]
       : 0;
-
-    const feedsPerDayAvg = includedDays > 0 ? incTotalFeeds / includedDays : 0;
 
     // Detect sustained nap pattern transition (not just daily variation)
     const napTransition = (() => {
@@ -454,7 +469,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     const solidsDominant = totalFeedsInPeriod > 0 && (solidFeedsInPeriod / totalFeedsInPeriod) > 0.25;
 
     // Detect feed frequency stabilization (feeds/day consistent across period)
-    const dailyFeedCounts = includedDailyData.map(d => d.feeds).filter(f => f > 0);
+    const dailyFeedCounts = feedIncludedDays.map(d => d.feeds).filter(f => f > 0);
     const feedFrequencyStable = (() => {
       if (dailyFeedCounts.length < 5) return false;
       const avgFeeds = dailyFeedCounts.reduce((a, b) => a + b, 0) / dailyFeedCounts.length;
@@ -465,7 +480,8 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     })();
 
     console.log('WeeklyReport: Final stats (included days)', {
-      includedDays,
+      feedIncludedDays: feedIncludedDays.length,
+      sleepIncludedDays: sleepIncludedDays.length,
       incTotalFeeds,
       incTotalVolume,
       incAvgPerFeed,
@@ -502,12 +518,13 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       napCountMax: incNapCountMax,
       napCountMedian: incNapCountMedian,
       hasIncompleteSleepData,
-      dailyData: filteredDailyData,
+      dailyData: dailyDataWithOutliers,
       outlierDays,
       totalDiapers: diapers.length,
       totalNotes: notes.length,
       feedsPerDayAvg,
-      includedDays
+      feedIncludedDays: feedIncludedDays.length,
+      sleepIncludedDays: sleepIncludedDays.length
     };
   }, [activities, weekStart, weekEnd, config?.hideOutliers]);
 
@@ -565,7 +582,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
           {config?.hideOutliers && weekStats.outlierDays && weekStats.outlierDays.length > 0 && (
             <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-xs text-amber-900">
-                <strong>Note:</strong> The following days were excluded from this report due to incomplete data: {weekStats.outlierDays.join(', ')}
+                <strong>Note:</strong> Some days were excluded from calculations due to incomplete data for specific activity types: {weekStats.outlierDays.join(', ')}
               </p>
             </div>
           )}
@@ -628,16 +645,6 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
         )}
 
         {config?.includeDiapers && weekStats.totalDiapers > 0 && <Separator className="my-6 border-gray-300" />}
-
-        {/* Notes Summary */}
-        {config?.includeNotes && weekStats.totalNotes > 0 && (
-        <section className="mb-8">
-          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Notes</h3>
-          <p className="text-sm text-gray-700">{weekStats.totalNotes} note{weekStats.totalNotes !== 1 ? 's' : ''} logged during this period.</p>
-        </section>
-        )}
-
-        {config?.includeNotes && weekStats.totalNotes > 0 && <Separator className="my-6 border-gray-300" />}
 
         {/* Daily Log Summary Table */}
         <section className="mb-8">
