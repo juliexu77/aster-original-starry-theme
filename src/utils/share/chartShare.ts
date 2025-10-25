@@ -1,6 +1,7 @@
 // Lightweight DOM-to-image without external deps
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+import html2canvas from 'html2canvas';
 
 function copyComputedStyle(source: Element, target: HTMLElement) {
   const computed = window.getComputedStyle(source as HTMLElement);
@@ -38,49 +39,22 @@ function inlineAllStyles(node: Element): HTMLElement {
 
 async function elementToPngBlob(element: HTMLElement): Promise<Blob> {
   const rect = element.getBoundingClientRect();
-  const width = Math.ceil(rect.width);
-  const height = Math.ceil(rect.height);
+  const bg = getComputedStyle(document.body).backgroundColor || '#ffffff';
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: bg,
+    width: Math.ceil(rect.width),
+    height: Math.ceil(rect.height),
+    windowWidth: document.documentElement.clientWidth,
+    windowHeight: document.documentElement.clientHeight,
+    scrollX: -window.scrollX,
+    scrollY: -window.scrollY,
+  });
 
-  const cloneWithStyles = inlineAllStyles(element);
-  // Ensure base background so transparent cards look okay
-  if (!cloneWithStyles.style.backgroundColor) {
-    cloneWithStyles.style.backgroundColor = getComputedStyle(document.body).backgroundColor || 'white';
-  }
-
-  const html = new XMLSerializer().serializeToString(cloneWithStyles);
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-      <foreignObject x="0" y="0" width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">${html}</div>
-      </foreignObject>
-    </svg>
-  `;
-  const svgBlob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(svgBlob);
-
-  try {
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = reject;
-      image.src = url;
-    });
-
-    const scale = 2;
-    const canvas = document.createElement('canvas');
-    canvas.width = width * scale;
-    canvas.height = height * scale;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas 2D context not available');
-    ctx.scale(scale, scale);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    return await new Promise<Blob>((resolve, reject) => {
-      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
-    });
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  return await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
+  });
 }
 
 export async function shareElement(element: HTMLElement, title: string, caption?: string): Promise<void> {
