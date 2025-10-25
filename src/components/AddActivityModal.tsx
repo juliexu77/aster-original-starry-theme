@@ -618,7 +618,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           <DialogHeader className="pb-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <DialogTitle className="text-lg font-medium">
-                {editingActivity ? t('editActivity') : t('editActivity')}
+                {editingActivity ? t('editActivity') : t('addActivity')}
               </DialogTitle>
             </div>
           </DialogHeader>
