@@ -1,6 +1,7 @@
 import { Activity } from "@/components/ActivityCard";
 import { Brain, Clock, TrendingUp, Baby, Moon } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 export interface PatternInsight {
   icon: any;
@@ -20,6 +21,8 @@ export interface PatternInsight {
 
 export const usePatternAnalysis = (activities: Activity[]) => {
   const { t } = useLanguage();
+  const { isNightTimeString } = useNightSleepWindow();
+  
   const getTimeInMinutes = (timeString: string) => {
     const [time, period] = timeString.split(' ');
     const [hours, minutes] = time.split(':').map(Number);
@@ -118,9 +121,8 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       if (activityDate < weekAgo) return false; // Only include last 7 days
       
       // Only count daytime naps (exclude overnight sleep)
-      const napTime = getTimeInMinutes(a.time);
-      // Exclude naps that start after 6 PM (likely overnight sleep)
-      if (napTime >= 18 * 60) return false;
+      // Use configurable night sleep window
+      if (isNightTimeString(a.time)) return false;
       
       return true;
     });
@@ -184,9 +186,9 @@ export const usePatternAnalysis = (activities: Activity[]) => {
       const startTime = getTimeInMinutes(nap.details.startTime);
       const endTime = getTimeInMinutes(nap.details.endTime);
       
-      // Only consider daytime naps (start between 7 AM and 7 PM)
-      // Exclude overnight sleep periods
-      if (startTime < 7 * 60 || startTime >= 19 * 60) return false;
+      // Only consider daytime naps (exclude overnight sleep)
+      // Use configurable night sleep window
+      if (isNightTimeString(nap.details.startTime)) return false;
       
       // Also exclude naps that span too long (likely overnight sleep)
       const duration = endTime >= startTime ? endTime - startTime : (24 * 60) - startTime + endTime;
@@ -296,8 +298,8 @@ export const usePatternAnalysis = (activities: Activity[]) => {
     activitiesByDate.forEach((dayActivities, dateKey) => {
       const eveningSleepActivities = dayActivities.filter(activity => {
         if (activity.type !== 'nap') return false;
-        const activityTime = getTimeInMinutes(activity.time);
-        if (activityTime < 18 * 60) return false;
+        // Use configurable night sleep window
+        if (!isNightTimeString(activity.time)) return false;
         if (activity.details.isDreamFeed) return false;
         return true;
       });
@@ -310,7 +312,8 @@ export const usePatternAnalysis = (activities: Activity[]) => {
         });
         
         const bedtimeMinutes = getTimeInMinutes(latestSleepActivity.time);
-        if (bedtimeMinutes >= 18 * 60 && bedtimeMinutes <= 23 * 60) {
+        // Only include if it's within night sleep window
+        if (isNightTimeString(latestSleepActivity.time)) {
           bedtimes.push({
             time: bedtimeMinutes,
             activity: latestSleepActivity,

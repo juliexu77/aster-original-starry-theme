@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getWeekCaption } from "@/utils/share/chartShare";
@@ -32,6 +33,7 @@ function formatAge(birthday?: string | null) {
 export default function WeeklyReport({ config }: WeeklyReportProps) {
   const { activities, loading } = useActivities();
   const { household } = useHousehold();
+  const { isNightHour } = useNightSleepWindow();
 
   const babyName = household?.baby_name || "Baby";
   const babyBirthday = household?.baby_birthday;
@@ -195,14 +197,14 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       avgNapMinutes 
     });
     
-    // Overnight sleep analysis (naps starting 6pm-midnight or ending 6am-8am)
+    // Overnight sleep analysis using configurable night sleep window
     const overnightSleeps = sleeps.filter(s => {
       if (!s.details.startTime) return false;
       const startMins = parseTimeToMinutes(s.details.startTime);
       if (startMins === null) return false;
       
       const startHour = Math.floor(startMins / 60);
-      return startHour >= 18 || startHour <= 6;
+      return isNightHour(startHour);
     });
     
     const overnightDurations = overnightSleeps.map(s => {

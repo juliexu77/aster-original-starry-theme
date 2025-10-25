@@ -11,6 +11,7 @@ import { CalendarIcon, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Activity } from "@/components/ActivityCard";
 import { useToast } from "@/hooks/use-toast";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import jsPDF from "jspdf";
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
@@ -24,6 +25,7 @@ interface ExportReportModalProps {
 
 export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: ExportReportModalProps) => {
   const { toast } = useToast();
+  const { isNightTimeString } = useNightSleepWindow();
   const [range, setRange] = useState<"this-week" | "last-7-days" | "custom">("this-week");
   const [customStartDate, setCustomStartDate] = useState<Date>();
   const [customEndDate, setCustomEndDate] = useState<Date>();
@@ -167,11 +169,26 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
         yPosition += 10;
       }
 
-      // Sleep Totals
+      // Sleep Totals with day/night breakdown
       if (includeSleepTotals) {
         const naps = filteredActivities.filter(a => a.type === 'nap' && a.details?.endTime);
         const totalNaps = naps.length;
-        const totalSleepMinutes = naps.reduce((sum, nap) => {
+        
+        // Categorize naps as daytime or overnight
+        const daytimeNaps: typeof naps = [];
+        const overnightSleeps: typeof naps = [];
+        
+        naps.forEach(nap => {
+          const startTime = nap.details.startTime || nap.time;
+          if (isNightTimeString(startTime)) {
+            overnightSleeps.push(nap);
+          } else {
+            daytimeNaps.push(nap);
+          }
+        });
+        
+        // Calculate daytime nap stats
+        const daytimeSleepMinutes = daytimeNaps.reduce((sum, nap) => {
           const startMinutes = parseTimeToMinutes(nap.details.startTime || nap.time);
           const endMinutes = parseTimeToMinutes(nap.details.endTime!);
           const duration = endMinutes >= startMinutes
@@ -179,7 +196,20 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
             : (24 * 60) - startMinutes + endMinutes;
           return sum + duration;
         }, 0);
-        const avgSleepMinutes = totalNaps > 0 ? totalSleepMinutes / totalNaps : 0;
+        const avgDaytimeNap = daytimeNaps.length > 0 ? daytimeSleepMinutes / daytimeNaps.length : 0;
+        
+        // Calculate overnight sleep stats
+        const overnightSleepMinutes = overnightSleeps.reduce((sum, nap) => {
+          const startMinutes = parseTimeToMinutes(nap.details.startTime || nap.time);
+          const endMinutes = parseTimeToMinutes(nap.details.endTime!);
+          const duration = endMinutes >= startMinutes
+            ? endMinutes - startMinutes
+            : (24 * 60) - startMinutes + endMinutes;
+          return sum + duration;
+        }, 0);
+        const avgOvernightSleep = overnightSleeps.length > 0 ? overnightSleepMinutes / overnightSleeps.length : 0;
+        
+        const totalSleepMinutes = daytimeSleepMinutes + overnightSleepMinutes;
 
         pdf.setFontSize(12);
         pdf.setTextColor(15, 23, 42);
@@ -191,8 +221,15 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
         yPosition += 6;
         pdf.text(`• Total sleep: ${Math.floor(totalSleepMinutes / 60)}h ${totalSleepMinutes % 60}m`, 30, yPosition);
         yPosition += 6;
-        pdf.text(`• Average nap: ${Math.floor(avgSleepMinutes / 60)}h ${Math.round(avgSleepMinutes % 60)}m`, 30, yPosition);
-        yPosition += 10;
+        if (daytimeNaps.length > 0) {
+          pdf.text(`• Average daytime nap: ${Math.floor(avgDaytimeNap / 60)}h ${Math.round(avgDaytimeNap % 60)}m (${daytimeNaps.length} naps)`, 30, yPosition);
+          yPosition += 6;
+        }
+        if (overnightSleeps.length > 0) {
+          pdf.text(`• Average overnight sleep: ${Math.floor(avgOvernightSleep / 60)}h ${Math.round(avgOvernightSleep % 60)}m (${overnightSleeps.length} nights)`, 30, yPosition);
+          yPosition += 6;
+        }
+        yPosition += 4;
       }
 
       // Naps Summary

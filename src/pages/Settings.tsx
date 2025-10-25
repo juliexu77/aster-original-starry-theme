@@ -17,9 +17,11 @@ import {
   Users,
   Baby,
   Globe,
-  Calendar
+  Calendar,
+  Moon
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
 import { EmailInvite } from "@/components/EmailInvite";
 import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
@@ -203,6 +205,66 @@ export const Settings = () => {
             >
               <LanguageToggle />
             </SettingsRow>
+            {user && (
+              <>
+                <SettingsRow
+                  icon={<Moon className="w-5 h-5" />}
+                  title="Night Sleep Start"
+                  subtitle="When overnight sleep typically begins"
+                  showChevron={false}
+                >
+                  <Select
+                    value={userProfile?.night_sleep_start_hour?.toString() ?? "19"}
+                    onValueChange={async (value) => {
+                      try {
+                        await updateUserProfile({ night_sleep_start_hour: parseInt(value) });
+                      } catch (error) {
+                        console.error('Error updating night sleep start:', error);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </SettingsRow>
+                <SettingsRow
+                  icon={<Moon className="w-5 h-5" />}
+                  title="Night Sleep End"
+                  subtitle="When overnight sleep typically ends"
+                  showChevron={false}
+                >
+                  <Select
+                    value={userProfile?.night_sleep_end_hour?.toString() ?? "7"}
+                    onValueChange={async (value) => {
+                      try {
+                        await updateUserProfile({ night_sleep_end_hour: parseInt(value) });
+                      } catch (error) {
+                        console.error('Error updating night sleep end:', error);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 24 }, (_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </SettingsRow>
+              </>
+            )}
           </SettingsSection>
 
           {/* Home Section */}

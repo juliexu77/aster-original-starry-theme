@@ -145,9 +145,12 @@ function getAgeParams(ageInMonths: number): PersonalizedParams {
   return AGE_BRACKETS["7-12mo"];
 }
 
+// NOTE: This function uses hardcoded night window (19-7) as a fallback
+// since the prediction engine is stateless and doesn't have access to user profile.
+// For UI components, use useNightSleepWindow() hook instead.
 function isNightTime(timestamp: Date): boolean {
   const hour = timestamp.getHours();
-  return hour >= 19 || hour < 7; // 7PM to 7AM
+  return hour >= 19 || hour < 7; // 7PM to 7AM (default fallback)
 }
 
 function sigmoid(x: number): number {
