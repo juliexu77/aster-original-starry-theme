@@ -540,7 +540,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
 
   return (
     <main className="min-h-screen bg-white text-black print:bg-white print:text-black">
-      <div className="max-w-4xl mx-auto px-8 py-12 print:p-8 print:page-break" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <div className="max-w-4xl mx-auto px-8 py-12 pb-16 print:p-8 print:pb-16 print:page-break" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
         {/* Page Header - Repeats on each page */}
         <style>{`
           @media print {
