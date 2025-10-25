@@ -13,7 +13,7 @@ import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
 import { SleepChart } from "@/components/SleepChart";
 import { WeeklyReflection } from "@/components/WeeklyReflection";
-import { ExportReportModal } from "@/components/ExportReportModal";
+
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -121,7 +121,6 @@ const ongoingNap = activities
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
-  const [showExportModal, setShowExportModal] = useState(false);
   
 
   // Handle scroll for header fade effect
@@ -501,31 +500,14 @@ const ongoingNap = activities
                     </DropdownMenuContent>
                   </DropdownMenu>
                   
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8 w-8 p-0"
-                      >
-                        <Share className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48 bg-background">
-                      <DropdownMenuCheckboxItem
-                        checked={false}
-                        onCheckedChange={() => navigate('/report/weekly')}
-                      >
-                        View Weekly Report
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={false}
-                        onCheckedChange={() => setShowExportModal(true)}
-                      >
-                        Export PDF Report
-                      </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => navigate('/report/weekly')}
+                  >
+                    <Share className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               
@@ -1030,14 +1012,6 @@ return (
               console.error('Error deleting activity:', error);
             }
           }}
-        />
-
-        {/* Export Report Modal */}
-        <ExportReportModal
-          open={showExportModal}
-          onOpenChange={setShowExportModal}
-          activities={activities}
-          babyName={babyProfile?.name}
         />
 
       </div>
