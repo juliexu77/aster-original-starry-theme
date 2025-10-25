@@ -76,7 +76,7 @@ export async function shareElement(element: HTMLElement, title: string, caption?
       try {
         const file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
         if ((navigator as any).canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title, text: caption || title });
+          await navigator.share({ files: [file], title });
           return;
         }
       } catch {}
