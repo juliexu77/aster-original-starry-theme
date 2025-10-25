@@ -1,4 +1,6 @@
 // Lightweight DOM-to-image without external deps
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 function copyComputedStyle(source: Element, target: HTMLElement) {
   const computed = window.getComputedStyle(source as HTMLElement);
@@ -83,41 +85,41 @@ async function elementToPngBlob(element: HTMLElement): Promise<Blob> {
 
 export async function shareElement(element: HTMLElement, title: string, caption?: string): Promise<void> {
   const blob = await elementToPngBlob(element);
-  let file: File | null = null;
+  const dataUrl = await blobToDataURL(blob);
+  
   try {
-    file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
-  } catch {}
-  try {
-    const nav: any = navigator as any;
-    if (nav && typeof nav.share === 'function') {
-        if (file && typeof nav.canShare === 'function' && nav.canShare({ files: [file] })) {
-          await nav.share({ files: [file], title, text: caption || title });
+    if (Capacitor.isNativePlatform()) {
+      // Use Capacitor Share plugin for native platforms
+      await Share.share({
+        title,
+        text: caption || title,
+        url: dataUrl,
+        dialogTitle: 'Share Chart'
+      });
+      return;
+    } else if ('share' in navigator) {
+      // Try Web Share API with file first
+      try {
+        const file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
+        if ((navigator as any).canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title, text: caption || title });
           return;
         }
-      // Fallback: share data URL via Web Share Level 1
-      const dataUrl = await blobToDataURL(blob);
-      await nav.share({ title, text: caption || title, url: dataUrl });
+      } catch {}
+      
+      // Fallback to sharing data URL
+      await navigator.share({ title, text: caption || title, url: dataUrl });
       return;
     }
-  } catch {}
-
-  // Try Capacitor if present (no import)
-  try {
-    const cap = (window as any).Capacitor;
-    const sharePlugin = cap?.Plugins?.Share;
-    if (sharePlugin && typeof sharePlugin.share === 'function') {
-      const dataUrl = await blobToDataURL(blob);
-      await sharePlugin.share({ title, text: caption || title, url: dataUrl, dialogTitle: 'Share chart' });
-      return;
-    }
-  } catch {}
+  } catch (error) {
+    console.error('Error sharing:', error);
+  }
 
   // Fallback to download
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  const safeName = `${title.replace(/\s+/g, '-').toLowerCase()}.png`;
-  link.download = file?.name || safeName;
+  link.download = `${title.replace(/\s+/g, '-').toLowerCase()}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
