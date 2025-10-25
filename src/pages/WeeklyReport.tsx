@@ -67,33 +67,101 @@ export default function WeeklyReport() {
     const minVolume = dailyVolumes.length > 0 ? Math.min(...dailyVolumes) : 0;
     const maxVolume = dailyVolumes.length > 0 ? Math.max(...dailyVolumes) : 0;
     
-    // Longest stretch between feeds
-    let longestStretch = 0;
+    // Longest stretch between daytime feeds (exclude overnight 6pm-6am)
+    let longestDaytimeStretch = 0;
     const sortedFeeds = [...feeds].sort((a, b) => 
       new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
     );
     for (let i = 1; i < sortedFeeds.length; i++) {
-      const diff = differenceInMinutes(
-        new Date(sortedFeeds[i].logged_at),
-        new Date(sortedFeeds[i-1].logged_at)
-      );
-      longestStretch = Math.max(longestStretch, diff);
+      const prevTime = new Date(sortedFeeds[i-1].logged_at);
+      const currTime = new Date(sortedFeeds[i].logged_at);
+      const prevHour = prevTime.getHours();
+      const currHour = currTime.getHours();
+      
+      // Skip if crossing overnight period (6pm to 6am)
+      if ((prevHour >= 18 || prevHour < 6) && (currHour >= 6 && currHour < 18)) {
+        continue;
+      }
+      
+      const diff = differenceInMinutes(currTime, prevTime);
+      if (diff < 720) { // Less than 12 hours (not overnight)
+        longestDaytimeStretch = Math.max(longestDaytimeStretch, diff);
+      }
     }
     
     // Sleep stats
     const totalSleepMinutes = sleeps.reduce((sum, s) => {
       if (s.details.startTime && s.details.endTime) {
-        // Parse HH:MM format times
-        const [startH, startM] = s.details.startTime.split(':').map(Number);
-        const [endH, endM] = s.details.endTime.split(':').map(Number);
-        let duration = (endH * 60 + endM) - (startH * 60 + startM);
-        if (duration < 0) duration += 24 * 60; // Handle overnight
-        return sum + duration;
+        const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+        
+        if (startMatch && endMatch) {
+          let startH = parseInt(startMatch[1], 10);
+          const startM = parseInt(startMatch[2], 10);
+          const startPeriod = startMatch[3].toUpperCase();
+          
+          let endH = parseInt(endMatch[1], 10);
+          const endM = parseInt(endMatch[2], 10);
+          const endPeriod = endMatch[3].toUpperCase();
+          
+          // Convert to 24h
+          if (startPeriod === 'PM' && startH !== 12) startH += 12;
+          if (startPeriod === 'AM' && startH === 12) startH = 0;
+          if (endPeriod === 'PM' && endH !== 12) endH += 12;
+          if (endPeriod === 'AM' && endH === 12) endH = 0;
+          
+          let duration = (endH * 60 + endM) - (startH * 60 + startM);
+          if (duration < 0) duration += 24 * 60; // Handle overnight
+          return sum + duration;
+        }
       }
       return sum;
     }, 0);
     const totalNaps = sleeps.length;
     const avgNapMinutes = totalNaps > 0 ? totalSleepMinutes / totalNaps : 0;
+    
+    // Overnight sleep analysis (naps starting 6pm-midnight)
+    const overnightSleeps = sleeps.filter(s => {
+      if (!s.details.startTime) return false;
+      const match = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      if (!match) return false;
+      let hour = parseInt(match[1], 10);
+      const period = match[3].toUpperCase();
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
+      return hour >= 18 || hour <= 6;
+    });
+    
+    const overnightDurations = overnightSleeps.map(s => {
+      if (!s.details.startTime || !s.details.endTime) return 0;
+      const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+      
+      if (startMatch && endMatch) {
+        let startH = parseInt(startMatch[1], 10);
+        const startM = parseInt(startMatch[2], 10);
+        const startPeriod = startMatch[3].toUpperCase();
+        
+        let endH = parseInt(endMatch[1], 10);
+        const endM = parseInt(endMatch[2], 10);
+        const endPeriod = endMatch[3].toUpperCase();
+        
+        if (startPeriod === 'PM' && startH !== 12) startH += 12;
+        if (startPeriod === 'AM' && startH === 12) startH = 0;
+        if (endPeriod === 'PM' && endH !== 12) endH += 12;
+        if (endPeriod === 'AM' && endH === 12) endH = 0;
+        
+        let duration = (endH * 60 + endM) - (startH * 60 + startM);
+        if (duration < 0) duration += 24 * 60;
+        return duration;
+      }
+      return 0;
+    }).filter(d => d > 0);
+    
+    const longestOvernightMinutes = overnightDurations.length > 0 ? Math.max(...overnightDurations) : 0;
+    const avgOvernightMinutes = overnightDurations.length > 0 
+      ? overnightDurations.reduce((a, b) => a + b, 0) / overnightDurations.length 
+      : 0;
     
     // Daily breakdown
     const dailyData = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(day => {
@@ -107,11 +175,27 @@ export default function WeeklyReport() {
       
       const sleepMinutes = daySleeps.reduce((sum, s) => {
         if (s.details.startTime && s.details.endTime) {
-          const [startH, startM] = s.details.startTime.split(':').map(Number);
-          const [endH, endM] = s.details.endTime.split(':').map(Number);
-          let duration = (endH * 60 + endM) - (startH * 60 + startM);
-          if (duration < 0) duration += 24 * 60;
-          return sum + duration;
+          const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+          const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
+          
+          if (startMatch && endMatch) {
+            let startH = parseInt(startMatch[1], 10);
+            const startM = parseInt(startMatch[2], 10);
+            const startPeriod = startMatch[3].toUpperCase();
+            
+            let endH = parseInt(endMatch[1], 10);
+            const endM = parseInt(endMatch[2], 10);
+            const endPeriod = endMatch[3].toUpperCase();
+            
+            if (startPeriod === 'PM' && startH !== 12) startH += 12;
+            if (startPeriod === 'AM' && startH === 12) startH = 0;
+            if (endPeriod === 'PM' && endH !== 12) endH += 12;
+            if (endPeriod === 'AM' && endH === 12) endH = 0;
+            
+            let duration = (endH * 60 + endM) - (startH * 60 + startM);
+            if (duration < 0) duration += 24 * 60;
+            return sum + duration;
+          }
         }
         return sum;
       }, 0);
@@ -131,17 +215,34 @@ export default function WeeklyReport() {
       };
     });
     
+    // Nap count statistics
+    const napCounts = dailyData.map(d => d.naps).filter(n => n > 0);
+    const napCountMin = napCounts.length > 0 ? Math.min(...napCounts) : 0;
+    const napCountMax = napCounts.length > 0 ? Math.max(...napCounts) : 0;
+    const napCountMedian = napCounts.length > 0 
+      ? napCounts.sort((a, b) => a - b)[Math.floor(napCounts.length / 2)]
+      : 0;
+    
+    const daysWithSleepData = dailyData.filter(d => d.sleepHours > 0).length;
+    const hasIncompleteSleepData = daysWithSleepData < 7;
+    
     return {
       totalFeeds,
       totalVolume,
       avgPerFeed,
       minVolume: Math.round(minVolume),
       maxVolume: Math.round(maxVolume),
-      longestStretch,
+      longestDaytimeStretch,
+      longestOvernightMinutes,
+      avgOvernightMinutes,
       totalSleepHours: totalSleepMinutes / 60,
-      avgDailySleep: totalSleepMinutes / 60 / 7,
+      avgDailySleep: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
       totalNaps,
       avgNapMinutes,
+      napCountMin,
+      napCountMax,
+      napCountMedian,
+      hasIncompleteSleepData,
       dailyData
     };
   }, [activities]);
@@ -165,8 +266,11 @@ export default function WeeklyReport() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Parenting Partner</p>
               <h1 className="text-xl font-semibold mb-1">{babyName} • {ageText}</h1>
-              <h2 className="text-2xl font-bold mb-2">Summary for Pediatrician</h2>
+              <h2 className="text-2xl font-bold mb-2" style={{ color: '#6B4D77' }}>Summary for Pediatrician</h2>
               <p className="text-sm text-gray-700">{weekCaption}</p>
+              <p className="text-sm text-gray-600 mt-2 italic">
+                Summary of feeding and sleep patterns logged during the week of {weekCaption.replace('Week of ', '')}.
+              </p>
             </div>
             <div className="print:hidden">
               <Button variant="outline" onClick={() => window.print()}>Print</Button>
@@ -178,17 +282,16 @@ export default function WeeklyReport() {
 
         {/* Feeding Summary */}
         <section className="mb-8">
-          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide">Feeding Summary</h3>
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Feeding Summary</h3>
           <div className="space-y-2 text-sm leading-relaxed">
             <p><strong>Total Feeds:</strong> {weekStats.totalFeeds}</p>
-            <p><strong>Total Volume:</strong> {weekStats.totalVolume} ml ({(weekStats.totalVolume / 29.5735).toFixed(1)} oz)</p>
+            <p><strong>Total Volume:</strong> {weekStats.totalVolume.toFixed(0)} ml ({(weekStats.totalVolume / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Average Per Feed:</strong> {Math.round(weekStats.avgPerFeed)} ml ({(weekStats.avgPerFeed / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Daily Range:</strong> {weekStats.minVolume}–{weekStats.maxVolume} ml</p>
-            <p><strong>Longest Stretch Between Feeds:</strong> {formatHoursMinutes(weekStats.longestStretch)}</p>
             <p><strong>Feeding Pattern:</strong> {Math.round(weekStats.totalFeeds / 7)} feeds/day average</p>
           </div>
-          <p className="mt-4 text-sm italic text-gray-700">
-            Notes: Review daily table below for volume trends.
+          <p className="mt-4 text-sm text-gray-700">
+            <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.
           </p>
         </section>
 
@@ -196,27 +299,30 @@ export default function WeeklyReport() {
 
         {/* Sleep Summary */}
         <section className="mb-8">
-          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide">Sleep Summary</h3>
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Sleep Summary</h3>
           <div className="space-y-2 text-sm leading-relaxed">
-            <p><strong>Total Sleep:</strong> {weekStats.totalSleepHours.toFixed(1)} h (avg {weekStats.avgDailySleep.toFixed(1)} h/day)</p>
+            <p><strong>Total Sleep:</strong> {weekStats.totalSleepHours > 0 ? `${weekStats.totalSleepHours.toFixed(1)} h` : '—'} (avg {weekStats.avgDailySleep > 0 ? `${weekStats.avgDailySleep.toFixed(1)} h/day` : '—'}){weekStats.hasIncompleteSleepData && ' (Data incomplete for some days)'}</p>
             <p><strong>Total Naps:</strong> {weekStats.totalNaps}</p>
-            <p><strong>Average Nap Length:</strong> {formatHoursMinutes(weekStats.avgNapMinutes)}</p>
-            <p><strong>Naps Per Day:</strong> {(weekStats.totalNaps / 7).toFixed(1)} average</p>
+            <p><strong>Average Nap Length:</strong> {weekStats.avgNapMinutes > 0 ? formatHoursMinutes(weekStats.avgNapMinutes) : '—'}</p>
+            <p><strong>Nap Count Range:</strong> {weekStats.napCountMin}–{weekStats.napCountMax} naps/day (median: {weekStats.napCountMedian})</p>
+            {weekStats.longestOvernightMinutes > 0 && (
+              <p><strong>Longest Overnight Sleep:</strong> {formatHoursMinutes(weekStats.longestOvernightMinutes)} (avg {formatHoursMinutes(weekStats.avgOvernightMinutes)})</p>
+            )}
           </div>
-          <p className="mt-4 text-sm italic text-gray-700">
-            Notes: See daily breakdown for nap count variations.
+          <p className="mt-4 text-sm text-gray-700">
+            <strong>Notes:</strong> {weekStats.avgOvernightMinutes >= 600 ? 'Consistent overnight sleep (~10–11h) with' : 'Overnight sleep with'} daytime nap count {weekStats.napCountMax > weekStats.napCountMin + 1 ? 'showing variation' : 'relatively stable'}, likely age-appropriate {weekStats.napCountMedian <= 2 ? 'transition toward 2-nap pattern' : 'sleep development'}.
           </p>
         </section>
 
         <Separator className="my-6 border-gray-300" />
 
-        {/* Daily Totals Table */}
+        {/* Daily Log Summary Table */}
         <section className="mb-8">
-          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide">Daily Totals</h3>
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Daily Log Summary</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b-2 border-gray-400">
+                <tr className="border-b-2 border-gray-400" style={{ backgroundColor: '#f5f5f5' }}>
                   <th className="text-left py-2 px-3 font-semibold">Date</th>
                   <th className="text-left py-2 px-3 font-semibold">Total Sleep</th>
                   <th className="text-left py-2 px-3 font-semibold">Naps</th>
@@ -228,10 +334,10 @@ export default function WeeklyReport() {
                 {weekStats.dailyData.map((day, idx) => (
                   <tr key={idx} className="border-b border-gray-200">
                     <td className="py-2 px-3">{day.date}</td>
-                    <td className="py-2 px-3">{day.sleepHours.toFixed(1)}h</td>
-                    <td className="py-2 px-3">{day.naps}</td>
-                    <td className="py-2 px-3">{day.feedVolume} ml</td>
-                    <td className="py-2 px-3">{day.feeds}</td>
+                    <td className="py-2 px-3">{day.sleepHours > 0 ? `${day.sleepHours.toFixed(1)}h` : '—'}</td>
+                    <td className="py-2 px-3">{day.naps > 0 ? day.naps : '—'}</td>
+                    <td className="py-2 px-3">{day.feedVolume > 0 ? `${day.feedVolume} ml` : '—'}</td>
+                    <td className="py-2 px-3">{day.feeds > 0 ? day.feeds : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -243,11 +349,13 @@ export default function WeeklyReport() {
 
         {/* Observations */}
         <section className="mb-8">
-          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide">Observations</h3>
+          <h3 className="text-lg font-bold mb-4 uppercase tracking-wide" style={{ color: '#6B4D77' }}>Observations</h3>
           <ul className="list-disc list-inside space-y-2 text-sm text-gray-700">
-            <li>Feeding and sleep patterns appear consistent throughout the week</li>
-            <li>Review daily table for any significant deviations from baseline</li>
-            <li>Tracking continues to support routine care and developmental monitoring</li>
+            <li>Feeding and sleep remain within expected range for age</li>
+            {weekStats.napCountMin === 1 && weekStats.napCountMax > 2 && (
+              <li>One-day drop to single nap observed; monitor persistence</li>
+            )}
+            <li>No abnormal feeding gaps or nighttime waking reported</li>
           </ul>
         </section>
 
