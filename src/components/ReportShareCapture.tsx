@@ -85,8 +85,7 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
 
             await Share.share({
               title: `${babyName || "Baby"} Activity Report`,
-              text: `Activity report generated on ${format(now, "MMM dd, yyyy")}`,
-              url: base64,
+              files: [base64],
               dialogTitle: "Share Report",
             });
           } else {
