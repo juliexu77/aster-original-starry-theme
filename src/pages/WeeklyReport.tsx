@@ -4,7 +4,7 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getWeekCaption } from "@/utils/share/chartShare";
-import { startOfWeek, endOfWeek, eachDayOfInterval, format, parseISO, differenceInMinutes } from "date-fns";
+import { startOfWeek, endOfWeek, eachDayOfInterval, format, differenceInMinutes } from "date-fns";
 import { ReportConfig } from "@/components/ReportConfigModal";
 
 interface WeeklyReportProps {
@@ -77,11 +77,51 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     ? getWeekCaption(1)
     : getWeekCaption(0);
 
+  // Helper to parse time string to minutes
+  const parseTimeToMinutes = (timeStr: string): number | null => {
+    // Handle both "HH:MM AM/PM" and "HH:MM" formats
+    const match12h = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match12h) {
+      let hours = parseInt(match12h[1], 10);
+      const minutes = parseInt(match12h[2], 10);
+      const period = match12h[3].toUpperCase();
+      
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      
+      return hours * 60 + minutes;
+    }
+    
+    // Try 24h format
+    const match24h = timeStr.match(/(\d+):(\d+)/);
+    if (match24h) {
+      const hours = parseInt(match24h[1], 10);
+      const minutes = parseInt(match24h[2], 10);
+      return hours * 60 + minutes;
+    }
+    
+    return null;
+  };
+
   // Calculate weekly stats
   const weekStats = useMemo(() => {
+    console.log('WeeklyReport: Calculating stats', { 
+      totalActivities: activities.length, 
+      weekStart: weekStart.toISOString(), 
+      weekEnd: weekEnd.toISOString() 
+    });
+
     const weekActivities = activities.filter(a => {
       const actDate = new Date(a.logged_at);
       return actDate >= weekStart && actDate <= weekEnd;
+    });
+
+    console.log('WeeklyReport: Filtered activities', { 
+      weekActivitiesCount: weekActivities.length,
+      activityTypes: weekActivities.reduce((acc, a) => {
+        acc[a.type] = (acc[a.type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
     });
 
     const feeds = weekActivities.filter(a => a.type === 'feed');
@@ -92,11 +132,20 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     // Feeding stats
     const totalFeeds = feeds.length;
     const totalVolume = feeds.reduce((sum, f) => {
-      const qty = parseFloat(f.details.quantity || '0');
-      const ml = f.details.unit === 'oz' ? qty * 29.5735 : qty;
+      const qtyStr = f.details.quantity;
+      if (!qtyStr) return sum;
+      
+      const qty = parseFloat(qtyStr);
+      if (isNaN(qty)) return sum;
+      
+      const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+      const ml = unit === 'oz' ? qty * 29.5735 : qty;
+      
       return sum + ml;
     }, 0);
     const avgPerFeed = totalFeeds > 0 ? totalVolume / totalFeeds : 0;
+
+    console.log('WeeklyReport: Feed stats', { totalFeeds, totalVolume, avgPerFeed });
     
     // Daily feed volumes
     const dailyVolumes = eachDayOfInterval({ start: weekStart, end: weekEnd }).map(day => {
@@ -105,8 +154,15 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
         return format(fDate, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd');
       });
       return dayFeeds.reduce((sum, f) => {
-        const qty = parseFloat(f.details.quantity || '0');
-        const ml = f.details.unit === 'oz' ? qty * 29.5735 : qty;
+        const qtyStr = f.details.quantity;
+        if (!qtyStr) return sum;
+        
+        const qty = parseFloat(qtyStr);
+        if (isNaN(qty)) return sum;
+        
+        const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+        const ml = unit === 'oz' ? qty * 29.5735 : qty;
+        
         return sum + ml;
       }, 0);
     }).filter(v => v > 0);
@@ -114,95 +170,53 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     const minVolume = dailyVolumes.length > 0 ? Math.min(...dailyVolumes) : 0;
     const maxVolume = dailyVolumes.length > 0 ? Math.max(...dailyVolumes) : 0;
     
-    // Longest stretch between daytime feeds (exclude overnight 6pm-6am)
-    let longestDaytimeStretch = 0;
-    const sortedFeeds = [...feeds].sort((a, b) => 
-      new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime()
-    );
-    for (let i = 1; i < sortedFeeds.length; i++) {
-      const prevTime = new Date(sortedFeeds[i-1].logged_at);
-      const currTime = new Date(sortedFeeds[i].logged_at);
-      const prevHour = prevTime.getHours();
-      const currHour = currTime.getHours();
-      
-      // Skip if crossing overnight period (6pm to 6am)
-      if ((prevHour >= 18 || prevHour < 6) && (currHour >= 6 && currHour < 18)) {
-        continue;
-      }
-      
-      const diff = differenceInMinutes(currTime, prevTime);
-      if (diff < 720) { // Less than 12 hours (not overnight)
-        longestDaytimeStretch = Math.max(longestDaytimeStretch, diff);
-      }
-    }
-    
     // Sleep stats
     const totalSleepMinutes = sleeps.reduce((sum, s) => {
-      if (s.details.startTime && s.details.endTime) {
-        const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-        const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-        
-        if (startMatch && endMatch) {
-          let startH = parseInt(startMatch[1], 10);
-          const startM = parseInt(startMatch[2], 10);
-          const startPeriod = startMatch[3].toUpperCase();
-          
-          let endH = parseInt(endMatch[1], 10);
-          const endM = parseInt(endMatch[2], 10);
-          const endPeriod = endMatch[3].toUpperCase();
-          
-          // Convert to 24h
-          if (startPeriod === 'PM' && startH !== 12) startH += 12;
-          if (startPeriod === 'AM' && startH === 12) startH = 0;
-          if (endPeriod === 'PM' && endH !== 12) endH += 12;
-          if (endPeriod === 'AM' && endH === 12) endH = 0;
-          
-          let duration = (endH * 60 + endM) - (startH * 60 + startM);
-          if (duration < 0) duration += 24 * 60; // Handle overnight
-          return sum + duration;
-        }
-      }
-      return sum;
+      if (!s.details.startTime || !s.details.endTime) return sum;
+      
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      const endMins = parseTimeToMinutes(s.details.endTime);
+      
+      if (startMins === null || endMins === null) return sum;
+      
+      let duration = endMins - startMins;
+      if (duration < 0) duration += 24 * 60; // Handle overnight
+      
+      return sum + duration;
     }, 0);
+    
     const totalNaps = sleeps.length;
     const avgNapMinutes = totalNaps > 0 ? totalSleepMinutes / totalNaps : 0;
+
+    console.log('WeeklyReport: Sleep stats', { 
+      totalNaps, 
+      totalSleepMinutes, 
+      totalSleepHours: totalSleepMinutes / 60,
+      avgNapMinutes 
+    });
     
-    // Overnight sleep analysis (naps starting 6pm-midnight)
+    // Overnight sleep analysis (naps starting 6pm-midnight or ending 6am-8am)
     const overnightSleeps = sleeps.filter(s => {
       if (!s.details.startTime) return false;
-      const match = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!match) return false;
-      let hour = parseInt(match[1], 10);
-      const period = match[3].toUpperCase();
-      if (period === 'PM' && hour !== 12) hour += 12;
-      if (period === 'AM' && hour === 12) hour = 0;
-      return hour >= 18 || hour <= 6;
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      if (startMins === null) return false;
+      
+      const startHour = Math.floor(startMins / 60);
+      return startHour >= 18 || startHour <= 6;
     });
     
     const overnightDurations = overnightSleeps.map(s => {
       if (!s.details.startTime || !s.details.endTime) return 0;
-      const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
       
-      if (startMatch && endMatch) {
-        let startH = parseInt(startMatch[1], 10);
-        const startM = parseInt(startMatch[2], 10);
-        const startPeriod = startMatch[3].toUpperCase();
-        
-        let endH = parseInt(endMatch[1], 10);
-        const endM = parseInt(endMatch[2], 10);
-        const endPeriod = endMatch[3].toUpperCase();
-        
-        if (startPeriod === 'PM' && startH !== 12) startH += 12;
-        if (startPeriod === 'AM' && startH === 12) startH = 0;
-        if (endPeriod === 'PM' && endH !== 12) endH += 12;
-        if (endPeriod === 'AM' && endH === 12) endH = 0;
-        
-        let duration = (endH * 60 + endM) - (startH * 60 + startM);
-        if (duration < 0) duration += 24 * 60;
-        return duration;
-      }
-      return 0;
+      const startMins = parseTimeToMinutes(s.details.startTime);
+      const endMins = parseTimeToMinutes(s.details.endTime);
+      
+      if (startMins === null || endMins === null) return 0;
+      
+      let duration = endMins - startMins;
+      if (duration < 0) duration += 24 * 60;
+      
+      return duration;
     }).filter(d => d > 0);
     
     const longestOvernightMinutes = overnightDurations.length > 0 ? Math.max(...overnightDurations) : 0;
@@ -221,35 +235,29 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       );
       
       const sleepMinutes = daySleeps.reduce((sum, s) => {
-        if (s.details.startTime && s.details.endTime) {
-          const startMatch = s.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-          const endMatch = s.details.endTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-          
-          if (startMatch && endMatch) {
-            let startH = parseInt(startMatch[1], 10);
-            const startM = parseInt(startMatch[2], 10);
-            const startPeriod = startMatch[3].toUpperCase();
-            
-            let endH = parseInt(endMatch[1], 10);
-            const endM = parseInt(endMatch[2], 10);
-            const endPeriod = endMatch[3].toUpperCase();
-            
-            if (startPeriod === 'PM' && startH !== 12) startH += 12;
-            if (startPeriod === 'AM' && startH === 12) startH = 0;
-            if (endPeriod === 'PM' && endH !== 12) endH += 12;
-            if (endPeriod === 'AM' && endH === 12) endH = 0;
-            
-            let duration = (endH * 60 + endM) - (startH * 60 + startM);
-            if (duration < 0) duration += 24 * 60;
-            return sum + duration;
-          }
-        }
-        return sum;
+        if (!s.details.startTime || !s.details.endTime) return sum;
+        
+        const startMins = parseTimeToMinutes(s.details.startTime);
+        const endMins = parseTimeToMinutes(s.details.endTime);
+        
+        if (startMins === null || endMins === null) return sum;
+        
+        let duration = endMins - startMins;
+        if (duration < 0) duration += 24 * 60;
+        
+        return sum + duration;
       }, 0);
       
       const feedVolume = dayFeeds.reduce((sum, f) => {
-        const qty = parseFloat(f.details.quantity || '0');
-        const ml = f.details.unit === 'oz' ? qty * 29.5735 : qty;
+        const qtyStr = f.details.quantity;
+        if (!qtyStr) return sum;
+        
+        const qty = parseFloat(qtyStr);
+        if (isNaN(qty)) return sum;
+        
+        const unit = f.details.unit || (qty > 50 ? 'ml' : 'oz');
+        const ml = unit === 'oz' ? qty * 29.5735 : qty;
+        
         return sum + ml;
       }, 0);
       
@@ -272,6 +280,16 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
     
     const daysWithSleepData = dailyData.filter(d => d.sleepHours > 0).length;
     const hasIncompleteSleepData = daysWithSleepData < 7;
+
+    console.log('WeeklyReport: Final stats', {
+      totalFeeds,
+      totalVolume,
+      avgPerFeed,
+      totalSleepHours: totalSleepMinutes / 60,
+      avgDailySleep: daysWithSleepData > 0 ? totalSleepMinutes / 60 / daysWithSleepData : 0,
+      daysWithSleepData,
+      dailyData
+    });
     
     return {
       totalFeeds,
@@ -279,7 +297,6 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       avgPerFeed,
       minVolume: Math.round(minVolume),
       maxVolume: Math.round(maxVolume),
-      longestDaytimeStretch,
       longestOvernightMinutes,
       avgOvernightMinutes,
       totalSleepHours: totalSleepMinutes / 60,
@@ -358,7 +375,7 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
             <p><strong>Total Volume:</strong> {weekStats.totalVolume.toFixed(0)} ml ({(weekStats.totalVolume / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Average Per Feed:</strong> {Math.round(weekStats.avgPerFeed)} ml ({(weekStats.avgPerFeed / 29.5735).toFixed(1)} oz)</p>
             <p><strong>Daily Range:</strong> {weekStats.minVolume}–{weekStats.maxVolume} ml</p>
-            <p><strong>Feeding Pattern:</strong> {Math.round(weekStats.totalFeeds / 7)} feeds/day average</p>
+            <p><strong>Feeding Pattern:</strong> {(weekStats.totalFeeds / 7).toFixed(1)} feeds/day average</p>
           </div>
           <p className="mt-4 text-sm text-gray-700">
             <strong>Notes:</strong> Daily intake shows stable feeding frequency with {weekStats.maxVolume - weekStats.minVolume > 300 ? 'moderate' : 'mild'} volume variation. No missed feeds or feeding intolerance reported.
