@@ -15,6 +15,7 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import jsPDF from "jspdf";
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 interface ExportReportModalProps {
   open: boolean;
@@ -435,13 +436,22 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
           const reader = new FileReader();
           reader.onloadend = async () => {
             try {
-              const base64data = (reader.result as string).split(',')[1]; // Remove data:application/pdf;base64, prefix
+              const base64data = (reader.result as string).split(',')[1];
               
-              // Write to temporary file and share
+              // Write to Cache and share only the file (no link/text)
+              await Filesystem.writeFile({
+                path: fileName,
+                data: base64data,
+                directory: Directory.Cache,
+              });
+              const { uri } = await Filesystem.getUri({
+                path: fileName,
+                directory: Directory.Cache,
+              });
+              
               await Share.share({
                 title: `${babyName || 'Baby'} Activity Report`,
-                text: `Activity report for ${format(startDate, 'MMM dd')} - ${format(endDate, 'MMM dd')}`,
-                files: [`data:application/pdf;base64,${base64data}`],
+                files: [uri],
                 dialogTitle: 'Share Report'
               });
               

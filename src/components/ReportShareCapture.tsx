@@ -4,6 +4,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory } from "@capacitor/filesystem";
 import { format } from "date-fns";
 import { ReportConfig } from "./ReportConfigModal";
 
@@ -83,9 +84,13 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
               reader.readAsDataURL(pdfBlob);
             });
 
+            const base64data = base64.split(",")[1] || base64;
+            await Filesystem.writeFile({ path: fileName, data: base64data, directory: Directory.Cache });
+            const { uri } = await Filesystem.getUri({ path: fileName, directory: Directory.Cache });
+
             await Share.share({
               title: `${babyName || "Baby"} Activity Report`,
-              files: [base64],
+              files: [uri],
               dialogTitle: "Share Report",
             });
           } else {
