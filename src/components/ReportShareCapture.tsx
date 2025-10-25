@@ -44,20 +44,24 @@ export function ReportShareCapture({ open, onDone, babyName, config }: ReportSha
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
 
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        // Add explicit margins so iOS PDF viewers show space at bottom
+        const margin = 15; // mm
+        const contentWidth = pageWidth - margin * 2;
+        const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
         let heightLeft = imgHeight;
-        let position = 0;
+        let position = margin;
 
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        // First page
+        pdf.addImage(imgData, "PNG", margin, position, contentWidth, imgHeight);
+        heightLeft -= (pageHeight - margin * 2);
 
+        // Additional pages with same margins
         while (heightLeft > 0) {
-          position = heightLeft - imgHeight; // shift up to create a crop
+          position = heightLeft - imgHeight + margin; // negative offset + top margin
           pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-          heightLeft -= pageHeight;
+          pdf.addImage(imgData, "PNG", margin, position, contentWidth, imgHeight);
+          heightLeft -= (pageHeight - margin * 2);
         }
 
         const now = new Date();
