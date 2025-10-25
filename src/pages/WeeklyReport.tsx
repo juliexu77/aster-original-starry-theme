@@ -16,6 +16,8 @@ function formatAge(birthday?: string | null) {
   const dob = new Date(birthday);
   const now = new Date();
   
+  console.log('WeeklyReport formatAge:', { birthday, dob: dob.toISOString(), now: now.toISOString() });
+  
   // Calculate total months
   const totalMonths = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
   const months = Math.max(0, totalMonths);
@@ -25,6 +27,8 @@ function formatAge(birthday?: string | null) {
   monthsDate.setMonth(dob.getMonth() + totalMonths);
   const daysDiff = Math.floor((now.getTime() - monthsDate.getTime()) / (1000 * 60 * 60 * 24));
   const weeks = Math.floor(daysDiff / 7);
+  
+  console.log('WeeklyReport age result:', { totalMonths, months, daysDiff, weeks, result: `${months} months ${weeks} weeks` });
   
   return `${months} months ${weeks} weeks`;
 }
