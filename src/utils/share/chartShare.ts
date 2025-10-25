@@ -83,8 +83,10 @@ async function elementToPngBlob(element: HTMLElement): Promise<Blob> {
 
 export async function shareElement(element: HTMLElement, title: string, caption?: string): Promise<void> {
   const blob = await elementToPngBlob(element);
-  const file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
-
+  let file: File | null = null;
+  try {
+    file = new File([blob], `${title.replace(/\s+/g, '-').toLowerCase()}.png`, { type: 'image/png' });
+  } catch {}
   try {
     const nav: any = navigator as any;
     if (nav && typeof nav.share === 'function') {
