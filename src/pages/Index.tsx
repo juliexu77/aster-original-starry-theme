@@ -13,6 +13,7 @@ import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
 import { SleepChart } from "@/components/SleepChart";
 import { WeeklyReflection } from "@/components/WeeklyReflection";
+import { ExportReportModal } from "@/components/ExportReportModal";
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,7 +22,7 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter } from "lucide-react";
+import { Calendar, Settings, Undo2, Filter, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -120,6 +121,7 @@ const ongoingNap = activities
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
+  const [showExportModal, setShowExportModal] = useState(false);
   
 
   // Handle scroll for header fade effect
@@ -407,77 +409,100 @@ const ongoingNap = activities
                   Today · {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
                 </h2>
                 
-                {/* Filter Button */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 gap-2">
-                      <Filter className="h-4 w-4" />
-                      Filter
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-background">
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('feed')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'feed'] : prev.filter(t => t !== 'feed')
-                        );
-                      }}
-                    >
-                      🍼 Feed
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('diaper')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'diaper'] : prev.filter(t => t !== 'diaper')
-                        );
-                      }}
-                    >
-                      👶 Diaper
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('nap')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'nap'] : prev.filter(t => t !== 'nap')
-                        );
-                      }}
-                    >
-                      😴 Nap
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('note')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'note'] : prev.filter(t => t !== 'note')
-                        );
-                      }}
-                    >
-                      📝 Note
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('measure')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
-                        );
-                      }}
-                    >
-                      📏 Measure
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      checked={selectedActivityTypes.includes('photo')}
-                      onCheckedChange={(checked) => {
-                        setSelectedActivityTypes(prev => 
-                          checked ? [...prev, 'photo'] : prev.filter(t => t !== 'photo')
-                        );
-                      }}
-                    >
-                      📷 Photo
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Filter and Export Buttons */}
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 gap-2"
+                    onClick={() => setShowExportModal(true)}
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Export
+                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8 gap-2">
+                        <Filter className="h-4 w-4" />
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-background">
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.length === 6}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(
+                            checked ? ['feed', 'diaper', 'nap', 'note', 'measure', 'photo'] : []
+                          );
+                        }}
+                        className="font-medium"
+                      >
+                        All
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('feed')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'feed'] : prev.filter(t => t !== 'feed')
+                          );
+                        }}
+                      >
+                        Feed
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('diaper')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'diaper'] : prev.filter(t => t !== 'diaper')
+                          );
+                        }}
+                      >
+                        Diaper
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('nap')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'nap'] : prev.filter(t => t !== 'nap')
+                          );
+                        }}
+                      >
+                        Nap
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('note')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'note'] : prev.filter(t => t !== 'note')
+                          );
+                        }}
+                      >
+                        Note
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('measure')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'measure'] : prev.filter(t => t !== 'measure')
+                          );
+                        }}
+                      >
+                        Measure
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedActivityTypes.includes('photo')}
+                        onCheckedChange={(checked) => {
+                          setSelectedActivityTypes(prev => 
+                            checked ? [...prev, 'photo'] : prev.filter(t => t !== 'photo')
+                          );
+                        }}
+                      >
+                        Photo
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
               
               {/* Quick Summary Line with Time-based Emoji */}
@@ -981,6 +1006,14 @@ return (
               console.error('Error deleting activity:', error);
             }
           }}
+        />
+
+        {/* Export Report Modal */}
+        <ExportReportModal
+          open={showExportModal}
+          onOpenChange={setShowExportModal}
+          activities={activities}
+          babyName={babyProfile?.name}
         />
 
       </div>
