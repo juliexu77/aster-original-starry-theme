@@ -312,7 +312,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       },
     };
 
-    onAddActivity(newActivity, selectedDate, startTime);
+    // Wait for the activity to be saved before closing the modal
+    await onAddActivity(newActivity, selectedDate, startTime);
     
     // Close the modal after starting the timer
     resetForm();
