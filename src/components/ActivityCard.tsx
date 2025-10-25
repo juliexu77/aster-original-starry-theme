@@ -1,4 +1,4 @@
-import { Clock, Baby, Palette, Moon, StickyNote, Ruler, Camera } from "lucide-react";
+import { Clock, Baby, Circle, Moon, StickyNote, Ruler, Camera } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -49,7 +49,7 @@ const getActivityIcon = (type: string) => {
     case "feed":
       return <Baby className="h-4 w-4" />;
     case "diaper":
-      return <Palette className="h-4 w-4" />;
+      return <Circle className="h-4 w-4" />;
     case "nap":
       return <Moon className="h-4 w-4" />;
     case "note":
