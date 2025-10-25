@@ -501,14 +501,31 @@ const ongoingNap = activities
                     </DropdownMenuContent>
                   </DropdownMenu>
                   
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="h-8 w-8 p-0"
-                    onClick={() => setShowExportModal(true)}
-                  >
-                    <Share className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                      >
+                        <Share className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-background">
+                      <DropdownMenuCheckboxItem
+                        checked={false}
+                        onCheckedChange={() => navigate('/report/weekly')}
+                      >
+                        View Weekly Report
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={false}
+                        onCheckedChange={() => setShowExportModal(true)}
+                      >
+                        Export PDF Report
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               
