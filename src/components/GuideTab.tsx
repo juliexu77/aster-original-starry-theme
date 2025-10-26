@@ -379,18 +379,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       {/* Main Content */}
       <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 py-6 space-y-8">
-          {/* Welcome Section */}
-          <div className="space-y-2">
-            <h1 className="text-xl font-semibold">👋 Welcome to your Guide</h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              This is where {babyName}'s daily patterns turn into understanding.
-            </p>
-            <p className="text-sm text-muted-foreground">As you track, you'll see:</p>
-            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-              <li>• Changes explained</li>
-              <li>• Age-based guidance</li>
-              <li>• Learnings from the digital village</li>
-            </ul>
+          {/* Header */}
+          <div>
+            <h1 className="text-xl font-semibold">Guide</h1>
+          </div>
+
+          {/* Today Section Header */}
+          <div className="border-b border-border/30 pb-2">
+            <h2 className="text-sm font-medium text-muted-foreground tracking-wider">━━━ TODAY ━━━</h2>
           </div>
 
           {/* Connected Insights Section */}
