@@ -1260,16 +1260,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
         {/* 3. What's Next */}
         {!showingYesterday && (
-          <Card className="p-4">
+          <Card 
+            className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
+            onClick={() => setShowPredictionInsight(!showPredictionInsight)}
+          >
             <div className="space-y-4">
-              <button 
-                onClick={() => setShowPredictionInsight(!showPredictionInsight)}
-                className="w-full text-left group"
-              >
-                <h2 className="text-base font-medium text-foreground group-hover:text-primary transition-colors">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-medium text-foreground">
                   What's Next
                 </h2>
-              </button>
+                <ChevronDown 
+                  className={`h-5 w-5 text-muted-foreground transition-transform ${showPredictionInsight ? 'rotate-180' : ''}`}
+                />
+              </div>
               
               {nextAction ? (
                 <>
@@ -1281,7 +1284,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   </div>
                   {!ongoingNap && prediction && (
                     <Button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         // Determine activity type based on prediction intent
                         const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
                         onAddActivity(activityType);
@@ -1315,7 +1319,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               {/* Wake-up button if sleeping */}
               {ongoingNap && onEndNap && (
                 <Button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     console.log('Wake up button clicked in HomeTab');
                     console.log('onEndNap exists:', !!onEndNap);
                     console.log('ongoingNap:', ongoingNap);
