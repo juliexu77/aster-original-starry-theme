@@ -928,8 +928,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Getting Started Cards */}
           <div className="space-y-6">
             {/* Step 1: Make the first log magical */}
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2 flex-1">
                 <h3 className="text-base font-semibold text-foreground">
                   Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
                 </h3>
@@ -939,10 +939,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </div>
               <Button 
                 onClick={() => onAddActivity()} 
-                size="default"
-                className="w-full"
+                size="icon"
+                className="flex-shrink-0"
               >
-                Let's make your first entry 🌱
+                <Plus className="w-4 h-4" />
               </Button>
             </div>
 
