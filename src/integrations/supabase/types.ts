@@ -22,6 +22,7 @@ export type Database = {
           household_id: string | null
           id: string
           logged_at: string
+          timezone: string
           type: string
           updated_at: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           household_id?: string | null
           id?: string
           logged_at: string
+          timezone?: string
           type: string
           updated_at?: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           household_id?: string | null
           id?: string
           logged_at?: string
+          timezone?: string
           type?: string
           updated_at?: string
         }

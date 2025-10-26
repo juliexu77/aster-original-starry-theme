@@ -39,16 +39,24 @@ export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
     // For naps, use the startTime directly as it's already in display format
     displayTime = dbActivity.details.startTime;
   } else {
-    // Use consistent local timezone handling like the timeline grouping
-    const activityDate = new Date(dbActivity.logged_at);
-    // Create date in local timezone to avoid timezone offset issues
-    const localDate = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate(), 
-                              activityDate.getHours(), activityDate.getMinutes(), activityDate.getSeconds());
-    displayTime = localDate.toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true 
-    });
+    // Parse the logged_at time which is stored as local time without 'Z'
+    // Format: "2025-10-26T07:00:00"
+    const timeMatch = dbActivity.logged_at.match(/T(\d{2}):(\d{2})/);
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = timeMatch[2];
+      const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+      const period = hours >= 12 ? 'PM' : 'AM';
+      displayTime = `${hour12}:${minutes} ${period}`;
+    } else {
+      // Fallback for old format or unexpected format
+      const activityDate = new Date(dbActivity.logged_at);
+      displayTime = activityDate.toLocaleTimeString("en-US", { 
+        hour: "numeric", 
+        minute: "2-digit",
+        hour12: true 
+      });
+    }
   }
 
   return {
@@ -156,6 +164,9 @@ export function useActivities() {
     if (!user || !household) throw new Error('User not authenticated or no household');
 
     try {
+      // Get user's current timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
       // Convert time string to timestamp - preserving local timezone
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
@@ -164,22 +175,24 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // Create date object for today in LOCAL timezone, then convert to ISO for storage
-      // This ensures that activities logged "today" at any time remain "today" regardless of UTC offset
+      // Create date in local time without UTC conversion
       const now = new Date();
       const year = now.getFullYear();
-      const month = now.getMonth();
-      const day = now.getDate();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hourStr = String(hour24).padStart(2, '0');
+      const minStr = String(minutes).padStart(2, '0');
       
-      // Create a new date with explicit local date components and selected time
-      const loggedAt = new Date(year, month, day, hour24, minutes, 0, 0);
+      // Store as local time without 'Z' suffix
+      const logged_at = `${year}-${month}-${day}T${hourStr}:${minStr}:00`;
 
       const { data, error } = await supabase
         .from('activities')
         .insert({
           household_id: household.id,
           type: activity.type,
-          logged_at: loggedAt.toISOString(),
+          logged_at,
+          timezone,
           details: activity.details,
           created_by: user.id
         })

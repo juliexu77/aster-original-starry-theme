@@ -277,6 +277,9 @@ const ongoingNap = activities
         throw new Error('No household found - please refresh the page');
       }
 
+      // Get user's current timezone
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
       // Combine selected date with selected time
       let loggedAt: string;
       let displayTime = activityTime; // Store the original selected time for display
@@ -294,7 +297,7 @@ const ongoingNap = activities
           if (period === 'PM' && hours !== 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
           
-          // Create a local date-time, then store as UTC ISO
+          // Create a local date-time
           combinedDateTime = new Date(
             activityDate.getFullYear(),
             activityDate.getMonth(),
@@ -325,11 +328,25 @@ const ongoingNap = activities
             hour12: true 
           });
         }
-        loggedAt = combinedDateTime.toISOString();
+        
+        // Store as local time without 'Z' suffix
+        const year = combinedDateTime.getFullYear();
+        const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
+        const day = String(combinedDateTime.getDate()).padStart(2, '0');
+        const hour = String(combinedDateTime.getHours()).padStart(2, '0');
+        const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
+        loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
       } else {
-        // Default to now (UTC ISO)
-        loggedAt = new Date().toISOString();
-        displayTime = new Date().toLocaleTimeString("en-US", { 
+        // Default to now in local time
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hour = String(now.getHours()).padStart(2, '0');
+        const minute = String(now.getMinutes()).padStart(2, '0');
+        loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
+        
+        displayTime = now.toLocaleTimeString("en-US", { 
           hour: "numeric", 
           minute: "2-digit",
           hour12: true 
@@ -346,6 +363,7 @@ const ongoingNap = activities
         household_id: householdId,
         type,
         logged_at: loggedAt,
+        timezone,
         details: detailsWithTime,
         created_by: user.id
       }).select().single();
@@ -1166,13 +1184,35 @@ return (
                   // Process each activity
                   for (const parsedActivity of parsedActivities) {
                     console.log('Processing activity:', parsedActivity);
-                    // Parse the time from the activity
-                    const activityDate = new Date(parsedActivity.time);
-                    const activityTime = activityDate.toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    });
+                    
+                    // Parse time components from the local time string
+                    // Format is like "2025-10-26T07:00:00" (no Z suffix)
+                    const timeMatch = parsedActivity.time.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+                    let activityTime: string;
+                    let activityDate: Date;
+                    
+                    if (timeMatch) {
+                      const [_, year, month, day, hour24, minute] = timeMatch;
+                      const hours = parseInt(hour24);
+                      const mins = parseInt(minute);
+                      
+                      // Convert to 12-hour format for display
+                      const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                      const period = hours >= 12 ? 'PM' : 'AM';
+                      activityTime = `${hour12}:${minute} ${period}`;
+                      
+                      // Create date object in local timezone
+                      activityDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), hours, mins, 0);
+                    } else {
+                      // Fallback to current time if parsing fails
+                      const now = new Date();
+                      activityDate = now;
+                      activityTime = now.toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      });
+                    }
                     
                     // Handle "wake" type - end ongoing sleep
                     if (parsedActivity.type === 'wake') {
@@ -1210,7 +1250,7 @@ return (
                         });
                       }
                     } else {
-                      // Add the activity normally
+                      // Add the activity normally with timezone from parsed data
                       await addActivity(
                         parsedActivity.type,
                         parsedActivity.details,

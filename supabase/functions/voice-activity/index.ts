@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript } = await req.json();
+    const { transcript, timezone } = await req.json();
     
     if (!transcript) {
       throw new Error('No transcript provided');
@@ -183,18 +183,25 @@ Examples:
       // Convert 12-hour to 24-hour format
       let hour = hourRaw;
       if (ampm === 'am') {
-        // 12am = 0 (midnight), 1am-11am stay the same
         hour = hourRaw === 12 ? 0 : hourRaw;
-      } else { // pm
-        // 12pm = 12 (noon), 1pm-11pm add 12
+      } else {
         hour = hourRaw === 12 ? 12 : hourRaw + 12;
       }
       
-      const d = new Date();
-      d.setHours(hour, minute, 0, 0);
+      // Create a date string in ISO format but WITHOUT timezone conversion
+      // This represents the LOCAL time in the user's timezone
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hourStr = String(hour).padStart(2, '0');
+      const minStr = String(minute).padStart(2, '0');
       
-      console.log(`Parsed time: ${tm[0]} -> hourRaw=${hourRaw}, ampm=${ampm}, hour24=${hour}, minute=${minute} -> ${d.toISOString()}`);
-      return d.toISOString();
+      // Return ISO-like format without 'Z' - represents local time in user's timezone
+      const localISO = `${year}-${month}-${day}T${hourStr}:${minStr}:00`;
+      
+      console.log(`Parsed time: ${tm[0]} -> local time: ${localISO} in timezone: ${timezone || 'unknown'}`);
+      return localISO;
     }
 
     activities.forEach((act: any, i: number) => {
@@ -224,7 +231,12 @@ Examples:
       }
     });
 
-    console.log('voice-activity parsed:', { transcript, activities });
+    // Add timezone to each activity
+    activities.forEach((act: any) => {
+      act.timezone = timezone || 'America/Los_Angeles';
+    });
+
+    console.log('voice-activity parsed:', { transcript, activities, timezone });
 
     return new Response(
       JSON.stringify({ 

@@ -132,9 +132,12 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
   const processTranscript = async (transcript: string) => {
     try {
+      // Get user's current IANA timezone (e.g., "America/Los_Angeles", "Asia/Tokyo")
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
       // Send transcript to edge function for parsing
       const { data, error } = await supabase.functions.invoke('voice-activity', {
-        body: { transcript }
+        body: { transcript, timezone }
       });
 
       console.log('Voice activity response:', { data, error, transcript });
@@ -293,11 +296,13 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
                         <p className="font-semibold">{formatActivityPreview(activity)}</p>
                         {activity.time && (
                           <p className="text-xs text-muted-foreground">
-                            at {new Date(activity.time).toLocaleTimeString('en-US', { 
-                              hour: 'numeric', 
-                              minute: '2-digit',
-                              hour12: true 
-                            })}
+                            at {activity.time.includes('T') 
+                              ? new Date(activity.time + (activity.time.includes('Z') ? '' : 'Z')).toLocaleTimeString('en-US', { 
+                                  hour: 'numeric', 
+                                  minute: '2-digit',
+                                  hour12: true 
+                                })
+                              : activity.time} {activity.timezone && `(${activity.timezone.split('/')[1]?.replace('_', ' ') || activity.timezone})`}
                           </p>
                         )}
                       </>
