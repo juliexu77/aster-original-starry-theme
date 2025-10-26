@@ -286,6 +286,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         if (hoursSinceFirst < 24) {
           return { emoji: "🌤", text: "Still Learning" };
         }
+        
+        // Days 2-4: Use simplified chip set while establishing baseline
+        if (hoursSinceFirst >= 24 && hoursSinceFirst < 96) {
+          const summary = getDailySummary();
+          const hour = currentTime.getHours();
+          
+          // Show "New Discovery" early in day with some activity
+          if (hour < 12 && (summary.feedCount >= 1 || summary.napCount >= 1) && 
+              (summary.feedCount + summary.napCount <= 3)) {
+            return { emoji: "🌈", text: "New Discovery" };
+          }
+          
+          // Default to "Building Rhythm" for days 2-4
+          return { emoji: "🌿", text: "Building Rhythm" };
+        }
       }
     }
     
