@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript, timezoneOffsetMinutes } = await req.json();
+    const { transcript } = await req.json();
     
     if (!transcript) {
       throw new Error('No transcript provided');
@@ -22,7 +22,6 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
-    const tzOffset = (typeof timezoneOffsetMinutes === 'number' && isFinite(timezoneOffsetMinutes)) ? timezoneOffsetMinutes : 0;
 
     // Parse the transcription using Lovable AI
     const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -60,10 +59,12 @@ Return ONLY valid JSON in this exact format:
 
 CRITICAL TIME PARSING:
 - Always extract times mentioned in the transcript (e.g., "at 7am", "7 AM", "at 9am")
-- Convert times to ISO 8601 with today's date
+- Convert times to ISO 8601 with today's date IN THE USER'S LOCAL TIMEZONE
+- Times are ALWAYS in the user's local timezone - never convert to UTC
 - If no time specified, use current time
-- "7am" or "7 AM" → set hour to 7, minute to 0
-- "9:30am" → set hour to 9, minute to 30
+- "7am" or "7 AM" → set hour to 7, minute to 0 in local time
+- "9:30am" → set hour to 9, minute to 30 in local time
+- Return the ISO string AS-IS without any timezone conversions
 
 CRITICAL DETAIL EXTRACTION:
 - ALWAYS extract numbers for amounts (ml, oz) and durations (minutes, hours)
@@ -224,25 +225,6 @@ Examples:
         }
       }
     });
-
-    // Normalize activity times to the user's local timezone by shifting to UTC
-    try {
-      if (typeof tzOffset === 'number' && isFinite(tzOffset) && tzOffset !== 0) {
-        console.log(`Before timezone adjustment:`, activities.map(a => ({ type: a.type, time: a.time })));
-        activities.forEach((act: any) => {
-          if (act.time) {
-            const original = act.time;
-            const t = new Date(act.time).getTime();
-            const adjusted = new Date(t + tzOffset * 60000).toISOString();
-            act.time = adjusted;
-            console.log(`Adjusted time: ${original} -> ${adjusted} (offset: ${tzOffset} minutes)`);
-          }
-        });
-        console.log(`After timezone adjustment:`, activities.map(a => ({ type: a.type, time: a.time })));
-      }
-    } catch (e) {
-      console.error('Time zone adjustment error:', e);
-    }
 
     console.log('voice-activity parsed:', { transcript, activities });
 

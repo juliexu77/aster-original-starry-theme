@@ -134,7 +134,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
     try {
       // Send transcript to edge function for parsing
       const { data, error } = await supabase.functions.invoke('voice-activity', {
-        body: { transcript, timezoneOffsetMinutes: new Date().getTimezoneOffset() }
+        body: { transcript }
       });
 
       console.log('Voice activity response:', { data, error, transcript });
@@ -229,13 +229,25 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
           )}
           
           {isRecording && (
-            <Button
-              onClick={stopRecording}
-              size="lg"
-              className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90 animate-pulse"
-            >
-              <Square className="h-6 w-6" />
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <Button
+                onClick={stopRecording}
+                size="lg"
+                className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90 animate-pulse"
+              >
+                <Square className="h-6 w-6" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className="w-1 h-4 bg-destructive animate-pulse" style={{ animationDelay: '0ms', animationDuration: '600ms' }} />
+                  <div className="w-1 h-6 bg-destructive animate-pulse" style={{ animationDelay: '100ms', animationDuration: '600ms' }} />
+                  <div className="w-1 h-8 bg-destructive animate-pulse" style={{ animationDelay: '200ms', animationDuration: '600ms' }} />
+                  <div className="w-1 h-6 bg-destructive animate-pulse" style={{ animationDelay: '300ms', animationDuration: '600ms' }} />
+                  <div className="w-1 h-4 bg-destructive animate-pulse" style={{ animationDelay: '400ms', animationDuration: '600ms' }} />
+                </div>
+                <span className="text-sm text-muted-foreground animate-pulse">Listening...</span>
+              </div>
+            </div>
           )}
           
           {isProcessing && (
