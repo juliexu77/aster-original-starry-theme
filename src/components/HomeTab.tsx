@@ -176,6 +176,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     let minutes: number | null = null;
     if (a.type === 'nap' && a.details?.startTime) {
       minutes = parseUI12hToMinutes(a.details.startTime);
+    } else if (a.details?.displayTime) {
+      minutes = parseUI12hToMinutes(a.details.displayTime);
     } else if (a.time) {
       minutes = parseUI12hToMinutes(a.time);
     }
@@ -184,6 +186,29 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
     return base.getTime();
   };
+  
+  // Precompute sorted activities for timeline and debug
+  const sortedActivities = [...displayActivities].sort((a, b) => getComparableTime(a) - getComparableTime(b));
+  if (typeof window !== 'undefined') {
+    try {
+      console.groupCollapsed('HomeTab timeline order');
+      sortedActivities.forEach((a, idx) => {
+        const cmp = getComparableTime(a);
+        console.log(`#${idx + 1}`, {
+          id: a.id,
+          type: a.type,
+          time: a.time,
+          startTime: a.details?.startTime,
+          endTime: a.details?.endTime,
+          displayTime: a.details?.displayTime,
+          loggedAt: a.loggedAt,
+          comparableLocal: new Date(cmp).toLocaleString(),
+          comparableMs: cmp,
+        });
+      });
+      console.groupEnd();
+    } catch {}
+  }
   
   // Use the ongoingNap passed from parent (Index.tsx) for consistency
   const ongoingNap = passedOngoingNap;
@@ -1532,8 +1557,7 @@ const lastDiaper = displayActivities
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
                   Today's Timeline
                 </p>
-{displayActivities
-  .sort((a, b) => getComparableTime(a) - getComparableTime(b))
+{sortedActivities
                   .map((activity, index) => {
                     const getActivityIcon = (type: string) => {
                       switch(type) {
