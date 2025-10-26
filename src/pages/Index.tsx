@@ -692,7 +692,7 @@ const ongoingNap = activities
                       activityGroups[localDateString].push(activity);
                     });
 
-                    // Sort activities within each date group by actual activity time (ascending - oldest first)
+                    // Sort activities within each date group by actual activity time (descending - newest first)
                     Object.keys(activityGroups).forEach(dateKey => {
                       activityGroups[dateKey].sort((a, b) => {
                         const getActivityTime = (activity: any) => {
@@ -731,7 +731,7 @@ const ongoingNap = activities
                           }
                         };
 
-                        return getActivityTime(a) - getActivityTime(b); // Changed: ascending order (oldest first)
+                        return getActivityTime(b) - getActivityTime(a); // Reverse chronological (newest first)
                       });
                     });
 
