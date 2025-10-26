@@ -1139,7 +1139,19 @@ return (
         />
 
         {/* Voice Recorder Modal */}
-        <Dialog open={showVoiceRecorder} onOpenChange={setShowVoiceRecorder}>
+        <Dialog open={showVoiceRecorder} onOpenChange={(open) => {
+          setShowVoiceRecorder(open);
+          // Stop any ongoing recording when dialog closes
+          if (!open) {
+            const voiceRecorder = document.querySelector('[data-voice-recorder]');
+            if (voiceRecorder) {
+              // Trigger cleanup by forcing unmount
+              setTimeout(() => {
+                setShowVoiceRecorder(false);
+              }, 100);
+            }
+          }
+        }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Voice Log Activity</DialogTitle>

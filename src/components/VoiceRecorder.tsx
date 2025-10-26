@@ -36,6 +36,18 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
         startRecording();
       }, 300);
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+          recognitionRef.current = null;
+        } catch (e) {
+          console.log('Recognition cleanup:', e);
+        }
+      }
+    };
   }, [autoStart]);
 
   const startRecording = async () => {
@@ -85,7 +97,11 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
   const stopRecording = () => {
     if (recognitionRef.current && isRecording) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.log('Stop recording error:', e);
+      }
     }
   };
 
