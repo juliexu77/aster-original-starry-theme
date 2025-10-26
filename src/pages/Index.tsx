@@ -456,6 +456,7 @@ const ongoingNap = activities
             // Edit existing activity
             setEditingActivity(activity);
           }}
+          addActivity={addActivity}
           onEndNap={markWakeUp}
           ongoingNap={ongoingNap}
           userRole={currentUserRole}

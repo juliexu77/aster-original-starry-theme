@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
+import { useToast } from "@/hooks/use-toast";
 
 interface HomeTabProps {
   activities: Activity[];
@@ -20,10 +21,12 @@ interface HomeTabProps {
   userRole?: string;
   showBadge?: boolean;
   percentile?: number | null;
+  addActivity?: (type: string, details?: any, activityDate?: Date, activityTime?: string) => Promise<void>;
 }
 
-export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile }: HomeTabProps) => {
+export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddActivity, onEditActivity, onEndNap, ongoingNap: passedOngoingNap, userRole, showBadge, percentile, addActivity }: HomeTabProps) => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showTimeline, setShowTimeline] = useState(false);
   const [showFeedDetails, setShowFeedDetails] = useState(false);
@@ -1282,13 +1285,33 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       {nextAction}
                     </p>
                   </div>
-                  {!ongoingNap && prediction && (
+                  {!ongoingNap && prediction && addActivity && (
                     <Button
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
                         // Determine activity type based on prediction intent
                         const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
-                        onAddActivity(activityType);
+                        const now = new Date();
+                        const timeStr = now.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        });
+                        
+                        try {
+                          await addActivity(activityType, {}, now, timeStr);
+                          toast({
+                            title: activityType === 'feed' ? t('feedLogged') : t('napLogged'),
+                            description: `${timeStr}`,
+                          });
+                        } catch (error) {
+                          console.error('Error logging activity:', error);
+                          toast({
+                            title: t('error'),
+                            description: t('failedToLogActivity'),
+                            variant: 'destructive',
+                          });
+                        }
                       }}
                       variant="outline"
                       size="sm"

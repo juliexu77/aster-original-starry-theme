@@ -188,6 +188,10 @@ const translations = {
     continueCurrentActivity: "continue current activity",
     logFeedNow: "Log Feed Now",
     logNapNow: "Log Nap Now",
+    feedLogged: "Feed logged",
+    napLogged: "Nap logged",
+    error: "Error",
+    failedToLogActivity: "Failed to log activity",
     
     // Sleep chart
     weeklySleepSchedule: "Weekly Sleep Schedule",
@@ -667,6 +671,10 @@ const translations = {
     continueCurrentActivity: "继续当前活动",
     logFeedNow: "立即记录喂养",
     logNapNow: "立即记录小睡",
+    feedLogged: "已记录喂养",
+    napLogged: "已记录小睡",
+    error: "错误",
+    failedToLogActivity: "记录活动失败",
     
     // Sleep chart
     weeklySleepSchedule: "每周睡眠时间表",
