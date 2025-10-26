@@ -6,7 +6,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { InsightsTab } from "@/components/InsightsTab";
 import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
-import { Helper } from "@/components/Helper";
+import { GuideTab } from "@/components/GuideTab";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
@@ -481,14 +481,13 @@ const ongoingNap = activities
           </div>
         );
     case "helper":
-      return <Helper 
+      return <GuideTab 
         activities={activities.map(a => ({
           id: a.id,
           type: a.type,
-          logged_at: a.loggedAt,
+          logged_at: a.loggedAt || "",
           details: a.details
         }))} 
-        babyBirthDate={babyProfile?.birthday ? new Date(babyProfile.birthday) : undefined}
         onGoToSettings={() => {
           setPreviousTab(activeTab);
           setActiveTab("settings");
