@@ -928,8 +928,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Getting Started Cards */}
           <div className="space-y-6">
             {/* Step 1: Make the first log magical */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2 flex-1">
+            <div className="space-y-4">
+              <div className="space-y-2">
                 <h3 className="text-base font-semibold text-foreground">
                   Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
                 </h3>
@@ -937,13 +937,18 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   Every feed, nap, and change helps Babydex learn your baby's rhythm.
                 </p>
               </div>
-              <Button 
-                onClick={() => onAddActivity()} 
-                size="icon"
-                className="flex-shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
+                  Let's log our first activity
+                </p>
+                <Button 
+                  onClick={() => onAddActivity()} 
+                  size="icon"
+                  className="flex-shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Step 2: Discovery / Insights */}
