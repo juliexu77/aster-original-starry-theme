@@ -297,11 +297,18 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
                         {activity.time && (
                           <p className="text-xs text-muted-foreground">
                             at {activity.time.includes('T') 
-                              ? new Date(activity.time + (activity.time.includes('Z') ? '' : 'Z')).toLocaleTimeString('en-US', { 
-                                  hour: 'numeric', 
-                                  minute: '2-digit',
-                                  hour12: true 
-                                })
+                              ? (() => {
+                                  // Parse local time without UTC conversion
+                                  const match = activity.time.match(/T(\d{2}):(\d{2})/);
+                                  if (match) {
+                                    const hours = parseInt(match[1]);
+                                    const minutes = match[2];
+                                    const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                                    const period = hours >= 12 ? 'PM' : 'AM';
+                                    return `${hour12}:${minutes} ${period}`;
+                                  }
+                                  return activity.time;
+                                })()
                               : activity.time} {activity.timezone && `(${activity.timezone.split('/')[1]?.replace('_', ' ') || activity.timezone})`}
                           </p>
                         )}

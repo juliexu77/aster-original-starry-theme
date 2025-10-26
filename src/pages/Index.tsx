@@ -1051,7 +1051,17 @@ return (
                 0,
                 0
               );
-              const loggedAt = combinedDateTime.toISOString();
+              
+              // Get user's current timezone
+              const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              
+              // Store as local time without 'Z' suffix (same as addActivity)
+              const year = combinedDateTime.getFullYear();
+              const month = String(combinedDateTime.getMonth() + 1).padStart(2, '0');
+              const day = String(combinedDateTime.getDate()).padStart(2, '0');
+              const hour = String(combinedDateTime.getHours()).padStart(2, '0');
+              const minute = String(combinedDateTime.getMinutes()).padStart(2, '0');
+              const loggedAt = `${year}-${month}-${day}T${hour}:${minute}:00`;
 
               // Preserve household_id and created_by from original activity
               const { error } = await supabase
@@ -1059,6 +1069,7 @@ return (
                 .update({
                   type: updatedActivity.type,
                   logged_at: loggedAt,
+                  timezone,
                   details: {
                     ...updatedActivity.details,
                     displayTime: activityTime // Store display time for consistent display
