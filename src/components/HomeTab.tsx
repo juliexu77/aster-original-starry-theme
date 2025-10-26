@@ -1180,6 +1180,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-sm flex-1 text-muted-foreground">
                   Last feed — <span className="font-medium text-foreground">not logged yet</span>
                 </p>
+                <Button
+                  onClick={() => onAddActivity('feed')}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             )}
 
@@ -1216,11 +1223,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 <p className="text-sm flex-1 text-muted-foreground">
                   Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
                 </p>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  className="ml-auto"
+                <Button
                   onClick={() => onAddActivity('nap')}
+                  size="sm"
+                  className="h-8 px-3"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
