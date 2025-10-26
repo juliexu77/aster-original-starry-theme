@@ -72,7 +72,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
 
-  const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parenting-chat`;
+  const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
@@ -132,11 +132,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         new Date(a.logged_at) >= twoWeeksAgo
       );
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      console.log('🔐 GuideTab: invoking parenting-chat (initial)', { hasToken: !!token, CHAT_URL });
+      if (!token) throw new Error('No active session token for parenting-chat');
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ 
           messages: [],
@@ -229,11 +234,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         new Date(a.logged_at) >= twoWeeksAgo
       );
 
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      console.log('🔐 GuideTab: invoking parenting-chat (chat)', { hasToken: !!token, CHAT_URL });
+      if (!token) throw new Error('No active session token for parenting-chat');
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ 
           messages: [...messages, userMsg],
