@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -907,108 +907,57 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Empty state for new users with no activities
   if (activities.length === 0) {
     return (
-      <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
+      <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in" style={{ backgroundColor: 'hsl(var(--new-user-bg))' }}>
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Placeholder Tone Chip */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
-            <span className="text-sm">⏳</span>
-            <span className="text-sm font-medium text-accent-foreground">Still Learning</span>
-          </div>
-
           {/* Welcome Message */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">
               Hi {userName || 'there'} 👋
             </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--new-user-secondary))' }}>
               Let's learn {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm together.
             </p>
           </div>
 
-          {/* Getting Started Cards */}
-          <div className="space-y-6">
-            {/* Step 1: Make the first log magical */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="text-base font-semibold text-foreground">
-                  Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Every feed, nap, and change helps Babydex learn your baby's rhythm.
-                </p>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-sm text-muted-foreground">
-                  Let's log our first activity
-                </p>
-                <Button 
-                  onClick={() => onAddActivity()} 
-                  size="icon"
-                  className="flex-shrink-0"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Step 2: Discovery / Insights */}
-            <Card className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground mb-1.5">
-                      See patterns unfold
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Babydex turns your logs into insights about sleep, feeding, and mood — personalized to your baby.
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground/80 italic">
-                    Your data, beautifully understood.
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 3: Pediatrician / Share Value */}
-            <Card className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Eye className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground mb-1.5">
-                      Feel confident at every checkup
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Babydex builds {babyName ? `${babyName}'s` : 'your baby\'s'} growth story so you can share what matters most.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Step 4: Hidden Delight / Discovery */}
-            <Card className="p-5 border-dashed">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Palette className="w-6 h-6 text-accent" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-foreground mb-1.5">
-                    Coming soon: Learn through patterns
-                  </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Explore insights powered by real parents — tailored to your baby's unique rhythm.
-                  </p>
-                </div>
-              </div>
-            </Card>
+          {/* Tone Chip */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full animate-fade-in" style={{ backgroundColor: 'hsl(var(--new-user-tone-chip))' }}>
+            <span className="text-sm">🌤</span>
+            <span className="text-sm font-medium" style={{ color: 'hsl(var(--primary))' }}>Still Learning</span>
           </div>
+
+          <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+            Every feed, nap, and change helps Babydex understand your baby's unique rhythm.
+          </p>
+
+          {/* Hero Card */}
+          <div className="rounded-2xl p-5 space-y-4" style={{ 
+            backgroundColor: 'hsl(var(--new-user-hero))',
+            boxShadow: '0 2px 4px rgba(122, 30, 92, 0.15)'
+          }}>
+            <div className="flex items-start gap-3">
+              <Sprout className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: 'hsl(var(--primary))' }} />
+              <h3 className="text-base font-semibold text-foreground">
+                Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
+              </h3>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+                Let's log our first activity
+              </p>
+              <Button 
+                onClick={() => onAddActivity()} 
+                size="icon"
+                className="flex-shrink-0 opacity-90"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Closing micro-line */}
+          <p className="text-sm text-center pt-2" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+            Every story starts small 🌱
+          </p>
 
           {/* Quick Actions */}
           <div className="pt-4">
