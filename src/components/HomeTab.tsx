@@ -156,6 +156,35 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     });
   }
   
+  // Helper: parse a UI time string like "7:05 AM" (handles "7:05 AM - 8:15 AM")
+  const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
+    if (!timeStr) return null;
+    const first = timeStr.includes(' - ') ? timeStr.split(' - ')[0] : timeStr;
+    const m = first.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const mins = parseInt(m[2], 10);
+    const period = m[3].toUpperCase();
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h * 60 + mins;
+  };
+
+  // Compute a comparable timestamp for sorting: use nap startTime when provided; otherwise use loggedAt's time
+  const getComparableTime = (a: Activity): number => {
+    const base = parseLocalTimestamp(a.loggedAt!);
+    let minutes: number | null = null;
+    if (a.type === 'nap' && a.details?.startTime) {
+      minutes = parseUI12hToMinutes(a.details.startTime);
+    } else if (a.time) {
+      minutes = parseUI12hToMinutes(a.time);
+    }
+    if (minutes !== null) {
+      base.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
+    }
+    return base.getTime();
+  };
+  
   // Use the ongoingNap passed from parent (Index.tsx) for consistency
   const ongoingNap = passedOngoingNap;
 
@@ -1504,7 +1533,7 @@ const lastDiaper = displayActivities
                   Today's Timeline
                 </p>
 {displayActivities
-  .sort((a, b) => parseLocalTimestamp(a.loggedAt!).getTime() - parseLocalTimestamp(b.loggedAt!).getTime())
+  .sort((a, b) => getComparableTime(a) - getComparableTime(b))
                   .map((activity, index) => {
                     const getActivityIcon = (type: string) => {
                       switch(type) {
