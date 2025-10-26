@@ -33,6 +33,13 @@
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 30 20% 88%; /* #E8E2DC - warm neutral border */
     
+    /* New user state colors */
+    --new-user-bg: 30 28% 93%; /* #F3ECE6 - page background */
+    --new-user-card: 28 29% 96%; /* #F7F3EF - card tone */
+    --new-user-hero: 26 33% 92%; /* #F3EAE5 - hero card background */
+    --new-user-tone-chip: 26 33% 92%; /* #F5ECE7 - warm tone chip */
+    --new-user-secondary: 15 12% 39%; /* #6B5A55 - warm secondary text */
+    
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
     --pp-grey: 0 0% 45%; /* #737373 - grey (neutral accents) */
