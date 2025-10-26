@@ -34,10 +34,10 @@ Deno.serve(async (req) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     
-    // Margins: top/bottom 20mm, left/right 15mm, plus 7mm bottom padding before page break
+    // Margins: top/bottom 20mm, left/right 15mm, plus 15mm bottom padding before page break
     const margins = { top: 20, bottom: 20, left: 15, right: 15 };
     const contentWidth = pageWidth - margins.left - margins.right;
-    const bottomPadding = 7; // ~25px additional padding before page break
+    const bottomPadding = 15; // Additional padding before page break for visible spacing
     const maxY = pageHeight - margins.bottom - bottomPadding;
     
     let currentY = margins.top;
@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
     
     // Helper: Add footer to current page
     const addFooter = () => {
-      const footerY = pageHeight - 12;
+      const footerY = pageHeight - 10; // Position footer 10mm from bottom
       pdf.setFontSize(8);
       pdf.setTextColor(100, 100, 100);
       pdf.text(
