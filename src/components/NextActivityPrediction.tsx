@@ -169,7 +169,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   const prediction = predictNextActivity();
   const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
   const fullPrediction = engine.getNextAction();
-  const hasConfidentPrediction = fullPrediction.intent !== "INDEPENDENT_TIME" && fullPrediction.intent !== "HOLD" && fullPrediction.confidence !== "low";
+  const hasConfidentPrediction = (fullPrediction.intent === "FEED_SOON" || fullPrediction.intent === "START_WIND_DOWN") && fullPrediction.confidence === "high";
 
   const getIcon = (type: string) => {
     switch (type) {
