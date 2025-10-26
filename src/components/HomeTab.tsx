@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, BookOpen, Share, FileText } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -904,8 +904,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const sentiment = getDailySentiment();
   const developmentalPhase = getDevelopmentalPhase();
 
-  // Progressive new user experience based on activity count
-  if (activities.length <= 10) {
+  // Empty state for new users with no activities
+  if (activities.length === 0) {
     return (
       <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in" style={{ backgroundColor: 'hsl(var(--new-user-bg))' }}>
         <div className="max-w-2xl mx-auto space-y-6">
@@ -925,137 +925,75 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             <span className="text-sm font-medium" style={{ color: 'hsl(var(--primary))' }}>Still Learning</span>
           </div>
 
-          {/* Progressive Cards Based on Activity Count */}
-          {activities.length === 0 && (
-            <>
-              {/* Hero Card - Start Journey */}
-              <Card className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Sprout className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
-                  <h3 className="text-base font-medium text-foreground">
-                    Start {babyName ? `${babyName}'s` : 'your baby\'s'} Journey
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Every feed, nap, and diaper helps Babydex understand {babyName ? `${babyName?.split(' ')[0]}'s` : 'their'} unique rhythm.
-                </p>
-                <Button 
-                  onClick={() => onAddActivity()} 
-                  className="w-full opacity-90"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Log an activity
-                </Button>
-              </Card>
+          <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+            Every feed, nap, and change helps Babydex understand your baby's unique rhythm.
+          </p>
 
-              {/* Closing micro-line */}
-              <p className="text-sm text-center pt-2" style={{ color: 'hsl(var(--new-user-secondary))' }}>
-                Every story starts small 🌱
+          {/* Hero Card */}
+          <div className="rounded-2xl p-5 space-y-4" style={{ 
+            backgroundColor: 'hsl(var(--new-user-hero))',
+            boxShadow: '0 2px 4px rgba(122, 30, 92, 0.15)'
+          }}>
+            <div className="flex items-start gap-3">
+              <Sprout className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: 'hsl(var(--primary))' }} />
+              <h3 className="text-base font-semibold text-foreground">
+                Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
+              </h3>
+            </div>
+            <div className="flex items-center justify-between gap-4">
+              <p className="text-sm" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+                Let's log our first activity
               </p>
-            </>
-          )}
+              <Button 
+                onClick={() => onAddActivity()} 
+                size="icon"
+                className="flex-shrink-0 opacity-90"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
 
-          {activities.length >= 1 && activities.length <= 2 && (
-            <>
-              <p className="text-sm leading-relaxed" style={{ color: 'hsl(var(--new-user-secondary))' }}>
-                Nice start — every log helps us understand {babyName ? `${babyName?.split(' ')[0]}'s` : 'their'} rhythm a little more 🌿
-              </p>
+          {/* Closing micro-line */}
+          <p className="text-sm text-center pt-2" style={{ color: 'hsl(var(--new-user-secondary))' }}>
+            Every story starts small 🌱
+          </p>
 
-              {/* Trends Introduction Card */}
-              <Card className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <TrendingUp className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
-                  <h3 className="text-base font-medium text-foreground">
-                    Discover emerging patterns
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  As you add more, Babydex will start showing sleep, feeding, and mood trends on the Trends tab.
-                </p>
-                <Button 
-                  onClick={() => {
-                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
-                    if (trendsTab) trendsTab.click();
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  View Trends
-                </Button>
-              </Card>
-            </>
-          )}
-
-          {activities.length >= 3 && activities.length <= 4 && (
-            <>
-              {/* What's Next Preview Card */}
-              <Card className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
-                  <h3 className="text-base font-medium text-foreground">
-                    What's Next
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Soon Babydex will help you predict upcoming naps, feeds, and transitions — personalized to {babyName ? `${babyName?.split(' ')[0]}'s` : 'their'} rhythm.
-                </p>
-              </Card>
-            </>
-          )}
-
-          {activities.length >= 5 && activities.length <= 7 && (
-            <>
-              {/* Guide Tab Introduction Card */}
-              <Card className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <BookOpen className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
-                  <h3 className="text-base font-medium text-foreground">
-                    Learn from patterns
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  The Guide tab connects insights from other parents and experts — contextual to {babyName ? `${babyName?.split(' ')[0]}'s` : 'their'} current phase.
-                </p>
-                <Button 
-                  onClick={() => {
-                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                    if (guideTab) guideTab.click();
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Explore Guide
-                </Button>
-              </Card>
-            </>
-          )}
-
-          {activities.length >= 8 && activities.length <= 10 && (
-            <>
-              {/* Share/Export Reminder Card */}
-              <Card className="p-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <Share className="w-5 h-5 mt-0.5 flex-shrink-0 text-primary" />
-                  <h3 className="text-base font-medium text-foreground">
-                    Share your baby's story
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  You can export your logs and insights to share with your partner or pediatrician anytime from the Log tab.
-                </p>
-                <Button 
-                  onClick={() => {
-                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
-                    if (logTab) logTab.click();
-                  }}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Go to Log Tab
-                </Button>
-              </Card>
-            </>
-          )}
+          {/* Quick Actions */}
+          <div className="pt-4">
+            <p className="text-xs text-muted-foreground mb-3">
+              Quick add:
+            </p>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                onClick={() => onAddActivity('feed')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Milk className="w-4 h-4" />
+                Feed
+              </Button>
+              <Button
+                onClick={() => onAddActivity('nap')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Moon className="w-4 h-4" />
+                Nap
+              </Button>
+              <Button
+                onClick={() => onAddActivity('diaper')}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Droplet className="w-4 h-4" />
+                Diaper
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
