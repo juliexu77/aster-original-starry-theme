@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.parse-schedule]
 verify_jwt = true
+
+[functions.generate-pediatrician-report]
+verify_jwt = false
