@@ -909,6 +909,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return (
       <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
         <div className="max-w-2xl mx-auto space-y-6">
+          {/* Placeholder Tone Chip */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+            <span className="text-sm">⏳</span>
+            <span className="text-xs font-medium text-muted-foreground">Still Learning</span>
+          </div>
+
           {/* Welcome Message */}
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">
@@ -942,7 +948,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                     variant="default"
                     className="w-full sm:w-auto"
                   >
-                    Log an Activity
+                    Let's make your first entry 🌱
                   </Button>
                   <p className="text-xs text-muted-foreground/80 italic">
                     It all starts here 🌱
