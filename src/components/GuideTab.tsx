@@ -67,6 +67,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
+  const [sentimentResponse, setSentimentResponse] = useState<string>("");
   const [hasInitialized, setHasInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -381,7 +382,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div ref={scrollRef} className="px-4 py-6 space-y-8">
           {/* Header */}
           <div>
-            <h1 className="text-xl font-semibold">Guide</h1>
+            <h1 className="text-xl font-semibold">{babyName}'s Patterns Today</h1>
           </div>
 
           {/* Today Section Header */}
@@ -416,7 +417,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                           className="rounded-full"
                           onClick={() => {
                             setSelectedSentiment("Curious");
-                            handleSendMessage(`I'm curious about the nap transition for ${babyName}`);
+                            setSentimentResponse("Here's a bit more on what's happening behind the change.");
+                            setTimeout(() => {
+                              handleSendMessage(`I'm curious about the nap transition for ${babyName}`);
+                            }, 800);
                           }}
                         >
                           Curious
@@ -427,7 +431,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                           className="rounded-full"
                           onClick={() => {
                             setSelectedSentiment("Surprised");
-                            handleSendMessage(`I'm surprised about the nap transition for ${babyName}`);
+                            setSentimentResponse(`Totally understandable! Babies often test new rhythms abruptly at this age.`);
+                            setTimeout(() => {
+                              handleSendMessage(`I'm surprised about the nap transition for ${babyName}`);
+                            }, 800);
                           }}
                         >
                           Surprised
@@ -438,12 +445,22 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                           className="rounded-full"
                           onClick={() => {
                             setSelectedSentiment("Confident");
-                            handleSendMessage(`I'm feeling confident about the nap transition for ${babyName}`);
+                            setSentimentResponse(`Love that. You're tuned in — keep following ${babyName}'s cues.`);
+                            setTimeout(() => {
+                              handleSendMessage(`I'm feeling confident about the nap transition for ${babyName}`);
+                            }, 800);
                           }}
                         >
                           Confident
                         </Button>
                       </div>
+                      
+                      {/* Reactive Feedback */}
+                      {sentimentResponse && (
+                        <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/10 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <p className="text-sm text-foreground/80">{sentimentResponse}</p>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Action Buttons */}
