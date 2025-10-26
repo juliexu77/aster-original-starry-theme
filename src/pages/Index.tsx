@@ -129,6 +129,11 @@ const ongoingNap = activities
   const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
   const [showReportShare, setShowReportShare] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
+    userName: string;
+    activityType: string;
+    timestamp: Date;
+  } | null>(null);
   
 
   // Handle scroll for header fade effect
@@ -140,6 +145,69 @@ const ongoingNap = activities
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Auto-dismiss collaborator activity notification after 15 seconds
+  useEffect(() => {
+    if (recentCollaboratorActivity) {
+      const timer = setTimeout(() => {
+        setRecentCollaboratorActivity(null);
+      }, 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [recentCollaboratorActivity]);
+
+  // Listen for realtime activity updates from collaborators
+  useEffect(() => {
+    if (!household?.id || !user?.id) return;
+
+    const channel = supabase
+      .channel('activity-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activities',
+          filter: `household_id=eq.${household.id}`
+        },
+        async (payload) => {
+          const newActivity = payload.new as any;
+          
+          // Only show notification if activity was created by someone else
+          if (newActivity.created_by !== user.id) {
+            // Find the collaborator who created this activity
+            const creator = collaborators.find(c => c.user_id === newActivity.created_by);
+            
+            if (creator?.profiles?.full_name) {
+              const activityTypeMap: Record<string, string> = {
+                feed: 'fed',
+                diaper: 'changed',
+                nap: 'logged a nap for',
+                note: 'added a note about',
+                measure: 'measured',
+                photo: 'added a photo of'
+              };
+              
+              const actionText = activityTypeMap[newActivity.type] || 'logged an activity for';
+              
+              setRecentCollaboratorActivity({
+                userName: creator.profiles.full_name.split(' ')[0],
+                activityType: actionText,
+                timestamp: new Date(newActivity.logged_at)
+              });
+
+              // Also refetch activities to update the list
+              refetchActivities();
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [household?.id, user?.id, collaborators, refetchActivities]);
 
   // Check if user has ever been a collaborator (reliable indicator they're not new)
   useEffect(() => {
@@ -885,6 +953,18 @@ return (
         {showReportShare && (
           <div className="sticky top-16 z-20 bg-primary/10 text-foreground border-b border-border px-4 py-2 text-sm text-center">
             Generating report…
+          </div>
+        )}
+
+        {activeTab === 'home' && recentCollaboratorActivity && (
+          <div className="sticky top-16 z-20 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">
+            <span className="font-medium">{recentCollaboratorActivity.userName}</span> just {recentCollaboratorActivity.activityType} {babyProfile?.name || 'baby'}
+            <button
+              onClick={() => setRecentCollaboratorActivity(null)}
+              className="ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3 inline" />
+            </button>
           </div>
         )}
 
