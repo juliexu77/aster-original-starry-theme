@@ -56,15 +56,21 @@ Return ONLY valid JSON in this exact format:
 CRITICAL: If user mentions "woke up", "wake up", "awake", "up at", this should ALWAYS be type "wake" to end an ongoing sleep.
 
 FEEDING RULES:
+- User may say "fed", "ate", "nursed", "breastfed" for ANY type of feeding
+- Determine type by CONTEXT not keywords:
+  * If volume mentioned (ml, oz, bottle) → feedType="bottle", use "amount" + "unit"
+  * If duration + side mentioned (minutes, left, right, both sides) → feedType="breast", use "duration" + "side"
+  * Keywords "nursed", "nursing", "breast" → feedType="breast"
 - Bottle feeding: Use "amount" + "unit" (ml/oz), feedType="bottle"
 - Nursing/breastfeeding: Use "duration" (minutes) + "side" (left/right/both), feedType="breast"
-- Keywords: "nursed", "nursing", "breastfed", "breast" → feedType="breast"
 
 Examples:
 - "Fed 120ml bottle" → {"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
+- "Ate 4 oz bottle" → {"type":"feed","details":{"amount":4,"unit":"oz","feedType":"bottle"},"time":"2025-01-26T10:30:00Z"}
 - "Nursed 10 minutes left side" → {"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"2025-01-26T10:30:00Z"}
+- "Fed 15 minutes right side" → {"type":"feed","details":{"duration":15,"feedType":"breast","side":"right"},"time":"2025-01-26T10:30:00Z"}
+- "Ate both sides 20 minutes" → {"type":"feed","details":{"duration":20,"feedType":"breast","side":"both"},"time":"2025-01-26T10:30:00Z"}
 - "Breastfed 15 minutes right" → {"type":"feed","details":{"duration":15,"feedType":"breast","side":"right"},"time":"2025-01-26T10:30:00Z"}
-- "Nursing both sides 20 minutes" → {"type":"feed","details":{"duration":20,"feedType":"breast","side":"both"},"time":"2025-01-26T10:30:00Z"}
 - "Dirty diaper" → {"type":"diaper","details":{"type":"dirty"},"time":"2025-01-26T10:30:00Z"}
 - "Napped for 2 hours" → {"type":"nap","details":{"duration":120,"quality":"good"},"time":"2025-01-26T10:30:00Z"}
 - "Woke up at 7am" → {"type":"wake","details":{},"time":"2025-01-26T07:00:00Z"}
