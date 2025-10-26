@@ -1156,6 +1156,7 @@ return (
             </DialogHeader>
             <div className="py-8">
               <VoiceRecorder
+                autoStart={true}
                 onActivityParsed={async (parsedActivity) => {
                   setShowVoiceRecorder(false);
                   
@@ -1215,8 +1216,8 @@ return (
               />
             </div>
             <div className="text-center text-sm text-muted-foreground space-y-1">
-              <p>Tap the microphone to start recording</p>
-              <p className="text-xs">Say "Fed 120ml bottle", "Dirty diaper", or "Woke up at 7am"</p>
+              <p className="text-xs">Recording will start automatically. Say something like:</p>
+              <p className="text-xs font-medium">&ldquo;Fed 120ml bottle&rdquo; • &ldquo;Dirty diaper&rdquo; • &ldquo;Woke up at 7am&rdquo;</p>
             </div>
           </DialogContent>
         </Dialog>

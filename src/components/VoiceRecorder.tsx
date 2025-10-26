@@ -6,11 +6,14 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceRecorderProps {
   onActivityParsed: (activity: any) => void;
+  autoStart?: boolean;
 }
 
-export const VoiceRecorder = ({ onActivityParsed }: VoiceRecorderProps) => {
+export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [parsedActivity, setParsedActivity] = useState<any>(null);
+  const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
@@ -24,7 +27,14 @@ export const VoiceRecorder = ({ onActivityParsed }: VoiceRecorderProps) => {
       recognitionRef.current.interimResults = false;
       recognitionRef.current.lang = 'en-US';
     }
-  }, []);
+
+    // Auto-start recording if requested
+    if (autoStart) {
+      setTimeout(() => {
+        startRecording();
+      }, 300);
+    }
+  }, [autoStart]);
 
   const startRecording = async () => {
     if (!recognitionRef.current) {
@@ -38,10 +48,11 @@ export const VoiceRecorder = ({ onActivityParsed }: VoiceRecorderProps) => {
 
     try {
       recognitionRef.current.onresult = async (event: any) => {
-        const transcript = event.results[0][0].transcript;
+        const transcriptText = event.results[0][0].transcript;
+        setTranscript(transcriptText);
         setIsRecording(false);
         setIsProcessing(true);
-        await processTranscript(transcript);
+        await processTranscript(transcriptText);
       };
 
       recognitionRef.current.onerror = (event: any) => {
@@ -86,11 +97,8 @@ export const VoiceRecorder = ({ onActivityParsed }: VoiceRecorderProps) => {
       if (error) throw error;
 
       if (data?.activity) {
-        toast({
-          title: 'Activity Logged',
-          description: `Transcribed: "${transcript}"`,
-        });
-        onActivityParsed(data.activity);
+        // Show parsed result for confirmation instead of immediately logging
+        setParsedActivity(data.activity);
       } else {
         throw new Error('No activity data returned');
       }
@@ -106,37 +114,105 @@ export const VoiceRecorder = ({ onActivityParsed }: VoiceRecorderProps) => {
     }
   };
 
+  const handleConfirm = () => {
+    if (parsedActivity) {
+      onActivityParsed(parsedActivity);
+      // Reset state
+      setParsedActivity(null);
+      setTranscript("");
+    }
+  };
+
+  const handleCancel = () => {
+    setParsedActivity(null);
+    setTranscript("");
+  };
+
+  const formatActivityPreview = (activity: any) => {
+    if (!activity) return "";
+    
+    switch (activity.type) {
+      case 'feed':
+        return `Fed ${activity.details.amount || '?'}${activity.details.unit || ''} ${activity.details.feedType || ''}`;
+      case 'diaper':
+        return `${activity.details.type || 'Diaper'} diaper change`;
+      case 'nap':
+        return `Nap for ${activity.details.duration || '?'} minutes`;
+      case 'wake':
+        return `Woke up`;
+      case 'note':
+        return activity.details.text || 'Note';
+      default:
+        return 'Activity';
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center">
-      {!isRecording && !isProcessing && (
-        <Button
-          onClick={startRecording}
-          size="lg"
-          className="rounded-full w-16 h-16"
-          variant="default"
-        >
-          <Mic className="h-6 w-6" />
-        </Button>
+    <div className="flex flex-col items-center gap-4">
+      {!parsedActivity && (
+        <div className="flex items-center justify-center">
+          {!isRecording && !isProcessing && (
+            <Button
+              onClick={startRecording}
+              size="lg"
+              className="rounded-full w-16 h-16"
+              variant="default"
+            >
+              <Mic className="h-6 w-6" />
+            </Button>
+          )}
+          
+          {isRecording && (
+            <Button
+              onClick={stopRecording}
+              size="lg"
+              className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90 animate-pulse"
+            >
+              <Square className="h-6 w-6" />
+            </Button>
+          )}
+          
+          {isProcessing && (
+            <Button
+              size="lg"
+              className="rounded-full w-16 h-16"
+              disabled
+            >
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </Button>
+          )}
+        </div>
       )}
-      
-      {isRecording && (
-        <Button
-          onClick={stopRecording}
-          size="lg"
-          className="rounded-full w-16 h-16 bg-destructive hover:bg-destructive/90 animate-pulse"
-        >
-          <Square className="h-6 w-6" />
-        </Button>
-      )}
-      
-      {isProcessing && (
-        <Button
-          size="lg"
-          className="rounded-full w-16 h-16"
-          disabled
-        >
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </Button>
+
+      {parsedActivity && (
+        <div className="w-full space-y-4">
+          <div className="p-4 rounded-lg border bg-card">
+            <p className="text-sm text-muted-foreground mb-2">You said:</p>
+            <p className="font-medium mb-4">&ldquo;{transcript}&rdquo;</p>
+            
+            <p className="text-sm text-muted-foreground mb-2">This will log:</p>
+            <p className="text-lg font-semibold">{formatActivityPreview(parsedActivity)}</p>
+            
+            {parsedActivity.time && (
+              <p className="text-sm text-muted-foreground mt-2">
+                at {new Date(parsedActivity.time).toLocaleTimeString('en-US', { 
+                  hour: 'numeric', 
+                  minute: '2-digit',
+                  hour12: true 
+                })}
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={handleCancel} variant="outline" className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={handleConfirm} className="flex-1">
+              Confirm & Log
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
