@@ -26,6 +26,8 @@ const BabySetup = () => {
     setIsLoading(true);
 
     try {
+      console.log('Starting baby setup for user:', user.id);
+      
       // Create household with baby info
       const { data: household, error: householdError } = await supabase
         .from("households")
@@ -37,6 +39,7 @@ const BabySetup = () => {
         .select()
         .single();
 
+      console.log('Household creation result:', { household, householdError });
       if (householdError) throw householdError;
 
       // Create collaborator entry for the user
@@ -49,6 +52,7 @@ const BabySetup = () => {
           invited_by: user.id,
         });
 
+      console.log('Collaborator creation result:', { collaboratorError });
       if (collaboratorError) throw collaboratorError;
 
       toast({
