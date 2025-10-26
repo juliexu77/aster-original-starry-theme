@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Sprout } from "lucide-react";
 
@@ -23,9 +22,8 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
-      {/* Language and Theme Toggles */}
+      {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-10 flex gap-2">
-        <LanguageToggle />
         <div className="relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur opacity-75 animate-pulse"></div>
           <ThemeToggle showText={false} />
