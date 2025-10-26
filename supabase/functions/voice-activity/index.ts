@@ -176,16 +176,36 @@ Examples:
     function matchIndexToISO(idx: number) {
       const tm = timeMatches[idx];
       if (!tm) {
-        console.log('No time match, using current time');
-        // Return current time in local format (no 'Z' suffix)
+        console.log('No time match, using current time in user timezone');
+        // Convert current UTC time to user's local timezone
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hour = String(now.getHours()).padStart(2, '0');
-        const minute = String(now.getMinutes()).padStart(2, '0');
-        const second = String(now.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+        const userTimezone = timezone || 'America/Los_Angeles';
+        
+        // Use Intl to get local time components in user's timezone
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: userTimezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        
+        const parts = formatter.formatToParts(now);
+        const get = (type: string) => parts.find(p => p.type === type)?.value || '00';
+        
+        const year = get('year');
+        const month = get('month');
+        const day = get('day');
+        const hour = get('hour');
+        const minute = get('minute');
+        const second = get('second');
+        
+        const localISO = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+        console.log(`Current time: UTC ${now.toISOString()} -> ${userTimezone} ${localISO}`);
+        return localISO;
       }
       const hourRaw = parseInt(tm[1], 10);
       const minute = tm[2] ? parseInt(tm[2], 10) : 0;
