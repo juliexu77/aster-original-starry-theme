@@ -318,21 +318,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-border/30 bg-background/95 backdrop-blur">
-        <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-lg font-semibold">Guide</h1>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-xs">
-              [Topics]
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Birthday Setup Prompt */}
       {needsBirthdaySetup && (
         <div className="p-4 bg-accent/30 border-b border-border">
@@ -372,108 +357,72 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       {/* Main Content */}
       <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="px-4 py-6 space-y-6">
-          {/* Understanding Section */}
+        <div ref={scrollRef} className="px-4 py-6 space-y-8">
+          {/* Welcome Section */}
+          <div className="space-y-2">
+            <h1 className="text-xl font-semibold">👋 Welcome to your Guide</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              This is where {babyName}'s daily patterns turn into understanding.
+            </p>
+            <p className="text-sm text-muted-foreground">As you track, you'll see:</p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+              <li>• Changes explained</li>
+              <li>• Age-based guidance</li>
+              <li>• Learnings from the digital village</li>
+            </ul>
+          </div>
+
+          {/* Connected Insights Section */}
           {insightCards.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-base font-semibold flex items-center gap-2">
-                <span className="h-px flex-1 bg-border" />
-                Understanding {babyName}
-                <span className="h-px flex-1 bg-border" />
-              </h2>
-
-              {/* Insight Cards */}
-              <Accordion type="single" collapsible defaultValue="daily-insight">
+              <h2 className="text-base font-semibold">📊 Connected Insights</h2>
+              <div className="space-y-3">
                 {insightCards.map((card) => (
-                  <AccordionItem key={card.id} value={card.id} className="border rounded-lg px-4 mb-4">
-                    <AccordionTrigger className="hover:no-underline py-4">
-                      <div className="flex items-center gap-3 text-left">
-                        {card.icon}
-                        <span className="font-medium text-sm">{card.title}</span>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 space-y-4">
-                      <div className="text-sm text-muted-foreground leading-relaxed">
-                        {formatMarkdown(card.content)}
-                      </div>
-                      
-                      {/* Sentiment Feedback */}
-                      <div className="pt-2 space-y-2">
-                        <p className="text-xs font-medium">How are you feeling?</p>
-                        <div className="flex flex-wrap gap-2">
-                          {sentimentOptions.map((sentiment) => (
-                            <Button
-                              key={sentiment}
-                              variant={selectedSentiment === sentiment ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setSelectedSentiment(sentiment)}
-                              className="text-xs"
-                            >
-                              {sentiment}
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                  <div key={card.id} className="p-4 bg-muted/30 rounded-lg space-y-2">
+                    <div className="text-sm leading-relaxed">
+                      {formatMarkdown(card.content)}
+                    </div>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="h-auto p-0 text-xs text-primary"
+                      onClick={() => handleSendMessage(`Tell me more about ${card.title.toLowerCase()}`)}
+                    >
+                      Learn more →
+                    </Button>
+                  </div>
                 ))}
-              </Accordion>
-
-              {/* Common Questions */}
-              {insightCards[0]?.questions && insightCards[0].questions.length > 0 && (
-                <div className="space-y-3 p-4 bg-muted/30 rounded-lg">
-                  <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <span className="h-px flex-1 bg-border" />
-                    Common Questions
-                    <span className="h-px flex-1 bg-border" />
-                  </h3>
-                  <p className="text-xs text-muted-foreground flex items-center gap-2">
-                    💬 Tap any question for answers
-                  </p>
-                  <ul className="space-y-2">
-                    {insightCards[0].questions.map((question, idx) => (
-                      <li key={idx}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleQuestionClick(question)}
-                          className="h-auto py-2 px-0 text-xs text-left justify-start hover:text-primary w-full font-normal"
-                        >
-                          • {question}
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              </div>
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                View all insights
+              </Button>
             </div>
           )}
 
-          {/* Explore Topics */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <span className="h-px flex-1 bg-border" />
-              Explore Topics
-              <span className="h-px flex-1 bg-border" />
-            </h3>
-            <div className="flex flex-wrap gap-2">
+          {/* Explore Topics Section */}
+          <div className="space-y-4">
+            <h2 className="text-base font-semibold">📚 Explore Topics</h2>
+            <div className="grid grid-cols-3 gap-2">
               {topicCategories.map((topic) => (
-                <Badge
+                <Button
                   key={topic.name}
                   variant="outline"
-                  className="px-3 py-1.5 cursor-pointer hover:bg-primary/10 hover:border-primary/50 transition-colors"
+                  size="sm"
+                  className="h-auto py-3 flex flex-col items-center gap-1"
                   onClick={() => handleSendMessage(`Tell me about ${topic.name.toLowerCase()} for ${babyName}`)}
                 >
                   {topic.icon}
-                  <span className="ml-1.5">{topic.name}</span>
-                </Badge>
+                  <span className="text-xs">{topic.name}</span>
+                </Button>
               ))}
-              <Badge
+              <Button
                 variant="outline"
-                className="px-3 py-1.5 cursor-pointer hover:bg-primary/10 hover:border-primary/50 transition-colors"
+                size="sm"
+                className="h-auto py-3 flex flex-col items-center gap-1"
               >
-                More...
-              </Badge>
+                <MoreVertical className="w-4 h-4" />
+                <span className="text-xs">More...</span>
+              </Button>
             </div>
           </div>
 
@@ -521,18 +470,30 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               )}
             </div>
           )}
+
+          {/* Footer */}
+          <div className="pt-4 text-center">
+            <p className="text-xs text-muted-foreground">
+              ✨ The more you track, the smarter your Guide becomes.
+            </p>
+          </div>
         </div>
       </ScrollArea>
 
-      {/* Chat Input */}
-      <div className="sticky bottom-0 border-t border-border/30 bg-background/95 backdrop-blur">
-        <div className="p-4 pb-[calc(max(env(safe-area-inset-bottom),16px))]">
+      {/* Ask Anything Section */}
+      <div className="border-t border-border/30 bg-background">
+        <div className="px-4 pt-3 pb-1">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            💬 Ask me anything about {babyName}
+          </h3>
+        </div>
+        <div className="px-4 pb-[calc(max(env(safe-area-inset-bottom),16px))]">
           <div className="relative flex gap-3 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={`💬 Ask me anything about ${babyName}`}
+              placeholder="Why is he waking earlier? or When do babies drop to two naps?"
               disabled={isLoading}
               rows={1}
               className="flex-1 min-h-[48px] max-h-36 resize-none rounded-2xl border-border/40 bg-muted/50 px-4 py-3 text-[16px] leading-6"
