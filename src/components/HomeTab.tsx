@@ -272,6 +272,23 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Get daily sentiment based on patterns - refined 12-chip set
   const getDailySentiment = () => {
+    // Check if user is in first 24 hours from first activity
+    if (activities.length > 0) {
+      const firstActivity = [...activities].sort((a, b) => 
+        new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime()
+      )[0];
+      
+      if (firstActivity?.loggedAt) {
+        const firstActivityTime = new Date(firstActivity.loggedAt);
+        const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
+        
+        // Show "Still Learning" for first 24 hours
+        if (hoursSinceFirst < 24) {
+          return { emoji: "🌤", text: "Still Learning" };
+        }
+      }
+    }
+    
     const summary = getDailySummary();
     const expected = getExpectedFeeds(babyAgeMonths);
     const expectedNaps = getExpectedNaps(babyAgeMonths);
