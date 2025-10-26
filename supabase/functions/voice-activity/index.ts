@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { transcript } = await req.json();
+    const { transcript, timezoneOffset } = await req.json();
     
     if (!transcript) {
       throw new Error('No transcript provided');
@@ -190,9 +190,17 @@ Examples:
         hour = hourRaw === 12 ? 12 : hourRaw + 12;
       }
       
+      // Create date in UTC, then adjust for user's timezone
+      // timezoneOffset is in minutes (e.g., PT is +420 minutes = UTC-7)
       const d = new Date();
-      d.setHours(hour, minute, 0, 0);
-      console.log(`Parsed time: ${tm[0]} -> hourRaw=${hourRaw}, ampm=${ampm}, hour24=${hour}, minute=${minute} -> ${d.toISOString()}`);
+      d.setUTCHours(hour, minute, 0, 0);
+      
+      // Add timezone offset to convert from user's local time to UTC
+      if (timezoneOffset !== undefined) {
+        d.setMinutes(d.getMinutes() + timezoneOffset);
+      }
+      
+      console.log(`Parsed time: ${tm[0]} -> hourRaw=${hourRaw}, ampm=${ampm}, hour24=${hour}, minute=${minute}, offset=${timezoneOffset} -> ${d.toISOString()}`);
       return d.toISOString();
     }
 
