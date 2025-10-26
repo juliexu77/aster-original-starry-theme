@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
-import { Heart } from "lucide-react";
+
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -46,16 +46,13 @@ const Onboarding = () => {
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md mx-auto text-center space-y-12">
           {/* Logo */}
-          <div className="flex items-center justify-center gap-3">
-            <Heart className="w-6 h-6 text-primary" />
-            <div className="flex flex-col leading-none">
-              <span className="text-2xl font-heading font-bold text-primary tracking-tight">
-                BABYDEX
-              </span>
-              <span className="text-xs font-heading font-medium text-primary/70 tracking-wide">
-                BABY TRACKER
-              </span>
-            </div>
+          <div className="flex flex-col items-center justify-center leading-none">
+            <span className="text-2xl font-heading font-bold text-primary tracking-tight">
+              BABYDEX
+            </span>
+            <span className="text-xs font-heading font-medium text-primary/70 tracking-wide">
+              BABY TRACKER
+            </span>
           </div>
 
           {/* Message */}
