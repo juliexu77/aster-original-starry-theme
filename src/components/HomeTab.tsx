@@ -1298,11 +1298,26 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                           hour12: true
                         });
                         
+                        // Build activity details with predicted values
+                        let details = {};
+                        if (activityType === 'feed' && prediction.timing.expectedFeedVolume) {
+                          // Round to nearest 5 ml
+                          const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
+                          details = {
+                            feedType: 'bottle',
+                            quantity: roundedVolume.toString(),
+                            unit: 'ml'
+                          };
+                        }
+                        
                         try {
-                          await addActivity(activityType, {}, now, timeStr);
+                          await addActivity(activityType, details, now, timeStr);
+                          const description = activityType === 'feed' && prediction.timing.expectedFeedVolume
+                            ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
+                            : `${timeStr}`;
                           toast({
                             title: activityType === 'feed' ? t('feedLogged') : t('napLogged'),
-                            description: `${timeStr}`,
+                            description,
                           });
                         } catch (error) {
                           console.error('Error logging activity:', error);
