@@ -992,7 +992,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               Hi {userName || 'there'} 👋
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Let's learn {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm together.
+              Let's discover {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm together.
             </p>
           </div>
 
@@ -1003,14 +1003,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               className="w-full text-left"
             >
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                <span className="text-sm">🌤</span>
+                <span className="text-sm">☀️</span>
                 <span className="text-sm font-medium text-accent-foreground">Early Days</span>
               </div>
             </button>
             
             {showToneInsight && (
               <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                Welcome! We'll learn {babyName ? `${babyName}'s` : 'your baby\'s'} patterns together as you log activities.
+                We'll learn {babyName ? `${babyName}'s` : 'your baby\'s'} patterns together as you track feeds, sleep, and more.
               </p>
             )}
           </div>
@@ -1029,19 +1029,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-sm">☘️</span>
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Let's Log our first activity
-                </p>
-                <Button
-                  onClick={() => onAddActivity()}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
+              <Button
+                onClick={() => onAddActivity()}
+                variant="default"
+                className="w-full"
+              >
+                Log your first activity
+              </Button>
             </div>
           </Card>
 
@@ -1054,7 +1048,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      As you add more activities, Babydex will start showing sleep, feeding, and mood trends on the <span className="font-medium text-foreground">Trends</span> tab.
+                      After a few days of tracking, you'll see {babyName ? `${babyName}'s` : 'your baby\'s'} sleep, feeding, and mood patterns emerge on the Trends section.
                     </p>
                   </div>
                 </div>
@@ -1077,7 +1071,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The <span className="font-medium text-foreground">Guide</span> tab connects insights from other parents and experts — contextual to {babyName ? `${babyName}'s` : 'your baby\'s'} current phase.
+                      The Guide shares wisdom from parents and experts, personalized to where {babyName ? `${babyName}` : 'your baby'} is right now.
                     </p>
                   </div>
                 </div>
@@ -1100,7 +1094,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      You can export your logs and insights to share with your partner or pediatrician anytime from the <span className="font-medium text-foreground">Log</span> tab.
+                      Export and share your data with partners or pediatricians anytime from your Log.
                     </p>
                   </div>
                 </div>
@@ -1113,7 +1107,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   size="sm"
                   className="w-full"
                 >
-                  Go to Log Tab
+                  View Log
                 </Button>
               </div>
             </div>
@@ -1525,7 +1519,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      As you add more activities, Babydex will start showing sleep, feeding, and mood trends on the <span className="font-medium text-foreground">Trends</span> tab.
+                      After a few days of tracking, you'll see {babyName ? `${babyName}'s` : 'your baby\'s'} sleep, feeding, and mood patterns emerge on the Trends section.
                     </p>
                   </div>
                 </div>
@@ -1550,7 +1544,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      The <span className="font-medium text-foreground">Guide</span> tab connects insights from other parents and experts — contextual to {babyName ? `${babyName}'s` : 'your baby\'s'} current phase.
+                      The Guide shares wisdom from parents and experts, personalized to where {babyName ? `${babyName}` : 'your baby'} is right now.
                     </p>
                   </div>
                 </div>
@@ -1575,7 +1569,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      You can export your logs and insights to share with your partner or pediatrician anytime from the <span className="font-medium text-foreground">Log</span> tab.
+                      Export and share your data with partners or pediatricians anytime from your Log.
                     </p>
                   </div>
                 </div>
@@ -1588,7 +1582,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   size="sm"
                   className="w-full"
                 >
-                  Go to Log Tab
+                  View Log
                 </Button>
               </div>
             )}
