@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 const VillageInvite = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user, loading } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Require authentication for this step
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   const handleContinue = () => {
     setIsTransitioning(true);

@@ -1,16 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { useHousehold } from "@/hooks/useHousehold";
 import { Sprout } from "lucide-react";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const { household, loading: householdLoading } = useHousehold();
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
+
+  // Redirect returning users with households to main app
+  useEffect(() => {
+    if (authLoading || householdLoading) return;
+    if (user && household) {
+      navigate("/", { replace: true });
+    }
+  }, [user, household, authLoading, householdLoading, navigate]);
 
   const handleGetStarted = () => {
     if (inviteCode.toLowerCase() === "village") {
