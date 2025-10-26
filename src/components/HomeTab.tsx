@@ -482,7 +482,26 @@ const lastDiaper = displayActivities
     const expected = getExpectedFeeds(babyAgeMonths);
     const expectedNaps = getExpectedNaps(babyAgeMonths);
     
-    // Early state message - insufficient data
+    // Check if user is in early days (first 24 hours)
+    let isEarlyDays = false;
+    if (activities.length > 0) {
+      const firstActivity = [...activities].sort((a, b) => 
+        new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime()
+      )[0];
+      
+      if (firstActivity?.loggedAt) {
+        const firstActivityTime = new Date(firstActivity.loggedAt);
+        const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
+        isEarlyDays = hoursSinceFirst < 24;
+      }
+    }
+    
+    // Early Days message - first 24 hours
+    if (isEarlyDays) {
+      return `Every log helps us learn ${babyName?.split(' ')[0] || 'your baby'}'s natural rhythm. You're building the foundation for personalized insights.`;
+    }
+    
+    // Early state message - insufficient data (but past first 24 hours)
     if (summary.feedCount < 4 || summary.napCount < 4) {
       return `Keep logging feeds and sleeps—patterns will emerge soon! Every entry helps us understand ${babyName?.split(' ')[0] || 'your baby'}'s unique rhythm.`;
     }
