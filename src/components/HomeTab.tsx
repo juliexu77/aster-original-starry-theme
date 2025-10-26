@@ -1291,8 +1291,17 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                         e.stopPropagation();
                         // Determine activity type based on prediction intent
                         const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
+                        
+                        // Round time to nearest 5 minutes
                         const now = new Date();
-                        const timeStr = now.toLocaleTimeString('en-US', {
+                        const minutes = now.getMinutes();
+                        const roundedMinutes = Math.round(minutes / 5) * 5;
+                        const roundedDate = new Date(now);
+                        roundedDate.setMinutes(roundedMinutes);
+                        roundedDate.setSeconds(0);
+                        roundedDate.setMilliseconds(0);
+                        
+                        const timeStr = roundedDate.toLocaleTimeString('en-US', {
                           hour: 'numeric',
                           minute: '2-digit',
                           hour12: true
@@ -1311,7 +1320,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                         }
                         
                         try {
-                          await addActivity(activityType, details, now, timeStr);
+                          await addActivity(activityType, details, roundedDate, timeStr);
                           const description = activityType === 'feed' && prediction.timing.expectedFeedVolume
                             ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
                             : `${timeStr}`;
