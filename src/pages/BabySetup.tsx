@@ -64,6 +64,9 @@ const BabySetup = () => {
       console.log('Collaborator creation result:', { collaboratorError });
       if (collaboratorError) throw collaboratorError;
 
+      // Set active household for subsequent queries
+      localStorage.setItem('active_household_id', householdId);
+
       toast({
         title: "Profile created!",
         description: `Welcome to ${babyName}'s journey.`,
