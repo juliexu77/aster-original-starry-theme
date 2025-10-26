@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,15 @@ const BabySetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
+
+  // Require authentication for Baby Setup
+  // If user is not logged in, redirect to Auth
+  // This avoids RLS errors when trying to write as anon
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
