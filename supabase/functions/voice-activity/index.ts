@@ -70,8 +70,9 @@ CRITICAL DETAIL EXTRACTION:
 - ALWAYS extract numbers for amounts (ml, oz) and durations (minutes, hours)
 - "200ml" or "200 ml" → amount: 200, unit: "ml"
 - "4oz" or "4 oz" → amount: 4, unit: "oz"
-- "10 minutes" → duration: 10
+- "10 minutes" or "ten minutes" → duration: 10
 - "2 hours" → duration: 120 (convert to minutes)
+- "each side", "both sides", "left and right" → side: "both"
 
 MULTIPLE ACTIVITIES:
 - If user describes MULTIPLE activities, return them ALL in chronological order
@@ -82,11 +83,13 @@ FEEDING RULES:
 - Determine type by CONTEXT:
   * If volume mentioned (ml, oz, bottle) → feedType="bottle", extract "amount" + "unit"
   * If duration + side mentioned → feedType="breast", extract "duration" + "side"
+  * "each side", "both sides", "left and right" → side: "both"
 
 Examples:
 - "Fed 120ml bottle" → {"activities":[{"type":"feed","details":{"amount":120,"unit":"ml","feedType":"bottle"},"time":"<current_time>"}]}
 - "Woke up at 7am, ate 200ml, fell asleep at 9am" → {"activities":[{"type":"wake","details":{},"time":"<today_at_7am>"},{"type":"feed","details":{"amount":200,"unit":"ml","feedType":"bottle"},"time":"<today_at_7am>"},{"type":"nap","details":{"quality":"good"},"time":"<today_at_9am>"}]}
-- "Nursed 10 minutes left side" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"<current_time>"}]}`
+- "Nursed 10 minutes left side" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"left"},"time":"<current_time>"}]}
+- "Nursed 5 minutes each side" → {"activities":[{"type":"feed","details":{"duration":10,"feedType":"breast","side":"both"},"time":"<current_time>"}]}`
           },
           {
             role: 'user',
@@ -229,12 +232,27 @@ Examples:
         }
         // Nursing fallback if transcript implies nursing
         const isBreast = /\b(nurse|nursed|nursing|breastfed|breast)\b/i.test(transcript);
-        const dur = transcript.match(/(\d+)\s?(?:min|mins|minutes)\b/i);
+        // Match spelled out or numeric durations
+        const dur = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|thirty)\s?(?:min|mins|minutes)\b/i);
         if (isBreast && dur && act.details.duration == null) {
-          act.details.duration = parseInt(dur[1], 10);
+          const numMap: {[key: string]: number} = {
+            one: 1, two: 2, three: 3, four: 4, five: 5,
+            six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+            fifteen: 15, twenty: 20, thirty: 30
+          };
+          const durValue = numMap[dur[1].toLowerCase()] || parseInt(dur[1], 10);
+          act.details.duration = durValue;
           act.details.feedType = 'breast';
-          const side = transcript.match(/\b(left|right|both)\b/i);
-          if (side) act.details.side = side[1].toLowerCase();
+          
+          // Check for "each side" or "both sides" patterns
+          const eachSide = /\b(each side|both sides|left and right|on both)\b/i.test(transcript);
+          if (eachSide) {
+            act.details.side = 'both';
+            act.details.duration = durValue * 2; // Double the duration for both sides
+          } else {
+            const side = transcript.match(/\b(left|right|both)\b/i);
+            if (side) act.details.side = side[1].toLowerCase();
+          }
         }
       }
     });
