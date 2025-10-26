@@ -49,18 +49,17 @@ export const BabyEditModal = ({ open, onOpenChange }: BabyEditModalProps) => {
   useEffect(() => {
     if (!user || !babyName || !household || babyName === household.baby_name) return;
     
-    setBabyNameSaveStatus("unsaved");
     setBabyNameSaveStatus("saving");
     const timeoutId = setTimeout(async () => {
       try {
         await updateHousehold({ baby_name: babyName });
         setBabyNameSaveStatus("saved");
-        setTimeout(() => setBabyNameSaveStatus("idle"), 3000);
+        setTimeout(() => setBabyNameSaveStatus("idle"), 2000);
       } catch (error) {
         setBabyNameSaveStatus("error");
         console.error('Error saving baby name:', error);
       }
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [babyName, household, updateHousehold, user]);

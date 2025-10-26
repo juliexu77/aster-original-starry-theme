@@ -336,6 +336,11 @@ export const useHousehold = () => {
       throw new Error('No household to update');
     }
 
+    // Optimistic update - update local state immediately
+    const previousHousehold = household;
+    const optimisticHousehold = { ...household, ...updates };
+    setHousehold(optimisticHousehold);
+
     try {
       const { data, error } = await supabase
         .from('households')
@@ -346,10 +351,13 @@ export const useHousehold = () => {
 
       if (error) {
         console.error('Error updating household:', error);
+        // Revert to previous state on error
+        setHousehold(previousHousehold);
         throw error;
       }
 
       console.log('Updated household data:', data);
+      // Update with server response to ensure consistency
       setHousehold(data);
       return data;
     } catch (error) {
