@@ -35,6 +35,7 @@ const App = () => (
             <RouteGuard>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/app" element={<Index />} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/onboarding/baby-setup" element={<BabySetup />} />
                   <Route path="/onboarding/village" element={<VillageInvite />} />
