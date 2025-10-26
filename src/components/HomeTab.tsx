@@ -39,7 +39,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
     try {
-      const stored = localStorage.getItem('babydex_visited_tabs');
+      const stored = localStorage.getItem('babyrhythm_visited_tabs');
       return stored ? new Set(JSON.parse(stored)) : new Set(['home']);
     } catch {
       return new Set(['home']);
@@ -56,7 +56,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         if (tab) {
           setVisitedTabs(prev => {
             const newSet = new Set(prev).add(tab);
-            localStorage.setItem('babydex_visited_tabs', JSON.stringify([...newSet]));
+            localStorage.setItem('babyrhythm_visited_tabs', JSON.stringify([...newSet]));
             return newSet;
           });
         }
@@ -1025,7 +1025,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               <div className="flex items-start gap-3">
                 <Sprout className="w-5 h-5 text-primary mt-0.5" />
                 <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Every feed, nap, and diaper helps Babydex understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
+                  Every feed, nap, and diaper helps BabyRhythm understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
                 </p>
               </div>
 

@@ -48,7 +48,7 @@ const Onboarding = () => {
           {/* Logo */}
           <div className="flex flex-col items-center justify-center leading-none">
             <span className="text-2xl font-heading font-bold text-primary tracking-tight">
-              BABYDEX
+              BABYRHYTHM
             </span>
             <span className="text-xs font-heading font-medium text-primary/70 tracking-wide">
               BABY TRACKER
