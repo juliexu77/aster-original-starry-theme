@@ -1010,25 +1010,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
             )}
           </div>
 
-          {/* Current State - Not Logged Yet */}
-          <div className="space-y-3.5 pb-6 border-b border-border">
-            {/* Last Feed - Not Logged */}
-            <div className="flex items-center gap-3">
-              <Milk className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1 text-muted-foreground">
-                Last feed — <span className="font-medium text-foreground">not logged yet</span>
-              </p>
-            </div>
-
-            {/* Sleeping Since - Not Logged */}
-            <div className="flex items-center gap-3">
-              <Moon className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1 text-muted-foreground">
-                Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
-              </p>
-            </div>
-          </div>
-
           {/* Start Journey Card */}
           <Card className="p-4">
             <div className="space-y-4">
@@ -1169,7 +1150,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           
           <div className="space-y-3.5">
             {/* Last Feed */}
-            {lastFeed && (
+            {lastFeed ? (
               <div className="flex items-center gap-3">
                 <Milk className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
@@ -1193,6 +1174,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
               </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Milk className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Last feed — <span className="font-medium text-foreground">not logged yet</span>
+                </p>
+              </div>
             )}
 
             {/* Sleep Status */}
@@ -1203,7 +1191,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                   Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </p>
               </div>
-            ) : awakeTime && (
+            ) : awakeTime ? (
               <div className="flex items-center gap-3">
                 <Eye className="w-5 h-5 text-primary" />
                 <p className="text-sm flex-1 text-muted-foreground">
@@ -1221,6 +1209,13 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Moon className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
+                </p>
               </div>
             )}
 
