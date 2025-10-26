@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Mic, Square, Loader2 } from 'lucide-react';
+import { Mic, Square, Loader2, Check, X, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,6 +13,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [parsedActivities, setParsedActivities] = useState<any[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [transcript, setTranscript] = useState("");
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
@@ -121,12 +122,29 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
       // Reset state
       setParsedActivities([]);
       setTranscript("");
+      setEditingIndex(null);
     }
   };
 
   const handleCancel = () => {
     setParsedActivities([]);
     setTranscript("");
+    setEditingIndex(null);
+  };
+
+  const handleRemoveActivity = (index: number) => {
+    setParsedActivities(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditActivity = (index: number) => {
+    setEditingIndex(index);
+  };
+
+  const handleSaveEdit = (index: number, updatedActivity: any) => {
+    setParsedActivities(prev => prev.map((activity, i) => 
+      i === index ? updatedActivity : activity
+    ));
+    setEditingIndex(null);
   };
 
   const formatActivityPreview = (activity: any) => {
@@ -202,17 +220,66 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
               {parsedActivities.map((activity, index) => (
                 <div key={index} className="flex items-start gap-2 p-2 rounded bg-muted/50">
                   <div className="flex-1">
-                    <p className="font-semibold">{formatActivityPreview(activity)}</p>
-                    {activity.time && (
-                      <p className="text-xs text-muted-foreground">
-                        at {new Date(activity.time).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true 
-                        })}
-                      </p>
+                    {editingIndex === index ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={formatActivityPreview(activity)}
+                          className="w-full px-2 py-1 text-sm border rounded"
+                          placeholder="Edit activity..."
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => setEditingIndex(null)}
+                            variant="outline"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveEdit(index, activity)}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="font-semibold">{formatActivityPreview(activity)}</p>
+                        {activity.time && (
+                          <p className="text-xs text-muted-foreground">
+                            at {new Date(activity.time).toLocaleTimeString('en-US', { 
+                              hour: 'numeric', 
+                              minute: '2-digit',
+                              hour12: true 
+                            })}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
+                  
+                  {editingIndex !== index && (
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleEditActivity(index)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        onClick={() => handleRemoveActivity(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -220,9 +287,10 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
 
           <div className="flex gap-2">
             <Button onClick={handleCancel} variant="outline" className="flex-1">
-              Cancel
+              Cancel All
             </Button>
             <Button onClick={handleConfirm} className="flex-1">
+              <Check className="h-4 w-4 mr-2" />
               Confirm & Log All
             </Button>
           </div>
