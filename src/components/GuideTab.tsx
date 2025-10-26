@@ -9,6 +9,8 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ForYouSection } from "@/components/guide/ForYouSection";
+import { ExploreTopicsSection } from "@/components/guide/ExploreTopicsSection";
 
 interface Activity {
   id: string;
@@ -75,16 +77,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
-
-  const topicCategories = [
-    { name: "Sleep", icon: <BookOpen className="w-4 h-4" /> },
-    { name: "Feeding", icon: <Droplet className="w-4 h-4" /> },
-    { name: "Development", icon: <Baby className="w-4 h-4" /> },
-    { name: "Health", icon: <Heart className="w-4 h-4" /> },
-    { name: "Activities", icon: <Activity className="w-4 h-4" /> },
-  ];
-
-  const sentimentOptions = ["Curious", "Surprised", "Worried"];
 
   // Check minimum data requirements (same as prediction engine)
   const naps = activities.filter(a => a.type === 'nap');
@@ -428,32 +420,26 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
+          {/* For You Section */}
+          {!needsBirthdaySetup && hasMinimumData && (
+            <ForYouSection
+              babyName={babyName}
+              babyAgeInWeeks={babyAgeInWeeks}
+              hasInsights={insightCards.length > 0}
+              recentActivities={activities.filter(a => {
+                const twoWeeksAgo = new Date();
+                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                return new Date(a.logged_at) >= twoWeeksAgo;
+              })}
+              onArticleClick={(title) => handleSendMessage(`Tell me about: ${title}`)}
+            />
+          )}
+
           {/* Explore Topics Section */}
-          <div className="space-y-4">
-            <h2 className="text-base font-semibold">📚 Explore Topics</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {topicCategories.map((topic) => (
-                <Button
-                  key={topic.name}
-                  variant="outline"
-                  size="sm"
-                  className="h-auto py-3 flex flex-col items-center gap-1"
-                  onClick={() => handleSendMessage(`Tell me about ${topic.name.toLowerCase()} for ${babyName}`)}
-                >
-                  {topic.icon}
-                  <span className="text-xs">{topic.name}</span>
-                </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-auto py-3 flex flex-col items-center gap-1"
-              >
-                <MoreVertical className="w-4 h-4" />
-                <span className="text-xs">More...</span>
-              </Button>
-            </div>
-          </div>
+          <ExploreTopicsSection
+            onTopicClick={(topic) => handleSendMessage(`Tell me about ${topic.toLowerCase()} for ${babyName}`)}
+            onArticleClick={(article) => handleSendMessage(`Tell me about: ${article}`)}
+          />
 
           {/* Chat Messages */}
           {messages.length > 0 && (
