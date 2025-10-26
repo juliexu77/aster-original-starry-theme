@@ -282,9 +282,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
         const firstActivityTime = new Date(firstActivity.loggedAt);
         const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
         
-        // Show "Still Learning" for first 24 hours
+        // Show "Early Days" for first 24 hours
         if (hoursSinceFirst < 24) {
-          return { emoji: "🌤", text: "Still Learning" };
+          return { emoji: "🌤", text: "Early Days" };
         }
         
         // Days 2-4: Use simplified chip set while establishing baseline
@@ -994,7 +994,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           {/* Tone Chip */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
             <span className="text-sm">🌤</span>
-            <span className="text-sm font-medium text-accent-foreground">Still Learning</span>
+            <span className="text-sm font-medium text-accent-foreground">Early Days</span>
           </div>
 
           {/* Start Journey Card - matches What's Next styling */}
