@@ -309,7 +309,7 @@ export const VoiceRecorder = ({ onActivityParsed, autoStart }: VoiceRecorderProp
                                   }
                                   return activity.time;
                                 })()
-                              : activity.time} {activity.timezone && `(${activity.timezone.split('/')[1]?.replace('_', ' ') || activity.timezone})`}
+                              : activity.time}
                           </p>
                         )}
                       </>
