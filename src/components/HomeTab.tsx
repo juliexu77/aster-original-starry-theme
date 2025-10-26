@@ -69,7 +69,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   const hasVisitedAllTabs = visitedTabs.has('home') && visitedTabs.has('trends') && 
                              visitedTabs.has('guide') && visitedTabs.has('log');
-  const showEducationalContent = activities.length < 5 || !hasVisitedAllTabs;
+  
+  // Show educational content until user has logged at least one feed AND one sleep, OR 5+ total activities
+  const hasFeed = activities.some(a => a.type === 'feed');
+  const hasSleep = activities.some(a => a.type === 'nap');
+  const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
+  const showEducationalContent = !hasMinimumLogs;
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -989,6 +994,80 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </div>
             </div>
           </Card>
+
+          {/* Educational Content for New Users */}
+          {showEducationalContent && (
+            <div className="space-y-6 pt-4 border-t border-border/40">
+              {/* Trends Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      As you add more activities, Babydex will start showing sleep, feeding, and mood trends on the <span className="font-medium text-foreground">Trends</span> tab.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const trendsTab = document.querySelector('[data-tab="trends"]') as HTMLElement;
+                    trendsTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  View Trends
+                </Button>
+              </div>
+
+              {/* Guide Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <BookOpen className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      The <span className="font-medium text-foreground">Guide</span> tab connects insights from other parents and experts — contextual to {babyName ? `${babyName}'s` : 'your baby\'s'} current phase.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                    guideTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Explore Guide
+                </Button>
+              </div>
+
+              {/* Log Tab Info */}
+              <div className="space-y-2">
+                <div className="flex items-start gap-3">
+                  <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      You can export your logs and insights to share with your partner or pediatrician anytime from the <span className="font-medium text-foreground">Log</span> tab.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
+                    logTab?.click();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Go to Log Tab
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
