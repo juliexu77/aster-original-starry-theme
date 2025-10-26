@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
-import { Sprout } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const Onboarding = () => {
         <div className="max-w-md mx-auto text-center space-y-12">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3">
-            <Sprout className="w-8 h-8 text-primary" />
+            <Sparkles className="w-8 h-8 text-primary" />
             <div className="flex flex-col leading-none">
               <span className="text-2xl font-heading font-bold text-primary tracking-tight">
                 BABYDEX
