@@ -170,14 +170,19 @@ Examples:
 
     function matchIndexToISO(idx: number) {
       const tm = timeMatches[idx];
-      if (!tm) return new Date().toISOString();
+      if (!tm) {
+        console.log('No time match, using current time');
+        return new Date().toISOString();
+      }
       const hourRaw = parseInt(tm[1], 10);
       const minute = tm[2] ? parseInt(tm[2], 10) : 0;
       const ampm = tm[3];
-      let hour = hourRaw % 12;
-      if (ampm === 'pm') hour += 12;
+      let hour = hourRaw === 12 ? 0 : hourRaw; // 12am = 0, 12pm needs special handling
+      if (ampm === 'pm' && hourRaw !== 12) hour += 12; // Add 12 for PM (except 12pm)
+      if (ampm === 'pm' && hourRaw === 12) hour = 12; // 12pm = 12
       const d = new Date();
       d.setHours(hour, minute, 0, 0);
+      console.log(`Parsed time: ${tm[0]} -> hour=${hour}, minute=${minute} -> ${d.toISOString()}`);
       return d.toISOString();
     }
 
