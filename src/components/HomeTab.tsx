@@ -1317,7 +1317,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
                       size="sm"
                       className="w-full mt-2"
                     >
-                      {prediction.intent === 'FEED_SOON' ? t('logFeedNow') : t('logNapNow')}
+                      {prediction.intent === 'FEED_SOON' ? t('logFeedNow') : t('startNap')}
                     </Button>
                   )}
                 </>
