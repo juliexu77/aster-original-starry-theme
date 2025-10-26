@@ -910,9 +910,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Placeholder Tone Chip */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
             <span className="text-sm">⏳</span>
-            <span className="text-xs font-medium text-muted-foreground">Still Learning</span>
+            <span className="text-sm font-medium text-accent-foreground">Still Learning</span>
           </div>
 
           {/* Welcome Message */}
@@ -926,36 +926,25 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
           </div>
 
           {/* Getting Started Cards */}
-          <div className="space-y-3">
+          <div className="space-y-6">
             {/* Step 1: Make the first log magical */}
-            <Card className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Baby className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground mb-1.5">
-                      Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Every feed, nap, and change helps Babydex learn your baby's rhythm.
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => onAddActivity()} 
-                    size="sm"
-                    variant="default"
-                    className="w-full sm:w-auto"
-                  >
-                    Let's make your first entry 🌱
-                  </Button>
-                  <p className="text-xs text-muted-foreground/80 italic">
-                    It all starts here 🌱
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-base font-semibold text-foreground">
+                  Start {babyName ? `${babyName}'s` : 'your baby\'s'} story
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Every feed, nap, and change helps Babydex learn your baby's rhythm.
+                </p>
               </div>
-            </Card>
+              <Button 
+                onClick={() => onAddActivity()} 
+                size="default"
+                className="w-full"
+              >
+                Let's make your first entry 🌱
+              </Button>
+            </div>
 
             {/* Step 2: Discovery / Insights */}
             <Card className="p-5">
