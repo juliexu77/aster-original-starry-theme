@@ -392,27 +392,82 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Connected Insights Section */}
           {hasMinimumData && insightCards.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-base font-semibold">📊 Connected Insights</h2>
               <div className="space-y-3">
                 {insightCards.map((card) => (
-                  <div key={card.id} className="p-4 bg-muted/30 rounded-lg space-y-2">
-                    <div className="text-sm leading-relaxed">
-                      {formatMarkdown(card.content)}
+                  <div key={card.id} className="p-4 bg-muted/30 rounded-lg space-y-4">
+                    {/* Icon and Title */}
+                    <div className="flex items-center gap-2">
+                      <Sprout className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-base">Nap Transition</h3>
                     </div>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="h-auto p-0 text-xs text-primary"
-                      onClick={() => handleSendMessage(`Tell me more about ${card.title.toLowerCase()}`)}
-                    >
-                      Learn more →
-                    </Button>
+                    
+                    {/* Short Description */}
+                    <p className="text-sm text-foreground leading-relaxed">
+                      {babyName} dropped to 1 nap today—a big change from their usual rhythm.
+                    </p>
+                    
+                    {/* How are you feeling? */}
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">How are you feeling?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={selectedSentiment === "Curious" ? "default" : "outline"}
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => {
+                            setSelectedSentiment("Curious");
+                            handleSendMessage(`I'm curious about the nap transition for ${babyName}`);
+                          }}
+                        >
+                          Curious
+                        </Button>
+                        <Button
+                          variant={selectedSentiment === "Surprised" ? "default" : "outline"}
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => {
+                            setSelectedSentiment("Surprised");
+                            handleSendMessage(`I'm surprised about the nap transition for ${babyName}`);
+                          }}
+                        >
+                          Surprised
+                        </Button>
+                        <Button
+                          variant={selectedSentiment === "Confident" ? "default" : "outline"}
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => {
+                            setSelectedSentiment("Confident");
+                            handleSendMessage(`I'm feeling confident about the nap transition for ${babyName}`);
+                          }}
+                        >
+                          Confident
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => handleSendMessage("Why does this nap transition happen?")}
+                      >
+                        Why this happens
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => handleSendMessage("What helps with nap transitions?")}
+                      >
+                        What helps
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                View all insights
-              </Button>
             </div>
           )}
 
