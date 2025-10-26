@@ -1272,12 +1272,28 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
               </button>
               
               {nextAction ? (
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-primary mt-0.5" />
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                    {nextAction}
-                  </p>
-                </div>
+                <>
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-primary mt-0.5" />
+                    <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                      {nextAction}
+                    </p>
+                  </div>
+                  {!ongoingNap && prediction && (
+                    <Button
+                      onClick={() => {
+                        // Determine activity type based on prediction intent
+                        const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
+                        onAddActivity(activityType);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                    >
+                      {prediction.intent === 'FEED_SOON' ? t('logFeedNow') : t('logNapNow')}
+                    </Button>
+                  )}
+                </>
               ) : (
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-primary mt-0.5" />

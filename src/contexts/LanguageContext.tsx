@@ -186,6 +186,8 @@ const translations = {
     ago: "ago",
     awake: "awake",
     continueCurrentActivity: "continue current activity",
+    logFeedNow: "Log Feed Now",
+    logNapNow: "Log Nap Now",
     
     // Sleep chart
     weeklySleepSchedule: "Weekly Sleep Schedule",
@@ -663,6 +665,8 @@ const translations = {
     ago: "前",
     awake: "清醒",
     continueCurrentActivity: "继续当前活动",
+    logFeedNow: "立即记录喂养",
+    logNapNow: "立即记录小睡",
     
     // Sleep chart
     weeklySleepSchedule: "每周睡眠时间表",

@@ -223,38 +223,41 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         </button>
       </div>
 
-      {isExpanded && (
-        <div className="mt-4">
-          {ongoingNap && onMarkWakeUp && (
-            <div className="mb-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={onMarkWakeUp}
-                className="w-full"
-              >
-                {(babyName || 'Baby') + ' woke up'}
-              </Button>
-            </div>
-          )}
-          <div className="flex items-center gap-2 mb-2">
-            {getIcon(prediction.type)}
-            <span className="font-medium text-foreground">{getPredictionText()}</span>
-          </div>
-          <p className="text-sm text-muted-foreground mb-3">{prediction.reason}</p>
-          
-          {onLogPredictedActivity && !ongoingNap && (
+      <div className="mt-4">
+        {ongoingNap && onMarkWakeUp && (
+          <div className="mb-3">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
-              onClick={() => onLogPredictedActivity(prediction.type)}
+              onClick={onMarkWakeUp}
               className="w-full"
             >
-              {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
+              {(babyName || 'Baby') + ' woke up'}
             </Button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+        
+        {onLogPredictedActivity && !ongoingNap && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onLogPredictedActivity(prediction.type)}
+            className="w-full mb-3"
+          >
+            {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
+          </Button>
+        )}
+        
+        {isExpanded && (
+          <>
+            <div className="flex items-center gap-2 mb-2">
+              {getIcon(prediction.type)}
+              <span className="font-medium text-foreground">{getPredictionText()}</span>
+            </div>
+            <p className="text-sm text-muted-foreground">{prediction.reason}</p>
+          </>
+        )}
+      </div>
     </div>
   );
 };
