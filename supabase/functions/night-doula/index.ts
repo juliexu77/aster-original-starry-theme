@@ -82,8 +82,9 @@ serve(async (req) => {
     }, 0);
 
     // Build context for AI
+    const currentTime = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     const activityContext = `
-Today's Summary for ${babyName} (${babyAge} months old):
+Today's Summary for ${babyName} (${babyAge} months old) - Current time: ${currentTime}:
 - Feeds: ${feeds.length} feeds totaling ${Math.round(totalVolume)}${unit}
 - Naps: ${naps.length} naps totaling ${Math.floor(totalNapTime / 60)}h ${totalNapTime % 60}m
 - Diapers: ${diapers.length} changes${diapers.some((d: any) => d.details?.hasLeak) ? " (including a leak)" : ""}${diapers.some((d: any) => d.details?.note?.toLowerCase().includes("rash")) ? " (redness noted)" : ""}
@@ -127,6 +128,7 @@ Write a natural, conversational summary (3-4 sentences) that:
 - Sounds human and caring, NOT like a data report
 
 CRITICAL: Keep it brief (3-4 sentences max). Be warm but concise. Focus on what matters most to the parent.
+IMPORTANT: Consider the current time when evaluating activity counts - if it's still early/mid-day, don't treat low nap counts as concerning since the day isn't over yet.
 
 Example tone: "${babyName} had 8 feeds today, taking in about 850ml total - right on track. He balanced one solid 2-hour nap with a few shorter stretches, which is typical for his age. Since you mentioned he seemed fussy this afternoon, that makes sense with the shorter evening nap. You're doing a wonderful job reading his cues."` 
           },
