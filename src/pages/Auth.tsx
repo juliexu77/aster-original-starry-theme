@@ -157,7 +157,7 @@ const Auth = () => {
                     className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    {t('signInWithGoogle')}
+                    Sign in with Google
                   </Button>
 
                   <div className="relative">
@@ -214,7 +214,7 @@ const Auth = () => {
                     className="w-full bg-white dark:bg-white text-gray-700 dark:text-gray-700 border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-50"
                   >
                     <Mail className="mr-2 h-4 w-4" />
-                    {t('signInWithGoogle')}
+                    Sign up with Google
                   </Button>
 
                   <div className="relative">
