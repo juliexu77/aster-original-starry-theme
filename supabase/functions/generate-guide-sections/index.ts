@@ -138,7 +138,7 @@ serve(async (req) => {
       previousCount: previousActivities.length,
     });
 
-    const deltas = computeDeltas(recentMetrics, previousMetrics);
+    const deltas = computeDeltas(recentMetrics, previousMetrics, 3);
     const insights = extractInsights(deltas, ageMonths);
 
     const allWindowActivities = activities.filter(a => {
@@ -286,11 +286,16 @@ function calculateMetrics(activities: Activity[]) {
   };
 }
 
-function computeDeltas(recent: any, previous: any): MetricDelta[] {
+function computeDeltas(recent: any, previous: any, baselineDays: number = 3): MetricDelta[] {
   const deltas: MetricDelta[] = [];
 
-  // Total sleep delta
-  const sleepDelta = recent.totalSleepMinutes - previous.totalSleepMinutes;
+  // Compute average per day for baseline metrics
+  const avgPreviousSleep = previous.totalSleepMinutes / baselineDays;
+  const avgPreviousFeed = previous.totalFeedVolume / baselineDays;
+  const avgPreviousWake = previous.avgWakeWindow; // already an average
+
+  // Total sleep delta (yesterday vs 3-day average)
+  const sleepDelta = recent.totalSleepMinutes - avgPreviousSleep;
   if (Math.abs(sleepDelta) >= 15) {
     const hours = Math.floor(Math.abs(sleepDelta) / 60);
     const mins = Math.round(Math.abs(sleepDelta) % 60 / 5) * 5;
@@ -301,9 +306,9 @@ function computeDeltas(recent: any, previous: any): MetricDelta[] {
     });
   }
 
-  // Feed volume delta
-  if (previous.totalFeedVolume > 0) {
-    const feedPercent = ((recent.totalFeedVolume - previous.totalFeedVolume) / previous.totalFeedVolume) * 100;
+  // Feed volume delta (yesterday vs 3-day average)
+  if (avgPreviousFeed > 0) {
+    const feedPercent = ((recent.totalFeedVolume - avgPreviousFeed) / avgPreviousFeed) * 100;
     if (Math.abs(feedPercent) >= 5) {
       deltas.push({
         name: 'Feed volume',
@@ -313,8 +318,8 @@ function computeDeltas(recent: any, previous: any): MetricDelta[] {
     }
   }
 
-  // Wake window delta
-  const wakeDelta = recent.avgWakeWindow - previous.avgWakeWindow;
+  // Wake window delta (yesterday vs 3-day average)
+  const wakeDelta = recent.avgWakeWindow - avgPreviousWake;
   if (Math.abs(wakeDelta) >= 15) {
     const mins = Math.round(Math.abs(wakeDelta) / 5) * 5;
     deltas.push({
