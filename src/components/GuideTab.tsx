@@ -141,6 +141,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [hasInitialized, setHasInitialized] = useState(false);
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
+  const [showStreakInsight, setShowStreakInsight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
@@ -548,12 +549,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       {/* Main Content */}
       <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 space-y-6">
-          {/* Streak description */}
+          {/* Streak Chip */}
           {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
-            <div className="pt-4">
-              <p className="text-xs text-muted-foreground">
-                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
-              </p>
+            <div className="pt-4 space-y-3">
+              <button 
+                onClick={() => setShowStreakInsight(!showStreakInsight)}
+                className="text-left"
+              >
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                  <span className="text-sm">{getPatternEmoji(toneFrequencies.streakTone)}</span>
+                  <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone} ×{toneFrequencies.currentStreak}</span>
+                </div>
+              </button>
+              
+              {showStreakInsight && (
+                <p className="text-xs text-muted-foreground leading-relaxed pl-1 italic">
+                  {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+                </p>
+              )}
             </div>
           )}
 
