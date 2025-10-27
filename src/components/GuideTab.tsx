@@ -814,6 +814,76 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
+          {/* What's Next */}
+          {hasMinimumData && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🔹</span>
+                <h3 className="text-sm font-semibold text-foreground">What's Next</h3>
+              </div>
+              <div className="space-y-3 pl-1">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Smooth Flow streaks usually shift after 5–7 days.
+                  If a "Building Rhythm" tone appears next, you'll likely see nap experimentation or earlier wakings — totally normal.
+                </p>
+                <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+                  <span className="text-sm flex-shrink-0">🧭</span>
+                  <p className="text-sm text-foreground">
+                    <span className="font-medium">Prep tip:</span> have extra wind-down time ready for the transition day.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Smart Add-On */}
+          {hasMinimumData && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">🔹</span>
+                <h3 className="text-sm font-semibold text-foreground">Smart Add-On</h3>
+              </div>
+              <p className="text-xs text-muted-foreground pl-1 mb-3">
+                Based on streak + baby's age:
+              </p>
+              <div className="space-y-2 pl-1">
+                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm flex-shrink-0 mt-0.5">📚</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Deep Dive</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        "What Happens When Sleep Cycles Mature"
+                      </p>
+                    </div>
+                  </div>
+                </button>
+                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm flex-shrink-0 mt-0.5">💡</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Quick Tip</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        "Resetting Nap Timing Without Overtiredness"
+                      </p>
+                    </div>
+                  </div>
+                </button>
+                <button className="w-full text-left p-3 bg-accent/10 hover:bg-accent/20 rounded-lg border border-border/30 transition-colors">
+                  <div className="flex items-start gap-2">
+                    <span className="text-sm flex-shrink-0 mt-0.5">🧠</span>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Age Insight</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        "6-Month Brain Burst and Its Sleep Effects"
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Pattern Summary */}
           {hasMinimumData && (
             <div className="space-y-6">
