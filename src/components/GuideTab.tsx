@@ -8,7 +8,6 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Activity {
   id: string;
@@ -140,6 +139,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
+  const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
@@ -192,6 +193,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const sortedTones = Object.entries(toneFrequencies.frequency)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
+  
+  // Get emoji for each pattern
+  const getPatternEmoji = (pattern: string): string => {
+    const sampleTone = getDailyTone([{ id: '', type: 'feed', logged_at: '', details: {} }], household?.baby_birthday);
+    // Find the emoji from our tone calculations
+    if (pattern === "Smooth Flow") return "☀️";
+    if (pattern === "Building Rhythm") return "🌿";
+    if (pattern === "In Sync") return "🎯";
+    if (pattern === "Extra Sleepy") return "🌙";
+    if (pattern === "Active Feeding") return "🍼";
+    if (pattern === "Off Rhythm") return "🌧";
+    return "🌿";
+  };
   
   // Calculate last month's data for progress comparison
   const lastMonthData = (() => {
@@ -536,48 +550,63 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         <div ref={scrollRef} className="px-4 space-y-6">
           {/* Pattern Header */}
           {!needsBirthdaySetup && hasMinimumData && (
-            <div className="pt-4 space-y-4">
+            <div className="pt-4 space-y-3">
               <h1 className="text-xl font-semibold text-foreground">
                 {babyName}'s Current Rhythm
               </h1>
               
-              <TooltipProvider>
-                <div className="space-y-2">
-                  {sortedTones[0] && (
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-muted-foreground">Primary Pattern:</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-sm font-medium cursor-help text-foreground">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">{getPatternTooltip(sortedTones[0][0])}</p>
-                        </TooltipContent>
-                      </Tooltip>
+              <div className="space-y-3">
+                {sortedTones[0] && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Primary Pattern:</span>
+                      <button 
+                        onClick={() => setShowPrimaryInsight(!showPrimaryInsight)}
+                        className="text-left"
+                      >
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                          <span className="text-sm">{getPatternEmoji(sortedTones[0][0])}</span>
+                          <span className="text-sm font-medium text-accent-foreground">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
+                        </div>
+                      </button>
                     </div>
-                  )}
-                  {sortedTones[1] && (
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-sm text-muted-foreground">Secondary Pattern:</span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-sm font-medium cursor-help text-foreground">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">{getPatternTooltip(sortedTones[1][0])}</p>
-                        </TooltipContent>
-                      </Tooltip>
+                    {showPrimaryInsight && (
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
+                        {getPatternTooltip(sortedTones[0][0])}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {sortedTones[1] && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Secondary Pattern:</span>
+                      <button 
+                        onClick={() => setShowSecondaryInsight(!showSecondaryInsight)}
+                        className="text-left"
+                      >
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                          <span className="text-sm">{getPatternEmoji(sortedTones[1][0])}</span>
+                          <span className="text-sm font-medium text-accent-foreground">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
+                        </div>
+                      </button>
                     </div>
-                  )}
-                  
-                  {/* Streak description */}
-                  {toneFrequencies.currentStreak >= 2 && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
-                    </p>
-                  )}
-                </div>
-              </TooltipProvider>
+                    {showSecondaryInsight && (
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
+                        {getPatternTooltip(sortedTones[1][0])}
+                      </p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Streak description */}
+                {toneFrequencies.currentStreak >= 2 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
