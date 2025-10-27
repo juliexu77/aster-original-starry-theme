@@ -626,9 +626,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 onClick={() => setShowStreakInsight(!showStreakInsight)}
                 className="text-left"
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  {getPatternIcon(toneFrequencies.streakTone)}
-                  <span className="text-base font-medium text-accent-foreground">{toneFrequencies.streakTone} ×{toneFrequencies.currentStreak}</span>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
+                  <span className="text-sm">{getPatternIcon(toneFrequencies.streakTone)}</span>
+                  <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone}</span>
                 </div>
               </button>
               
