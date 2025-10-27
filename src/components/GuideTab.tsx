@@ -690,6 +690,26 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
+          {/* Guide Sections Loading State */}
+          {!hasMinimumData && !needsBirthdaySetup && (
+            <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
+              <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Track at least 4 naps and 4 feeds to see personalized guidance
+              </p>
+            </div>
+          )}
+
+          {/* Guide Sections Loading Indicator */}
+          {hasMinimumData && guideSectionsLoading && !guideSections && (
+            <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-sm text-muted-foreground">
+                Generating personalized guidance...
+              </p>
+            </div>
+          )}
+
           {/* Data Pulse */}
           {hasMinimumData && guideSections?.data_pulse && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
@@ -741,7 +761,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What to Know */}
-          {hasMinimumData && guideSections && (
+          {hasMinimumData && guideSections?.what_to_know && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-primary" />
@@ -761,7 +781,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What To Do */}
-          {hasMinimumData && guideSections && (
+          {hasMinimumData && guideSections?.what_to_do && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckSquare className="w-4 h-4 text-primary" />
@@ -781,7 +801,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What's Next */}
-          {hasMinimumData && guideSections && (
+          {hasMinimumData && guideSections?.whats_next && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowRight className="w-4 h-4 text-primary" />
@@ -791,12 +811,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {guideSections.whats_next}
                 </p>
-                <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
-                  <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-foreground">
-                    <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
-                  </p>
-                </div>
+                {guideSections.prep_tip && (
+                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
+                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-foreground">
+                      <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
