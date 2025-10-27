@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
@@ -27,6 +28,15 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
       return;
     }
   }, [user, loading, location.pathname, navigate]);
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return <>{children}</>;
 };
