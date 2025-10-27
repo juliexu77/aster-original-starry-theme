@@ -290,21 +290,22 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       
       setGuideSectionsLoading(true);
       try {
+        console.log('🔄 Fetching guide sections from edge function...');
         const { data, error } = await supabase.functions.invoke('generate-guide-sections');
         
         if (error) {
-          console.error('Error fetching guide sections:', error);
+          console.error('❌ Error fetching guide sections:', error);
           return;
         }
         
         if (data) {
-          console.log('Guide sections fetched:', data);
+          console.log('✅ Guide sections fetched:', data);
           setGuideSections(data);
           localStorage.setItem('guideSections', JSON.stringify(data));
           localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
         }
       } catch (err) {
-        console.error('Failed to fetch guide sections:', err);
+        console.error('❌ Failed to fetch guide sections:', err);
       } finally {
         setGuideSectionsLoading(false);
       }
@@ -321,8 +322,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (cached && !guideSections) {
       try {
         const parsed = JSON.parse(cached);
-        console.log('Loaded cached guide sections:', parsed);
-        setGuideSections(parsed);
+        console.log('📦 Loaded cached guide sections:', parsed);
+        // Check if cached data has new format with data_pulse
+        if (!parsed.data_pulse) {
+          console.log('⚠️ Old cache format detected, will fetch fresh data');
+          localStorage.removeItem('guideSections');
+          localStorage.removeItem('guideSectionsLastFetch');
+        } else {
+          setGuideSections(parsed);
+        }
       } catch (e) {
         console.error('Failed to parse cached guide sections:', e);
         localStorage.removeItem('guideSections');
@@ -331,10 +339,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     // Determine if we should fetch new data
     const shouldFetch = !lastFetch || 
-      (now >= fiveAM && new Date(lastFetch) < fiveAM);
+      (now >= fiveAM && new Date(lastFetch) < fiveAM) ||
+      (cached && !guideSections);
     
     if (shouldFetch && hasMinimumData) {
-      console.log('Fetching fresh guide sections...');
+      console.log('🚀 Fetching fresh guide sections...');
       fetchGuideSections();
     }
   }, [hasMinimumData, user, guideSections]);
