@@ -57,6 +57,20 @@ const formatMarkdown = (text: string) => {
   });
 };
 
+// Helper to get daily tone for rhythm tracking
+const getDailyTone = (dayActivities: Activity[], babyBirthday?: string) => {
+  const feeds = dayActivities.filter(a => a.type === 'feed').length;
+  const naps = dayActivities.filter(a => a.type === 'nap').length;
+  
+  // Simplified tone detection (based on HomeTab logic)
+  if (feeds >= 8 && naps >= 4) return { emoji: "🎯", text: "In Sync" };
+  if (feeds >= 6 && feeds <= 8 && naps >= 3 && naps <= 4) return { emoji: "☀️", text: "Smooth Flow" };
+  if (naps >= 5) return { emoji: "🌙", text: "Extra Sleepy" };
+  if (feeds >= 10) return { emoji: "🍼", text: "Active Feeding" };
+  if (feeds <= 4 || naps <= 1) return { emoji: "🌧", text: "Off Rhythm" };
+  return { emoji: "🌿", text: "Building Rhythm" };
+};
+
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const { household } = useHousehold();
   const { user } = useAuth();
@@ -67,11 +81,43 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
   const [hasInitialized, setHasInitialized] = useState(false);
+  const [showToneEvolution, setShowToneEvolution] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const babyName = household?.baby_name || 'Baby';
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
+  const babyAgeInMonths = babyAgeInWeeks ? Math.floor(babyAgeInWeeks / 4) : 0;
+  
+  // Calculate tone frequencies for the last 7 days
+  const toneFrequencies = (() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }).reverse();
+    
+    const tones = last7Days.map(date => {
+      const dayActivities = activities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate.toDateString() === date.toDateString();
+      });
+      return getDailyTone(dayActivities, household?.baby_birthday);
+    });
+    
+    const frequency = tones.reduce((acc, tone) => {
+      acc[tone.text] = (acc[tone.text] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return { frequency, tones };
+  })();
+  
+  const currentTone = toneFrequencies.tones[toneFrequencies.tones.length - 1];
+  const sortedTones = Object.entries(toneFrequencies.frequency)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 3);
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
 
@@ -363,6 +409,71 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         </div>
       )}
 
+      {/* Header: Your Baby's Current Rhythm */}
+      {!needsBirthdaySetup && hasMinimumData && (
+        <div className="p-6 border-b border-border bg-gradient-to-br from-background to-muted/20">
+          <h1 className="text-2xl font-bold mb-1">{babyName}'s Current Rhythm</h1>
+          <p className="text-sm text-muted-foreground mb-4">
+            {babyAgeInMonths} months {babyAgeInWeeks % 4}w
+          </p>
+          
+          {/* Tone Chips */}
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              This Week's Pattern
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {sortedTones.map(([toneName, count]) => (
+                <Badge 
+                  key={toneName}
+                  variant="secondary"
+                  className="px-3 py-1.5 text-sm font-medium"
+                >
+                  {toneName} ×{count}
+                </Badge>
+              ))}
+            </div>
+            
+            {/* Streak detection */}
+            {sortedTones[0] && sortedTones[0][1] >= 3 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                You're on a {sortedTones[0][1]}-day "{sortedTones[0][0]}" streak — this often happens during a growth or learning burst.
+              </p>
+            )}
+            
+            {/* Tone Evolution Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowToneEvolution(!showToneEvolution)}
+              className="text-xs -ml-2 mt-1"
+            >
+              {showToneEvolution ? "Hide" : "View"} pattern evolution
+              <TrendingUp className="w-3 h-3 ml-1" />
+            </Button>
+            
+            {/* Tone Evolution Visualization */}
+            {showToneEvolution && (
+              <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  {toneFrequencies.tones.map((tone, idx) => (
+                    <div key={idx} className="flex flex-col items-center flex-1">
+                      <div className="text-lg mb-1">{tone.emoji}</div>
+                      <div className="text-[10px] text-muted-foreground text-center leading-tight">
+                        {tone.text.split(' ')[0]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  "{currentTone?.text}" streaks often appear during developmental leaps when babies practice new skills.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Loading State */}
       {isLoading && insightCards.length === 0 && (
         <div className="flex-1 flex items-center justify-center p-8">
@@ -378,69 +489,112 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       {/* Main Content */}
       <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 py-6 space-y-6">
-          {/* Opening Reflection (Mentor's Voice) */}
-          {hasMinimumData && insightCards.length > 0 && (
+          {/* Pattern Summary */}
+          {hasMinimumData && (
             <div className="space-y-6">
-              <div className="space-y-3">
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  Pattern Summary
+                </h2>
                 <p className="text-base leading-relaxed text-foreground">
-                  Hey there — I noticed {babyName}'s been stretching their awake windows lately. 
-                  This often means their body's ready for a small rhythm change — exciting, but it can make naps unpredictable.
+                  {babyName}'s been waking a bit earlier and staying engaged longer during playtime — classic signs of a baby testing new wake windows. Their overall rhythm is maturing, but it can make naps shorter and evenings a touch fussier.
                 </p>
               </div>
 
-              {/* Connected Insights Cards */}
-              <div className="space-y-3">
-                {insightCards.map((card) => (
-                  <div key={card.id} className="p-4 bg-muted/30 rounded-lg space-y-4">
-                    {/* Icon and Title */}
-                    <div className="flex items-center gap-2">
-                      <Sprout className="w-5 h-5 text-primary" />
-                      <h3 className="font-semibold text-base">Nap Transition</h3>
-                    </div>
-                    
-                    {/* Short Description */}
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {babyName} dropped to 1 nap today—a big change from their usual rhythm.
+              {/* What This Tells Us */}
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  What This Tells Us
+                </h2>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <p className="text-sm text-foreground">
+                      Daytime alertness is increasing as sleep cycles consolidate.
                     </p>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => handleSendMessage("Why does this nap transition happen?")}
-                      >
-                        Why this happens
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => handleSendMessage("What helps with nap transitions?")}
-                      >
-                        What helps
-                      </Button>
-                    </div>
                   </div>
-                ))}
+                  <div className="flex items-start gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                    <p className="text-sm text-foreground">
+                      Appetite may fluctuate while energy use rises.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* What To Watch For */}
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  What To Watch For
+                </h2>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-foreground">
+                      If shorter naps persist beyond a week, they may be ready to adjust their routine.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Activity className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-foreground">
+                      Look for signs of overtiredness around bedtime — an earlier start can help.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Encouragement Line */}
+              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm text-foreground font-medium">
+                  Each streak builds the foundation for the next — this one shows {babyName} is ready for more active days ahead.
+                </p>
               </div>
             </div>
           )}
 
-          {/* For You Section */}
+          {/* Supporting Articles & Tools */}
           {!needsBirthdaySetup && hasMinimumData && (
-            <ForYouSection
-              babyName={babyName}
-              babyAgeInWeeks={babyAgeInWeeks}
-              hasInsights={insightCards.length > 0}
-              recentActivities={activities.filter(a => {
-                const twoWeeksAgo = new Date();
-                twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-                return new Date(a.logged_at) >= twoWeeksAgo;
-              })}
-              onArticleClick={(title) => handleSendMessage(`Tell me about: ${title}`)}
-            />
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                  Supporting Articles & Tools
+                </h2>
+                <BookOpen className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Selected for {babyName}'s current rhythm
+              </p>
+              <ForYouSection
+                babyName={babyName}
+                babyAgeInWeeks={babyAgeInWeeks}
+                hasInsights={insightCards.length > 0}
+                recentActivities={activities.filter(a => {
+                  const twoWeeksAgo = new Date();
+                  twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+                  return new Date(a.logged_at) >= twoWeeksAgo;
+                })}
+                onArticleClick={(title) => handleSendMessage(`Tell me about: ${title}`)}
+              />
+            </div>
+          )}
+
+          {/* Trend Connection */}
+          {hasMinimumData && (
+            <div className="p-4 bg-muted/30 rounded-lg border border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium mb-1">
+                    Curious how this compares to last week?
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    View detailed rhythm trends and patterns over time
+                  </p>
+                </div>
+                <Button variant="ghost" size="sm" className="flex-shrink-0">
+                  <TrendingUp className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           )}
 
           {/* Explore Topics Section */}
