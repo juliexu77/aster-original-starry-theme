@@ -213,15 +213,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
   
-  // Get icon for each pattern
-  const getPatternIcon = (pattern: string) => {
-    if (pattern === "Smooth Flow") return <Sun className="w-4 h-4" />;
-    if (pattern === "Building Rhythm") return <Sprout className="w-4 h-4" />;
-    if (pattern === "In Sync") return <Target className="w-4 h-4" />;
-    if (pattern === "Extra Sleepy") return <Moon className="w-4 h-4" />;
-    if (pattern === "Active Feeding") return <Milk className="w-4 h-4" />;
-    if (pattern === "Off Rhythm") return <CloudRain className="w-4 h-4" />;
-    return <Sprout className="w-4 h-4" />;
+  // Get emoji for each pattern
+  const getPatternEmoji = (pattern: string): string => {
+    if (pattern === "Smooth Flow") return "☀️";
+    if (pattern === "Building Rhythm") return "🌿";
+    if (pattern === "In Sync") return "🎯";
+    if (pattern === "Extra Sleepy") return "🌙";
+    if (pattern === "Active Feeding") return "🍼";
+    if (pattern === "Off Rhythm") return "🌧";
+    return "🌿";
   };
   
   // Calculate last month's data for progress comparison
@@ -627,7 +627,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 className="text-left"
               >
                 <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  <span className="text-sm">{getPatternIcon(toneFrequencies.streakTone)}</span>
+                  <span className="text-sm">{getPatternEmoji(toneFrequencies.streakTone)}</span>
                   <span className="text-sm font-medium text-accent-foreground">{toneFrequencies.streakTone}</span>
                 </div>
               </button>
