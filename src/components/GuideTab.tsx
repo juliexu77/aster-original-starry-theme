@@ -564,9 +564,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               
               {showStreakInsight && (
                 <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                  {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+                  {getPatternTooltip(toneFrequencies.streakTone)}
                 </p>
               )}
+
+              <p className="text-xs text-muted-foreground">
+                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+              </p>
             </div>
           )}
 
