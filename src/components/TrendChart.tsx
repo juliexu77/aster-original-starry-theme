@@ -207,8 +207,8 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return "Natural sleep rhythm developing day by day.";
   };
 
-  const maxFeedValue = Math.max(...feedData.map(d => d.value));
-  const maxNapValue = Math.max(...napData.map(d => d.value));
+  const maxFeedValue = Math.max(1, ...feedData.map(d => d.value));
+  const maxNapValue = Math.max(1, ...napData.map(d => d.value));
 
   return (
     <div className="space-y-6">
