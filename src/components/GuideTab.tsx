@@ -109,7 +109,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return acc;
     }, {} as Record<string, number>);
     
-    return { frequency, tones };
+    // Calculate current streak (consecutive days with same tone)
+    let currentStreak = 0;
+    let streakTone = "";
+    if (tones.length > 0) {
+      const lastTone = tones[tones.length - 1].text;
+      for (let i = tones.length - 1; i >= 0; i--) {
+        if (tones[i].text === lastTone) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+      if (currentStreak >= 2) {
+        streakTone = lastTone;
+      }
+    }
+    
+    return { frequency, tones, currentStreak, streakTone };
   })();
   
   const currentTone = toneFrequencies.tones[toneFrequencies.tones.length - 1];
@@ -410,10 +427,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       {/* Header: Your Baby's Current Rhythm */}
       {!needsBirthdaySetup && hasMinimumData && (
         <div className="p-6 border-b border-border bg-gradient-to-br from-background to-muted/20">
-          <h1 className="text-2xl font-bold mb-1">{babyName}'s Current Rhythm</h1>
-          <p className="text-sm text-muted-foreground mb-4">
-            {babyAgeInMonths} months {babyAgeInWeeks % 4}w
-          </p>
+          <h1 className="text-2xl font-bold mb-4">{babyName}'s Current Rhythm</h1>
           
           {/* Tone Chips */}
           <div className="space-y-3">
@@ -433,9 +447,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
             
             {/* Streak detection */}
-            {sortedTones[0] && sortedTones[0][1] >= 3 && (
+            {toneFrequencies.currentStreak >= 2 && (
               <p className="text-xs text-muted-foreground mt-2">
-                You're on a {sortedTones[0][1]}-day "{sortedTones[0][0]}" streak — this often happens during a growth or learning burst.
+                You're on a {toneFrequencies.currentStreak}-day "{toneFrequencies.streakTone}" streak — this often happens during a growth or learning burst.
               </p>
             )}
             
