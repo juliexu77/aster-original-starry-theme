@@ -13,7 +13,6 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import DOMPurify from 'dompurify';
 
 interface Activity {
   id: string;
@@ -51,27 +50,48 @@ interface InsightCard {
   questions: string[];
 }
 
-// Simple markdown formatter with XSS protection
-const formatMarkdown = (text: string) => {
+// Simple text formatter - uses React's built-in XSS protection
+const formatText = (text: string) => {
   const paragraphs = text.split('\n\n').filter(p => p.trim());
   
   return paragraphs.map((paragraph, idx) => {
-    let formatted = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+    // Parse bold text **text**
+    const parts = paragraph.split(/(\*\*[^*]+\*\*)/g);
     
-    if (formatted.includes('<li>')) {
-      formatted = '<ul class="list-disc pl-5 space-y-1">' + formatted + '</ul>';
+    // Check if this paragraph should be a list
+    const isListItem = paragraph.trim().startsWith('- ');
+    
+    if (isListItem) {
+      // Handle list items
+      const listItems = paragraph.split('\n').filter(line => line.trim().startsWith('- '));
+      return (
+        <ul key={idx} className="list-disc pl-5 space-y-1 mb-3">
+          {listItems.map((item, itemIdx) => {
+            const itemText = item.replace(/^-\s*/, '');
+            const itemParts = itemText.split(/(\*\*[^*]+\*\*)/g);
+            return (
+              <li key={itemIdx}>
+                {itemParts.map((part, partIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={partIdx}>{part.slice(2, -2)}</strong>;
+                  }
+                  return part;
+                })}
+              </li>
+            );
+          })}
+        </ul>
+      );
     }
-    
-    // Sanitize HTML to prevent XSS attacks
-    const sanitized = DOMPurify.sanitize(formatted, {
-      ALLOWED_TAGS: ['strong', 'ul', 'li'],
-      ALLOWED_ATTR: []
-    });
     
     return (
       <div key={idx} className={idx < paragraphs.length - 1 ? "mb-3" : ""}>
-        <div dangerouslySetInnerHTML={{ __html: sanitized }} />
+        {parts.map((part, partIdx) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={partIdx}>{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        })}
       </div>
     );
   });
@@ -798,7 +818,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     }`}
                   >
                     <div className="text-sm leading-relaxed">
-                      {formatMarkdown(msg.content)}
+                      {formatText(msg.content)}
                     </div>
                   </div>
                 </div>

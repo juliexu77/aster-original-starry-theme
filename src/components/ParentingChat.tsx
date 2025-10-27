@@ -8,7 +8,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
-import DOMPurify from 'dompurify';
 
 interface Message {
   role: "user" | "assistant";
@@ -39,27 +38,48 @@ interface ParsedMessage {
   chips: string[];
 }
 
-// Simple markdown formatter with XSS protection
-const formatMarkdown = (text: string) => {
+// Simple text formatter - uses React's built-in XSS protection
+const formatText = (text: string) => {
   const paragraphs = text.split('\n\n').filter(p => p.trim());
   
   return paragraphs.map((paragraph, idx) => {
-    let formatted = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    formatted = formatted.replace(/^- (.+)$/gm, '<li>$1</li>');
+    // Parse bold text **text**
+    const parts = paragraph.split(/(\*\*[^*]+\*\*)/g);
     
-    if (formatted.includes('<li>')) {
-      formatted = '<ul class="list-disc pl-5 space-y-1">' + formatted + '</ul>';
+    // Check if this paragraph should be a list
+    const isListItem = paragraph.trim().startsWith('- ');
+    
+    if (isListItem) {
+      // Handle list items
+      const listItems = paragraph.split('\n').filter(line => line.trim().startsWith('- '));
+      return (
+        <ul key={idx} className="list-disc pl-5 space-y-1 mb-4">
+          {listItems.map((item, itemIdx) => {
+            const itemText = item.replace(/^-\s*/, '');
+            const itemParts = itemText.split(/(\*\*[^*]+\*\*)/g);
+            return (
+              <li key={itemIdx}>
+                {itemParts.map((part, partIdx) => {
+                  if (part.startsWith('**') && part.endsWith('**')) {
+                    return <strong key={partIdx}>{part.slice(2, -2)}</strong>;
+                  }
+                  return part;
+                })}
+              </li>
+            );
+          })}
+        </ul>
+      );
     }
-    
-    // Sanitize HTML to prevent XSS attacks
-    const sanitized = DOMPurify.sanitize(formatted, {
-      ALLOWED_TAGS: ['strong', 'ul', 'li'],
-      ALLOWED_ATTR: []
-    });
     
     return (
       <div key={idx} className={idx < paragraphs.length - 1 ? "mb-4" : ""}>
-        <div dangerouslySetInnerHTML={{ __html: sanitized }} />
+        {parts.map((part, partIdx) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={partIdx}>{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        })}
       </div>
     );
   });
@@ -532,7 +552,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
             </div>
             <div className="flex-1 space-y-3">
               <div className="text-sm text-foreground/90 leading-relaxed">
-                {formatMarkdown(emphasizeMicrolearning(greetingMessage.content))}
+                {formatText(emphasizeMicrolearning(greetingMessage.content))}
               </div>
             </div>
           </div>
@@ -588,7 +608,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                       }`}
                     >
                       <div className="text-sm leading-relaxed">
-                        {formatMarkdown(emphasizeMicrolearning(msg.content))}
+                        {formatText(emphasizeMicrolearning(msg.content))}
                       </div>
                       {msg.role === "assistant" && msg.liked && (
                         <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
@@ -629,7 +649,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
                 }`}
               >
                 <div className="text-sm leading-relaxed">
-                  {formatMarkdown(emphasizeMicrolearning(msg.content))}
+                  {formatText(emphasizeMicrolearning(msg.content))}
                 </div>
                 {msg.role === "assistant" && msg.liked && (
                   <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center animate-in zoom-in duration-200">
