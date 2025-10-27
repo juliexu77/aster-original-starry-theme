@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Sprout, Send, Calendar, Activity, TrendingUp } from "lucide-react";
+import { 
+  Sprout, Send, Calendar, Activity, TrendingUp, 
+  Sun, Moon, Target, Milk, CloudRain, 
+  Clock, Timer, Bed, Lightbulb, CheckSquare, 
+  ArrowRight, Compass
+} from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -208,17 +213,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
   
-  // Get emoji for each pattern
-  const getPatternEmoji = (pattern: string): string => {
-    const sampleTone = getDailyTone([{ id: '', type: 'feed', logged_at: '', details: {} }], household?.baby_birthday);
-    // Find the emoji from our tone calculations
-    if (pattern === "Smooth Flow") return "☀️";
-    if (pattern === "Building Rhythm") return "🌿";
-    if (pattern === "In Sync") return "🎯";
-    if (pattern === "Extra Sleepy") return "🌙";
-    if (pattern === "Active Feeding") return "🍼";
-    if (pattern === "Off Rhythm") return "🌧";
-    return "🌿";
+  // Get icon for each pattern
+  const getPatternIcon = (pattern: string) => {
+    if (pattern === "Smooth Flow") return <Sun className="w-4 h-4" />;
+    if (pattern === "Building Rhythm") return <Sprout className="w-4 h-4" />;
+    if (pattern === "In Sync") return <Target className="w-4 h-4" />;
+    if (pattern === "Extra Sleepy") return <Moon className="w-4 h-4" />;
+    if (pattern === "Active Feeding") return <Milk className="w-4 h-4" />;
+    if (pattern === "Off Rhythm") return <CloudRain className="w-4 h-4" />;
+    return <Sprout className="w-4 h-4" />;
   };
   
   // Calculate last month's data for progress comparison
@@ -624,7 +627,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 className="text-left"
               >
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                  <span className="text-base">{getPatternEmoji(toneFrequencies.streakTone)}</span>
+                  {getPatternIcon(toneFrequencies.streakTone)}
                   <span className="text-base font-medium text-accent-foreground">{toneFrequencies.streakTone} ×{toneFrequencies.currentStreak}</span>
                 </div>
               </button>
@@ -656,21 +659,28 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 </div>
                 
                 {guideSections.data_pulse.metrics.length > 0 ? (
-                  guideSections.data_pulse.metrics.map((metric, idx) => (
-                    <div key={idx} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">
-                          {metric.name === 'Total sleep' ? '💤' : 
-                           metric.name === 'Feed volume' ? '🍼' : 
-                           metric.name === 'Wake average' ? '🌡️' : '📊'}
+                  guideSections.data_pulse.metrics.map((metric, idx) => {
+                    const getMetricIcon = () => {
+                      if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Nap duration') return <Bed className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Feed duration') return <Timer className="w-4 h-4 text-primary" />;
+                      return <Activity className="w-4 h-4 text-primary" />;
+                    };
+                    
+                    return (
+                      <div key={idx} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getMetricIcon()}
+                          <span className="text-sm text-foreground">{metric.name}</span>
+                        </div>
+                        <span className="text-sm font-medium text-foreground">
+                          {metric.change}
                         </span>
-                        <span className="text-sm text-foreground">{metric.name}</span>
                       </div>
-                      <span className="text-sm font-medium text-foreground">
-                        {metric.change}
-                      </span>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-sm text-muted-foreground text-center py-2">
                     No significant changes detected
@@ -688,7 +698,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm">🔹</span>
+                <Lightbulb className="w-4 h-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">What to Know</h3>
               </div>
               <div className="space-y-2 pl-1">
@@ -708,7 +718,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm">🔹</span>
+                <CheckSquare className="w-4 h-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">What To Do</h3>
               </div>
               <div className="space-y-2 pl-1">
@@ -728,7 +738,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {hasMinimumData && guideSections && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm">🔹</span>
+                <ArrowRight className="w-4 h-4 text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">What's Next</h3>
               </div>
               <div className="space-y-3 pl-1">
@@ -736,7 +746,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   {guideSections.whats_next}
                 </p>
                 <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
-                  <span className="text-sm flex-shrink-0">🧭</span>
+                  <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-foreground">
                     <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
                   </p>
