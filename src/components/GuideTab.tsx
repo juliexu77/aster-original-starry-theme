@@ -173,6 +173,7 @@ const getDailyTone = (dayActivities: Activity[], babyBirthday?: string) => {
 };
 
 export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
+  // ===== ALL HOOKS FIRST (must be before any conditional returns) =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -188,27 +189,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
   const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
-  // Wait for household data to load before rendering
-  if (householdLoading || !household) {
-    return (
-      <div className="flex flex-col h-full bg-background pb-24">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading guidance...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  const babyName = household.baby_name || 'Baby';
-  const babyAgeInWeeks = household.baby_birthday ? 
+
+  // ===== DERIVED VALUES (safe to calculate even if household is null) =====
+  const babyName = household?.baby_name || 'Baby';
+  const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
-  // Calculate tone frequencies for the last 7 days
+  // Calculate tone frequencies for the last 7 days (safe even without household)
   const toneFrequencies = (() => {
+    if (!household) return { frequency: {}, tones: [], currentStreak: 0, streakTone: "" };
+    
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -264,9 +254,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (pattern === "Off Rhythm") return "🌧";
     return "🌿";
   };
-  
-  // Calculate last month's data for progress comparison
+
+  // Calculate last month's data for progress comparison (safe even without household)
   const lastMonthData = (() => {
+    if (!household) return {};
+    
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const sixtyDaysAgo = new Date();
@@ -313,6 +305,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const feeds = activities.filter(a => a.type === 'feed');
   const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
 
+  // ===== ALL EFFECTS =====
   // Debug logging
   useEffect(() => {
     console.log('🔍 GuideTab Debug:', {
@@ -329,9 +322,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Fetch guide sections once daily at 5am
   useEffect(() => {
+    if (!hasMinimumData || !user || !household) return;
+    
     const fetchGuideSections = async () => {
-      if (!hasMinimumData || !user) return;
-      
       setGuideSectionsLoading(true);
       try {
         console.log('🔄 Fetching guide sections from edge function...');
@@ -390,15 +383,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.log('🚀 Fetching fresh guide sections...');
       fetchGuideSections();
     }
-  }, [hasMinimumData, user, guideSections]);
+  }, [hasMinimumData, user, guideSections, household]);
 
   // Load initial insight
   useEffect(() => {
-    if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0) {
+    if (!hasInitialized && hasMinimumData && babyName && babyAgeInWeeks > 0 && household) {
       setHasInitialized(true);
       loadInitialInsight();
     }
-  }, [hasInitialized, hasMinimumData, babyName, babyAgeInWeeks]);
+  }, [hasInitialized, hasMinimumData, babyName, babyAgeInWeeks, household]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -408,6 +401,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       });
     }
   }, [messages]);
+
+  // ===== HANDLERS =====
 
   const loadInitialInsight = async () => {
     setIsLoading(true);
@@ -630,35 +625,45 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   return (
     <div className="flex flex-col h-full bg-background pb-24">
-      {/* Birthday Setup Prompt */}
-      {needsBirthdaySetup && (
-        <div className="p-4 bg-accent/20 border-b border-border/40">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-5 h-5 text-primary" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium">Set your baby's birthday for personalized guidance</p>
-              <p className="text-xs text-muted-foreground">
-                The Guide provides age-appropriate insights when we know your baby's age.
-              </p>
-              <Button
-                size="sm"
-                variant="default"
-                onClick={() => onGoToSettings?.()}
-                className="mt-2"
-              >
-                Go to Settings
-              </Button>
-            </div>
+      {/* Loading State */}
+      {householdLoading || !household ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading guidance...</p>
           </div>
         </div>
-      )}
+      ) : (
+        <>
+          {/* Birthday Setup Prompt */}
+          {needsBirthdaySetup && (
+            <div className="p-4 bg-accent/20 border-b border-border/40">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-5 h-5 text-primary" />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm font-medium">Set your baby's birthday for personalized guidance</p>
+                  <p className="text-xs text-muted-foreground">
+                    The Guide provides age-appropriate insights when we know your baby's age.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={() => onGoToSettings?.()}
+                    className="mt-2"
+                  >
+                    Go to Settings
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
 
 
-      {/* Main Content */}
-      <ScrollArea className="flex-1">
+          {/* Main Content */}
+          <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 pt-4 space-y-6">
           {/* Streak Chip */}
           {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
@@ -865,6 +870,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           </Button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };
