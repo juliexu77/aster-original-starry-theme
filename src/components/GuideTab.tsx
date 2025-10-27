@@ -711,7 +711,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* Data Pulse */}
-          {hasMinimumData && guideSections?.data_pulse && (
+          {hasMinimumData && guideSections && guideSections.data_pulse && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 bg-primary rounded-sm" />
@@ -761,7 +761,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What to Know */}
-          {hasMinimumData && guideSections?.what_to_know && (
+          {hasMinimumData && guideSections && guideSections.what_to_know && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-4 h-4 text-primary" />
@@ -781,7 +781,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What To Do */}
-          {hasMinimumData && guideSections?.what_to_do && (
+          {hasMinimumData && guideSections && guideSections.what_to_do && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <CheckSquare className="w-4 h-4 text-primary" />
@@ -801,7 +801,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* What's Next */}
-          {hasMinimumData && guideSections?.whats_next && (
+          {hasMinimumData && guideSections && guideSections.whats_next && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowRight className="w-4 h-4 text-primary" />
