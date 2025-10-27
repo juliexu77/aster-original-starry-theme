@@ -610,12 +610,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </div>
           )}
 
-          {/* Data Pulse (Micro-Metrics) */}
+          {/* Data Pulse */}
           {hasMinimumData && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 bg-primary rounded-sm" />
-                <h3 className="text-sm font-semibold text-foreground">Data Pulse (micro-metrics)</h3>
+                <h3 className="text-sm font-semibold text-foreground">Data Pulse</h3>
               </div>
               
               <div className="space-y-3">
