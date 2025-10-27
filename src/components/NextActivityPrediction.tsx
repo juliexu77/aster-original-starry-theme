@@ -57,13 +57,13 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   
   // Use the new prediction engine but adapt to old UI format
   const predictNextActivity = () => {
-    console.log('🚀 NextActivityPrediction called with activities:', activities.length);
-    console.log('📊 Sample activities:', activities.slice(0, 2).map(a => ({
-      type: a.type,
-      time: a.time,
-      loggedAt: a.loggedAt,
-      details: a.details
-    })));
+    // Check minimum data requirements first
+    const naps = activities.filter(a => a.type === 'nap');
+    const feeds = activities.filter(a => a.type === 'feed');
+    
+    if (activities.length === 0 || naps.length < 4 || feeds.length < 4) {
+      return null;
+    }
     
     const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
     const prediction = engine.getNextAction();
@@ -167,6 +167,12 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   const prediction = predictNextActivity();
+  
+  // If no prediction due to insufficient data, don't show anything
+  if (!prediction) {
+    return null;
+  }
+  
   const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
   const fullPrediction = engine.getNextAction();
   const hasConfidentPrediction = (fullPrediction.intent === "FEED_SOON" || fullPrediction.intent === "START_WIND_DOWN") && fullPrediction.confidence === "high";
