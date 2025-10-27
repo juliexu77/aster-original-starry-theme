@@ -468,13 +468,7 @@ const ongoingNap = activities
         />;
       case "trends":
         return (
-          <div className="px-4 py-6 space-y-6">
-            {/* Trends Header */}
-            <div className="space-y-1">
-              <h2 className="text-[18px] font-semibold text-foreground">
-                This week's rhythm at a glance.
-              </h2>
-            </div>
+          <div className="px-4 pt-4 pb-6 space-y-6">
             <WeeklyReflection activities={activities} />
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />

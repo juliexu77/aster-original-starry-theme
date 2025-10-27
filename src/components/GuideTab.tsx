@@ -632,10 +632,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       {/* Main Content */}
       <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="px-4 space-y-6">
+        <div ref={scrollRef} className="px-4 pt-4 space-y-6">
           {/* Streak Chip */}
           {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
-            <div className="pt-4 space-y-3">
+            <div className="space-y-3">
               <button 
                 onClick={() => setShowStreakInsight(!showStreakInsight)}
                 className="text-left"

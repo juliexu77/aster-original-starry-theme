@@ -1255,7 +1255,7 @@ const lastDiaper = displayActivities
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-3 border-b border-border/40">
       </div>
 
-      <div className="px-4 space-y-6 pt-3">
+      <div className="px-4 pt-4 space-y-6">
 
         {/* Tone Card */}
         <div className="space-y-3">
