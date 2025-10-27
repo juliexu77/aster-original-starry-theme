@@ -5,6 +5,8 @@ import { useState, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -15,15 +17,6 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
   const feedChartRef = useRef<HTMLDivElement>(null);
   const napChartRef = useRef<HTMLDivElement>(null);
-
-  const onShare = async (ref: React.RefObject<HTMLDivElement>, title: string) => {
-    if (!ref.current) return;
-    try {
-      await shareElement(ref.current, title, getWeekCaption(0));
-    } catch (e) {
-      console.error('Share failed', e);
-    }
-  };
 
   // Determine preferred unit from last feed entry
   const getPreferredUnit = () => {
@@ -37,7 +30,16 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
     return quantity > 50 ? "ml" : "oz";
   };
 
-  const preferredUnit = getPreferredUnit();
+  const [feedUnit, setFeedUnit] = useState<"ml" | "oz">(getPreferredUnit());
+
+  const onShare = async (ref: React.RefObject<HTMLDivElement>, title: string) => {
+    if (!ref.current) return;
+    try {
+      await shareElement(ref.current, title, getWeekCaption(0));
+    } catch (e) {
+      console.error('Share failed', e);
+    }
+  };
 
   // Calculate real feed volume data for the past 7 days
   const generateFeedData = () => {
@@ -65,18 +67,18 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       dayFeeds.forEach(feed => {
         if (!feed.details.quantity) return;
         const quantity = parseFloat(feed.details.quantity);
-        const feedUnit = feed.details.unit || (quantity > 50 ? "ml" : "oz");
+        const activityUnit = feed.details.unit || (quantity > 50 ? "ml" : "oz");
         
-        if (preferredUnit === "ml") {
+        if (feedUnit === "ml") {
           // Convert to ml if needed
-          if (feedUnit === "oz") {
+          if (activityUnit === "oz") {
             totalValue += quantity * 29.5735; // Convert oz to ml
           } else {
             totalValue += quantity;
           }
         } else {
           // Convert to oz if needed  
-          if (feedUnit === "ml") {
+          if (activityUnit === "ml") {
             totalValue += quantity / 29.5735; // Convert ml to oz
           } else {
             totalValue += quantity;
@@ -86,7 +88,7 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
       
       const value = Math.round(totalValue * 10) / 10;
       const feedCount = dayFeeds.length;
-      const unit = preferredUnit;
+      const unit = feedUnit;
       
       data.push({
         date: date.toLocaleDateString(language === 'zh' ? "zh-CN" : "en-US", { weekday: "short" }),
@@ -228,9 +230,20 @@ export const TrendChart = ({ activities }: TrendChartProps) => {
         </div>
         
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
-            <span className="text-sm text-muted-foreground">{t('feedVolume')} ({preferredUnit})</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gradient-feed"></div>
+              <span className="text-sm text-muted-foreground">{t('feedVolume')} ({feedUnit})</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground">ml</Label>
+              <Switch 
+                id="unit-toggle"
+                checked={feedUnit === "oz"}
+                onCheckedChange={(checked) => setFeedUnit(checked ? "oz" : "ml")}
+              />
+              <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground">oz</Label>
+            </div>
           </div>
 
           <div className="grid grid-cols-7 gap-2 h-32">
