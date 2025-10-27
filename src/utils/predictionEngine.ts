@@ -882,21 +882,33 @@ if (ongoingSleep) {
       }
     }
 
-    // Adjust confidence
-    if (conflictZone) confidenceScore -= 0.05;
+    // Adjust confidence - be less penalizing for stable data
+    if (conflictZone && this.internals.dataStability !== 'stable') {
+      confidenceScore -= 0.05;
+    }
     if (dataGap) confidenceScore -= 0.1;
     confidenceScore = clamp(confidenceScore, 0.2, 0.95);
 
-    // Map to confidence level - improved logic to avoid persistent low confidence
+    // Map to confidence level - prioritize stable data patterns
     let confidence: 'high' | 'medium' | 'low';
+    
+    // Stable data with clear decision = high confidence
     if (confidenceScore >= 0.7 && !conflictZone && this.internals.dataStability === 'stable') {
       confidence = 'high';
-    } else if (confidenceScore >= 0.5 || this.internals.dataStability === 'stable') {
-      // If data is stable, default to medium confidence even in conflict zones
+    } 
+    // Stable data always gets at least medium confidence, even in conflict
+    else if (this.internals.dataStability === 'stable') {
       confidence = 'medium';
-    } else if (confidenceScore >= 0.4 && this.internals.dataStability === 'unstable') {
+    }
+    // Decent score with unstable data
+    else if (confidenceScore >= 0.6 && this.internals.dataStability === 'unstable') {
       confidence = 'medium';
-    } else {
+    }
+    // Lower scores or sparse data
+    else if (confidenceScore >= 0.45) {
+      confidence = 'medium';
+    }
+    else {
       confidence = 'low';
     }
 
