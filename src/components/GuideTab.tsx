@@ -729,19 +729,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Rhythm stability suggests he's adapting well to his current schedule.
+                    This rhythm stability suggests he's adapting well to his current schedule.
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Small appetite bump is typical after a few smooth days — it often precedes a developmental leap.
+                    Totally normal: Small appetite bumps often happen after smooth days — they often precede a developmental leap.
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Expect brief restlessness midweek as the streak tapers.
+                    You might see brief restlessness midweek as the streak tapers.
                   </p>
                 </div>
               </div>
