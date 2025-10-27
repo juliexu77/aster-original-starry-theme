@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Activity {
   id: string;
@@ -54,6 +55,26 @@ const formatMarkdown = (text: string) => {
       </div>
     );
   });
+};
+
+// Helper to get pattern tooltip
+const getPatternTooltip = (pattern: string): string => {
+  switch (pattern) {
+    case "Smooth Flow":
+      return "Stable naps, predictable feeds, balanced energy.";
+    case "Building Rhythm":
+      return "Adjusting wake windows or feeding intervals.";
+    case "In Sync":
+      return "Perfectly aligned with developmental expectations.";
+    case "Extra Sleepy":
+      return "More rest than usual, often during growth or recovery.";
+    case "Active Feeding":
+      return "Increased appetite and feeding frequency.";
+    case "Off Rhythm":
+      return "Recovering from changes like travel, teething, or illness.";
+    default:
+      return "Unique daily pattern reflecting current needs.";
+  }
 };
 
 // Helper to get pattern insight descriptions
@@ -177,6 +198,45 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const sortedTones = Object.entries(toneFrequencies.frequency)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
+  
+  // Calculate last month's data for progress comparison
+  const lastMonthData = (() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+    
+    const lastMonthActivities = activities.filter(a => {
+      const activityDate = new Date(a.logged_at);
+      return activityDate >= sixtyDaysAgo && activityDate < thirtyDaysAgo;
+    });
+    
+    const lastMonthDays = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - 60 + i);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    });
+    
+    const lastMonthTones = lastMonthDays.map(date => {
+      const dayActivities = lastMonthActivities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate.toDateString() === date.toDateString();
+      });
+      return getDailyTone(dayActivities, household?.baby_birthday);
+    });
+    
+    const frequency = lastMonthTones.reduce((acc, tone) => {
+      acc[tone.text] = (acc[tone.text] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return frequency;
+  })();
+  
+  const thisMonthSmoothFlow = toneFrequencies.frequency["Smooth Flow"] || 0;
+  const lastMonthSmoothFlow = lastMonthData["Smooth Flow"] || 0;
+  const smoothFlowDiff = thisMonthSmoothFlow - lastMonthSmoothFlow;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
 
@@ -470,67 +530,97 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
       {/* Header: Your Baby's Current Rhythm */}
       {!needsBirthdaySetup && hasMinimumData && (
-        <div className="p-6 border-b border-border bg-gradient-to-br from-background to-muted/20">
-          <h1 className="text-2xl font-bold mb-4">{babyName}'s Current Rhythm</h1>
+        <div className="border-b border-border">
+          {/* Progress Ribbon */}
+          <div className="px-6 pt-4 pb-3 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-primary/10">
+            <p className="text-xs text-foreground">
+              <span className="font-medium">This month:</span> {thisMonthSmoothFlow} Smooth Flow days 
+              {smoothFlowDiff !== 0 && (
+                <span className={smoothFlowDiff > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
+                  {" "}({smoothFlowDiff > 0 ? "+" : ""}{smoothFlowDiff} vs last month)
+                </span>
+              )}
+            </p>
+          </div>
           
-          {/* Pattern Display */}
-          <div className="space-y-2">
-            {sortedTones[0] && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Primary Pattern:</span>
-                <span className="text-base font-semibold">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
-              </div>
-            )}
-            {sortedTones[1] && (
-              <div className="flex items-baseline gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Secondary Pattern:</span>
-                <span className="text-base font-semibold">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
-              </div>
-            )}
+          <div className="p-6 bg-gradient-to-br from-background to-muted/20">
+            <h1 className="text-2xl font-bold mb-4">{babyName}'s Current Rhythm</h1>
             
-            {/* Streak description */}
-            {toneFrequencies.currentStreak >= 2 && (
-              <p className="text-xs text-muted-foreground mt-3">
-                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
-              </p>
-            )}
-            
-            {/* Tone Evolution Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowToneEvolution(!showToneEvolution)}
-              className="text-xs -ml-2 mt-2"
-            >
-              {showToneEvolution ? "Hide" : "View"} pattern evolution
-              <TrendingUp className="w-3 h-3 ml-1" />
-            </Button>
-            
-            {/* Tone Evolution Visualization */}
-            {showToneEvolution && (
-              <div className="mt-3 p-3 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  {toneFrequencies.tones.map((tone, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSelectedPattern(tone.text);
-                        setShowPatternInsightModal(true);
-                      }}
-                      className="flex flex-col items-center flex-1 cursor-pointer hover:bg-muted/50 rounded p-2 transition-colors"
-                    >
-                      <div className="text-lg mb-1">{tone.emoji}</div>
-                      <div className="text-[10px] text-muted-foreground text-center leading-tight">
-                        {tone.text.split(' ')[0]}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Tap any day to learn what each pattern means
-                </p>
+            {/* Pattern Display */}
+            <TooltipProvider>
+              <div className="space-y-2">
+                {sortedTones[0] && (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Primary Pattern:</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-base font-semibold cursor-help">{sortedTones[0][0]} ×{sortedTones[0][1]}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">{getPatternTooltip(sortedTones[0][0])}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                )}
+                {sortedTones[1] && (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Secondary Pattern:</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-base font-semibold cursor-help">{sortedTones[1][0]} ×{sortedTones[1][1]}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-xs">{getPatternTooltip(sortedTones[1][0])}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                )}
+                
+                {/* Streak description */}
+                {toneFrequencies.currentStreak >= 2 && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+                  </p>
+                )}
+                
+                {/* Tone Evolution Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowToneEvolution(!showToneEvolution)}
+                  className="text-xs -ml-2 mt-2"
+                >
+                  {showToneEvolution ? "Hide" : "View"} pattern evolution
+                  <TrendingUp className="w-3 h-3 ml-1" />
+                </Button>
+                
+                {/* Tone Evolution Visualization */}
+                {showToneEvolution && (
+                  <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      {toneFrequencies.tones.map((tone, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setSelectedPattern(tone.text);
+                            setShowPatternInsightModal(true);
+                          }}
+                          className="flex flex-col items-center flex-1 cursor-pointer hover:bg-muted/50 rounded p-2 transition-colors"
+                        >
+                          <div className="text-lg mb-1">{tone.emoji}</div>
+                          <div className="text-[10px] text-muted-foreground text-center leading-tight">
+                            {tone.text.split(' ')[0]}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Tap any day to learn what each pattern means
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
+            </TooltipProvider>
           </div>
         </div>
       )}
