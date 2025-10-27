@@ -1414,7 +1414,7 @@ const lastDiaper = displayActivities
                       {nextAction}
                     </p>
                   </div>
-                  {!ongoingNap && prediction && addActivity && (
+                  {!ongoingNap && prediction && addActivity && prediction.confidence === 'high' && (prediction.intent === 'FEED_SOON' || prediction.intent === 'START_WIND_DOWN') && (
                     <Button
                       onClick={async (e) => {
                         e.stopPropagation();
