@@ -1588,7 +1588,6 @@ const lastDiaper = displayActivities
                     console.log('ongoingNap:', ongoingNap);
                     onEndNap();
                   }}
-                  variant="outline"
                   className="w-full mt-2"
                   size="sm"
                 >
