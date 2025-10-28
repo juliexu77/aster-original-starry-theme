@@ -449,8 +449,58 @@ const ongoingNap = activities
           percentile={percentile}
         />;
       case "trends":
+        const todayActivities = activities.filter(a => {
+          if (!a.loggedAt) return false;
+          const activityDate = new Date(a.loggedAt);
+          const today = new Date();
+          return activityDate.toDateString() === today.toDateString();
+        });
+        
+        const getDailySentiment = () => {
+          const babyAgeMonths = household?.baby_birthday 
+            ? Math.floor((new Date().getTime() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 30))
+            : null;
+          
+          const summary = {
+            feedCount: todayActivities.filter(a => a.type === 'feed').length,
+            napCount: todayActivities.filter(a => a.type === 'nap' && a.details?.endTime).length,
+            diaperCount: todayActivities.filter(a => a.type === 'diaper').length,
+          };
+          
+          const currentHour = new Date().getHours();
+          
+          if (todayActivities.length === 0) {
+            return { emoji: "☀️", text: "Fresh Start" };
+          }
+          
+          const expected = babyAgeMonths !== null && babyAgeMonths < 12 
+            ? Math.max(6, 10 - Math.floor(babyAgeMonths / 2)) 
+            : 5;
+          
+          if (summary.feedCount >= expected && summary.napCount >= 2) {
+            return { emoji: "✨", text: "Rhythm Found" };
+          } else if (summary.feedCount + summary.napCount >= 6) {
+            return { emoji: "🌟", text: "Active Day" };
+          } else if (currentHour >= 18 && summary.feedCount >= 4) {
+            return { emoji: "🌙", text: "Winding Down" };
+          } else if (summary.feedCount >= 3 || summary.napCount >= 1) {
+            return { emoji: "🌱", text: "Building Rhythm" };
+          }
+          
+          return { emoji: "🌅", text: "Day Beginning" };
+        };
+        
+        const sentiment = getDailySentiment();
+        
         return (
           <div className="px-4 pt-4 pb-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium text-foreground">Patterns & Trends</h2>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20">
+                <span className="text-sm">{sentiment.emoji}</span>
+                <span className="text-sm font-medium text-accent-foreground">{sentiment.text}</span>
+              </div>
+            </div>
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
           </div>
