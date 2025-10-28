@@ -891,9 +891,25 @@ const lastDiaper = displayActivities
     if (!expected) return 'on-track';
     
     const hour = currentTime.getHours();
-    // Calculate expected feeds by this time of day (proportional to time elapsed)
-    const dayProgress = hour / 24;
-    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Calculate progress based on WAKING hours only (not full 24 hours)
+    // Assume typical waking hours: 7am-7pm = 12 hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour; // 12 hours
+    
+    // If before wake time or after sleep time, use total day
+    if (hour < wakeHour) {
+      return 'on-track'; // Too early to judge
+    }
+    
+    // Calculate how many waking hours have passed
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    // Use midpoint of expected range for calculation
+    const typicalFeeds = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalFeeds * dayProgress);
     
     // Early in the day (before 10am), be lenient
     if (hour < 10) {
@@ -916,8 +932,20 @@ const lastDiaper = displayActivities
     if (!expected) return 'on-track';
     
     const hour = currentTime.getHours();
-    const dayProgress = hour / 24;
-    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    
+    if (hour < wakeHour) {
+      return 'on-track';
+    }
+    
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    const typicalNaps = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalNaps * dayProgress);
     
     // Early in the day (before 10am), be lenient
     if (hour < 10) {
@@ -940,8 +968,16 @@ const lastDiaper = displayActivities
     if (!expected) return "We're learning your baby's feeding patterns.";
     
     const hour = currentTime.getHours();
-    const dayProgress = hour / 24;
-    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    const typicalFeeds = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalFeeds * dayProgress);
     const status = getFeedStatusIndicator(count, months);
     
     if (status === 'on-track') {
@@ -960,8 +996,16 @@ const lastDiaper = displayActivities
     if (!expected) return "We're learning your baby's sleep patterns.";
     
     const hour = currentTime.getHours();
-    const dayProgress = hour / 24;
-    const expectedByNow = Math.floor(expected.min * dayProgress);
+    
+    // Calculate progress based on waking hours
+    const wakeHour = 7;
+    const sleepHour = 19;
+    const totalWakingHours = sleepHour - wakeHour;
+    const wakingHoursPassed = Math.max(0, hour - wakeHour);
+    const dayProgress = Math.min(1, wakingHoursPassed / totalWakingHours);
+    
+    const typicalNaps = Math.round((expected.min + expected.max) / 2);
+    const expectedByNow = Math.round(typicalNaps * dayProgress);
     const status = getSleepStatusIndicator(count, months);
     
     if (status === 'on-track') {
