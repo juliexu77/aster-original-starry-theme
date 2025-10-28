@@ -278,6 +278,11 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
         new Date(a.logged_at) >= twoWeeksAgo
       );
 
+      // Get last 10 messages for context (including current user message if not greeting)
+      const conversationHistory = isGreeting 
+        ? [] 
+        : [...messages, { role: "user", content: userMessage }].slice(-10);
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -285,7 +290,7 @@ export const ParentingChat = ({ activities, babyName, babyAgeInWeeks, babySex, u
           Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmcGF2enZydGR6eHdjd2FzYXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2ODk0ODMsImV4cCI6MjA3NDI2NTQ4M30.KWdhL3IiQ0YWW2Q6MBHkXOwEz41ZU7EVS_eKG0Hn600",
         },
         body: JSON.stringify({ 
-          messages: isGreeting ? [] : [...messages, { role: "user", content: userMessage }],
+          messages: conversationHistory,
           activities: recentActivities,
           householdId: household?.id,
           babyName,
