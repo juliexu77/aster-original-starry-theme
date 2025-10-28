@@ -1102,6 +1102,21 @@ const lastDiaper = displayActivities
 
   // Use unified prediction engine
   const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
+  if (typeof window !== 'undefined') {
+    console.info('HomeTab - Prediction snapshot', {
+      hasPrediction: !!prediction,
+      intent: prediction?.intent,
+      confidence: prediction?.confidence,
+      timing: prediction?.timing ? {
+        nextFeedAt: prediction?.timing?.nextFeedAt,
+        nextNapWindowStart: prediction?.timing?.nextNapWindowStart,
+        nextWakeAt: prediction?.timing?.nextWakeAt,
+        expectedFeedVolume: prediction?.timing?.expectedFeedVolume
+      } : null,
+      reasons: prediction?.reasons,
+      dayProgress: prediction?.dayProgress
+    });
+  }
 
   const summary = getDailySummary();
   const latestMeasurement = getLatestMeasurement();
