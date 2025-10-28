@@ -728,6 +728,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   guideSections.data_pulse.metrics.map((metric, idx) => {
                     const getMetricIcon = () => {
                       if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
+                      if (metric.name === 'Naps') return <Bed className="w-4 h-4 text-primary" />;
                       if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
                       if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
                       if (metric.name === 'Nap duration') return <Bed className="w-4 h-4 text-primary" />;

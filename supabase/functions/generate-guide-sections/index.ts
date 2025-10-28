@@ -221,11 +221,31 @@ function calculateMetrics(activities: Activity[]) {
   const sleepActivities = activities.filter(a => a.type === 'nap');
   const feedActivities = activities.filter(a => a.type === 'feed');
   
+  // Helper to calculate duration for a single sleep activity
+  const calculateSleepDuration = (a: Activity) => {
+    if (a.details?.duration) {
+      return parseInt(a.details.duration);
+    }
+    if (a.details?.startTime && a.details?.endTime) {
+      const start = new Date(`1970-01-01 ${a.details.startTime}`);
+      const end = new Date(`1970-01-01 ${a.details.endTime}`);
+      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
+      if (diff < 0) diff += 24 * 60;
+      // Cap at reasonable duration (12 hours)
+      if (diff > 720) diff = 720;
+      return diff;
+    }
+    return 0;
+  };
+  
+  // Calculate TOTAL sleep (all naps including night sleep)
+  const totalSleepMinutes = sleepActivities.reduce((sum, a) => sum + calculateSleepDuration(a), 0);
+  
   // Filter for daytime naps only (7 AM - 7 PM starts)
   const daytimeNaps = sleepActivities.filter(a => {
-    if (!a.details?.startTime) return true; // include if no time info
+    if (!a.details?.startTime) return false; // exclude if no time info
     const timeMatch = a.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!timeMatch) return true;
+    if (!timeMatch) return false;
     
     let hours = parseInt(timeMatch[1]);
     const period = timeMatch[3].toUpperCase();
@@ -237,25 +257,8 @@ function calculateMetrics(activities: Activity[]) {
     return hours >= 7 && hours < 19;
   });
   
-  // Calculate nap durations from start/end times
-  const totalSleepMinutes = daytimeNaps.reduce((sum, a) => {
-    if (a.details?.duration) {
-      return sum + parseInt(a.details.duration);
-    }
-    // Calculate from startTime and endTime if available
-    if (a.details?.startTime && a.details?.endTime) {
-      const start = new Date(`1970-01-01 ${a.details.startTime}`);
-      const end = new Date(`1970-01-01 ${a.details.endTime}`);
-      let diff = (end.getTime() - start.getTime()) / (1000 * 60);
-      // Handle naps that cross midnight (rare but possible)
-      if (diff < 0) diff += 24 * 60;
-      // Cap at reasonable nap duration (5 hours)
-      if (diff > 300) diff = 300;
-      return sum + diff;
-    }
-    return sum;
-  }, 0);
-  
+  // Calculate daytime nap duration
+  const daytimeNapMinutes = daytimeNaps.reduce((sum, a) => sum + calculateSleepDuration(a), 0);
   const napCount = daytimeNaps.length;
   
   const totalFeedVolume = feedActivities.reduce((sum, a) => {
@@ -305,6 +308,7 @@ function calculateMetrics(activities: Activity[]) {
 
   return {
     totalSleepMinutes,
+    daytimeNapMinutes,
     napCount,
     totalFeedVolume,
     feedCount,
@@ -323,7 +327,7 @@ function computeDeltas(recent: any, previous: any, baselineDays: number = 5, tre
   const avgPreviousFeed = previous.totalFeedVolume / baselineDays;
   const avgPreviousWake = previous.avgWakeWindow; // already an average
 
-  // Total sleep delta (last 2 days avg vs 5-day baseline avg)
+  // Total sleep delta (last 2 days avg vs 5-day baseline avg) - ALL SLEEP
   const sleepDelta = avgRecentSleep - avgPreviousSleep;
   if (Math.abs(sleepDelta) >= 15) {
     const hours = Math.floor(Math.abs(sleepDelta) / 60);
@@ -333,6 +337,21 @@ function computeDeltas(recent: any, previous: any, baselineDays: number = 5, tre
       change: `${sleepDelta > 0 ? '+' : '-'}${hours}h ${mins}m`,
       rawDelta: sleepDelta,
       priority: Math.abs(sleepDelta) / 60 // hours difference
+    } as any);
+  }
+
+  // Daytime naps delta (separate from total sleep)
+  const avgRecentNaps = recent.daytimeNapMinutes / recentDays;
+  const avgPreviousNaps = previous.daytimeNapMinutes / baselineDays;
+  const napsDelta = avgRecentNaps - avgPreviousNaps;
+  if (Math.abs(napsDelta) >= 15) {
+    const hours = Math.floor(Math.abs(napsDelta) / 60);
+    const mins = Math.round(Math.abs(napsDelta) % 60 / 5) * 5;
+    deltas.push({
+      name: 'Naps',
+      change: `${napsDelta > 0 ? '+' : '-'}${hours}h ${mins}m`,
+      rawDelta: napsDelta,
+      priority: Math.abs(napsDelta) / 60
     } as any);
   }
 
