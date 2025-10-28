@@ -1253,210 +1253,9 @@ const lastDiaper = displayActivities
           )}
         </div>
 
-        {/* Current State Card */}
-        <Card className="p-5">
-          <div className="space-y-3">
-            {/* Big Visual Cue */}
-            <div className="flex items-center gap-3">
-              {ongoingNap ? (
-                <>
-                  <Moon className="w-6 h-6 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-lg font-semibold text-foreground">
-                      {babyName?.split(' ')[0] || 'Baby'} is sleeping
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Since {ongoingNap.details?.startTime || ongoingNap.time}
-                      {(() => {
-                        // Calculate expected wake time (assuming 1.5-2 hour nap)
-                        const startTime = ongoingNap.details?.startTime || ongoingNap.time;
-                        const [time, period] = startTime.split(' ');
-                        const [hours, minutes] = time.split(':').map(Number);
-                        let hour24 = hours;
-                        if (period === 'PM' && hours !== 12) hour24 += 12;
-                        if (period === 'AM' && hours === 12) hour24 = 0;
-                        
-                        const wakeDate = new Date();
-                        wakeDate.setHours(hour24, minutes, 0, 0);
-                        wakeDate.setMinutes(wakeDate.getMinutes() + 90); // 1.5 hour nap
-                        
-                        const wakeTime = wakeDate.toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true
-                        });
-                        
-                        return ` · Likely until ~${wakeTime}`;
-                      })()}
-                    </p>
-                  </div>
-                </>
-              ) : awakeTime ? (
-                <>
-                  <Sun className="w-6 h-6 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-lg font-semibold text-foreground">
-                      {babyName?.split(' ')[0] || 'Baby'} is awake
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Awake for {awakeTime}
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <Sun className="w-6 h-6 text-primary" />
-                  <div className="flex-1">
-                    <p className="text-lg font-semibold text-foreground">
-                      Ready to start the day
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      Log your first activity
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {/* Subtle One-Liner */}
-            {lastFeed && (
-              <p className="text-sm text-muted-foreground pl-9">
-                {(() => {
-                  const feedTime = parseUTCToLocal(lastFeed.loggedAt!);
-                  const timeSince = differenceInHours(currentTime, feedTime);
-                  const minutesSince = differenceInMinutes(currentTime, feedTime) % 60;
-                  
-                  return `It's been ${timeSince}h ${minutesSince}m since last feed (${lastFeed.time}${lastFeed.details?.quantity ? `, ${lastFeed.details.quantity} ${lastFeed.details.unit || 'ml'}` : ''})`;
-                })()}
-              </p>
-            )}
-          </div>
-        </Card>
-
-        {/* 3. What's Next */}
-        {!showingYesterday && (
-          <Card 
-            className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
-            onClick={() => setShowPredictionInsight(!showPredictionInsight)}
-          >
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-                  What's Next
-                </h2>
-                <ChevronDown 
-                  className={`h-5 w-5 text-muted-foreground transition-transform ${showPredictionInsight ? 'rotate-180' : ''}`}
-                />
-              </div>
-              
-              {nextAction ? (
-                <>
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-primary mt-0.5" />
-                    <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                      {nextAction}
-                    </p>
-                  </div>
-                  {!ongoingNap && prediction && addActivity && prediction.confidence === 'high' && (prediction.intent === 'FEED_SOON' || prediction.intent === 'START_WIND_DOWN') && (
-                    <Button
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        // Determine activity type based on prediction intent
-                        const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
-                        
-                        // Round time to nearest 5 minutes
-                        const now = new Date();
-                        const minutes = now.getMinutes();
-                        const roundedMinutes = Math.round(minutes / 5) * 5;
-                        const roundedDate = new Date(now);
-                        roundedDate.setMinutes(roundedMinutes);
-                        roundedDate.setSeconds(0);
-                        roundedDate.setMilliseconds(0);
-                        
-                        const timeStr = roundedDate.toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true
-                        });
-                        
-                        // Build activity details with predicted values
-                        let details = {};
-                        if (activityType === 'feed' && prediction.timing.expectedFeedVolume) {
-                          // Round to nearest 5 ml
-                          const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
-                          details = {
-                            feedType: 'bottle',
-                            quantity: roundedVolume.toString(),
-                            unit: 'ml'
-                          };
-                        }
-                        
-                        try {
-                          await addActivity(activityType, details, roundedDate, timeStr);
-                          const description = activityType === 'feed' && prediction.timing.expectedFeedVolume
-                            ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
-                            : `${timeStr}`;
-                          toast({
-                            title: activityType === 'feed' ? t('feedLogged') : t('napLogged'),
-                            description,
-                          });
-                        } catch (error) {
-                          console.error('Error logging activity:', error);
-                          toast({
-                            title: t('error'),
-                            description: t('failedToLogActivity'),
-                            variant: 'destructive',
-                          });
-                        }
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="w-full mt-2"
-                    >
-                      {prediction.intent === 'FEED_SOON' ? t('logFeedNow') : t('startNap')}
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-start gap-3">
-                  <Clock className="w-5 h-5 text-primary mt-0.5" />
-                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                    Predictive next actions will become available once enough activities have been logged (at least 4 naps and 4 feeds).
-                  </p>
-                </div>
-              )}
-              
-              {showPredictionInsight && (
-                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                  {prediction 
-                    ? getPredictionReasoning()
-                    : "As you log more activities, we'll learn your baby's unique patterns and start making predictions about when they might need to feed or sleep next. For now, focus on logging feeds, naps, and other activities—each one helps us understand their rhythm better."
-                  }
-                </p>
-              )}
-              
-              {/* Wake-up button if sleeping */}
-              {ongoingNap && onEndNap && (
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Wake up button clicked in HomeTab');
-                    console.log('onEndNap exists:', !!onEndNap);
-                    console.log('ongoingNap:', ongoingNap);
-                    onEndNap();
-                  }}
-                  className="w-full mt-2"
-                  size="sm"
-                >
-                  {babyName?.split(' ')[0] || 'Baby'} woke up
-                </Button>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Quick Add Rows */}
+        {/* 2. Current State */}
         <div className="space-y-4 pb-4 border-b border-border">
+          
           <div className="space-y-3.5">
             {/* Last Feed */}
             {lastFeed ? (
@@ -1579,6 +1378,128 @@ const lastDiaper = displayActivities
             </div>
           </div>
         </div>
+
+        {/* 3. What's Next */}
+        {!showingYesterday && (
+          <Card 
+            className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
+            onClick={() => setShowPredictionInsight(!showPredictionInsight)}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+                  What's Next
+                </h2>
+                <ChevronDown 
+                  className={`h-5 w-5 text-muted-foreground transition-transform ${showPredictionInsight ? 'rotate-180' : ''}`}
+                />
+              </div>
+              
+              {nextAction ? (
+                <>
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-primary mt-0.5" />
+                    <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                      {nextAction}
+                    </p>
+                  </div>
+                  {!ongoingNap && prediction && addActivity && prediction.confidence === 'high' && (prediction.intent === 'FEED_SOON' || prediction.intent === 'START_WIND_DOWN') && (
+                    <Button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        // Determine activity type based on prediction intent
+                        const activityType = prediction.intent === 'FEED_SOON' ? 'feed' : 'nap';
+                        
+                        // Round time to nearest 5 minutes
+                        const now = new Date();
+                        const minutes = now.getMinutes();
+                        const roundedMinutes = Math.round(minutes / 5) * 5;
+                        const roundedDate = new Date(now);
+                        roundedDate.setMinutes(roundedMinutes);
+                        roundedDate.setSeconds(0);
+                        roundedDate.setMilliseconds(0);
+                        
+                        const timeStr = roundedDate.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        });
+                        
+                        // Build activity details with predicted values
+                        let details = {};
+                        if (activityType === 'feed' && prediction.timing.expectedFeedVolume) {
+                          // Round to nearest 5 ml
+                          const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
+                          details = {
+                            feedType: 'bottle',
+                            quantity: roundedVolume.toString(),
+                            unit: 'ml'
+                          };
+                        }
+                        
+                        try {
+                          await addActivity(activityType, details, roundedDate, timeStr);
+                          const description = activityType === 'feed' && prediction.timing.expectedFeedVolume
+                            ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
+                            : `${timeStr}`;
+                          toast({
+                            title: activityType === 'feed' ? t('feedLogged') : t('napLogged'),
+                            description,
+                          });
+                        } catch (error) {
+                          console.error('Error logging activity:', error);
+                          toast({
+                            title: t('error'),
+                            description: t('failedToLogActivity'),
+                            variant: 'destructive',
+                          });
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-2"
+                    >
+                      {prediction.intent === 'FEED_SOON' ? t('logFeedNow') : t('startNap')}
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-primary mt-0.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                    Predictive next actions will become available once enough activities have been logged (at least 4 naps and 4 feeds).
+                  </p>
+                </div>
+              )}
+              
+              {showPredictionInsight && (
+                <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
+                  {prediction 
+                    ? getPredictionReasoning()
+                    : "As you log more activities, we'll learn your baby's unique patterns and start making predictions about when they might need to feed or sleep next. For now, focus on logging feeds, naps, and other activities—each one helps us understand their rhythm better."
+                  }
+                </p>
+              )}
+              
+              {/* Wake-up button if sleeping */}
+              {ongoingNap && onEndNap && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Wake up button clicked in HomeTab');
+                    console.log('onEndNap exists:', !!onEndNap);
+                    console.log('ongoingNap:', ongoingNap);
+                    onEndNap();
+                  }}
+                  className="w-full mt-2"
+                  size="sm"
+                >
+                  {babyName?.split(' ')[0] || 'Baby'} woke up
+                </Button>
+              )}
+            </div>
+          </Card>
+        )}
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
