@@ -301,7 +301,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     : 0;
   
   const feedCountChange = prevFeedSummary.avgFeedsPerDay > 0
-    ? ((feedSummary.avgFeedsPerDay - prevFeedSummary.avgFeedsPerDay) / prevFeedSummary.avgFeedsPerDay * 100)
+    ? (feedSummary.avgFeedsPerDay - prevFeedSummary.avgFeedsPerDay)
     : 0;
     
   const napDurationChange = prevNapSummary.avgDuration > 0
@@ -441,7 +441,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               </div>
               {prevFeedSummary.avgFeedsPerDay > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {feedCountChange >= 0 ? '+' : ''}{feedCountChange.toFixed(0)}% vs last week
+                  {feedCountChange >= 0 ? '+' : ''}{feedCountChange.toFixed(1)} vs last week
                 </p>
               )}
             </div>
