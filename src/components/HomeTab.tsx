@@ -1358,6 +1358,18 @@ const lastDiaper = displayActivities
                 <p className="text-sm flex-1 text-muted-foreground">
                   Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </p>
+                <Button
+                  onClick={() => {
+                    const lastNap = [...activities]
+                      .filter(a => a.type === 'nap')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('nap', lastNap);
+                  }}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
               </div>
             ) : awakeTime ? (
               <div className="flex items-center gap-3">
@@ -1395,28 +1407,28 @@ const lastDiaper = displayActivities
             )}
 
             {/* Last Diaper */}
-            {lastDiaper && (
-              <div className="flex items-center gap-3">
-                <Baby className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Last diaper — <span className="font-medium text-foreground">{lastDiaper.time}</span>
-                  {lastDiaper.details?.diaperType && (
-                    <span className="ml-1">
-                      {lastDiaper.details.diaperType}
-                    </span>
-                  )}
-                </p>
-                <Button
-                  onClick={() => {
-                    onAddActivity('diaper', lastDiaper);
-                  }}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <Baby className="w-5 h-5 text-primary" />
+              <p className="text-sm flex-1 text-muted-foreground">
+                Last diaper — <span className="font-medium text-foreground">
+                  {lastDiaper ? lastDiaper.time : 'not logged yet'}
+                </span>
+                {lastDiaper?.details?.diaperType && (
+                  <span className="ml-1">
+                    {lastDiaper.details.diaperType}
+                  </span>
+                )}
+              </p>
+              <Button
+                onClick={() => {
+                  onAddActivity('diaper', lastDiaper);
+                }}
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
 
