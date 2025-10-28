@@ -685,8 +685,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 </p>
               )}
 
-              <p className="text-xs text-muted-foreground">
-                {toneFrequencies.currentStreak}-day '{toneFrequencies.streakTone}' streak — typically appears during steady growth or after routines stabilize.
+              <p className="text-sm text-muted-foreground leading-relaxed italic">
+                {toneFrequencies.currentStreak}-day &apos;{toneFrequencies.streakTone}&apos; streak — typically appears during steady growth or after routines stabilize.
               </p>
             </div>
           )}
