@@ -97,6 +97,16 @@ const Index = () => {
       })
     : [];
 
+  console.log('🏠 Index.tsx - Activities loaded:', {
+    user: !!user,
+    household: !!household,
+    dbActivitiesCount: dbActivities?.length || 0,
+    activitiesCount: activities.length,
+    feedCount: activities.filter(a => a.type === 'feed').length,
+    napCount: activities.filter(a => a.type === 'nap').length,
+    sampleActivities: activities.slice(0, 3).map(a => ({ type: a.type, loggedAt: a.loggedAt }))
+  });
+
   // Calculate activity percentile
   const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
 
