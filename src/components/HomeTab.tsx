@@ -1353,43 +1353,24 @@ const lastDiaper = displayActivities
               </div>
             )}
 
-            {/* Last Diaper */}
-            <div className="flex items-center gap-3">
-              <Droplet className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1 text-muted-foreground">
-                Last diaper — <span className="font-medium text-foreground">
-                  {lastDiaper ? lastDiaper.time : 'not logged yet'}
-                </span>
-                {lastDiaper?.details?.diaperType && (
-                  <span className="ml-1">
-                    {lastDiaper.details.diaperType}
-                  </span>
-                )}
-              </p>
-              <Button
-                onClick={() => {
-                  onAddActivity('diaper', lastDiaper);
-                }}
-                size="sm"
-                className="h-8 px-3"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </Button>
-            </div>
           </div>
         </div>
 
         {/* 3. What's Next */}
-        {!showingYesterday && (
-          <Card 
-            className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
-            onClick={() => setShowPredictionInsight(!showPredictionInsight)}
+        <Card 
+          className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
+          onClick={() => setShowPredictionInsight(!showPredictionInsight)}
           >
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-                  What's Next
-                </h2>
+                <div>
+                  <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+                    What's Next
+                  </h2>
+                  {showingYesterday && (
+                    <p className="text-xs text-muted-foreground mt-0.5">Based on recent logs</p>
+                  )}
+                </div>
                 <ChevronDown 
                   className={`h-5 w-5 text-muted-foreground transition-transform ${showPredictionInsight ? 'rotate-180' : ''}`}
                 />
@@ -1499,7 +1480,6 @@ const lastDiaper = displayActivities
               )}
             </div>
           </Card>
-        )}
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
