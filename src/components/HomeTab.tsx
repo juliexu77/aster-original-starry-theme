@@ -1282,6 +1282,11 @@ const lastDiaper = displayActivities
 
       <div className="px-4 pt-4 space-y-6">
 
+        {/* Greeting */}
+        <h2 className="text-xl font-semibold text-foreground">
+          {getGreetingLine()}
+        </h2>
+
         {/* Tone Card */}
         <div className="space-y-3">
           <button 
