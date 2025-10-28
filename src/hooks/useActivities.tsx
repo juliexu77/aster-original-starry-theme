@@ -183,7 +183,7 @@ export function useActivities() {
       // Get user's current timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // Convert time string to timestamp - preserving local timezone
+      // Convert selected time string to a precise UTC timestamp representing the user's local time
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       
@@ -191,16 +191,18 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // Create date in local time without UTC conversion
+      // Build a Date in LOCAL time, then serialize to ISO (UTC) so the absolute moment is preserved
       const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hourStr = String(hour24).padStart(2, '0');
-      const minStr = String(minutes).padStart(2, '0');
-      
-      // Store as local time without 'Z' suffix
-      const logged_at = `${year}-${month}-${day}T${hourStr}:${minStr}:00`;
+      const localDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        hour24,
+        minutes,
+        0,
+        0
+      );
+      const logged_at = localDate.toISOString();
 
       const { data, error } = await supabase
         .from('activities')
