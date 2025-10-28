@@ -1253,131 +1253,85 @@ const lastDiaper = displayActivities
           )}
         </div>
 
-        {/* 2. Current State */}
-        <div className="space-y-4 pb-4 border-b border-border">
-          
-          <div className="space-y-3.5">
-            {/* Last Feed */}
-            {lastFeed ? (
-              <div className="flex items-center gap-3">
-                <Milk className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Last feed — <span className="font-medium text-foreground">{lastFeed.time}</span>
-                  {lastFeed.details?.quantity && (
-                    <span className="ml-1">
-                      {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
-                    </span>
-                  )}
-                </p>
-                <Button
-                  onClick={() => {
-                    const lastFeed = [...activities]
-                      .filter(a => a.type === 'feed')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-                    onAddActivity('feed', lastFeed);
-                  }}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Milk className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Last feed — <span className="font-medium text-foreground">not logged yet</span>
-                </p>
-                <Button
-                  onClick={() => onAddActivity('feed')}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            )}
-
-            {/* Sleep Status */}
-            {ongoingNap ? (
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
-                </p>
-                <Button
-                  onClick={() => {
-                    const lastNap = [...activities]
-                      .filter(a => a.type === 'nap')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-                    onAddActivity('nap', lastNap);
-                  }}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            ) : awakeTime ? (
-              <div className="flex items-center gap-3">
-                <Eye className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Awake for — <span className="font-medium text-foreground">{awakeTime}</span>
-                </p>
-                <Button
-                  onClick={() => {
-                    const lastNap = [...activities]
-                      .filter(a => a.type === 'nap')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
-                    onAddActivity('nap', lastNap);
-                  }}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Moon className="w-5 h-5 text-primary" />
-                <p className="text-sm flex-1 text-muted-foreground">
-                  Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
-                </p>
-                <Button
-                  onClick={() => onAddActivity('nap')}
-                  size="sm"
-                  className="h-8 px-3"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            )}
-
-            {/* Last Diaper */}
+        {/* Current State Card */}
+        <Card className="p-5">
+          <div className="space-y-3">
+            {/* Big Visual Cue */}
             <div className="flex items-center gap-3">
-              <Droplet className="w-5 h-5 text-primary" />
-              <p className="text-sm flex-1 text-muted-foreground">
-                Last diaper — <span className="font-medium text-foreground">
-                  {lastDiaper ? lastDiaper.time : 'not logged yet'}
-                </span>
-                {lastDiaper?.details?.diaperType && (
-                  <span className="ml-1">
-                    {lastDiaper.details.diaperType}
-                  </span>
-                )}
-              </p>
-              <Button
-                onClick={() => {
-                  onAddActivity('diaper', lastDiaper);
-                }}
-                size="sm"
-                className="h-8 px-3"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </Button>
+              {ongoingNap ? (
+                <>
+                  <Moon className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-lg font-semibold text-foreground">
+                      {babyName?.split(' ')[0] || 'Baby'} is sleeping
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Since {ongoingNap.details?.startTime || ongoingNap.time}
+                      {(() => {
+                        // Calculate expected wake time (assuming 1.5-2 hour nap)
+                        const startTime = ongoingNap.details?.startTime || ongoingNap.time;
+                        const [time, period] = startTime.split(' ');
+                        const [hours, minutes] = time.split(':').map(Number);
+                        let hour24 = hours;
+                        if (period === 'PM' && hours !== 12) hour24 += 12;
+                        if (period === 'AM' && hours === 12) hour24 = 0;
+                        
+                        const wakeDate = new Date();
+                        wakeDate.setHours(hour24, minutes, 0, 0);
+                        wakeDate.setMinutes(wakeDate.getMinutes() + 90); // 1.5 hour nap
+                        
+                        const wakeTime = wakeDate.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true
+                        });
+                        
+                        return ` · Likely until ~${wakeTime}`;
+                      })()}
+                    </p>
+                  </div>
+                </>
+              ) : awakeTime ? (
+                <>
+                  <Sun className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-lg font-semibold text-foreground">
+                      {babyName?.split(' ')[0] || 'Baby'} is awake
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Awake for {awakeTime}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Sun className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-lg font-semibold text-foreground">
+                      Ready to start the day
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      Log your first activity
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
+            
+            {/* Subtle One-Liner */}
+            {lastFeed && (
+              <p className="text-sm text-muted-foreground pl-9">
+                {(() => {
+                  const feedTime = parseUTCToLocal(lastFeed.loggedAt!);
+                  const timeSince = differenceInHours(currentTime, feedTime);
+                  const minutesSince = differenceInMinutes(currentTime, feedTime) % 60;
+                  
+                  return `It's been ${timeSince}h ${minutesSince}m since last feed (${lastFeed.time}${lastFeed.details?.quantity ? `, ${lastFeed.details.quantity} ${lastFeed.details.unit || 'ml'}` : ''})`;
+                })()}
+              </p>
+            )}
           </div>
-        </div>
+        </Card>
 
         {/* 3. What's Next */}
         {!showingYesterday && (
@@ -1500,6 +1454,131 @@ const lastDiaper = displayActivities
             </div>
           </Card>
         )}
+
+        {/* Quick Add Rows */}
+        <div className="space-y-4 pb-4 border-b border-border">
+          <div className="space-y-3.5">
+            {/* Last Feed */}
+            {lastFeed ? (
+              <div className="flex items-center gap-3">
+                <Milk className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Last feed — <span className="font-medium text-foreground">{lastFeed.time}</span>
+                  {lastFeed.details?.quantity && (
+                    <span className="ml-1">
+                      {lastFeed.details.quantity} {lastFeed.details.unit || 'ml'}
+                    </span>
+                  )}
+                </p>
+                <Button
+                  onClick={() => {
+                    const lastFeed = [...activities]
+                      .filter(a => a.type === 'feed')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('feed', lastFeed);
+                  }}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Milk className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Last feed — <span className="font-medium text-foreground">not logged yet</span>
+                </p>
+                <Button
+                  onClick={() => onAddActivity('feed')}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            )}
+
+            {/* Sleep Status */}
+            {ongoingNap ? (
+              <div className="flex items-center gap-3">
+                <Moon className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Sleeping since — <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
+                </p>
+                <Button
+                  onClick={() => {
+                    const lastNap = [...activities]
+                      .filter(a => a.type === 'nap')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('nap', lastNap);
+                  }}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : awakeTime ? (
+              <div className="flex items-center gap-3">
+                <Eye className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Awake for — <span className="font-medium text-foreground">{awakeTime}</span>
+                </p>
+                <Button
+                  onClick={() => {
+                    const lastNap = [...activities]
+                      .filter(a => a.type === 'nap')
+                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                    onAddActivity('nap', lastNap);
+                  }}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Moon className="w-5 h-5 text-primary" />
+                <p className="text-sm flex-1 text-muted-foreground">
+                  Sleeping since — <span className="font-medium text-foreground">not logged yet</span>
+                </p>
+                <Button
+                  onClick={() => onAddActivity('nap')}
+                  size="sm"
+                  className="h-8 px-3"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+            )}
+
+            {/* Last Diaper */}
+            <div className="flex items-center gap-3">
+              <Droplet className="w-5 h-5 text-primary" />
+              <p className="text-sm flex-1 text-muted-foreground">
+                Last diaper — <span className="font-medium text-foreground">
+                  {lastDiaper ? lastDiaper.time : 'not logged yet'}
+                </span>
+                {lastDiaper?.details?.diaperType && (
+                  <span className="ml-1">
+                    {lastDiaper.details.diaperType}
+                  </span>
+                )}
+              </p>
+              <Button
+                onClick={() => {
+                  onAddActivity('diaper', lastDiaper);
+                }}
+                size="sm"
+                className="h-8 px-3"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
         {/* 4. Daily Summary */}
         {displayActivities.length > 0 && (
