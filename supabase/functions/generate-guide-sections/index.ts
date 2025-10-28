@@ -116,16 +116,27 @@ serve(async (req) => {
     const twoDaysAgoUTC = new Date(todayStartUTC.getTime() - 2 * 24 * 60 * 60 * 1000);
     const baselineStartUTC = new Date(todayStartUTC.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days back
 
-    // Recent: Last 2 complete days
+    // For overnight sleep attribution, we need to look at which day the sleep TIME falls on
+    // not just the logged_at timestamp. Use date_local if available.
+    const getActivityDate = (a: any) => {
+      if (a.details?.date_local) {
+        return new Date(a.details.date_local + 'T00:00:00Z');
+      }
+      // Fallback to logged_at converted to user timezone
+      const loggedDate = new Date(a.logged_at);
+      return new Date(loggedDate.toLocaleString('en-US', { timeZone: tz }));
+    };
+
+    // Recent: Last 2 complete days (by activity date, not logged_at)
     const recentActivities = activities.filter(a => {
-      const t = new Date(a.logged_at);
-      return t >= twoDaysAgoUTC && t < todayStartUTC;
+      const activityDate = getActivityDate(a);
+      return activityDate >= twoDaysAgoUTC && activityDate < todayStartUTC;
     });
     
     // Previous: 5 days before the recent 2 days (baseline trend)
     const previousActivities = activities.filter(a => {
-      const t = new Date(a.logged_at);
-      return t >= baselineStartUTC && t < twoDaysAgoUTC;
+      const activityDate = getActivityDate(a);
+      return activityDate >= baselineStartUTC && activityDate < twoDaysAgoUTC;
     });
 
     const recentMetrics = calculateMetrics(recentActivities);
