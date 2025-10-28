@@ -183,7 +183,7 @@ export function useActivities() {
       // Get user's current timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
-      // Convert selected time string to a precise UTC timestamp representing the user's local time
+      // Convert selected time string to local timestamp with timezone offset
       const [time, period] = activity.time.split(' ');
       const [hours, minutes] = time.split(':').map(Number);
       
@@ -191,7 +191,7 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // Build a Date in LOCAL time, then serialize to ISO (UTC) so the absolute moment is preserved
+      // Create a Date object in local time
       const now = new Date();
       const localDate = new Date(
         now.getFullYear(),
@@ -202,7 +202,23 @@ export function useActivities() {
         0,
         0
       );
-      const logged_at = localDate.toISOString();
+      
+      // Format with timezone offset (e.g., "2025-01-28T18:45:00-08:00")
+      const year = localDate.getFullYear();
+      const month = String(localDate.getMonth() + 1).padStart(2, '0');
+      const day = String(localDate.getDate()).padStart(2, '0');
+      const hourStr = String(localDate.getHours()).padStart(2, '0');
+      const minStr = String(localDate.getMinutes()).padStart(2, '0');
+      const secStr = String(localDate.getSeconds()).padStart(2, '0');
+      
+      // Get timezone offset in format +HH:MM or -HH:MM
+      const timezoneOffset = -localDate.getTimezoneOffset(); // Minutes
+      const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+      const offsetMinutes = Math.abs(timezoneOffset) % 60;
+      const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+      const offsetStr = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+      
+      const logged_at = `${year}-${month}-${day}T${hourStr}:${minStr}:${secStr}${offsetStr}`;
 
       const { data, error } = await supabase
         .from('activities')

@@ -178,8 +178,11 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
   return activities
     .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
     .map(activity => {
-      // Use precise loggedAt when available, fallback to now (avoids ambiguous time-only strings)
+      // Parse loggedAt with explicit timezone handling
+      // This handles formats like "2025-01-28T18:45:00-08:00" or "2025-01-28T18:45:00.000Z"
       const baseDate = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
+      
+      // Get the date string in the same timezone as the logged activity
       const dateStr = baseDate.toDateString();
 
       // Build start/end using the same local day as loggedAt
