@@ -14,7 +14,13 @@ export function usePredictionEngine(activities: Activity[]) {
     console.log('🔮 usePredictionEngine - checking data:', { 
       activitiesCount: activities?.length || 0,
       hasActivities: !!activities,
-      babyBirthday: household?.baby_birthday 
+      babyBirthday: household?.baby_birthday,
+      sampleActivities: activities?.slice(0, 3).map(a => ({
+        type: a.type,
+        time: a.time,
+        loggedAt: a.loggedAt,
+        timezone: a.timezone
+      }))
     });
 
     if (!activities || activities.length === 0) {
@@ -31,7 +37,7 @@ export function usePredictionEngine(activities: Activity[]) {
       naps: naps.length, 
       feeds: feeds.length,
       activityTypes: [...new Set(activities.map(a => a.type))],
-      sampleActivity: activities[0]
+      feedSample: feeds[0]
     });
     
     // Need at least 4 naps and 4 feeds for reliable predictions
@@ -51,7 +57,13 @@ export function usePredictionEngine(activities: Activity[]) {
     );
 
     const result = engine.getNextAction();
-    console.log('🔮 Prediction result:', result);
+    console.log('🔮 Prediction result:', {
+      intent: result.intent,
+      confidence: result.confidence,
+      rationale: result.rationale,
+      timing: result.timing,
+      reasons: result.reasons
+    });
     return result;
   }, [activities, household?.baby_birthday]);
 

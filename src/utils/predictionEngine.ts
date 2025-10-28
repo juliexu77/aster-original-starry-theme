@@ -175,7 +175,7 @@ function median(values: number[]): number {
 // ---------------------------
 
 function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
-  return activities
+  const parsed = activities
     .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
     .map(activity => {
       // Parse loggedAt robustly: respect explicit timezone, otherwise treat as local wall time
@@ -221,9 +221,30 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
         endTime,
         details: activity.details
       } as PredictionEvent;
-    })
-    .filter(event => event.timestamp <= new Date()) // Remove future events
-    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Most recent first
+    });
+  
+  const now = new Date();
+  const filtered = parsed.filter(event => event.timestamp <= now);
+  
+  console.log('📋 parseActivitiesToEvents:', {
+    input: activities.length,
+    parsed: parsed.length,
+    filtered: filtered.length,
+    now: now.toISOString(),
+    filteredOut: parsed.filter(e => e.timestamp > now).map(e => ({
+      id: e.id,
+      type: e.type,
+      timestamp: e.timestamp.toISOString(),
+      minutesInFuture: Math.round((e.timestamp.getTime() - now.getTime()) / 60000)
+    })),
+    feedEvents: filtered.filter(e => e.type === 'feed').map(e => ({
+      id: e.id,
+      timestamp: e.timestamp.toISOString(),
+      minutesAgo: Math.round((now.getTime() - e.timestamp.getTime()) / 60000)
+    }))
+  });
+  
+  return filtered.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // Most recent first
 }
 
 function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
