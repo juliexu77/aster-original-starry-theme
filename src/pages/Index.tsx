@@ -14,7 +14,6 @@ import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
 import { SleepChart } from "@/components/SleepChart";
-import { WeeklyReflection } from "@/components/WeeklyReflection";
 
 import { useActivities } from "@/hooks/useActivities";
 import { useHousehold } from "@/hooks/useHousehold";
@@ -452,7 +451,6 @@ const ongoingNap = activities
       case "trends":
         return (
           <div className="px-4 pt-4 pb-6 space-y-6">
-            <WeeklyReflection activities={activities} />
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
           </div>
