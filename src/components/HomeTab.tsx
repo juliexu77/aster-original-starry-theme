@@ -1626,15 +1626,28 @@ const lastDiaper = displayActivities
                 </>
               )}
               
-              <div className="flex items-center gap-2 text-sm">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="font-medium text-foreground">Overall:</span>
-                <span className="text-muted-foreground">
-                  {summary.feedCount < 4 || summary.napCount < 4 
-                    ? "Building foundation" 
-                    : "Calm and steady"}
-                </span>
-              </div>
+              {latestMeasurement && (
+                <div className="flex items-start gap-2 text-sm">
+                  <Ruler className="w-4 h-4 text-primary mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-medium text-foreground">Growth:</span>
+                      <span className="text-muted-foreground">{latestMeasurement.summary}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                      {latestMeasurement.weight && (
+                        <span>Weight: {latestMeasurement.weight.display} ({latestMeasurement.weight.percentile}th %ile)</span>
+                      )}
+                      {latestMeasurement.length && (
+                        <span>Length: {latestMeasurement.length.display} ({latestMeasurement.length.percentile}th %ile)</span>
+                      )}
+                      {latestMeasurement.headCirc && (
+                        <span>Head: {latestMeasurement.headCirc.display} ({latestMeasurement.headCirc.percentile}th %ile)</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Daily Contextual Insight */}
