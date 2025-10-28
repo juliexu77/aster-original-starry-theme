@@ -178,11 +178,25 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
   return activities
     .filter(activity => activity.type !== 'note') // Ignore notes and other non-essential logs
     .map(activity => {
-      // Parse loggedAt with explicit timezone handling
-      // This handles formats like "2025-01-28T18:45:00-08:00" or "2025-01-28T18:45:00.000Z"
-      const baseDate = activity.loggedAt ? new Date(activity.loggedAt) : new Date();
+      // Parse loggedAt robustly: respect explicit timezone, otherwise treat as local wall time
+      let baseDate: Date;
+      if (activity.loggedAt) {
+        const raw = activity.loggedAt;
+        if (/[zZ]|[+-]\d{2}:\d{2}$/.test(raw)) {
+          baseDate = new Date(raw);
+        } else {
+          const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+          if (m) {
+            baseDate = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || '0'), 0);
+          } else {
+            baseDate = new Date(raw);
+          }
+        }
+      } else {
+        baseDate = new Date();
+      }
       
-      // Get the date string in the same timezone as the logged activity
+      // Get the date string in the same local day as the viewer (used only for time-only nap fields)
       const dateStr = baseDate.toDateString();
 
       // Build start/end using the same local day as loggedAt
