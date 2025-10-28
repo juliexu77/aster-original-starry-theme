@@ -15,7 +15,7 @@ interface TrendChartProps {
 export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const { t, language } = useLanguage();
   const [selectedDetail, setSelectedDetail] = useState<string | null>(null);
-  const [daysOffset, setDaysOffset] = useState(0); // 0 = today, 7 = 1 week back, etc.
+  const [daysOffset, setDaysOffset] = useState(0);
   const feedChartRef = useRef<HTMLDivElement>(null);
   const napChartRef = useRef<HTMLDivElement>(null);
   
@@ -181,6 +181,131 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const napData = generateNapData();
   const dateRange = getDateRange();
   
+  // Calculate previous week data for comparison
+  const generatePreviousWeekFeedData = () => {
+    const days = 7;
+    const data = [];
+    const today = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
+      
+      const dayFeeds = activities.filter(a => {
+        if (a.type !== "feed" || !a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt);
+        return activityDate.getFullYear() === date.getFullYear() &&
+               activityDate.getMonth() === date.getMonth() &&
+               activityDate.getDate() === date.getDate();
+      });
+      
+      let totalValue = 0;
+      dayFeeds.forEach(feed => {
+        if (!feed.details.quantity) return;
+        const quantity = parseFloat(feed.details.quantity);
+        const activityUnit = feed.details.unit || (quantity > 50 ? "ml" : "oz");
+        
+        if (feedUnit === "ml") {
+          if (activityUnit === "oz") {
+            totalValue += quantity * 29.5735;
+          } else {
+            totalValue += quantity;
+          }
+        } else {
+          if (activityUnit === "ml") {
+            totalValue += quantity / 29.5735;
+          } else {
+            totalValue += quantity;
+          }
+        }
+      });
+      
+      data.push({
+        value: Math.round(totalValue * 10) / 10,
+        feedCount: dayFeeds.length
+      });
+    }
+    
+    return data;
+  };
+  
+  const generatePreviousWeekNapData = () => {
+    const days = 7;
+    const data = [];
+    const today = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i - daysOffset - 7); // Previous week
+      
+      const dayNaps = activities.filter(a => {
+        if (a.type !== "nap" || !a.loggedAt) return false;
+        const activityDate = new Date(a.loggedAt);
+        return activityDate.getFullYear() === date.getFullYear() &&
+               activityDate.getMonth() === date.getMonth() &&
+               activityDate.getDate() === date.getDate();
+      });
+      
+      let totalHours = 0;
+      dayNaps.forEach(nap => {
+        if (nap.details.startTime && nap.details.endTime) {
+          const start = new Date(`2000/01/01 ${nap.details.startTime}`);
+          const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+          let diff = end.getTime() - start.getTime();
+          if (diff < 0) {
+            diff = diff + (24 * 60 * 60 * 1000);
+          }
+          if (diff > 0) totalHours += diff / (1000 * 60 * 60);
+        }
+      });
+      
+      data.push({
+        value: Math.round(totalHours * 10) / 10,
+        napCount: dayNaps.length
+      });
+    }
+    
+    return data;
+  };
+  
+  const prevWeekFeedData = generatePreviousWeekFeedData();
+  const prevWeekNapData = generatePreviousWeekNapData();
+  
+  // Calculate summary metrics
+  const feedSummary = {
+    avgVolume: feedData.reduce((sum, d) => sum + d.value, 0) / feedData.filter(d => d.value > 0).length || 0,
+    totalFeeds: feedData.reduce((sum, d) => sum + d.feedCount, 0),
+    avgFeedsPerDay: feedData.reduce((sum, d) => sum + d.feedCount, 0) / feedData.filter(d => d.feedCount > 0).length || 0,
+  };
+  
+  const prevFeedSummary = {
+    avgVolume: prevWeekFeedData.reduce((sum, d) => sum + d.value, 0) / prevWeekFeedData.filter(d => d.value > 0).length || 0,
+    avgFeedsPerDay: prevWeekFeedData.reduce((sum, d) => sum + d.feedCount, 0) / prevWeekFeedData.filter(d => d.feedCount > 0).length || 0,
+  };
+  
+  const napSummary = {
+    avgDuration: napData.reduce((sum, d) => sum + d.value, 0) / napData.filter(d => d.value > 0).length || 0,
+    totalNaps: napData.reduce((sum, d) => sum + d.napCount, 0),
+    avgNapsPerDay: napData.reduce((sum, d) => sum + d.napCount, 0) / napData.filter(d => d.napCount > 0).length || 0,
+  };
+  
+  const prevNapSummary = {
+    avgDuration: prevWeekNapData.reduce((sum, d) => sum + d.value, 0) / prevWeekNapData.filter(d => d.value > 0).length || 0,
+  };
+  
+  // Calculate percentage changes
+  const feedVolumeChange = prevFeedSummary.avgVolume > 0 
+    ? ((feedSummary.avgVolume - prevFeedSummary.avgVolume) / prevFeedSummary.avgVolume * 100)
+    : 0;
+  
+  const feedCountChange = prevFeedSummary.avgFeedsPerDay > 0
+    ? ((feedSummary.avgFeedsPerDay - prevFeedSummary.avgFeedsPerDay) / prevFeedSummary.avgFeedsPerDay * 100)
+    : 0;
+    
+  const napDurationChange = prevNapSummary.avgDuration > 0
+    ? ((napSummary.avgDuration - prevNapSummary.avgDuration) / prevNapSummary.avgDuration * 100)
+    : 0;
+  
   // Generate interpretive text based on patterns
   const getFeedInterpretation = () => {
     const nonZeroDays = feedData.filter(d => d.value > 0);
@@ -232,6 +357,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
 
   const maxFeedValue = Math.max(1, ...feedData.map(d => d.value));
   const maxNapValue = Math.max(1, ...napData.map(d => d.value));
+  const avgFeedLine = (feedSummary.avgVolume / maxFeedValue) * 100;
 
   return (
     <div className="space-y-6">
@@ -270,142 +396,218 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       </div>
 
       {/* Feeding Trends Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-1 h-5 bg-gradient-feed rounded-full"></div>
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Feeding Trends</h2>
+      <div className="space-y-6">
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-1 h-6 bg-gradient-feed rounded-full"></div>
+          <h2 className="text-lg font-medium text-foreground tracking-wide">Feeding Trends</h2>
         </div>
 
-        <div ref={feedChartRef} className="bg-card/50 backdrop-blur rounded-xl p-5 shadow-card border border-border transition-all hover:shadow-lg">
-          <div className="h-11 mb-4 flex items-center justify-between">{/* Fixed header height */}
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-3">
-                <h3 className="text-base font-semibold text-foreground">
-                  Volume
-                </h3>
-                <div className="flex items-center gap-2 bg-muted/30 px-2.5 py-1 rounded-full">
-                  <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">ml</Label>
-                  <Switch 
-                    id="unit-toggle"
-                    checked={feedUnit === "oz"}
-                    onCheckedChange={(checked) => setFeedUnit(checked ? "oz" : "ml")}
-                    className="scale-75"
-                  />
-                  <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">oz</Label>
-                </div>
+        {/* Level 1: Summary Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Average Volume Card */}
+          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
+                <span className="text-xl">🍼</span>
               </div>
-              <p className="text-xs text-muted-foreground">Past 7 days</p>
+              <h3 className="text-sm font-medium text-muted-foreground">Average Volume</h3>
+            </div>
+            <div className="space-y-1">
+              <div className="text-3xl font-semibold text-foreground tracking-tight">
+                {Math.round(feedSummary.avgVolume)} <span className="text-lg text-muted-foreground font-normal">{feedUnit}/day</span>
+              </div>
+              {prevFeedSummary.avgVolume > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {feedVolumeChange >= 0 ? '+' : ''}{feedVolumeChange.toFixed(1)}% vs last week
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Feed Count Card */}
+          <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-feed/10 flex items-center justify-center">
+                <span className="text-xl">🌙</span>
+              </div>
+              <h3 className="text-sm font-medium text-muted-foreground">Feed Count</h3>
+            </div>
+            <div className="space-y-1">
+              <div className="text-3xl font-semibold text-foreground tracking-tight">
+                {Math.round(feedSummary.avgFeedsPerDay)} <span className="text-lg text-muted-foreground font-normal">/day</span>
+              </div>
+              {prevFeedSummary.avgFeedsPerDay > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {feedCountChange >= 0 ? '+' : ''}{feedCountChange.toFixed(0)} vs last week
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Level 2: Volume Chart */}
+        <div ref={feedChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <h3 className="text-base font-medium text-foreground tracking-wide">
+                Volume ({feedUnit})
+              </h3>
+              <div className="flex items-center gap-2 bg-muted/20 px-2.5 py-1 rounded-full">
+                <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">ml</Label>
+                <Switch 
+                  id="unit-toggle"
+                  checked={feedUnit === "oz"}
+                  onCheckedChange={(checked) => setFeedUnit(checked ? "oz" : "ml")}
+                  className="scale-75"
+                />
+                <Label htmlFor="unit-toggle" className="text-xs text-muted-foreground cursor-pointer">oz</Label>
+              </div>
             </div>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(feedChartRef, 'Feeding Trends')}>
               <Share className="h-3.5 w-3.5" />
             </Button>
           </div>
         
-          <div className="grid grid-cols-7 gap-3 h-40 mt-3">{/* Increased height and gap */}
-            {feedData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center gap-2">
-                <div className="flex-1 flex flex-col justify-end w-full relative">
-                  {day.value === 0 ? (
-                    <div className="w-full h-1 bg-muted/30 rounded" />
-                  ) : (
-                    <button
-                      className="bg-gradient-feed rounded-lg w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
-                      style={{ height: `${(day.value / maxFeedValue) * 100}%`, minHeight: '32px' }}
-                      onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
-                    >
-                      <span className="absolute inset-x-0 top-1 text-[11px] text-white/90 font-medium">
-                        {day.value}
-                      </span>
-                    </button>
+          <div className="relative">
+            {/* Average line */}
+            {feedSummary.avgVolume > 0 && (
+              <div 
+                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/30 z-10"
+                style={{ bottom: `${avgFeedLine}%` }}
+              >
+                <span className="absolute -left-1 -top-3 text-xs text-muted-foreground/60 font-medium">Avg</span>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-7 gap-3 h-44">
+              {feedData.map((day, index) => (
+                <div key={index} className="flex flex-col items-center gap-2.5">
+                  <div className="flex-1 flex flex-col justify-end w-full relative">
+                    {day.value === 0 ? (
+                      <div className="w-full h-1 bg-muted/20 rounded-full" />
+                    ) : (
+                      <button
+                        className="bg-gradient-feed rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                        style={{ height: `${(day.value / maxFeedValue) * 100}%`, minHeight: '40px' }}
+                        onClick={() => setSelectedDetail(selectedDetail === `feed-${index}` ? null : `feed-${index}`)}
+                      >
+                        <span className="absolute inset-x-0 top-2 text-[10px] text-white/95 font-medium">
+                          {day.value}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground/70 font-medium">
+                    {day.date}
+                  </div>
+                  {selectedDetail === `feed-${index}` && (
+                    <div className="fixed z-50 bg-popover border border-border rounded-xl p-3 shadow-lg pointer-events-none"
+                         style={{
+                           left: '50%',
+                           top: '50%',
+                           transform: 'translate(-50%, -50%)'
+                         }}>
+                      <p className="text-sm font-medium">{day.detail}</p>
+                    </div>
                   )}
                 </div>
-                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
-                  {day.date}
-                </div>
-                 {selectedDetail === `feed-${index}` && (
-                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2.5 shadow-lg pointer-events-none"
-                        style={{
-                          left: '50%',
-                          top: '50%',
-                          transform: 'translate(-50%, -50%)'
-                        }}>
-                     <p className="text-xs font-medium">{day.detail}</p>
-                   </div>
-                 )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-          
-          {/* Missing data note */}
-          {feedData.filter(d => d.value === 0).length > 0 && (
-            <p className="text-[11px] text-muted-foreground/60 italic mt-1">
-              Missing data — skip day or travel?
-            </p>
-          )}
         </div>
       </div>
 
+      {/* Narrative Transition */}
+      <div className="py-6">
+        <p className="text-sm text-muted-foreground/80 italic text-center leading-relaxed">
+          {getFeedInterpretation()}
+        </p>
+      </div>
+
       {/* Sleep Trends Section */}
-      <div className="space-y-4 mt-8">
-        <div className="flex items-center gap-2 px-2">
-          <div className="w-1 h-5 bg-gradient-nap rounded-full"></div>
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">Sleep Trends</h2>
+      <div className="space-y-6 mt-8">
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5">
+          <div className="w-1 h-6 bg-gradient-nap rounded-full"></div>
+          <h2 className="text-lg font-medium text-foreground tracking-wide">Sleep Trends</h2>
         </div>
 
-        <div ref={napChartRef} className="bg-card/50 backdrop-blur rounded-xl p-5 shadow-card border border-border transition-all hover:shadow-lg">
-          <div className="h-11 mb-4 flex items-center justify-between">{/* Fixed header height */}
-            <div className="space-y-0.5">
-              <h3 className="text-base font-semibold text-foreground">
-                Duration
-              </h3>
-              <p className="text-xs text-muted-foreground">Past 7 days</p>
+        {/* Level 1: Summary Card */}
+        <div className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
+                  <span className="text-xl">🌙</span>
+                </div>
+                <h3 className="text-sm font-medium text-muted-foreground">Average Duration</h3>
+              </div>
+              <div className="space-y-1">
+                <div className="text-3xl font-semibold text-foreground tracking-tight">
+                  {napSummary.avgDuration.toFixed(1)} <span className="text-lg text-muted-foreground font-normal">h/day</span>
+                </div>
+                {prevNapSummary.avgDuration > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {napDurationChange >= 0 ? '+' : ''}{napDurationChange.toFixed(1)} h vs last week
+                  </p>
+                )}
+              </div>
             </div>
+            {napData.length > 0 && napData.some(d => d.value > 0) && (
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground/60 mb-1">Typical window</p>
+                <p className="text-sm font-medium text-foreground">8:00 pm–7:00 am</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Level 2: Duration Chart */}
+        <div ref={napChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-base font-medium text-foreground tracking-wide">
+              Duration (hours)
+            </h3>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(napChartRef, 'Sleep Trends')}>
               <Share className="h-3.5 w-3.5" />
             </Button>
           </div>
         
-          <div className="grid grid-cols-7 gap-3 h-40 mt-3">{/* Increased height and gap */}
+          <div className="grid grid-cols-7 gap-3 h-44">
             {napData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center gap-2 relative">
+              <div key={index} className="flex flex-col items-center gap-2.5 relative">
                 <div className="flex-1 flex flex-col justify-end w-full">
                   {day.value === 0 ? (
-                    <div className="w-full h-1 bg-muted/30 rounded" />
+                    <div className="w-full h-1 bg-muted/20 rounded-full" />
                   ) : (
                     <button
-                      className="bg-gradient-nap rounded-lg w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
-                      style={{ height: `${(day.value / maxNapValue) * 100}%`, minHeight: '32px' }}
+                      className="bg-gradient-nap rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
+                      style={{ height: `${(day.value / maxNapValue) * 100}%`, minHeight: '40px' }}
                       onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
                     >
-                      <span className="absolute inset-x-0 top-1 text-[11px] text-white/90 font-medium">
+                      <span className="absolute inset-x-0 top-2 text-[10px] text-white/95 font-medium">
                         {day.value}h
                       </span>
                     </button>
                   )}
                 </div>
-                <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
+                <div className="text-xs text-muted-foreground/70 font-medium">
                   {day.date}
                 </div>
-                 {selectedDetail === `nap-${index}` && (
-                   <div className="fixed z-50 bg-popover border border-border rounded-lg p-2.5 shadow-lg pointer-events-none"
-                        style={{
-                          left: '50%',
-                          top: '50%',
-                          transform: 'translate(-50%, -50%)'
-                        }}>
-                     <p className="text-xs font-medium">{day.detail}</p>
-                   </div>
-                 )}
+                {selectedDetail === `nap-${index}` && (
+                  <div className="fixed z-50 bg-popover border border-border rounded-xl p-3 shadow-lg pointer-events-none"
+                       style={{
+                         left: '50%',
+                         top: '50%',
+                         transform: 'translate(-50%, -50%)'
+                       }}>
+                    <p className="text-sm font-medium">{day.detail}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          
-          {/* Missing data note */}
-          {napData.filter(d => d.value === 0).length > 0 && (
-            <p className="text-[11px] text-muted-foreground/60 italic mt-1">
-              Missing data — skip day or travel?
-            </p>
-          )}
         </div>
       </div>
     </div>
