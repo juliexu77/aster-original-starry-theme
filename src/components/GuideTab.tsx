@@ -374,10 +374,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Determine if we should fetch new data
-    const shouldFetch = !lastFetch || 
-      (now >= fiveAM && new Date(lastFetch) < fiveAM) ||
-      (cached && !guideSections);
+    // Determine if we should fetch new data - only once per day at 5am
+    let shouldFetch = false;
+    
+    if (!lastFetch) {
+      // Never fetched before, fetch now if we're past 5am today
+      shouldFetch = now >= fiveAM;
+    } else {
+      const lastFetchDate = new Date(lastFetch);
+      // Check if last fetch was before today's 5am
+      shouldFetch = now >= fiveAM && lastFetchDate < fiveAM;
+    }
     
     if (shouldFetch && hasMinimumData) {
       console.log('🚀 Fetching fresh guide sections...');
