@@ -159,7 +159,7 @@ export function useActivities() {
 
     try {
       // CANONICAL STORAGE: Store as UTC timestamp + IANA timezone
-      // User selected time string (e.g., "6:45 PM") represents local wall time
+      // User selected time string (e.g., "6:45 PM") represents local wall time IN THEIR TIMEZONE
       
       // 1. Get user's IANA timezone
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -172,7 +172,8 @@ export function useActivities() {
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      // 3. Create Date object in LOCAL time (represents the moment the user selected)
+      // 3. Create Date object - this uses the BROWSER's timezone (user's local time)
+      // CRITICAL: This only works correctly if code runs in the USER's browser, not on server
       const now = new Date();
       const localDate = new Date(
         now.getFullYear(),
@@ -184,8 +185,25 @@ export function useActivities() {
         0
       );
       
-      // 4. Convert to UTC ISO string (this is the canonical timestamp)
-      const logged_at = localDate.toISOString(); // Always UTC, e.g., "2025-01-28T02:45:00.000Z" for 6:45 PM PST
+      // 4. Get the timezone offset in milliseconds for this specific date
+      // (handles DST correctly - offset can change throughout the year)
+      const offsetMinutes = localDate.getTimezoneOffset(); // Minutes BEHIND UTC (negative for ahead)
+      
+      // 5. Adjust to get true UTC timestamp
+      // getTimezoneOffset returns negative for timezones ahead of UTC (like PST = +480 minutes behind)
+      // We need to ADD this offset to convert local to UTC
+      const utcTimestamp = new Date(localDate.getTime() - (offsetMinutes * 60 * 1000));
+      
+      // 6. Convert to UTC ISO string (this is the canonical timestamp)
+      const logged_at = utcTimestamp.toISOString();
+      
+      console.log('🕐 Activity timestamp conversion:', {
+        userSelectedTime: activity.time,
+        timezone,
+        localDate: localDate.toISOString(),
+        offsetMinutes,
+        utcTimestamp: logged_at
+      });
 
       const { data, error } = await supabase
         .from('activities')
