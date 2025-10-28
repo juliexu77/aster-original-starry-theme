@@ -912,7 +912,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       </ScrollArea>
 
       {/* Chat Input */}
-      <Separator className="mt-4" />
+      <Separator className="mt-4 bg-border" />
       <div className="bg-background p-4">
         <div className="flex gap-2">
           <Textarea
