@@ -6,7 +6,7 @@ import { SleepStats } from "./sleep/SleepStats";
 import { SleepChartControls } from "./sleep/SleepChartControls";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { Share } from "lucide-react";
+import { Share, Moon } from "lucide-react";
 import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
 
 interface SleepChartProps {
@@ -100,24 +100,24 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   return (
     <div className="space-y-6">
       {/* Sleep Chart */}
-      <div ref={sleepChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border">
-        <div className="space-y-1 mb-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">{t('weeklySleepSchedule')}</h3>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={onShare}>
+      <div ref={sleepChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border transition-all hover:shadow-lg">
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Moon className="w-4 h-4 text-muted-foreground" />
+              <h3 className="text-base font-sans font-medium text-foreground dark:font-semibold">{t('weeklySleepSchedule')}</h3>
+            </div>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={onShare}>
               <Share className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-[13px] text-muted-foreground">
-            {getSleepScheduleInterpretation()}
-          </p>
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end">
             <div className="flex bg-muted/30 rounded-lg p-1">
               <Button
                 variant={currentWeekOffset === 0 ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setCurrentWeekOffset(0)}
-                className="h-8 px-3 rounded-md"
+                className="h-8 px-3 rounded-md transition-all"
               >
                 {t('thisWeek')}
               </Button>
@@ -125,7 +125,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
                 variant={currentWeekOffset === 1 ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setCurrentWeekOffset(1)}
-                className="h-8 px-3 rounded-md"
+                className="h-8 px-3 rounded-md transition-all"
               >
                 {t('lastWeek')}
               </Button>
