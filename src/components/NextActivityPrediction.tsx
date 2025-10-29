@@ -217,13 +217,8 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
 
   return (
     <div className="next-action-card bg-card rounded-lg border border-border p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Clock className="h-5 w-5 text-muted-foreground" />
-          <div>
-            <h3 className="font-semibold text-lg text-foreground">{t('nextPredictedAction')}</h3>
-          </div>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-medium text-base text-foreground">What's Next</h3>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="p-1 hover:bg-muted rounded"
@@ -232,39 +227,41 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         </button>
       </div>
 
-      <div className="mt-4">
+      <div className="space-y-3">
+        {/* Prediction text with icon - always visible */}
+        <div className="flex items-center gap-2 text-foreground">
+          <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          <span className="text-sm">{getPredictionText()}</span>
+        </div>
+
+        {/* Wake up button */}
         {ongoingNap && onMarkWakeUp && (
-          <div className="mb-3">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onMarkWakeUp}
-              className="w-full"
-            >
-              {(babyName || 'Baby') + ' woke up'}
-            </Button>
-          </div>
+          <Button
+            onClick={onMarkWakeUp}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            size="lg"
+          >
+            {(babyName || 'Baby') + ' woke up'}
+          </Button>
         )}
         
+        {/* Log predicted activity button */}
         {onLogPredictedActivity && !ongoingNap && hasConfidentPrediction && (
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={() => onLogPredictedActivity(prediction.type)}
-            className="w-full mb-3"
+            className="w-full"
           >
             {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
           </Button>
         )}
         
+        {/* Expanded details */}
         {isExpanded && (
-          <>
-            <div className="flex items-center gap-2 mb-2">
-              {getIcon(prediction.type)}
-              <span className="font-medium text-foreground">{getPredictionText()}</span>
-            </div>
-            <p className="text-sm text-muted-foreground">{prediction.reason}</p>
-          </>
+          <div className="pt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground leading-relaxed">{prediction.reason}</p>
+          </div>
         )}
       </div>
     </div>
