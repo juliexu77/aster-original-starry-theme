@@ -36,26 +36,16 @@ export interface DatabaseActivity {
 // This happens at the edges - storage is UTC, display is local
 export const convertToUIActivity = (dbActivity: DatabaseActivity) => {
   // Convert UTC timestamp to local display time
+  // UTC is the universal source of truth for ALL activities
   const utcDate = new Date(dbActivity.logged_at); // PostgreSQL stores as UTC
   
-  let displayTime: string;
-  
-  // For naps, use startTime if available (it's already in local time format from user selection)
-  // Otherwise convert the UTC logged_at timestamp to local time
-  if (dbActivity.type === 'nap' && dbActivity.details.startTime) {
-    displayTime = dbActivity.details.startTime;
-    if (dbActivity.details.endTime) {
-      displayTime = `${dbActivity.details.startTime} - ${dbActivity.details.endTime}`;
-    }
-  } else {
-    // Convert UTC to current local timezone for display
-    displayTime = utcDate.toLocaleTimeString("en-US", { 
-      hour: "numeric", 
-      minute: "2-digit",
-      hour12: true,
-      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-    });
-  }
+  // Convert UTC to current local timezone for display
+  const displayTime = utcDate.toLocaleTimeString("en-US", { 
+    hour: "numeric", 
+    minute: "2-digit",
+    hour12: true,
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  });
 
   return {
     id: dbActivity.id,
