@@ -172,6 +172,13 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         if (nap.details.startTime && nap.details.endTime) {
           const start = new Date(`2000/01/01 ${nap.details.startTime}`);
           const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+          
+          // Validate dates are valid
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            console.warn('Invalid time format in nap:', nap);
+            return;
+          }
+          
           let diff = end.getTime() - start.getTime();
           
           // Handle overnight naps (end time is next day)
@@ -179,7 +186,10 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             diff = diff + (24 * 60 * 60 * 1000); // Add 24 hours
           }
           
-          if (diff > 0) totalHours += diff / (1000 * 60 * 60);
+          // Only add positive durations (max 24 hours to prevent invalid data)
+          if (diff > 0 && diff <= 24 * 60 * 60 * 1000) {
+            totalHours += diff / (1000 * 60 * 60);
+          }
         }
       });
       
@@ -273,11 +283,20 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         if (nap.details.startTime && nap.details.endTime) {
           const start = new Date(`2000/01/01 ${nap.details.startTime}`);
           const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+          
+          // Validate dates are valid
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return;
+          }
+          
           let diff = end.getTime() - start.getTime();
           if (diff < 0) {
             diff = diff + (24 * 60 * 60 * 1000);
           }
-          if (diff > 0) totalHours += diff / (1000 * 60 * 60);
+          // Only add positive durations (max 24 hours)
+          if (diff > 0 && diff <= 24 * 60 * 60 * 1000) {
+            totalHours += diff / (1000 * 60 * 60);
+          }
         }
       });
       
@@ -306,7 +325,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   };
   
   const napSummary = {
-    avgDuration: napData.reduce((sum, d) => sum + d.value, 0) / napData.filter(d => d.value > 0).length || 0,
+    avgDuration: Math.max(0, napData.reduce((sum, d) => sum + d.value, 0) / napData.filter(d => d.value > 0).length || 0),
     totalNaps: napData.reduce((sum, d) => sum + d.napCount, 0),
     avgNapsPerDay: napData.reduce((sum, d) => sum + d.napCount, 0) / napData.filter(d => d.napCount > 0).length || 0,
     avgDaytimeNapsPerDay: napData.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napData.filter(d => d.daytimeNapCount > 0).length || 0,
