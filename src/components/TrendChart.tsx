@@ -128,6 +128,23 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return data;
   };
 
+  // Helper function to parse time strings like "7:30 AM" into Date objects
+  const parseTimeString = (timeStr: string, baseDate: Date = new Date('2000/01/01')): Date | null => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return null;
+    
+    let hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    const period = match[3].toUpperCase();
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    const date = new Date(baseDate);
+    date.setHours(hours, minutes, 0, 0);
+    return date;
+  };
+
   // Calculate real nap duration data for the past 7 days
   const generateNapData = () => {
     const days = 7;
@@ -170,11 +187,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       let totalHours = 0;
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
-          const start = new Date(`2000/01/01 ${nap.details.startTime}`);
-          const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+          const start = parseTimeString(nap.details.startTime);
+          const end = parseTimeString(nap.details.endTime);
           
           // Validate dates are valid
-          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          if (!start || !end) {
             console.warn('Invalid time format in nap:', nap);
             return;
           }
@@ -281,11 +298,11 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       let totalHours = 0;
       dayNaps.forEach(nap => {
         if (nap.details.startTime && nap.details.endTime) {
-          const start = new Date(`2000/01/01 ${nap.details.startTime}`);
-          const end = new Date(`2000/01/01 ${nap.details.endTime}`);
+          const start = parseTimeString(nap.details.startTime);
+          const end = parseTimeString(nap.details.endTime);
           
           // Validate dates are valid
-          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+          if (!start || !end) {
             return;
           }
           
