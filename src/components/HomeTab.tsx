@@ -130,21 +130,20 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return userName ? `${greeting}, ${userName}` : greeting;
   };
 
-  // Get today's activities only
+  // Get today's activities only - using actual activity time, not logged time
   const todayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    const parsed = parseUTCToLocal(a.loggedAt);
-    const result = isToday(parsed);
-    return result;
+    if (!a.time) return false;
+    const activityTime = new Date(`${new Date().toDateString()} ${a.time}`);
+    return isToday(activityTime);
   });
 
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
-    if (!a.loggedAt) return false;
-    const activityDate = parseUTCToLocal(a.loggedAt);
+    if (!a.time) return false;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return activityDate.toDateString() === yesterday.toDateString();
+    const activityTime = new Date(`${yesterday.toDateString()} ${a.time}`);
+    return activityTime.toDateString() === yesterday.toDateString();
   });
 
   // Use yesterday's data as context if nothing logged today
@@ -189,9 +188,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return h * 60 + mins;
   };
 
-  // Compute a comparable timestamp for sorting: use nap startTime when provided; otherwise use loggedAt's time
+  // Compute a comparable timestamp for sorting: use activity time on today's date
   const getComparableTime = (a: Activity): number => {
-    const base = parseUTCToLocal(a.loggedAt!);
+    const today = new Date();
+    const base = new Date(today.toDateString()); // Start with today at midnight
     let minutes: number | null = null;
     if (a.type === 'nap' && a.details?.startTime) {
       minutes = parseUI12hToMinutes(a.details.startTime);
@@ -252,15 +252,15 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     };
 
     // Find the most recent completed nap (yesterday or today)
-  const recentNaps = activities.filter(a =>
-    a.loggedAt && parseUTCToLocal(a.loggedAt) >= yesterdayStart &&
-    a.type === 'nap' && a.details?.endTime
-  );
+    const recentNaps = activities.filter(a =>
+      a.type === 'nap' && a.details?.endTime
+    );
 
     if (recentNaps.length === 0) return null;
 
-  const napsWithEndDate = recentNaps.map(nap => {
-    const baseDate = parseUTCToLocal(nap.loggedAt!);
+    const napsWithEndDate = recentNaps.map(nap => {
+      const today = new Date();
+      const baseDate = new Date(today.toDateString());
     const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
     const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
 
@@ -311,10 +311,10 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Get last diaper
+// Get last diaper - using actual activity time
 const lastDiaper = displayActivities
   .filter(a => a.type === 'diaper')
-  .sort((a, b) => parseUTCToLocal(b.loggedAt!).getTime() - parseUTCToLocal(a.loggedAt!).getTime())[0];
+  .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
 
   // Get sleep status message with duration
   const getSleepStatus = () => {
@@ -328,8 +328,9 @@ const lastDiaper = displayActivities
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-  const napStart = parseUTCToLocal(ongoingNap.loggedAt!);
-  napStart.setHours(hour24, minutes, 0, 0);
+      const today = new Date();
+      const napStart = new Date(today.toDateString());
+      napStart.setHours(hour24, minutes, 0, 0);
       
       const sleepMinutes = differenceInMinutes(currentTime, napStart);
       const sleepHours = Math.floor(sleepMinutes / 60);
@@ -407,11 +408,11 @@ const lastDiaper = displayActivities
     let isEarlyDays = false;
     if (activities.length > 0) {
       const firstActivity = [...activities].sort((a, b) => 
-        new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime()
+        getComparableTime(a) - getComparableTime(b)
       )[0];
       
-      if (firstActivity?.loggedAt) {
-        const firstActivityTime = new Date(firstActivity.loggedAt);
+      if (firstActivity) {
+        const firstActivityTime = new Date(new Date().toDateString() + ' ' + firstActivity.time);
         const hoursSinceFirst = differenceInHours(currentTime, firstActivityTime);
         isEarlyDays = hoursSinceFirst < 24;
       }
@@ -471,7 +472,7 @@ const lastDiaper = displayActivities
       // 3. Earlier wake trend (would need historical data, simplified)
       const firstNap = displayActivities
         .filter(a => a.type === 'nap' && a.details?.startTime)
-        .sort((a, b) => new Date(a.loggedAt!).getTime() - new Date(b.loggedAt!).getTime())[0];
+        .sort((a, b) => getComparableTime(a) - getComparableTime(b))[0];
       
       if (firstNap) {
         const startTime = firstNap.details?.startTime || firstNap.time;
@@ -609,7 +610,8 @@ const lastDiaper = displayActivities
         if (period === 'PM' && hours !== 12) hour24 += 12;
         if (period === 'AM' && hours === 12) hour24 = 0;
         
-        const napStart = parseUTCToLocal(ongoingNap.loggedAt!);
+        const today = new Date();
+        const napStart = new Date(today.toDateString());
         napStart.setHours(hour24, minutes, 0, 0);
         
         napDuration = differenceInMinutes(currentTime, napStart);
@@ -685,11 +687,11 @@ const lastDiaper = displayActivities
     return 97;
   };
 
-  // Get latest measurement from all activities
+  // Get latest measurement from all activities - using activity time
   const getLatestMeasurement = () => {
     const measurements = activities
-      .filter(a => a.type === 'measure' && a.loggedAt)
-      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime());
+      .filter(a => a.type === 'measure')
+      .sort((a, b) => getComparableTime(b) - getComparableTime(a));
     
     if (measurements.length === 0) return null;
     
@@ -961,7 +963,8 @@ const lastDiaper = displayActivities
       if (period === 'PM' && hours !== 12) hour24 += 12;
       if (period === 'AM' && hours === 12) hour24 = 0;
       
-      const napStart = new Date(ongoingNap.loggedAt!);
+      const today = new Date();
+      const napStart = new Date(today.toDateString());
       napStart.setHours(hour24, minutes, 0, 0);
       
       // Calculate average nap duration based on age
@@ -991,7 +994,7 @@ const lastDiaper = displayActivities
       // Get last feed to estimate amount
       const recentFeeds = todayActivities
         .filter(a => a.type === 'feed' && a.details?.quantity)
-        .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime());
+        .sort((a, b) => getComparableTime(b) - getComparableTime(a));
       const avgAmount = recentFeeds.length > 0 
         ? Math.round(recentFeeds.slice(0, 3).reduce((sum, f) => sum + (parseFloat(f.details.quantity!) || 0), 0) / Math.min(3, recentFeeds.length))
         : 180;
@@ -1016,7 +1019,7 @@ const lastDiaper = displayActivities
       
       const lastNap = todayActivities
         .filter(a => a.type === 'nap' && a.details?.endTime)
-        .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+        .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
       
       if (lastNap && lastNap.details?.endTime) {
         const [time, period] = lastNap.details.endTime.split(' ');
@@ -1033,7 +1036,8 @@ const lastDiaper = displayActivities
         if (startPeriod === 'PM' && startHours !== 12) startHour24 += 12;
         if (startPeriod === 'AM' && startHours === 12) startHour24 = 0;
         
-        const wakeTime = new Date(lastNap.loggedAt!);
+        const today = new Date();
+        const wakeTime = new Date(today.toDateString());
         wakeTime.setHours(hour24, minutes, 0, 0);
         
         // If end time is before start time, it crossed midnight
@@ -1073,10 +1077,8 @@ const lastDiaper = displayActivities
       .slice(0, 5)
       .map(a => ({
         id: a.id,
-        loggedAt: a.loggedAt,
-        parsed: a.loggedAt ? new Date(a.loggedAt).toISOString() : null,
-        minutesAgo: a.loggedAt ? Math.round((Date.now() - new Date(a.loggedAt).getTime())/60000) : null,
-        timeStr: a.time
+        time: a.time,
+        loggedAt: a.loggedAt
       }));
 
     console.info('HomeTab - Prediction snapshot', {
@@ -1294,7 +1296,7 @@ const lastDiaper = displayActivities
                   onClick={() => {
                     const lastFeed = [...activities]
                       .filter(a => a.type === 'feed')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
                     onAddActivity('feed', lastFeed);
                   }}
                   size="sm"
@@ -1330,7 +1332,7 @@ const lastDiaper = displayActivities
                   onClick={() => {
                     const lastNap = [...activities]
                       .filter(a => a.type === 'nap')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
                     onAddActivity('nap', lastNap);
                   }}
                   size="sm"
@@ -1349,7 +1351,7 @@ const lastDiaper = displayActivities
                   onClick={() => {
                     const lastNap = [...activities]
                       .filter(a => a.type === 'nap')
-                      .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
+                      .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
                     onAddActivity('nap', lastNap);
                   }}
                   size="sm"
