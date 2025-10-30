@@ -7,8 +7,14 @@ interface YesterdaysSummaryProps {
 }
 
 export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
-  // Mock yesterday's data - in real app, this would filter activities by yesterday's date
-  const yesterdayActivities = activities; // Using current activities as mock data
+  // Filter activities by yesterday's date using actual logged date
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayActivities = activities.filter(a => {
+    if (!a.loggedAt) return false;
+    const activityDate = new Date(a.loggedAt);
+    return activityDate.toDateString() === yesterday.toDateString();
+  });
 
   const getYesterdaysDate = () => {
     const yesterday = new Date();

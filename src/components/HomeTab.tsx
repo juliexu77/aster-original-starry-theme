@@ -130,20 +130,19 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return userName ? `${greeting}, ${userName}` : greeting;
   };
 
-  // Get today's activities only - using actual activity time, not logged time
+  // Get today's activities only - using actual logged date
   const todayActivities = activities.filter(a => {
-    if (!a.time) return false;
-    const activityTime = new Date(`${new Date().toDateString()} ${a.time}`);
-    return isToday(activityTime);
+    if (!a.loggedAt) return false;
+    return isToday(new Date(a.loggedAt));
   });
 
   // Get yesterday's activities for context when today is empty
   const yesterdayActivities = activities.filter(a => {
-    if (!a.time) return false;
+    if (!a.loggedAt) return false;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const activityTime = new Date(`${yesterday.toDateString()} ${a.time}`);
-    return activityTime.toDateString() === yesterday.toDateString();
+    const activityDate = new Date(a.loggedAt);
+    return activityDate.toDateString() === yesterday.toDateString();
   });
 
   // Use yesterday's data as context if nothing logged today

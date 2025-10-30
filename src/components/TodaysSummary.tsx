@@ -53,8 +53,12 @@ export const TodaysSummary = ({ activities }: TodaysSummaryProps) => {
   const [selectedDate, setSelectedDate] = useState(getAvailableDates()[0]);
   const availableDates = getAvailableDates();
 
-  // Filter activities for selected date (mock - in real app would filter by actual date)
-  const dayActivities = selectedDate.label === "Today" ? activities : [];
+  // Filter activities for selected date using actual logged date
+  const dayActivities = activities.filter(a => {
+    if (!a.loggedAt) return false;
+    const activityDate = new Date(a.loggedAt).toDateString();
+    return activityDate === selectedDate.date.toDateString();
+  });
 
   const calculateStats = () => {
     const stats = {
