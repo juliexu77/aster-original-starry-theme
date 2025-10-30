@@ -652,22 +652,35 @@ const ongoingNap = activities
                       );
                     }
                     
-                    // Group activities by date
+                    // Helper: Get baby day date key for an activity
+                    // Baby's "day" runs from nightSleepEndHour (e.g., 7am) to nightSleepEndHour next day
+                    const getBabyDayKey = (activityDate: Date): string => {
+                      const hour = activityDate.getHours();
+                      
+                      // If activity is before nightSleepEndHour, it belongs to previous baby day
+                      const babyDay = new Date(activityDate);
+                      if (hour < nightSleepEndHour) {
+                        babyDay.setDate(babyDay.getDate() - 1);
+                      }
+                      
+                      // Return YYYY-MM-DD for the baby day
+                      const y = babyDay.getFullYear();
+                      const m = String(babyDay.getMonth() + 1).padStart(2, '0');
+                      const d = String(babyDay.getDate()).padStart(2, '0');
+                      return `${y}-${m}-${d}`;
+                    };
+                    
+                    // Group activities by baby day
                     const activityGroups: { [date: string]: typeof filteredActivities } = {};
                     
-                     filteredActivities.forEach(activity => {
-                       // Use the logged_at date for grouping activities by day
-                       const activityDate = new Date(activity.loggedAt!);
-                        // Build a YYYY-MM-DD key in local time (avoid UTC shifting)
-                        const y = activityDate.getFullYear();
-                        const m = String(activityDate.getMonth() + 1).padStart(2, '0');
-                        const d = String(activityDate.getDate()).padStart(2, '0');
-                        const localDateString = `${y}-${m}-${d}`;
+                    filteredActivities.forEach(activity => {
+                      const activityDate = new Date(activity.loggedAt!);
+                      const babyDayKey = getBabyDayKey(activityDate);
                       
-                      if (!activityGroups[localDateString]) {
-                        activityGroups[localDateString] = [];
+                      if (!activityGroups[babyDayKey]) {
+                        activityGroups[babyDayKey] = [];
                       }
-                      activityGroups[localDateString].push(activity);
+                      activityGroups[babyDayKey].push(activity);
                     });
 
                     // Sort activities within each date group by actual activity time (descending - newest first)
@@ -716,14 +729,25 @@ const ongoingNap = activities
                     const sortedDates = Object.keys(activityGroups).sort((a, b) => b.localeCompare(a));
 
                     // Filter dates based on showFullTimeline
-                    const today = new Date();
-                    const yesterday = new Date(Date.now() - 86400000);
-                    const todayKey = today.getFullYear() + '-' + 
-                                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
-                                   String(today.getDate()).padStart(2, '0');
-                    const yesterdayKey = yesterday.getFullYear() + '-' + 
-                                       String(yesterday.getMonth() + 1).padStart(2, '0') + '-' + 
-                                       String(yesterday.getDate()).padStart(2, '0');
+                    // Calculate today's and yesterday's baby day keys
+                    const now = new Date();
+                    const currentHour = now.getHours();
+                    
+                    // Today's baby day
+                    const todayBabyDay = new Date(now);
+                    if (currentHour < nightSleepEndHour) {
+                      todayBabyDay.setDate(todayBabyDay.getDate() - 1);
+                    }
+                    const todayKey = todayBabyDay.getFullYear() + '-' + 
+                                   String(todayBabyDay.getMonth() + 1).padStart(2, '0') + '-' + 
+                                   String(todayBabyDay.getDate()).padStart(2, '0');
+                    
+                    // Yesterday's baby day
+                    const yesterdayBabyDay = new Date(todayBabyDay);
+                    yesterdayBabyDay.setDate(yesterdayBabyDay.getDate() - 1);
+                    const yesterdayKey = yesterdayBabyDay.getFullYear() + '-' + 
+                                       String(yesterdayBabyDay.getMonth() + 1).padStart(2, '0') + '-' + 
+                                       String(yesterdayBabyDay.getDate()).padStart(2, '0');
 
                     const visibleDates = showFullTimeline ? sortedDates : sortedDates.slice(0, 2);
 
