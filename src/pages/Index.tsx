@@ -111,12 +111,40 @@ const Index = () => {
   const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
+
+// Helper to parse time string to Date object
+const parseTimeToDate = (timeStr: string, baseDate: Date): Date => {
+  const [time, period] = timeStr.split(' ');
+  const [hStr, mStr] = time.split(':');
+  let h = parseInt(hStr, 10);
+  const m = parseInt(mStr || '0', 10);
+  if (period === 'PM' && h !== 12) h += 12;
+  if (period === 'AM' && h === 12) h = 0;
+  
+  const result = new Date(baseDate);
+  result.setHours(h, m, 0, 0);
+  return result;
+};
+
 // Show wake-up for open naps from today or yesterday only (ignore older accidentally open naps)
 const yesterdayStart = new Date(); 
 yesterdayStart.setDate(yesterdayStart.getDate() - 1);
 yesterdayStart.setHours(0, 0, 0, 0);
+const now = new Date();
+
 const ongoingNap = activities
-  .filter(a => a.type === 'nap' && a.details?.startTime && !a.details?.endTime && a.id !== justEndedNapId && new Date(a.loggedAt!) >= yesterdayStart)
+  .filter(a => {
+    if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
+      return false;
+    }
+    
+    const loggedDate = new Date(a.loggedAt!);
+    if (loggedDate < yesterdayStart) return false;
+    
+    // Parse the start time and check if it's actually in the past
+    const napStartTime = parseTimeToDate(a.details.startTime, loggedDate);
+    return napStartTime <= now;
+  })
   .sort((a, b) => new Date(b.loggedAt!).getTime() - new Date(a.loggedAt!).getTime())[0];
 
   // Get current user's role from collaborators
