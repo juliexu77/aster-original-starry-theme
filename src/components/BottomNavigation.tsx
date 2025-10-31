@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Home, Activity, TrendingUp, List, Mic } from "lucide-react";
+import { Home, Activity, TrendingUp, List, Plus } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -49,7 +49,7 @@ const leftTabs = [
             );
           })}
 
-          {/* Central Voice Button */}
+          {/* Central Add Button */}
           <div className="flex justify-center">
             <button
               ref={addButtonRef}
@@ -58,7 +58,7 @@ const leftTabs = [
                        flex items-center justify-center shadow-lg
                        hover:scale-105 transition-transform duration-200"
             >
-              <Mic className="w-6 h-6 text-primary-foreground" />
+              <Plus className="w-6 h-6 text-primary-foreground" />
             </button>
           </div>
 

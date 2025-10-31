@@ -8,7 +8,8 @@ import { TimeScrollPicker } from "./TimeScrollPicker";
 import { MinuteScrollPicker } from "./MinuteScrollPicker";
 import { NumericKeypad } from "./NumericKeypad";
 import { Activity } from "./ActivityCard";
-import { Plus, Baby, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler } from "lucide-react";
+import { Plus, Baby, Droplet, Moon, StickyNote, Camera, Smile, Meh, Frown, Clock, Milk, Carrot, MoreVertical, Trash2, Ruler, Mic } from "lucide-react";
+import { VoiceRecorder } from "./VoiceRecorder";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,6 +106,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date()); // Separate date for sleep end time
+  const [inputMode, setInputMode] = useState<'manual' | 'voice'>('manual');
   
   // Measure state
   const [weightLbs, setWeightLbs] = useState("");
@@ -626,6 +628,50 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
           
           <div className="flex-1 overflow-y-auto px-1 -mx-1">
             <div className="space-y-4">{/* Content wrapper */}
+            
+            {/* Input Mode Toggle - Only show for new activities */}
+            {!editingActivity && (
+              <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                <Button
+                  variant={inputMode === 'manual' ? 'default' : 'ghost'}
+                  className="flex-1"
+                  onClick={() => setInputMode('manual')}
+                >
+                  Manual
+                </Button>
+                <Button
+                  variant={inputMode === 'voice' ? 'default' : 'ghost'}
+                  className="flex-1"
+                  onClick={() => setInputMode('voice')}
+                >
+                  <Mic className="h-4 w-4 mr-2" />
+                  Voice
+                </Button>
+              </div>
+            )}
+
+            {/* Voice Input Mode */}
+            {inputMode === 'voice' && !editingActivity && (
+              <VoiceRecorder
+                onActivityParsed={(activities) => {
+                  // Process parsed activities and add them
+                  activities.forEach(async (activity) => {
+                    await onAddActivity(activity);
+                  });
+                  resetForm();
+                  if (onClose) {
+                    onClose();
+                  } else {
+                    setInternalOpen(false);
+                  }
+                }}
+                autoStart={false}
+              />
+            )}
+
+            {/* Manual Input Mode */}
+            {inputMode === 'manual' && (
+              <>
             {/* Activity Type Selection - Clean Grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -1167,7 +1213,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             )}
 
 
-
+            </>
+            )}
             </div>{/* End content wrapper */}
           </div>{/* End scrollable area */}
 
