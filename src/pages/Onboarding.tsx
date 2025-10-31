@@ -48,10 +48,10 @@ const Onboarding = () => {
           {/* Welcome Message */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Your AI parenting companion
+              Intelligence meets Intuition
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto font-medium">
-              Intelligence meets Intuition
+              Your AI parenting companion
             </p>
             <p className="text-sm text-muted-foreground/80 max-w-sm mx-auto">
               Log naps, feeds, and diapers. I'll learn from your entries and start predicting wake windows once I have enough data.
