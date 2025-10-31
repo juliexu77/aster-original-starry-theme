@@ -206,16 +206,50 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     );
   }
 
-  // Placeholder state - minimal data, show generalized prediction
+  // Placeholder state - minimal data, show generalized prediction with age-based guidance
   if (!prediction && hasMinimalData && babyName) {
-    const avgNapInterval = 150; // 2.5 hours default
+    // Calculate baby age in weeks for personalized guidance
+    const ageInWeeks = household?.baby_birthday ? 
+      Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
+    
+    // Age-based wake window and nap guidance
+    let napIntervalMinutes = 150; // default 2.5 hours
+    let ageGuidance = "Most babies this age";
+    
+    if (ageInWeeks < 6) {
+      // 0-6 weeks: very frequent naps
+      napIntervalMinutes = 60; // ~1 hour
+      ageGuidance = "Newborns typically";
+    } else if (ageInWeeks < 12) {
+      // 6-12 weeks: shorter wake windows
+      napIntervalMinutes = 90; // ~1.5 hours
+      ageGuidance = "At this age, babies usually";
+    } else if (ageInWeeks < 16) {
+      // 3-4 months: extending wake windows
+      napIntervalMinutes = 120; // ~2 hours
+      ageGuidance = "3-month-olds typically";
+    } else if (ageInWeeks < 26) {
+      // 4-6 months: more consolidated naps
+      napIntervalMinutes = 150; // ~2.5 hours
+      ageGuidance = "At this stage, babies often";
+    } else {
+      // 6+ months: longer wake windows
+      napIntervalMinutes = 180; // ~3 hours
+      ageGuidance = "Older babies usually";
+    }
+    
     const now = new Date();
-    const predictedTime = new Date(now.getTime() + avgNapInterval * 60 * 1000);
+    const predictedTime = new Date(now.getTime() + napIntervalMinutes * 60 * 1000);
     const timeStr = predictedTime.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
     });
+    
+    const hoursDisplay = napIntervalMinutes === 60 ? "1 hour" : 
+                        napIntervalMinutes === 90 ? "1½ hours" :
+                        napIntervalMinutes === 120 ? "2 hours" :
+                        napIntervalMinutes === 150 ? "2½ hours" : "3 hours";
 
     return (
       <Card className="bg-card border border-border/40 p-4 rounded-2xl animate-in fade-in duration-300">
@@ -232,17 +266,17 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
             
             <div className="space-y-2">
               <p className="text-base text-foreground font-medium leading-relaxed">
-                Most babies this age nap about every 2½ hours. Next nap around {timeStr}.
+                {ageGuidance} nap about every {hoursDisplay}. Next nap around {timeStr}.
               </p>
               
               {isExpanded && (
                 <div className="pt-3 mt-3 border-t border-border/40">
                   <p className="text-sm text-muted-foreground">
-                    We'll refine this as we learn from your logs.
+                    Keep logging activities — I'll refine this based on {babyName}'s unique patterns.
                   </p>
                   <div className="mt-2 flex items-start gap-2">
                     <span className="text-xs text-muted-foreground/80">
-                      ℹ️ Predicted by BabyRhythm's AI
+                      ℹ️ Based on {babyName}'s age ({ageInWeeks} weeks)
                     </span>
                   </div>
                 </div>
