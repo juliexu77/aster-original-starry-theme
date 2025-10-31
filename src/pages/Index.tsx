@@ -1129,7 +1129,7 @@ return (
             }
             setActiveTab(newTab);
           }}
-          onAddActivity={() => setShowVoiceRecorder(true)}
+          onAddActivity={() => setShowAddActivity(true)}
         />
 
         {/* Add Activity Modal */}
