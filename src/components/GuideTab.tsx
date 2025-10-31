@@ -327,8 +327,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const fetchGuideSections = async () => {
       setGuideSectionsLoading(true);
       try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         console.log('🔄 Fetching guide sections from edge function...');
-        const { data, error } = await supabase.functions.invoke('generate-guide-sections');
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
+          body: { timezone }
+        });
         
         if (error) {
           console.error('❌ Error fetching guide sections:', error);

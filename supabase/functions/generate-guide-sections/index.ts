@@ -45,6 +45,10 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
+    // Get timezone from request body
+    const { timezone: userTimezone } = await req.json();
+    const timezone = userTimezone || 'America/Los_Angeles'; // Fallback only
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey, {
@@ -107,8 +111,8 @@ serve(async (req) => {
       });
     }
 
-    // Determine timezone from activities or default to project default
-    const tz = (activities.find((a: any) => a.timezone)?.timezone as string) || 'America/Los_Angeles';
+    // Use the timezone passed from the frontend (user's browser timezone)
+    const tz = timezone;
 
     // Helper to get date string in user's timezone (YYYY-MM-DD format)
     const getActivityDateString = (a: any): string => {
