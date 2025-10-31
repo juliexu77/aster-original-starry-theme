@@ -25,11 +25,13 @@ const Onboarding = () => {
   }, [user, household, authLoading, householdLoading, navigate]);
 
   const handleGetStarted = () => {
-    if (inviteCode.toLowerCase() === "village") {
-      navigate("/auth");
-    } else {
-      setError("Invalid invite code");
-    }
+    // TEMPORARY: Bypass invite code for testing
+    navigate("/");
+    // if (inviteCode.toLowerCase() === "village") {
+    //   navigate("/auth");
+    // } else {
+    //   setError("Invalid invite code");
+    // }
   };
 
   return (
