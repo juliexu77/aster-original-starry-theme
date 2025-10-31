@@ -1167,7 +1167,7 @@ const lastDiaper = displayActivities
               <div className="text-center">
                 <button
                   onClick={() => {
-                    const helperTab = document.querySelector('[data-tab="helper"]') as HTMLElement;
+                    const helperTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
                     helperTab?.click();
                   }}
                   className="text-sm text-primary hover:underline font-medium"
