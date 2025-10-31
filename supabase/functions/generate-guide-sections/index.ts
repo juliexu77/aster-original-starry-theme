@@ -116,18 +116,13 @@ serve(async (req) => {
     const twoDaysAgoUTC = new Date(todayStartUTC.getTime() - 2 * 24 * 60 * 60 * 1000);
     const baselineStartUTC = new Date(todayStartUTC.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days back
 
-    // For overnight sleep attribution, we need to look at which day the sleep TIME falls on
-    // not just the logged_at timestamp. Use date_local if available.
-    const getActivityDate = (a: any) => {
+    // Helper to get date string in user's timezone (YYYY-MM-DD format)
+    const getActivityDateString = (a: any): string => {
       if (a.details?.date_local) {
-        return new Date(a.details.date_local + 'T00:00:00Z');
+        return a.details.date_local; // Already in YYYY-MM-DD format
       }
-      // Fallback: Convert UTC logged_at to user's timezone and extract date
-      // This matches the frontend's getDateKeyFromActivity logic
+      // Convert UTC logged_at to user's timezone and extract date string
       const utcDate = new Date(a.logged_at);
-      
-      // Get the date components in the user's timezone
-      // Using Intl.DateTimeFormat to get timezone-aware components
       const formatter = new Intl.DateTimeFormat('en-US', {
         timeZone: tz,
         year: 'numeric',
@@ -138,21 +133,38 @@ serve(async (req) => {
       const year = parts.find(p => p.type === 'year')!.value;
       const month = parts.find(p => p.type === 'month')!.value;
       const day = parts.find(p => p.type === 'day')!.value;
-      
-      // Return a Date object at midnight in the user's timezone
-      return new Date(`${year}-${month}-${day}T00:00:00Z`);
+      return `${year}-${month}-${day}`;
     };
 
-    // Recent: Last 2 complete days (by activity date, not logged_at)
+    // Get date strings for filtering
+    const getDateString = (date: Date): string => {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+      const parts = formatter.formatToParts(date);
+      const year = parts.find(p => p.type === 'year')!.value;
+      const month = parts.find(p => p.type === 'month')!.value;
+      const day = parts.find(p => p.type === 'day')!.value;
+      return `${year}-${month}-${day}`;
+    };
+
+    const todayDateStr = getDateString(now);
+    const twoDaysAgoDateStr = getDateString(new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000));
+    const sevenDaysAgoDateStr = getDateString(new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000));
+
+    // Recent: Last 2 complete days (by activity date string)
     const recentActivities = activities.filter(a => {
-      const activityDate = getActivityDate(a);
-      return activityDate >= twoDaysAgoUTC && activityDate < todayStartUTC;
+      const activityDateStr = getActivityDateString(a);
+      return activityDateStr >= twoDaysAgoDateStr && activityDateStr < todayDateStr;
     });
     
     // Previous: 5 days before the recent 2 days (baseline trend)
     const previousActivities = activities.filter(a => {
-      const activityDate = getActivityDate(a);
-      return activityDate >= baselineStartUTC && activityDate < twoDaysAgoUTC;
+      const activityDateStr = getActivityDateString(a);
+      return activityDateStr >= sevenDaysAgoDateStr && activityDateStr < twoDaysAgoDateStr;
     });
 
     // Apply outlier detection before calculating metrics
