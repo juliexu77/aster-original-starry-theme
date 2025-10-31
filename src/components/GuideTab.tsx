@@ -24,7 +24,7 @@ interface Activity {
   details: any;
 }
 
-interface RhythmTabProps {
+interface GuideTabProps {
   activities: Activity[];
   onGoToSettings?: () => void;
 }
@@ -34,7 +34,7 @@ interface Message {
   content: string;
 }
 
-interface RhythmSections {
+interface GuideSections {
   data_pulse: {
     metrics: Array<{ name: string; change: string }>;
     note: string;
@@ -172,7 +172,7 @@ const getDailyTone = (dayActivities: Activity[], allActivities: Activity[], baby
   return getDailySentiment(dayActivities, allActivities, babyAgeMonths, 12); // Use noon as default hour
 };
 
-export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
+export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // ===== ALL HOOKS FIRST (must be before any conditional returns) =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
@@ -186,8 +186,8 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
-  const [rhythmSections, setRhythmSections] = useState<RhythmSections | null>(null);
-  const [rhythmSectionsLoading, setRhythmSectionsLoading] = useState(false);
+  const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
+  const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -325,10 +325,10 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
     if (!hasMinimumData || !user || !household) return;
     
     const fetchGuideSections = async () => {
-      setRhythmSectionsLoading(true);
+      setGuideSectionsLoading(true);
       try {
-        console.log('🔄 Fetching rhythm sections from edge function...');
-        const { data, error } = await supabase.functions.invoke('generate-rhythm-sections');
+        console.log('🔄 Fetching guide sections from edge function...');
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections');
         
         if (error) {
           console.error('❌ Error fetching guide sections:', error);
@@ -337,40 +337,40 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
         
         if (data) {
           console.log('✅ Guide sections fetched:', data);
-          setRhythmSections(data);
-          localStorage.setItem('rhythmSections', JSON.stringify(data));
-          localStorage.setItem('rhythmSectionsLastFetch', new Date().toISOString());
+          setGuideSections(data);
+          localStorage.setItem('guideSections', JSON.stringify(data));
+          localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
         }
       } catch (err) {
         console.error('❌ Failed to fetch guide sections:', err);
       } finally {
-        setRhythmSectionsLoading(false);
+        setGuideSectionsLoading(false);
       }
     };
 
     // Check if we need to fetch
-    const lastFetch = localStorage.getItem('rhythmSectionsLastFetch');
-    const cached = localStorage.getItem('rhythmSections');
+    const lastFetch = localStorage.getItem('guideSectionsLastFetch');
+    const cached = localStorage.getItem('guideSections');
     const now = new Date();
     const fiveAM = new Date();
     fiveAM.setHours(5, 0, 0, 0);
     
     // Load cached data first
-    if (cached && !rhythmSections) {
+    if (cached && !guideSections) {
       try {
         const parsed = JSON.parse(cached);
         console.log('📦 Loaded cached guide sections:', parsed);
         // Check if cached data has new format with data_pulse
         if (!parsed.data_pulse) {
           console.log('⚠️ Old cache format detected, will fetch fresh data');
-          localStorage.removeItem('rhythmSections');
-          localStorage.removeItem('rhythmSectionsLastFetch');
+          localStorage.removeItem('guideSections');
+          localStorage.removeItem('guideSectionsLastFetch');
         } else {
-          setRhythmSections(parsed);
+          setGuideSections(parsed);
         }
       } catch (e) {
-        console.error('Failed to parse cached rhythm sections:', e);
-        localStorage.removeItem('rhythmSections');
+        console.error('Failed to parse cached guide sections:', e);
+        localStorage.removeItem('guideSections');
       }
     }
     
@@ -390,7 +390,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
       console.log('🚀 Fetching fresh guide sections...');
       fetchGuideSections();
     }
-  }, [hasMinimumData, user, rhythmSections, household]);
+  }, [hasMinimumData, user, guideSections, household]);
 
   // Load initial insight
   useEffect(() => {
@@ -708,7 +708,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           )}
 
           {/* Guide Sections Loading Indicator */}
-          {hasMinimumData && rhythmSectionsLoading && !rhythmSections && (
+          {hasMinimumData && guideSectionsLoading && !guideSections && (
             <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
               <p className="text-sm text-muted-foreground">
@@ -718,7 +718,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           )}
 
           {/* Data Pulse */}
-          {hasMinimumData && rhythmSections && rhythmSections.data_pulse && (
+          {hasMinimumData && guideSections && guideSections.data_pulse && (
             <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
               <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
                 <div className="flex items-center gap-2">
@@ -730,8 +730,8 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
               
               <div className="space-y-2">
                 
-                {rhythmSections.data_pulse.metrics.length > 0 ? (
-                  rhythmSections.data_pulse.metrics.map((metric, idx) => {
+                {guideSections.data_pulse.metrics.length > 0 ? (
+                  guideSections.data_pulse.metrics.map((metric, idx) => {
                     const getMetricIcon = () => {
                       if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
                       if (metric.name === 'Naps') return <Bed className="w-4 h-4 text-primary" />;
@@ -761,14 +761,14 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                 )}
                 
                 <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
-                  {rhythmSections.data_pulse.note}
+                  {guideSections.data_pulse.note}
                 </p>
               </div>
             </div>
           )}
 
           {/* What to Know */}
-          {hasMinimumData && rhythmSections && rhythmSections.what_to_know && (
+          {hasMinimumData && guideSections && guideSections.what_to_know && (
             <div className="space-y-3">
               <Collapsible>
                 <CollapsibleTrigger asChild>
@@ -777,7 +777,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                       <Lightbulb className="w-4 h-4 text-primary" />
                       <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
                     </div>
-                    {rhythmSections.what_to_know.length > 1 && (
+                    {guideSections.what_to_know.length > 1 && (
                       <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
                     )}
                   </button>
@@ -786,12 +786,12 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                   <div className="flex items-start gap-2">
                     <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {rhythmSections.what_to_know[0]}
+                      {guideSections.what_to_know[0]}
                     </p>
                   </div>
-                  {rhythmSections.what_to_know.length > 1 && (
+                  {guideSections.what_to_know.length > 1 && (
                     <CollapsibleContent>
-                      {rhythmSections.what_to_know.slice(1).map((item, idx) => (
+                      {guideSections.what_to_know.slice(1).map((item, idx) => (
                         <div key={idx} className="flex items-start gap-2 mt-2">
                           <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -807,7 +807,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           )}
 
           {/* What To Do */}
-          {hasMinimumData && rhythmSections && rhythmSections.what_to_do && (
+          {hasMinimumData && guideSections && guideSections.what_to_do && (
             <div className="space-y-3">
               <Collapsible>
                 <CollapsibleTrigger asChild>
@@ -816,7 +816,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                       <CheckSquare className="w-4 h-4 text-primary" />
                       <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
                     </div>
-                    {rhythmSections.what_to_do.length > 1 && (
+                    {guideSections.what_to_do.length > 1 && (
                       <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
                     )}
                   </button>
@@ -825,12 +825,12 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
                   <div className="flex items-start gap-2">
                     <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {rhythmSections.what_to_do[0]}
+                      {guideSections.what_to_do[0]}
                     </p>
                   </div>
-                  {rhythmSections.what_to_do.length > 1 && (
+                  {guideSections.what_to_do.length > 1 && (
                     <CollapsibleContent>
-                      {rhythmSections.what_to_do.slice(1).map((item, idx) => (
+                      {guideSections.what_to_do.slice(1).map((item, idx) => (
                         <div key={idx} className="flex items-start gap-2 mt-2">
                           <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
                           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -846,7 +846,7 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
           )}
 
           {/* What's Next */}
-          {hasMinimumData && rhythmSections && rhythmSections.whats_next && (
+          {hasMinimumData && guideSections && guideSections.whats_next && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <ArrowRight className="w-4 h-4 text-primary" />
@@ -854,13 +854,13 @@ export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
               </div>
               <div className="space-y-3 pl-1">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {rhythmSections.whats_next}
+                  {guideSections.whats_next}
                 </p>
-                {rhythmSections.prep_tip && (
+                {guideSections.prep_tip && (
                   <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
                     <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-foreground">
-                      <span className="font-medium">Prep tip:</span> {rhythmSections.prep_tip}
+                      <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
                     </p>
                   </div>
                 )}
