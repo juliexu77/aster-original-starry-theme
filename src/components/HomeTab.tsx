@@ -225,11 +225,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const getAwakeTime = () => {
     if (ongoingNap) return null;
 
-    // Consider naps from today and yesterday only
-    const yesterdayStart = new Date();
-    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-    yesterdayStart.setHours(0, 0, 0, 0);
-
     const parseTimeToMinutes = (timeStr: string) => {
       const [time, period] = timeStr.split(' ');
       const [hStr, mStr] = time.split(':');
@@ -240,20 +235,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
       return h * 60 + m;
     };
 
-    // Find the most recent completed nap (yesterday or today)
-    const recentNaps = activities.filter(a =>
+    // Find the most recent completed nap from displayActivities (today or yesterday)
+    const recentNaps = displayActivities.filter(a =>
       a.type === 'nap' && a.details?.endTime
     );
 
     if (recentNaps.length === 0) return null;
 
     const napsWithEndDate = recentNaps.map(nap => {
-      const today = new Date();
-      const baseDate = new Date(today.toDateString());
-    const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
-    const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
+      // Use the actual logged date from the activity
+      const loggedDate = nap.loggedAt ? parseUTCToLocal(nap.loggedAt) : new Date();
+      const baseDate = new Date(loggedDate.toDateString());
+      const endMinutes = parseTimeToMinutes(nap.details!.endTime!);
+      const startMinutes = nap.details?.startTime ? parseTimeToMinutes(nap.details.startTime) : null;
 
-    const endDate = new Date(baseDate);
+      const endDate = new Date(baseDate);
       const endHours = Math.floor(endMinutes / 60);
       const endMins = endMinutes % 60;
       endDate.setHours(endHours, endMins, 0, 0);
