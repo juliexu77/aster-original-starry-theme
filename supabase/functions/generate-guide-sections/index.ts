@@ -107,14 +107,8 @@ serve(async (req) => {
       });
     }
 
-    // Calculate metrics and deltas: compare last 2 days vs 5-day baseline (with outlier detection)
     // Determine timezone from activities or default to project default
     const tz = (activities.find((a: any) => a.timezone)?.timezone as string) || 'America/Los_Angeles';
-
-    // Compute UTC boundaries in the user's timezone
-    const todayStartUTC = getTZStartOfTodayUTC(now, tz);
-    const twoDaysAgoUTC = new Date(todayStartUTC.getTime() - 2 * 24 * 60 * 60 * 1000);
-    const baselineStartUTC = new Date(todayStartUTC.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days back
 
     // Helper to get date string in user's timezone (YYYY-MM-DD format)
     const getActivityDateString = (a: any): string => {
@@ -175,13 +169,16 @@ serve(async (req) => {
     const previousMetrics = calculateMetrics(previousActivitiesFiltered);
     
     // Calculate trend analysis (nap & feed durations over time)
-    const trendAnalysis = analyzeTrends(activities, baselineStartUTC, todayStartUTC);
+    // Create Date objects for analyzeTrends function (convert date strings back to Date)
+    const baselineStart = new Date(sevenDaysAgoDateStr + 'T00:00:00Z');
+    const todayStart = new Date(todayDateStr + 'T00:00:00Z');
+    const trendAnalysis = analyzeTrends(activities, baselineStart, todayStart);
 
     console.log('DataPulse window', {
       tz,
-      todayStartUTC: todayStartUTC.toISOString(),
-      twoDaysAgoUTC: twoDaysAgoUTC.toISOString(),
-      baselineStartUTC: baselineStartUTC.toISOString(),
+      todayDateStr,
+      twoDaysAgoDateStr,
+      sevenDaysAgoDateStr,
       recentMetrics,
       previousMetrics,
       trendAnalysis,
@@ -193,8 +190,8 @@ serve(async (req) => {
     const insights = extractInsights(deltas, ageMonths, trendAnalysis);
 
     const allWindowActivities = activities.filter(a => {
-      const t = new Date(a.logged_at);
-      return t >= baselineStartUTC && t < todayStartUTC;
+      const activityDateStr = getActivityDateString(a);
+      return activityDateStr >= sevenDaysAgoDateStr && activityDateStr < todayDateStr;
     });
     const dataQuality = calculateDataQuality(allWindowActivities, 7); // 7 days total
 
