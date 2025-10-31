@@ -106,7 +106,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [showKeypad, setShowKeypad] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState<Date>(new Date()); // Separate date for sleep end time
-  const [inputMode, setInputMode] = useState<'manual' | 'voice'>('manual');
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   
   // Measure state
   const [weightLbs, setWeightLbs] = useState("");
@@ -623,55 +623,22 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               <DialogTitle className="text-lg font-medium">
                 {editingActivity ? t('editActivity') : t('addActivity')}
               </DialogTitle>
+              {!editingActivity && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowVoiceRecorder(true)}
+                  className="h-9 w-9"
+                >
+                  <Mic className="h-5 w-5" />
+                </Button>
+              )}
             </div>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto px-1 -mx-1">
             <div className="space-y-4">{/* Content wrapper */}
             
-            {/* Input Mode Toggle - Only show for new activities */}
-            {!editingActivity && (
-              <div className="flex gap-2 p-1 bg-muted rounded-lg">
-                <Button
-                  variant={inputMode === 'manual' ? 'default' : 'ghost'}
-                  className="flex-1"
-                  onClick={() => setInputMode('manual')}
-                >
-                  Manual
-                </Button>
-                <Button
-                  variant={inputMode === 'voice' ? 'default' : 'ghost'}
-                  className="flex-1"
-                  onClick={() => setInputMode('voice')}
-                >
-                  <Mic className="h-4 w-4 mr-2" />
-                  Voice
-                </Button>
-              </div>
-            )}
-
-            {/* Voice Input Mode */}
-            {inputMode === 'voice' && !editingActivity && (
-              <VoiceRecorder
-                onActivityParsed={(activities) => {
-                  // Process parsed activities and add them
-                  activities.forEach(async (activity) => {
-                    await onAddActivity(activity);
-                  });
-                  resetForm();
-                  if (onClose) {
-                    onClose();
-                  } else {
-                    setInternalOpen(false);
-                  }
-                }}
-                autoStart={false}
-              />
-            )}
-
-            {/* Manual Input Mode */}
-            {inputMode === 'manual' && (
-              <>
             {/* Activity Type Selection - Clean Grid */}
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -1213,8 +1180,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             )}
 
 
-            </>
-            )}
             </div>{/* End content wrapper */}
           </div>{/* End scrollable area */}
 
@@ -1264,6 +1229,31 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 </div>
               )}
             </div>{/* End buttons section */}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Voice Recorder Dialog */}
+      <Dialog open={showVoiceRecorder} onOpenChange={setShowVoiceRecorder}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('voiceInput')}</DialogTitle>
+          </DialogHeader>
+          <VoiceRecorder
+            onActivityParsed={(activities) => {
+              // Process parsed activities and add them
+              activities.forEach(async (activity) => {
+                await onAddActivity(activity);
+              });
+              resetForm();
+              setShowVoiceRecorder(false);
+              if (onClose) {
+                onClose();
+              } else {
+                setInternalOpen(false);
+              }
+            }}
+            autoStart={true}
+          />
         </DialogContent>
       </Dialog>
       

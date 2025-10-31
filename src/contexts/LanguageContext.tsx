@@ -405,6 +405,7 @@ const translations = {
     // Add activity modal
     addActivity: "Add Activity",
     editActivity: "Edit Activity",
+    voiceInput: "Voice Input",
     sleep: "Sleep",
     measure: "Measure",
     tapToEnterAmount: "Tap to enter amount",
@@ -889,6 +890,7 @@ const translations = {
     // Add activity modal
     addActivity: "添加活动",
     editActivity: "编辑活动",
+    voiceInput: "语音输入",
     sleep: "睡觉",
     measure: "测量",
     tapToEnterAmount: "点击输入数量",
