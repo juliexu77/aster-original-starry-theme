@@ -34,7 +34,7 @@ interface Message {
   content: string;
 }
 
-interface GuideSections {
+interface RhythmSections {
   data_pulse: {
     metrics: Array<{ name: string; change: string }>;
     note: string;
@@ -172,7 +172,7 @@ const getDailyTone = (dayActivities: Activity[], allActivities: Activity[], baby
   return getDailySentiment(dayActivities, allActivities, babyAgeMonths, 12); // Use noon as default hour
 };
 
-export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
+export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   // ===== ALL HOOKS FIRST (must be before any conditional returns) =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
@@ -186,8 +186,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
-  const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
-  const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
+  const [rhythmSections, setRhythmSections] = useState<RhythmSections | null>(null);
+  const [rhythmSectionsLoading, setRhythmSectionsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -327,8 +327,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const fetchGuideSections = async () => {
       setGuideSectionsLoading(true);
       try {
-        console.log('🔄 Fetching guide sections from edge function...');
-        const { data, error } = await supabase.functions.invoke('generate-guide-sections');
+        console.log('🔄 Fetching rhythm sections from edge function...');
+        const { data, error } = await supabase.functions.invoke('generate-guide-sections'); // TODO: rename edge function to generate-rhythm-sections
         
         if (error) {
           console.error('❌ Error fetching guide sections:', error);
