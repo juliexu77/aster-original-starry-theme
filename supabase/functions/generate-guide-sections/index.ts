@@ -45,9 +45,15 @@ serve(async (req) => {
       throw new Error('No authorization header');
     }
 
-    // Get timezone from request body
-    const { timezone: userTimezone } = await req.json();
-    const timezone = userTimezone || 'America/Los_Angeles'; // Fallback only
+    // Get timezone from request body (if provided)
+    let timezone = 'America/Los_Angeles'; // Default fallback
+    try {
+      const body = await req.json();
+      timezone = body?.timezone || timezone;
+    } catch (e) {
+      // If no body or invalid JSON, use default timezone
+      console.log('No timezone in request body, using default');
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
