@@ -36,6 +36,15 @@ export const useHousehold = () => {
   // Fetch user's household and collaborators
   useEffect(() => {
     if (!user) {
+      // Load from localStorage when no user (auth disabled)
+      try {
+        const stored = localStorage.getItem('temp_household');
+        if (stored) {
+          setHousehold(JSON.parse(stored));
+        }
+      } catch (error) {
+        console.error('Error loading household from localStorage:', error);
+      }
       setLoading(false);
       return;
     }
