@@ -255,7 +255,9 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
             onClick={() => onLogPredictedActivity(prediction.type)}
             className="w-full"
           >
-            {prediction.type === 'feed' ? t('logFeedNow') : t('logNapNow')}
+            {prediction.type === 'feed' 
+              ? t('logFeedNow') 
+              : `${babyName || 'Baby'} fell asleep`}
           </Button>
         )}
       </div>
