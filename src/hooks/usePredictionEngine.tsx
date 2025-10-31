@@ -69,7 +69,7 @@ export function usePredictionEngine(activities: Activity[]) {
 
   // Helper to translate intent to user-friendly copy
   const getIntentCopy = (result: NextActionResult | null, babyName?: string): string => {
-    if (!result) return "Keep logging activities to build your rhythm";
+    if (!result) return "Keep logging activities to build your baby's rhythm";
 
     const name = babyName?.split(' ')[0] || 'Baby';
     const { intent, confidence, timing } = result;
@@ -112,9 +112,9 @@ export function usePredictionEngine(activities: Activity[]) {
             ? `Likely waking around ${formatTime(timing.nextWakeAt)}`
             : `${name} is napping — let them rest`;
         case 'INDEPENDENT_TIME':
-          return `${name} is showing flexible patterns — that is okay`;
+          return `${name} is showing flexible patterns — that's okay`;
         default:
-          return 'You are finding your rhythm';
+          return "You're finding your rhythm";
       }
     }
 
@@ -125,18 +125,18 @@ export function usePredictionEngine(activities: Activity[]) {
       case 'START_WIND_DOWN':
         return 'Nap or feed could be next — trust your instincts';
       case 'LET_SLEEP_CONTINUE':
-      return `${name} is resting — we will learn more as patterns emerge`;
+        return `${name} is resting — we'll learn more as patterns emerge`;
       case 'INDEPENDENT_TIME':
         return `${name} is between patterns — both feeding and nap could happen soon`;
       default:
-        return 'Keep logging to help us understand your rhythm better';
+        return 'Keep logging to help AI understand your rhythm better';
     }
   };
 
   // Helper to get reasons with appropriate tone
   const getReasonsCopy = (result: NextActionResult | null): string[] => {
     if (!result || result.reasons.length === 0) {
-      return ['Building pattern data from your logs'];
+      return ['AI building pattern model from your logs'];
     }
     return result.reasons;
   };

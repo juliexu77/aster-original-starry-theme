@@ -8,6 +8,8 @@ import { format, isToday, differenceInMinutes, differenceInHours } from "date-fn
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
+import { LearningProgress } from "@/components/LearningProgress";
+import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
@@ -48,6 +50,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showFeedStatusInsight, setShowFeedStatusInsight] = useState(false);
   const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
   const [showDailyInsight, setShowDailyInsight] = useState(false);
+  const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
 
   // Track visited tabs for progressive disclosure
@@ -89,6 +92,11 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const hasSleep = activities.some(a => a.type === 'nap');
   const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
   const showEducationalContent = !hasMinimumLogs;
+
+  // Check if rhythm is unlocked
+  const napsCount = activities.filter(a => a.type === 'nap').length;
+  const feedsCount = activities.filter(a => a.type === 'feed').length;
+  const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -1108,46 +1116,65 @@ const lastDiaper = displayActivities
             </p>
           </div>
 
-          {/* Tone Chip */}
-          <div className="space-y-3">
-            <button 
-              onClick={() => setShowToneInsight(!showToneInsight)}
-              className="w-full text-left"
-            >
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 hover:bg-accent/30 transition-colors">
-                <span className="text-sm">☀️</span>
-                <span className="text-sm font-medium text-accent-foreground">Early Days</span>
-              </div>
-            </button>
-            
-            {showToneInsight && (
-              <p className="text-sm text-muted-foreground leading-relaxed pl-1 italic">
-                We'll learn {babyName ? `${babyName}'s` : 'your baby\'s'} patterns together as you track feeds, sleep, and more.
-              </p>
-            )}
-          </div>
+          {/* Tone Chip removed in favor of inline messaging */}
 
-          {/* Start Journey Card */}
-          <Card className="p-4">
-            <div className="space-y-4">
-              <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-                Start {babyName ? `${babyName}'s` : 'your baby\'s'} journey
-              </h2>
+          {/* Empty State Card with Ghost Predictions */}
+          <Card className="p-6 bg-card/50 border border-border/40">
+            <div className="space-y-5">
+              <h3 className="text-base font-semibold text-foreground">
+                As you log, I'll start building {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm
+              </h3>
               
-              <div className="flex items-start gap-3">
-                <Sprout className="w-5 h-5 text-primary mt-0.5" />
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Every feed, nap, and diaper helps BabyRhythm understand {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm.
+              <p className="text-sm text-muted-foreground">
+                I'll need about 4 naps and 4 feeds before I can predict the next wake window.
+              </p>
+              
+              <div className="space-y-3 pt-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Preview of what's coming:
                 </p>
+                
+                {/* Ghost Cards */}
+                <div className="space-y-2.5 opacity-40 pointer-events-none">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+                    <Moon className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Next nap likely around 2:45 PM</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
+                    <Baby className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm text-muted-foreground">Feed around 3 oz expected</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-
-              <Button
-                onClick={() => onAddActivity()}
-                variant="default"
-                className="w-full"
-              >
-                Log your first activity
-              </Button>
+              
+              <div className="pt-3 border-t border-border/20">
+                <Button
+                  onClick={() => onAddActivity()}
+                  variant="default"
+                  className="w-full"
+                  size="lg"
+                >
+                  Log your first activity
+                </Button>
+              </div>
+              
+              {/* Secondary CTA */}
+              <div className="text-center">
+                <button
+                  onClick={() => {
+                    const helperTab = document.querySelector('[data-tab="helper"]') as HTMLElement;
+                    helperTab?.click();
+                  }}
+                  className="text-sm text-primary hover:underline font-medium"
+                >
+                  Ask me anything →
+                </button>
+              </div>
             </div>
           </Card>
 
@@ -1260,6 +1287,23 @@ const lastDiaper = displayActivities
             </p>
           )}
         </div>
+
+        {/* Learning Progress Chip */}
+        {!isRhythmUnlocked && activities.length > 0 && (
+          <LearningProgress 
+            activities={activities}
+            babyName={babyName}
+            onRhythmUnlocked={() => setShowRhythmUnlocked(true)}
+          />
+        )}
+
+        {/* Rhythm Unlocked Modal */}
+        <RhythmUnlockedModal 
+          isOpen={showRhythmUnlocked}
+          onClose={() => setShowRhythmUnlocked(false)}
+          babyName={babyName}
+          totalLogs={activities.length}
+        />
 
         {/* 2. Current State */}
         <div className="space-y-4 pb-4 border-b border-border">

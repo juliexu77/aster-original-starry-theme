@@ -48,23 +48,15 @@ const Onboarding = () => {
           {/* Welcome Message */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Your AI parenting companion
+              Hi, I'm BabyRhythm — I help you and your caregivers stay in sync with your baby's natural rhythm.
             </h1>
             <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
-              Our AI learns your baby's unique patterns and predicts their next feed, nap, and wake window — so you're always one step ahead.
+              Log naps, feeds, and diapers. I'll learn from your entries and start predicting wake windows once I have enough data.
             </p>
             
-            {/* AI Features */}
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-lg">🤖</span>
-                <span className="text-sm font-medium text-primary">AI predicts your baby's schedule</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-lg">💬</span>
-                <span className="text-sm font-medium text-primary">Chat with your AI night doula 24/7</span>
-              </div>
-            </div>
+            <p className="text-sm text-muted-foreground/80 italic max-w-sm mx-auto">
+              Predictions begin after a few days of logs — but I can chat and guide you right away.
+            </p>
           </div>
 
           {/* CTA */}
@@ -72,9 +64,10 @@ const Onboarding = () => {
             <Button
               onClick={handleGetStarted}
               size="lg"
-              className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all"
+              className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
             >
-              Start My Rhythm
+              <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
+              <span className="relative">Let's start your rhythm</span>
             </Button>
           </div>
         </div>
