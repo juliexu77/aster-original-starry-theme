@@ -443,8 +443,8 @@ const ongoingNap = (() => {
         created_by: data.data.created_by
       });
 
-      // Refetch activities to update the list
-      refetchActivities();
+      // Refetch activities to update the list immediately
+      await refetchActivities();
     } catch (error) {
       console.error('Error adding activity:', error);
       toast({

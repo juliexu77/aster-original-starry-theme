@@ -1440,9 +1440,10 @@ const lastDiaper = displayActivities
                 unit: 'ml'
               };
             } else if (type === 'nap') {
-              // For naps, set startTime so it's properly recognized as a nap activity
+              // For naps, set startTime and ensure no endTime
               details = {
-                startTime: timeStr
+                startTime: timeStr,
+                endTime: null // Explicitly mark as ongoing
               };
             }
             
