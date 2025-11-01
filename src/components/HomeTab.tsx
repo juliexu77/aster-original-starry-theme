@@ -1439,6 +1439,11 @@ const lastDiaper = displayActivities
                 quantity: roundedVolume.toString(),
                 unit: 'ml'
               };
+            } else if (type === 'nap') {
+              // For naps, set startTime so it's properly recognized as a nap activity
+              details = {
+                startTime: timeStr
+              };
             }
             
             try {
