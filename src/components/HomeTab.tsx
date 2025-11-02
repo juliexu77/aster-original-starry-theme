@@ -1328,7 +1328,18 @@ const lastDiaper = displayActivities
               description: 'Nap timer continues',
             });
           }}
-          onStartNap={() => onAddActivity('nap')}
+          onStartNap={() => {
+            if (addActivity) {
+              const now = new Date();
+              addActivity('nap', {
+                startTime: format(now, 'h:mm a'),
+              }, now);
+              toast({
+                title: 'Nap started',
+                description: 'Timer is running',
+              });
+            }
+          }}
           onEndFeed={() => {
             toast({
               title: 'Feed ended',
