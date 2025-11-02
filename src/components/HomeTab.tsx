@@ -1659,15 +1659,17 @@ const lastDiaper = displayActivities
                             </div>
                           </button>
                           
-                          {/* Wake-up indicator for night sleep */}
-                          {isNightSleep && wakeTime && (
+                          {/* Wake-up indicator for completed naps */}
+                          {activity.type === 'nap' && activity.details?.endTime && (
                             <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
                               {/* Timeline line */}
-                              <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
+                              {index < displayActivities.length - 1 && (
+                                <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border"></div>
+                              )}
                               
                               {/* Timeline marker */}
-                              <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Sun className="w-3 h-3 text-primary" />
+                              <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${isNightSleep ? 'bg-primary/10' : 'bg-accent'} flex items-center justify-center`}>
+                                <Sun className={`w-3 h-3 ${isNightSleep ? 'text-primary' : 'text-muted-foreground'}`} />
                               </div>
                               
                               {/* Content */}
@@ -1676,7 +1678,7 @@ const lastDiaper = displayActivities
                                   {babyName?.split(' ')[0] || 'Baby'} woke up
                                 </p>
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {wakeTime}
+                                  {activity.details.endTime}
                                 </span>
                               </div>
                             </div>
