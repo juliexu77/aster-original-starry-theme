@@ -62,7 +62,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     nextPrediction, 
     smartSuggestions, 
     todaysPulse 
-  } = useHomeTabIntelligence(activities, passedOngoingNap, babyName);
+  } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type));
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {

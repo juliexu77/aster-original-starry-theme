@@ -39,7 +39,8 @@ interface DeviationData {
 export const useHomeTabIntelligence = (
   activities: Activity[],
   ongoingNap: Activity | null,
-  babyName: string = 'Baby'
+  babyName: string = 'Baby',
+  onAddActivity?: (type: 'feed' | 'nap') => void
 ) => {
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
@@ -187,7 +188,7 @@ export const useHomeTabIntelligence = (
         subtitle: 'Awake for over 2 hours',
         priority: 100,
         icon: <Moon className="w-4 h-4 text-primary" />,
-        onClick: () => console.log('Start nap')
+        onClick: () => onAddActivity?.('nap')
       });
     }
 
@@ -206,13 +207,13 @@ export const useHomeTabIntelligence = (
           subtitle: `Last feed: ${Math.floor(minutesSinceFeed / 60)}h ${minutesSinceFeed % 60}m ago`,
           priority: 90,
           icon: <Milk className="w-4 h-4 text-primary" />,
-          onClick: () => console.log('Log feed')
+          onClick: () => onAddActivity?.('feed')
         });
       }
     }
 
     return suggestions;
-  }, [activities, currentActivity]);
+  }, [activities, currentActivity, onAddActivity]);
 
   // Calculate today's pulse deviations
   const todaysPulse = useMemo((): { deviations: DeviationData[]; biggestDeviation?: any } => {
