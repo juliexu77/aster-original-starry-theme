@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Plus, Circle, Ruler, TrendingUp, ActivityIcon, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Plus, Circle, Ruler, TrendingUp, Activity as ActivityIcon, FileText, Sun, Eye, BarChart3, Sprout, Milk } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1323,7 +1323,6 @@ const lastDiaper = displayActivities
               onClick={() => setShowToneInsight(!showToneInsight)}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
             >
-              <span className="text-sm">{sentiment.emoji}</span>
               <span className="text-sm font-medium text-foreground">{sentiment.text} — rhythms are {sentiment.text.toLowerCase()} today</span>
             </button>
             
@@ -1400,8 +1399,9 @@ const lastDiaper = displayActivities
             {/* Last Feed */}
             {lastFeed ? (
               <div className="flex items-center gap-2 text-sm">
+                <Milk className="w-4 h-4 text-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <span className="text-muted-foreground">🍼 Last feed</span>
+                  <span className="text-muted-foreground">Last feed</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{lastFeed.time}</span>
                   {lastFeed.details?.quantity && (
@@ -1413,8 +1413,9 @@ const lastDiaper = displayActivities
               </div>
             ) : (
               <div className="flex items-center gap-2 text-sm">
+                <Milk className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1">
-                  <span className="text-muted-foreground">🍼 Last feed</span>
+                  <span className="text-muted-foreground">Last feed</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-muted-foreground italic">not logged yet</span>
                 </div>
@@ -1424,24 +1425,27 @@ const lastDiaper = displayActivities
             {/* Sleep Status */}
             {ongoingNap ? (
               <div className="flex items-center gap-2 text-sm">
+                <Moon className="w-4 h-4 text-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <span className="text-muted-foreground">🌙 Sleeping since</span>
+                  <span className="text-muted-foreground">Sleeping since</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{ongoingNap.details?.startTime || ongoingNap.time}</span>
                 </div>
               </div>
             ) : awakeTime ? (
               <div className="flex items-center gap-2 text-sm">
+                <Eye className="w-4 h-4 text-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <span className="text-muted-foreground">🕐 Awake for</span>
+                  <span className="text-muted-foreground">Awake for</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-foreground">{awakeTime}</span>
                 </div>
               </div>
             ) : (
               <div className="flex items-center gap-2 text-sm">
+                <Moon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1">
-                  <span className="text-muted-foreground">🌙 Sleeping since</span>
+                  <span className="text-muted-foreground">Sleeping since</span>
                   <span className="mx-1.5 text-muted-foreground">—</span>
                   <span className="font-medium text-muted-foreground italic">not logged yet</span>
                 </div>
@@ -1455,7 +1459,7 @@ const lastDiaper = displayActivities
           <Card className="bg-card border-border/40 shadow-none">
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm">📊</span>
+                <BarChart3 className="w-4 h-4 text-primary" />
                 <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
                   Daily Summary
                 </h3>
@@ -1552,10 +1556,11 @@ const lastDiaper = displayActivities
               {/* Daily insight */}
               <button 
                 onClick={() => setShowDailyInsight(!showDailyInsight)}
-                className="w-full text-left pt-1"
+                className="w-full text-left pt-1 flex items-center gap-1.5"
               >
+                <Circle className="w-2 h-2 fill-primary text-primary" />
                 <p className="text-xs text-primary/80 font-medium hover:text-primary transition-colors">
-                  💡 Tap for today's insight
+                  Tap for today's insight
                 </p>
               </button>
               
@@ -1804,9 +1809,12 @@ const lastDiaper = displayActivities
         {/* 5️⃣ Celebration Block */}
         {activities.length > 0 && (
           <div className="text-center pt-6 space-y-2">
-            <p className="text-sm text-foreground font-medium">
-              🌿 You've logged {activities.length} moments together{showBadge && percentile !== null ? ` — that's top ${percentile}% of families!` : ''}
-            </p>
+            <div className="flex items-center justify-center gap-2">
+              <Sprout className="w-4 h-4 text-primary" />
+              <p className="text-sm text-foreground font-medium">
+                You've logged {activities.length} moments together{showBadge && percentile !== null ? ` — that's top ${percentile}% of families!` : ''}
+              </p>
+            </div>
             <p className="text-xs text-muted-foreground">
               Every log helps me learn {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm a little better.
             </p>
