@@ -401,6 +401,39 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
     const cached = localStorage.getItem('rhythmInsights');
     
+    // Detect nap count mismatch between cached insights and AI prediction
+    const hasNapCountMismatch = () => {
+      if (!cached || !aiPrediction) return false;
+      
+      try {
+        const parsed = JSON.parse(cached);
+        const insightText = `${parsed.whyThisMatters || ''} ${parsed.heroInsight || ''}`.toLowerCase();
+        
+        // Extract nap counts mentioned in text (e.g., "2-nap", "3 naps", "two nap")
+        const napPatterns = [
+          /(\d)-nap/g,
+          /(\d)\s*naps/g,
+        ];
+        
+        const mentionedCounts = new Set<number>();
+        napPatterns.forEach(pattern => {
+          const matches = insightText.matchAll(pattern);
+          for (const match of matches) {
+            mentionedCounts.add(parseInt(match[1]));
+          }
+        });
+        
+        // If insights mention a different nap count than predicted, invalidate cache
+        if (mentionedCounts.size > 0 && !mentionedCounts.has(aiPrediction.total_naps_today)) {
+          console.log(`🔄 Nap count mismatch detected: insights mention ${Array.from(mentionedCounts).join('/')} naps, but AI predicts ${aiPrediction.total_naps_today} naps`);
+          return true;
+        }
+      } catch (e) {
+        console.error('Failed to check nap count mismatch:', e);
+      }
+      return false;
+    };
+    
     // Load cached data first
     if (cached && !rhythmInsights) {
       try {
@@ -413,12 +446,18 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Fetch fresh data once per day (after midnight)
+    // Fetch fresh data if: new day, no cache, or nap count mismatch
+    const napMismatch = hasNapCountMismatch();
     const shouldFetch = !lastFetch || 
-      (new Date().toDateString() !== new Date(lastFetch).toDateString());
+      (new Date().toDateString() !== new Date(lastFetch).toDateString()) ||
+      napMismatch;
     
     if (shouldFetch && hasTier3Data) {
-      console.log('🚀 Fetching fresh rhythm insights...');
+      if (napMismatch) {
+        console.log('🚀 Force refreshing insights due to nap count mismatch...');
+      } else {
+        console.log('🚀 Fetching fresh rhythm insights...');
+      }
       fetchRhythmInsights();
     }
   }, [hasTier3Data, household, activities.length, rhythmInsights, babyAgeInWeeks, aiPrediction]);
