@@ -365,7 +365,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         </div>
 
         {/* Action buttons */}
-        {ongoingNap && onMarkWakeUp ? (
+        {((ongoingNap && onMarkWakeUp) || (fullPrediction.intent === 'LET_SLEEP_CONTINUE' && onMarkWakeUp)) ? (
           <Button
             onClick={onMarkWakeUp}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
