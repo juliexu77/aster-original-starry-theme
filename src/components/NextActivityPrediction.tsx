@@ -322,27 +322,24 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   const getPredictionText = () => {
+    // Check for sleeping state FIRST before showing anticipated times
+    if (prediction.reason?.includes('currentlySleeping') || prediction.reason?.includes('sleeping')) {
+      // For sleeping babies, show what's likely next after they wake up
+      const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
+      const currentPrediction = engine.getNextAction();
+      if (currentPrediction.intent === 'LET_SLEEP_CONTINUE') {
+        // Show that baby is currently sleeping with wake time if available
+        if (prediction.anticipatedTime) {
+          return `Currently sleeping — may wake around ${prediction.anticipatedTime}`;
+        }
+        return 'Currently sleeping';
+      }
+    }
+    
+    // Now check for other anticipated times
     if (prediction.anticipatedTime) {
       const prefix = prediction.type === "feed" ? t('feedingAround') : t('napAround');
       return `${prefix} ${prediction.anticipatedTime}`;
-    }
-    
-    // For sleeping babies, show what's likely next after they wake up
-    if (prediction.reason === t('currentlySleeping')) {
-      const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
-      const currentPrediction = engine.getNextAction();
-      
-      if (currentPrediction.intent === 'LET_SLEEP_CONTINUE') {
-        // Determine what's likely next based on rationale
-        const feedScore = currentPrediction.rationale.scores.feed;
-        const sleepScore = currentPrediction.rationale.scores.sleep;
-        
-        if (feedScore > sleepScore) {
-          return t('likelyFeedingWhenWakesUp');
-        } else {
-          return t('mayNeedAnotherNap');
-        }
-      }
     }
     
     return prediction.type === "feed" ? t('considerFeeding') : t('watchForSleepyCues');
