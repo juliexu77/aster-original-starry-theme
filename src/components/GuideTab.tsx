@@ -359,7 +359,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Fetch rhythm insights once daily (only for Tier 3)
   useEffect(() => {
-    if (!hasTier3Data || !household) return;
+    if (!hasTier3Data || !household || !aiPrediction) {
+      setRhythmInsightsLoading(false);
+      return;
+    }
     
     const fetchRhythmInsights = async () => {
       setRhythmInsightsLoading(true);
@@ -377,6 +380,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         if (error) {
           console.error('❌ Error fetching rhythm insights:', error);
+          setRhythmInsightsLoading(false);
           return;
         }
         
@@ -403,7 +407,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     // Detect nap count mismatch between cached insights and AI prediction
     const hasNapCountMismatch = () => {
-      if (!cached || !aiPrediction) return false;
+      if (!cached) return false;
       
       try {
         const parsed = JSON.parse(cached);
@@ -434,15 +438,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return false;
     };
     
-    // Load cached data first
+    // Load cached data first if not already loaded
     if (cached && !rhythmInsights) {
       try {
         const parsed = JSON.parse(cached);
-        console.log('📦 Loaded cached rhythm insights');
-        setRhythmInsights(parsed);
+        const napMismatch = hasNapCountMismatch();
+        
+        // Only use cache if no mismatch detected
+        if (!napMismatch) {
+          console.log('📦 Loaded cached rhythm insights');
+          setRhythmInsights(parsed);
+          setRhythmInsightsLoading(false);
+          return; // Don't fetch if cache is valid
+        } else {
+          console.log('⚠️ Cache has mismatch, will fetch fresh');
+          localStorage.removeItem('rhythmInsights');
+        }
       } catch (e) {
         console.error('Failed to parse cached rhythm insights:', e);
         localStorage.removeItem('rhythmInsights');
+      }
+    }
+    
+    // Check if cache is still valid (same day)
+    if (rhythmInsights && lastFetch) {
+      const isSameDay = new Date().toDateString() === new Date(lastFetch).toDateString();
+      if (isSameDay && !hasNapCountMismatch()) {
+        setRhythmInsightsLoading(false);
+        return; // Already have valid data
       }
     }
     
@@ -452,15 +475,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       (new Date().toDateString() !== new Date(lastFetch).toDateString()) ||
       napMismatch;
     
-    if (shouldFetch && hasTier3Data) {
+    if (shouldFetch) {
       if (napMismatch) {
         console.log('🚀 Force refreshing insights due to nap count mismatch...');
       } else {
         console.log('🚀 Fetching fresh rhythm insights...');
       }
       fetchRhythmInsights();
+    } else {
+      setRhythmInsightsLoading(false);
     }
-  }, [hasTier3Data, household, activities.length, rhythmInsights, babyAgeInWeeks, aiPrediction]);
+  }, [hasTier3Data, household, activities.length, babyAgeInWeeks, aiPrediction]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
