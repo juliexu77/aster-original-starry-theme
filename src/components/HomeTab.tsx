@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Baby, Droplet, Moon, Clock, ChevronDown, ChevronUp, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
+import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,7 +41,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { toast } = useToast();
   const { nightSleepEndHour } = useNightSleepWindow();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showTimeline, setShowTimeline] = useState(false);
   const [showFeedDetails, setShowFeedDetails] = useState(false);
   const [showSleepDetails, setShowSleepDetails] = useState(false);
   const [showGrowthDetails, setShowGrowthDetails] = useState(false);
@@ -1305,6 +1304,65 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
+        {/* What's Next */}
+        <NextActivityPrediction 
+          activities={activities}
+          ongoingNap={ongoingNap}
+          onMarkWakeUp={onEndNap}
+          babyName={babyName}
+          onLogPredictedActivity={async (type) => {
+            // Round time to nearest 5 minutes
+            const now = new Date();
+            const minutes = now.getMinutes();
+            const roundedMinutes = Math.round(minutes / 5) * 5;
+            const roundedDate = new Date(now);
+            roundedDate.setMinutes(roundedMinutes);
+            roundedDate.setSeconds(0);
+            roundedDate.setMilliseconds(0);
+            
+            const timeStr = roundedDate.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true
+            });
+            
+            // Build activity details with predicted values
+            let details = {};
+            if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
+              const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
+              details = {
+                feedType: 'bottle',
+                quantity: roundedVolume.toString(),
+                unit: 'ml'
+              };
+            } else if (type === 'nap') {
+              // For naps, set startTime and ensure no endTime
+              details = {
+                startTime: timeStr,
+                endTime: null // Explicitly mark as ongoing
+              };
+            }
+            
+            try {
+              await addActivity(type, details, roundedDate, timeStr);
+              const description = type === 'feed' && prediction?.timing.expectedFeedVolume
+                ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
+                : `${timeStr}`;
+              toast({
+                title: type === 'feed' ? t('feedLogged') : t('napLogged'),
+                description,
+              });
+            } catch (error) {
+              console.error('Error logging activity:', error);
+              toast({
+                title: t('error'),
+                description: t('failedToLogActivity'),
+                variant: 'destructive',
+              });
+            }
+          }}
+        />
+
         {/* 2. Current State */}
         <div className="space-y-4 pb-4 border-b border-border">
           
@@ -1408,79 +1466,12 @@ const lastDiaper = displayActivities
           </div>
         </div>
 
-        {/* 3. What's Next */}
-        <NextActivityPrediction 
-          activities={activities}
-          ongoingNap={ongoingNap}
-          onMarkWakeUp={onEndNap}
-          babyName={babyName}
-          onLogPredictedActivity={async (type) => {
-            // Round time to nearest 5 minutes
-            const now = new Date();
-            const minutes = now.getMinutes();
-            const roundedMinutes = Math.round(minutes / 5) * 5;
-            const roundedDate = new Date(now);
-            roundedDate.setMinutes(roundedMinutes);
-            roundedDate.setSeconds(0);
-            roundedDate.setMilliseconds(0);
-            
-            const timeStr = roundedDate.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true
-            });
-            
-            // Build activity details with predicted values
-            let details = {};
-            if (type === 'feed' && prediction?.timing.expectedFeedVolume) {
-              const roundedVolume = Math.round(prediction.timing.expectedFeedVolume / 5) * 5;
-              details = {
-                feedType: 'bottle',
-                quantity: roundedVolume.toString(),
-                unit: 'ml'
-              };
-            } else if (type === 'nap') {
-              // For naps, set startTime and ensure no endTime
-              details = {
-                startTime: timeStr,
-                endTime: null // Explicitly mark as ongoing
-              };
-            }
-            
-            try {
-              await addActivity(type, details, roundedDate, timeStr);
-              const description = type === 'feed' && prediction?.timing.expectedFeedVolume
-                ? `${Math.round(prediction.timing.expectedFeedVolume / 5) * 5} ml at ${timeStr}`
-                : `${timeStr}`;
-              toast({
-                title: type === 'feed' ? t('feedLogged') : t('napLogged'),
-                description,
-              });
-            } catch (error) {
-              console.error('Error logging activity:', error);
-              toast({
-                title: t('error'),
-                description: t('failedToLogActivity'),
-                variant: 'destructive',
-              });
-            }
-          }}
-        />
-
-        {/* 4. Daily Summary */}
+        {/* 3. Daily Summary */}
         {displayActivities.length > 0 && (
           <div className="space-y-4">
-            <button
-              onClick={() => setShowTimeline(!showTimeline)}
-              className="w-full flex items-center justify-between"
-            >
-              <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
-                Daily Summary
-              </h2>
-              <ChevronDown 
-                className={`h-5 w-5 text-muted-foreground transition-transform ${showTimeline ? 'rotate-180' : ''}`}
-              />
-            </button>
+            <h2 className="text-sm font-medium text-foreground uppercase tracking-wider">
+              Daily Summary
+            </h2>
 
             {/* Summary Stats */}
             <div className="space-y-3">
@@ -1571,122 +1562,6 @@ const lastDiaper = displayActivities
                 {getDailyInsight()}
               </p>
             </div>
-
-            {/* Expandable Timeline */}
-            {showTimeline && (
-              <div className="pt-3 border-t border-border/50 space-y-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Today's Timeline
-                </p>
-                {(() => {
-                  // Detect night sleep for the day
-                  const nightSleep = detectNightSleep(sortedActivities, nightSleepEndHour);
-                  const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
-                  
-                  return sortedActivities
-                    .map((activity, index) => {
-                      const isNightSleep = nightSleep?.id === activity.id;
-                      const getActivityIcon = (type: string) => {
-                        switch(type) {
-                          case 'feed': return <Milk className="h-4 w-4" />;
-                          case 'nap': return <Moon className="h-4 w-4" />;
-                          case 'diaper': return <Droplet className="h-4 w-4" />;
-                          case 'measure': return <Ruler className="h-4 w-4" />;
-                          default: return <Clock className="h-4 w-4" />;
-                        }
-                      };
-
-                      const getActivityGradient = (type: string) => {
-                        switch (type) {
-                          case "feed": return "bg-gradient-feed";
-                          case "diaper": return "bg-gradient-diaper";
-                          case "nap": return "bg-gradient-nap";
-                          case "measure": return "bg-gradient-primary";
-                          default: return "bg-gradient-primary";
-                        }
-                      };
-                      
-                      let details = '';
-                      if (activity.type === 'feed' && activity.details?.quantity) {
-                        details = ` • ${activity.details.quantity}${activity.details.unit || 'ml'}`;
-                      } else if (activity.type === 'nap' && activity.details?.endTime) {
-                        const parseTime = (timeStr: string) => {
-                          const [time, period] = timeStr.split(' ');
-                          const [hStr, mStr] = time.split(':');
-                          let h = parseInt(hStr, 10);
-                          const m = parseInt(mStr || '0', 10);
-                          if (period === 'PM' && h !== 12) h += 12;
-                          if (period === 'AM' && h === 12) h = 0;
-                          return h * 60 + m;
-                        };
-                        
-                        const startMinutes = parseTime(activity.details.startTime || activity.time);
-                        const endMinutes = parseTime(activity.details.endTime);
-                        let duration = endMinutes >= startMinutes 
-                          ? endMinutes - startMinutes 
-                          : (24 * 60) - startMinutes + endMinutes;
-                        
-                        const hours = Math.floor(duration / 60);
-                        const mins = duration % 60;
-                        details = ` • ${hours}h ${mins}m`;
-                      } else if (activity.type === 'diaper' && activity.details?.diaperType) {
-                        details = ` • ${activity.details.diaperType}`;
-                      }
-                      
-                      return (
-                        <>
-                          <button
-                            key={index}
-                            onClick={() => onEditActivity(activity)}
-                            className="relative flex items-center gap-2 py-0.5 w-full text-left hover:bg-accent/50 rounded-md px-1 -mx-1 transition-colors"
-                          >
-                            {/* Timeline line */}
-                            {index < displayActivities.length - 1 && (
-                              <div className="absolute left-2.5 top-6 bottom-0 w-0.5 bg-border"></div>
-                            )}
-                            
-                            {/* Timeline marker with circle */}
-                            <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${getActivityGradient(activity.type)} flex items-center justify-center text-white`}>
-                              {getActivityIcon(activity.type)}
-                            </div>
-                            
-                            {/* Content */}
-                            <div className="flex-1 flex items-center gap-2">
-                              <span className="text-sm font-medium text-foreground">{activity.time}</span>
-                              <span className="text-xs text-muted-foreground capitalize">
-                                {activity.type}{details}
-                              </span>
-                            </div>
-                          </button>
-                          
-                          {/* Wake-up indicator for night sleep */}
-                          {isNightSleep && wakeTime && (
-                            <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
-                              {/* Timeline line */}
-                              <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border group-last:hidden"></div>
-                              
-                              {/* Timeline marker */}
-                              <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                                <Sun className="w-3 h-3 text-primary" />
-                              </div>
-                              
-                              {/* Content */}
-                              <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
-                                <p className="text-sm text-foreground font-medium break-words">
-                                  {babyName?.split(' ')[0] || 'Baby'} woke up
-                                </p>
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {wakeTime}
-                                </span>
-                              </div>
-                            </div>
-                           )}
-                        </>
-                      );
-                    });
-                })()}
-              </div>
-            )}
           </div>
         )}
 

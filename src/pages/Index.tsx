@@ -1055,7 +1055,14 @@ return (
                     {babyProfile.name} · {babyProfile.birthday ? (() => {
                       const birthDate = new Date(babyProfile.birthday);
                       const today = new Date();
-                      const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                      
+                      // Calculate months, checking if the day of the month has passed
+                      let ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+                      
+                      // If the current day of the month is before the birth day, subtract 1 month
+                      if (today.getDate() < birthDate.getDate()) {
+                        ageInMonths = Math.max(0, ageInMonths - 1);
+                      }
                       
                       // Calculate weeks from the last full month boundary
                       const lastMonthDate = new Date(birthDate);
