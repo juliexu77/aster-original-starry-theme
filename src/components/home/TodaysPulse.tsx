@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb } from "lucide-react";
+import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DeviationData {
@@ -101,9 +101,12 @@ export const TodaysPulse = ({
         {/* Header */}
         <CollapsibleTrigger className="w-full p-4 bg-accent/20 hover:bg-accent/30 transition-colors">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              📊 Today's Pulse
-            </h3>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                Today's Pulse
+              </h3>
+            </div>
             <div className="flex items-center gap-2">
               {deviations.some(d => d.hasDeviation) && (
                 <AlertCircle className="w-4 h-4 text-amber-600" />

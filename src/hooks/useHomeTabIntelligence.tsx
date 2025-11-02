@@ -6,7 +6,6 @@ import { Activity } from '@/components/ActivityCard';
 interface CurrentActivityState {
   type: 'napping' | 'awake' | 'feeding';
   duration: number;
-  emoji: string;
   statusText: string;
   startTime: string;
 }
@@ -50,7 +49,6 @@ export const useHomeTabIntelligence = (
       return {
         type: 'napping',
         duration,
-        emoji: '🌙',
         statusText: `${babyName}'s napping — Nap in progress`,
         startTime: startTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
       };
@@ -70,7 +68,6 @@ export const useHomeTabIntelligence = (
       return {
         type: 'feeding',
         duration,
-        emoji: '🍼',
         statusText: `Feeding in progress (${duration} minutes)`,
         startTime: lastActivityTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
       };
@@ -86,7 +83,6 @@ export const useHomeTabIntelligence = (
       return {
         type: 'awake',
         duration: awakeMinutes,
-        emoji: '☀️',
         statusText: `${babyName}'s been awake ${hours}h ${mins}m`,
         startTime: napEndTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
       };
@@ -95,7 +91,6 @@ export const useHomeTabIntelligence = (
     return {
       type: 'awake',
       duration: 0,
-      emoji: '☀️',
       statusText: `${babyName} is awake`,
       startTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
     };
@@ -152,10 +147,10 @@ export const useHomeTabIntelligence = (
       suggestions.push({
         id: 'nap-overdue',
         type: 'nap',
-        title: '🌙 Ready for nap?',
+        title: 'Ready for nap?',
         subtitle: 'Awake for over 2 hours',
         priority: 100,
-        icon: <Moon className="w-4 h-4 text-blue-600" />,
+        icon: <Moon className="w-4 h-4 text-primary" />,
         onClick: () => console.log('Start nap')
       });
     }
@@ -171,7 +166,7 @@ export const useHomeTabIntelligence = (
         suggestions.push({
           id: 'feed-due',
           type: 'feed',
-          title: '🍼 Feed due soon',
+          title: 'Feed due soon',
           subtitle: `Last feed: ${Math.floor(minutesSinceFeed / 60)}h ${minutesSinceFeed % 60}m ago`,
           priority: 90,
           icon: <Milk className="w-4 h-4 text-primary" />,
