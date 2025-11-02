@@ -346,7 +346,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   };
 
   return (
-    <div className="next-action-card bg-card rounded-lg border border-border p-4">
+    <div className="next-action-card bg-card rounded-lg border border-border p-4 relative z-10">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-base text-foreground">What's Next</h3>
         <button
@@ -357,7 +357,7 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         </button>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 relative z-10">
         {/* Prediction text with icon - always visible */}
         <div className="flex items-center gap-2 text-foreground">
           <Clock className="h-5 w-5 text-muted-foreground flex-shrink-0" />
@@ -367,16 +367,22 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
         {/* Action buttons */}
         {((ongoingNap && onMarkWakeUp) || (fullPrediction.intent === 'LET_SLEEP_CONTINUE' && onMarkWakeUp)) ? (
           <Button
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               console.log('🔘 Wake up button clicked!', {
                 onMarkWakeUp: typeof onMarkWakeUp,
                 ongoingNap: !!ongoingNap,
-                intent: fullPrediction.intent
+                intent: fullPrediction.intent,
+                buttonElement: e.currentTarget
               });
-              onMarkWakeUp?.();
+              if (onMarkWakeUp) {
+                onMarkWakeUp();
+              }
             }}
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground relative z-10 touch-manipulation"
             size="lg"
+            type="button"
           >
             {babyName ? `${babyName.split(' ')[0]} woke up` : 'Baby woke up'}
           </Button>
