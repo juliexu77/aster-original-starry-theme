@@ -87,6 +87,7 @@ export const useHomeTabIntelligence = (
         return h * 60 + m;
       };
 
+      // Use the actual logged date from the activity (UTC timestamp auto-converts to local)
       const loggedDate = new Date(lastNap.loggedAt);
       const baseDate = new Date(loggedDate.toDateString());
       const endMinutes = parseTimeToMinutes(lastNap.details.endTime!);
