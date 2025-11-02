@@ -20,7 +20,6 @@ import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/scheduleP
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
-import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 
 interface Activity {
   id: string;
@@ -852,11 +851,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Predicted Schedule with AI-Enhanced Summary */}
           {!needsBirthdaySetup && hasMinimumData && (
             <>
-              <TodayAtGlance 
-                prediction={aiPrediction}
-                loading={aiPredictionLoading}
-              />
-              
               <ScheduleTimeline 
                 schedule={generatePredictedSchedule(activities, household?.baby_birthday)} 
                 babyName={babyName} 
