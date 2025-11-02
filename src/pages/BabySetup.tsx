@@ -18,6 +18,8 @@ const BabySetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
+  const [bedtime, setBedtime] = useState("19:00"); // Default 7 PM
+  const [wakeTime, setWakeTime] = useState("07:00"); // Default 7 AM
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -62,6 +64,21 @@ const BabySetup = () => {
 
       console.log('Collaborator creation result:', { collaboratorError });
       if (collaboratorError) throw collaboratorError;
+
+      // Update user profile with sleep schedule
+      const bedtimeHour = parseInt(bedtime.split(':')[0]);
+      const wakeHour = parseInt(wakeTime.split(':')[0]);
+      
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          night_sleep_start_hour: bedtimeHour,
+          night_sleep_end_hour: wakeHour,
+        })
+        .eq('user_id', user.id);
+
+      console.log('Profile update result:', { profileError });
+      if (profileError) throw profileError;
 
       // Set active household for subsequent queries
       localStorage.setItem('active_household_id', householdId);
@@ -137,9 +154,47 @@ const BabySetup = () => {
                 />
               </div>
 
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="bedtime" className="text-sm font-medium">
+                    Typical Bedtime
+                  </Label>
+                  <Input
+                    id="bedtime"
+                    type="time"
+                    value={bedtime}
+                    onChange={(e) => setBedtime(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    When does night sleep usually start?
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="wakeTime" className="text-sm font-medium">
+                    Typical Wake Time
+                  </Label>
+                  <Input
+                    id="wakeTime"
+                    type="time"
+                    value={wakeTime}
+                    onChange={(e) => setWakeTime(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    When does morning usually start?
+                  </p>
+                </div>
+              </div>
+
               <div className="pt-2">
                 <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">
-                  You can always change this later.
+                  You can always change these later in Settings.
                 </p>
                 <Button
                   type="submit"
