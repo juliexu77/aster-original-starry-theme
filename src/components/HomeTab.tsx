@@ -1659,30 +1659,57 @@ const lastDiaper = displayActivities
                             </div>
                           </button>
                           
-                          {/* Wake-up indicator for completed naps */}
-                          {activity.type === 'nap' && activity.details?.endTime && (
-                            <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
-                              {/* Timeline line */}
-                              {index < displayActivities.length - 1 && (
-                                <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border"></div>
-                              )}
-                              
-                              {/* Timeline marker */}
-                              <div className={`relative z-10 flex-shrink-0 w-5 h-5 rounded-full ${isNightSleep ? 'bg-primary/10' : 'bg-accent'} flex items-center justify-center`}>
-                                <Sun className={`w-3 h-3 ${isNightSleep ? 'text-primary' : 'text-muted-foreground'}`} />
+                          {/* Wake-up indicator for morning wake-ups only */}
+                          {(() => {
+                            if (activity.type !== 'nap' || !activity.details?.endTime) return null;
+                            
+                            // Parse the end time to check if it's a morning wake-up
+                            const endTimeMatch = activity.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                            if (!endTimeMatch) return null;
+                            
+                            let endHour = parseInt(endTimeMatch[1]);
+                            const endMinute = parseInt(endTimeMatch[2]);
+                            const period = endTimeMatch[3].toUpperCase();
+                            
+                            // Convert to 24-hour format
+                            if (period === 'PM' && endHour !== 12) {
+                              endHour += 12;
+                            } else if (period === 'AM' && endHour === 12) {
+                              endHour = 0;
+                            }
+                            
+                            // Check if within 1 hour before or after night sleep end hour
+                            const hourDiff = Math.abs(endHour - nightSleepEndHour);
+                            const isWithinWindow = hourDiff <= 1 || 
+                                                   (endHour === nightSleepEndHour - 1 && endMinute >= 0) ||
+                                                   (endHour === nightSleepEndHour + 1 && endMinute === 0);
+                            
+                            if (!isWithinWindow) return null;
+                            
+                            return (
+                              <div className="relative flex items-center gap-2 py-0.5 group hover:bg-accent/30 rounded-md px-2 transition-colors">
+                                {/* Timeline line */}
+                                {index < displayActivities.length - 1 && (
+                                  <div className="absolute left-2 top-4 bottom-0 w-0.5 bg-border"></div>
+                                )}
+                                
+                                {/* Timeline marker */}
+                                <div className="relative z-10 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                                  <Sun className="w-3 h-3 text-primary" />
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
+                                  <p className="text-sm text-foreground font-medium break-words">
+                                    {babyName?.split(' ')[0] || 'Baby'} woke up
+                                  </p>
+                                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                    {activity.details.endTime}
+                                  </span>
+                                </div>
                               </div>
-                              
-                              {/* Content */}
-                              <div className="flex-1 flex items-start justify-between min-w-0 gap-2">
-                                <p className="text-sm text-foreground font-medium break-words">
-                                  {babyName?.split(' ')[0] || 'Baby'} woke up
-                                </p>
-                                <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                  {activity.details.endTime}
-                                </span>
-                              </div>
-                            </div>
-                           )}
+                            );
+                          })()}
                         </>
                       );
                     });
