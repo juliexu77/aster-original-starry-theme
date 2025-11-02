@@ -327,13 +327,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const feeds = activities.filter(a => a.type === 'feed');
   const totalActivities = activities.length;
   
-  // Tier 1: Age-based predictions (1+ activity)
+  // Tier 1: Age-based predictions (1+ activity, has birthday)
   const hasTier1Data = totalActivities >= 1 && !needsBirthdaySetup;
   
-  // Tier 2: Pattern emerging (4-9 activities)
-  const hasTier2Data = totalActivities >= 4 && totalActivities < 10;
+  // Tier 2: Pattern emerging (4+ total activities)
+  const hasTier2Data = totalActivities >= 4 && !needsBirthdaySetup;
   
-  // Tier 3: Personalized AI (10+ activities)
+  // Tier 3: Personalized AI (10+ total activities AND 4+ naps AND 4+ feeds)
+  // This ensures prediction engine has meaningful data
   const hasTier3Data = totalActivities >= 10 && naps.length >= 4 && feeds.length >= 4;
   
   // Show schedule at Tier 1, AI insights at Tier 3
