@@ -55,15 +55,19 @@ Current activity: ${currentActivity?.type || 'awake'} for ${currentActivity?.dur
 Status: ${currentActivity?.status || 'on track'} (${currentActivity?.statusDetail || ''})
 Next event: ${currentActivity?.nextEvent || 'unknown'} expected in ${currentActivity?.timeUntilNext || 'unknown'}
 
-RULES:
+CRITICAL RULES:
 - Write ONE sentence only (under 15 words)
 - Be encouraging if on track, gently warning if deviation
 - Include emoji if appropriate (🎯, ⚠️, 😴, 🍼, ☀️)
 - Sound warm and supportive
 - Do NOT use markdown formatting
+- If baby just woke up (awake < 30 minutes), DO NOT suggest a nap - acknowledge they just woke
+- If baby is awake 90+ minutes, suggest nap is approaching
+- If baby is awake 120+ minutes, gently remind about nap readiness
 
 Examples:
 "Right on track for morning rhythm! 🎯"
+"Just woke up—enjoy the alert window! ☀️"
 "Getting close to nap window—watch for sleepy cues"
 "Longer nap than usual—great deep sleep! 😴"
 "Feed window opening soon"`;

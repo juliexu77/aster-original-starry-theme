@@ -44,7 +44,17 @@ export const RightNowStatus = ({
   useEffect(() => {
     if (!currentActivity) return;
 
-    const cacheKey = `status-tip-${currentActivity.type}-${Math.floor(Date.now() / (15 * 60 * 1000))}`; // 15-min cache
+    // Create a duration bucket for cache key (0-30, 30-60, 60-90, 90-120, 120+)
+    const getDurationBucket = (duration: number) => {
+      if (duration < 30) return '0-30';
+      if (duration < 60) return '30-60';
+      if (duration < 90) return '60-90';
+      if (duration < 120) return '90-120';
+      return '120+';
+    };
+
+    const durationBucket = getDurationBucket(currentActivity.duration);
+    const cacheKey = `status-tip-${currentActivity.type}-${durationBucket}-${Math.floor(Date.now() / (15 * 60 * 1000))}`; // 15-min cache with duration bucket
     const cached = sessionStorage.getItem(cacheKey);
     
     if (cached) {
