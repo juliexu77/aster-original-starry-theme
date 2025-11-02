@@ -120,8 +120,8 @@ export function generatePredictedSchedule(
     notes: 'Bedtime'
   });
   
-  // Determine confidence based on data availability
-  const hasEnoughData = activities.length >= 20;
+  // Determine confidence based on data availability (Tiered system)
+  const totalActivities = activities.length;
   const hasRecentData = activities.filter(a => {
     const loggedDate = new Date(a.logged_at);
     const threeDaysAgo = new Date();
@@ -130,15 +130,30 @@ export function generatePredictedSchedule(
   }).length >= 10;
   
   let confidence: 'high' | 'medium' | 'low' = 'low';
-  if (hasEnoughData && hasRecentData) confidence = 'high';
-  else if (hasEnoughData || hasRecentData) confidence = 'medium';
+  let basedOnText = '';
   
-  const daysOfData = Math.ceil(activities.length / 8); // Rough estimate
+  if (totalActivities >= 10 && hasRecentData) {
+    // Tier 3: Personalized
+    confidence = 'high';
+    const daysOfData = Math.ceil(activities.length / 8);
+    basedOnText = `Based on ${activities.length} activities over ${daysOfData} days`;
+  } else if (totalActivities >= 4) {
+    // Tier 2: Pattern emerging
+    confidence = 'medium';
+    basedOnText = `Based on ${activities.length} activities and age patterns`;
+  } else {
+    // Tier 1: Age-based only
+    confidence = 'low';
+    const ageInMonths = babyBirthday 
+      ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+      : null;
+    basedOnText = `Based on age${ageInMonths ? ` (${ageInMonths} months)` : ''}`;
+  }
   
   return {
     events,
     confidence,
-    basedOn: `Based on ${activities.length} activities over ${daysOfData} days`
+    basedOn: basedOnText
   };
 }
 

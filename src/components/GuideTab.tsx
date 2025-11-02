@@ -322,10 +322,22 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
 
-  // Check minimum data requirements (same as prediction engine)
+  // Tiered data requirements
   const naps = activities.filter(a => a.type === 'nap');
   const feeds = activities.filter(a => a.type === 'feed');
-  const hasMinimumData = naps.length >= 4 && feeds.length >= 4;
+  const totalActivities = activities.length;
+  
+  // Tier 1: Age-based predictions (1+ activity)
+  const hasTier1Data = totalActivities >= 1 && !needsBirthdaySetup;
+  
+  // Tier 2: Pattern emerging (4-9 activities)
+  const hasTier2Data = totalActivities >= 4 && totalActivities < 10;
+  
+  // Tier 3: Personalized AI (10+ activities)
+  const hasTier3Data = totalActivities >= 10 && naps.length >= 4 && feeds.length >= 4;
+  
+  // Show schedule at Tier 1, AI insights at Tier 3
+  const hasMinimumData = hasTier1Data;
 
   // ===== ALL EFFECTS =====
   // Debug logging
@@ -334,17 +346,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       totalActivities: activities.length,
       naps: naps.length,
       feeds: feeds.length,
-      hasMinimumData,
+      hasTier1Data,
+      hasTier2Data,
+      hasTier3Data,
       babyName,
       babyAgeInWeeks,
       hasInitialized,
       insightCardsCount: insightCards.length
     });
-  }, [activities.length, naps.length, feeds.length, hasMinimumData, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+  }, [activities.length, naps.length, feeds.length, hasTier1Data, hasTier2Data, hasTier3Data, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
 
-  // Fetch rhythm insights once daily
+  // Fetch rhythm insights once daily (only for Tier 3)
   useEffect(() => {
-    if (!hasMinimumData || !household) return;
+    if (!hasTier3Data || !household) return;
     
     const fetchRhythmInsights = async () => {
       setRhythmInsightsLoading(true);
@@ -401,15 +415,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const shouldFetch = !lastFetch || 
       (new Date().toDateString() !== new Date(lastFetch).toDateString());
     
-    if (shouldFetch && hasMinimumData) {
+    if (shouldFetch && hasTier3Data) {
       console.log('🚀 Fetching fresh rhythm insights...');
       fetchRhythmInsights();
     }
-  }, [hasMinimumData, household, activities.length, rhythmInsights, babyAgeInWeeks]);
+  }, [hasTier3Data, household, activities.length, rhythmInsights, babyAgeInWeeks]);
 
-  // Fetch AI-enhanced schedule prediction
+  // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
-    if (!hasMinimumData || !household) return;
+    if (!hasTier2Data || !household) return;
     
     const fetchAiPrediction = async () => {
       setAiPredictionLoading(true);
@@ -436,7 +450,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           body: { 
             recentActivities,
             todayActivities,
-            babyBirthday: household.baby_birthday
+            babyBirthday: household.baby_birthday,
+            aiPrediction: aiPrediction // Pass existing prediction for consistency
           }
         });
         
@@ -479,15 +494,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       (Date.now() - new Date(lastFetch).getTime() > 30 * 60 * 1000) ||
       (new Date().toDateString() !== new Date(lastFetch).toDateString());
     
-    if (shouldFetch && hasMinimumData) {
+    if (shouldFetch && hasTier2Data) {
       console.log('🚀 Fetching fresh AI prediction...');
       fetchAiPrediction();
     }
-  }, [hasMinimumData, household, activities.length, aiPrediction]);
+  }, [hasTier2Data, household, activities.length, aiPrediction]);
 
-  // Fetch guide sections once daily at 5am
+  // Fetch guide sections once daily at 5am (only for Tier 3)
   useEffect(() => {
-    if (!hasMinimumData || !user || !household) return;
+    if (!hasTier3Data || !user || !household) return;
     
     const fetchGuideSections = async () => {
       setGuideSectionsLoading(true);
@@ -840,38 +855,62 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Main Content */}
           <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 pt-4 space-y-6">
-          {/* Hero Insight Card */}
-          {!needsBirthdaySetup && hasMinimumData && (
+          {/* Hero Insight Card - Only for Tier 3 */}
+          {!needsBirthdaySetup && hasTier3Data && (
             <HeroInsightCard 
               insight={rhythmInsights?.heroInsight || ''}
               confidence={rhythmInsights?.confidenceScore || 'High confidence'}
               loading={rhythmInsightsLoading || !rhythmInsights}
             />
           )}
+          
+          {/* Tier 1 & 2: Simple confidence message */}
+          {!needsBirthdaySetup && hasTier1Data && !hasTier3Data && (
+            <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
+              <div className="flex items-center gap-2 mb-2">
+                <Sprout className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium text-foreground">
+                  {hasTier2Data 
+                    ? '🌿 Learning Caleb\'s patterns' 
+                    : '🌱 Starting to learn Caleb\'s rhythm'}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {hasTier2Data
+                  ? `Based on ${totalActivities} activities. Predictions will improve as we gather more data.`
+                  : `Based on age (${Math.floor(babyAgeInWeeks / 4)} months). Predictions will personalize as we learn Caleb's unique patterns.`}
+              </p>
+            </div>
+          )}
 
-          {/* Predicted Schedule with AI-Enhanced Summary */}
+          {/* Predicted Schedule - Show for Tier 1+ */}
           {!needsBirthdaySetup && hasMinimumData && (
             <>
-              <TodayAtGlance 
-                prediction={aiPrediction}
-                loading={aiPredictionLoading}
-              />
+              {/* Only show transition detection for Tier 2+ */}
+              {hasTier2Data && (
+                <TodayAtGlance 
+                  prediction={aiPrediction}
+                  loading={aiPredictionLoading}
+                />
+              )}
               
               <ScheduleTimeline 
                 schedule={generatePredictedSchedule(activities, household?.baby_birthday)} 
                 babyName={babyName} 
               />
               
-              {/* Why This Matters Card */}
-              <WhyThisMattersCard 
-                explanation={rhythmInsights?.whyThisMatters || ''}
-                loading={rhythmInsightsLoading || !rhythmInsights}
-              />
+              {/* Why This Matters Card - Only for Tier 3 */}
+              {hasTier3Data && (
+                <WhyThisMattersCard 
+                  explanation={rhythmInsights?.whyThisMatters || ''}
+                  loading={rhythmInsightsLoading || !rhythmInsights}
+                />
+              )}
             </>
           )}
 
-          {/* Streak Chip */}
-          {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (
+          {/* Streak Chip - Only for Tier 3 */}
+          {!needsBirthdaySetup && hasTier3Data && toneFrequencies.currentStreak >= 2 && (
             <div className="space-y-3">
               <button 
                 onClick={() => setShowStreakInsight(!showStreakInsight)}
@@ -896,16 +935,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* Empty State with Ghost Cards - Preview of AI Intelligence */}
-          {!hasMinimumData && !needsBirthdaySetup && (
+          {!hasTier1Data && !needsBirthdaySetup && (
             <div className="space-y-4">
               {/* Header Message */}
               <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
                 <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                 <p className="text-sm text-muted-foreground mb-2">
-                  Track at least 4 naps and 4 feeds to unlock personalized AI guidance
+                  Log your first activity to see {babyName}'s predicted schedule
                 </p>
                 <p className="text-xs text-muted-foreground/70">
-                  Here's a preview of what's coming...
+                  Predictions will personalize as we learn {babyName}'s unique patterns
                 </p>
               </div>
 
