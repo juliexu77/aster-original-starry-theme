@@ -364,19 +364,16 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           <span className="text-sm">{getPredictionText()}</span>
         </div>
 
-        {/* Wake up button */}
-        {ongoingNap && onMarkWakeUp && (
+        {/* Action buttons */}
+        {ongoingNap && onMarkWakeUp ? (
           <Button
             onClick={onMarkWakeUp}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             size="lg"
           >
-            {(babyName || 'Baby') + ' woke up'}
+            {babyName ? `${babyName.split(' ')[0]} woke up` : 'Baby woke up'}
           </Button>
-        )}
-        
-        {/* Log predicted activity button */}
-        {onLogPredictedActivity && !ongoingNap && hasActionablePrediction && (
+        ) : onLogPredictedActivity && hasActionablePrediction ? (
           <Button
             size="lg"
             onClick={() => onLogPredictedActivity(prediction.type)}
@@ -384,9 +381,9 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
           >
             {prediction.type === 'feed' 
               ? t('logFeedNow') 
-              : `${babyName || 'Baby'} fell asleep`}
+              : babyName ? `${babyName.split(' ')[0]} fell asleep` : 'Baby fell asleep'}
           </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );
