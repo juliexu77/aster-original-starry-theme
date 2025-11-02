@@ -20,6 +20,7 @@ import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/scheduleP
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
+import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 
 interface Activity {
   id: string;
@@ -198,6 +199,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     confidenceScore: string;
   } | null>(null);
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
+  const [aiPrediction, setAiPrediction] = useState<{
+    total_naps_today: number;
+    remaining_naps: number;
+    total_feeds_today: number;
+    predicted_bedtime: string;
+    confidence: 'high' | 'medium' | 'low';
+    reasoning: string;
+    is_transitioning: boolean;
+    transition_note?: string;
+  } | null>(null);
+  const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -394,6 +406,84 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       fetchRhythmInsights();
     }
   }, [hasMinimumData, household, activities.length, rhythmInsights, babyAgeInWeeks]);
+
+  // Fetch AI-enhanced schedule prediction
+  useEffect(() => {
+    if (!hasMinimumData || !household) return;
+    
+    const fetchAiPrediction = async () => {
+      setAiPredictionLoading(true);
+      try {
+        console.log('🔄 Fetching AI schedule prediction...');
+        
+        // Get today's activities
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayActivities = activities.filter(a => {
+          const activityDate = new Date(a.logged_at);
+          return activityDate >= today;
+        });
+        
+        // Get last 14 days for pattern analysis
+        const fourteenDaysAgo = new Date();
+        fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+        const recentActivities = activities.filter(a => {
+          const activityDate = new Date(a.logged_at);
+          return activityDate >= fourteenDaysAgo;
+        });
+        
+        const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {
+          body: { 
+            recentActivities,
+            todayActivities,
+            babyBirthday: household.baby_birthday
+          }
+        });
+        
+        if (error) {
+          console.error('❌ Error fetching AI prediction:', error);
+          return;
+        }
+        
+        if (data) {
+          console.log('✅ AI prediction received:', data);
+          setAiPrediction(data);
+          localStorage.setItem('aiPrediction', JSON.stringify(data));
+          localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch AI prediction:', err);
+      } finally {
+        setAiPredictionLoading(false);
+      }
+    };
+
+    // Check if we need to fetch - refresh every 30 minutes or when today's activities change
+    const lastFetch = localStorage.getItem('aiPredictionLastFetch');
+    const cached = localStorage.getItem('aiPrediction');
+    
+    // Load cached data first
+    if (cached && !aiPrediction) {
+      try {
+        const parsed = JSON.parse(cached);
+        console.log('📦 Loaded cached AI prediction');
+        setAiPrediction(parsed);
+      } catch (e) {
+        console.error('Failed to parse cached AI prediction:', e);
+        localStorage.removeItem('aiPrediction');
+      }
+    }
+    
+    // Refresh every 30 minutes or if it's a new day
+    const shouldFetch = !lastFetch || 
+      (Date.now() - new Date(lastFetch).getTime() > 30 * 60 * 1000) ||
+      (new Date().toDateString() !== new Date(lastFetch).toDateString());
+    
+    if (shouldFetch && hasMinimumData) {
+      console.log('🚀 Fetching fresh AI prediction...');
+      fetchAiPrediction();
+    }
+  }, [hasMinimumData, household, activities.length, aiPrediction]);
 
   // Fetch guide sections once daily at 5am
   useEffect(() => {
@@ -759,21 +849,26 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             />
           )}
 
-          {/* Predicted Schedule with Timeline View */}
-          {!needsBirthdaySetup && hasMinimumData && (() => {
-            const schedule = generatePredictedSchedule(activities, household?.baby_birthday);
-            return (
-              <>
-                <ScheduleTimeline schedule={schedule} babyName={babyName} />
-                
-                {/* Why This Matters Card */}
-                <WhyThisMattersCard 
-                  explanation={rhythmInsights?.whyThisMatters || ''}
-                  loading={rhythmInsightsLoading || !rhythmInsights}
-                />
-              </>
-            );
-          })()}
+          {/* Predicted Schedule with AI-Enhanced Summary */}
+          {!needsBirthdaySetup && hasMinimumData && (
+            <>
+              <TodayAtGlance 
+                prediction={aiPrediction}
+                loading={aiPredictionLoading}
+              />
+              
+              <ScheduleTimeline 
+                schedule={generatePredictedSchedule(activities, household?.baby_birthday)} 
+                babyName={babyName} 
+              />
+              
+              {/* Why This Matters Card */}
+              <WhyThisMattersCard 
+                explanation={rhythmInsights?.whyThisMatters || ''}
+                loading={rhythmInsightsLoading || !rhythmInsights}
+              />
+            </>
+          )}
 
           {/* Streak Chip */}
           {!needsBirthdaySetup && hasMinimumData && toneFrequencies.currentStreak >= 2 && (

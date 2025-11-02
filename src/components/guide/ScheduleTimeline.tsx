@@ -104,8 +104,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         </Badge>
       </div>
       
-      {/* Summary at the top */}
-      <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+      {/* Summary at the top - now hidden since AI summary replaces it */}
+      <div className="hidden p-3 bg-primary/5 rounded-lg border border-primary/10">
         <p className="text-sm text-foreground font-medium">
           Today: {napCount} nap{napCount !== 1 ? 's' : ''}, {feedCount} feed{feedCount !== 1 ? 's' : ''}{bedtimeActivity ? `, bedtime at ${bedtimeActivity.endTime}` : ''}
         </p>
