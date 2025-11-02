@@ -93,41 +93,39 @@ Deno.serve(async (req) => {
       ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
-    // Extract transition info from AI prediction if available
-    const transitionInfo = aiPrediction?.is_transitioning 
-      ? `TRANSITION DETECTED: ${aiPrediction.transition_note || 'Baby is transitioning nap counts'}`
-      : 'No active transition detected';
+    // Build nap count info - prioritize AI prediction over historical average
+    const currentNapInfo = aiPrediction 
+      ? `${aiPrediction.total_naps_today} naps (predicted for today)`
+      : `${napsPerDayThisWeek} naps per day (this week's average)`;
     
-    const predictedSchedule = aiPrediction 
-      ? `Predicted: ${aiPrediction.total_naps_today} naps today, bedtime at ${aiPrediction.predicted_bedtime}`
+    const transitionInfo = aiPrediction?.is_transitioning 
+      ? `TRANSITION: ${aiPrediction.transition_note || 'Baby is transitioning nap counts'}`
       : null;
 
     // CALL 1: Generate Hero Insight
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Naps per day this week: ${napsPerDayThisWeek}
-Naps per day last week: ${napsPerDayLastWeek}
-Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent (within 15 min)' : bedtimeVariation < 30 ? 'fairly consistent' : 'variable'}
-Data points: ${dataPoints} activities over 2 weeks
-${transitionInfo}
-${predictedSchedule || ''}
+${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today} naps today (use THIS number in your insight)` : `Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week`}
+Bedtime: ${aiPrediction?.predicted_bedtime || 'consistency varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : ''}
+${transitionInfo || ''}
 
-CRITICAL: If there's a transition detected, you MUST acknowledge it in your insight. Do not contradict it.
+CRITICAL INSTRUCTIONS:
+${aiPrediction ? `- You MUST reference ${aiPrediction.total_naps_today} naps, NOT any other nap count` : ''}
+${aiPrediction?.is_transitioning ? '- You MUST acknowledge the transition in your insight' : ''}
+- Do NOT contradict the nap count or transition state provided above
 
 RULES:
 - Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
 - Write 1-2 short sentences (under 40 words total)
-- If transitioning, focus on the transition (e.g., "moving to 2 naps")
-- If stable, celebrate consistency or progress
-- Be specific to the data (mention nap transitions, bedtime consistency, etc.)
-- Sound warm and supportive, like talking to a friend
+- Be specific to the data provided
+- Sound warm and supportive
 - Do NOT use markdown formatting
 
 Examples:
-"🌿 ${babyName}'s transitioning to 2 naps—wake windows are stretching beautifully!"
-"🎉 What a star! ${babyName}'s consistent bedtime is a huge win for developing healthy sleep habits. Keep up the great work!"
-"💪 ${babyName}'s wake windows are stretching. This is normal at ${ageInMonths} months!"`;
+"🌿 ${babyName}'s settling into a 2-nap rhythm—those longer wake windows show great progress!"
+"🎉 What a star! ${babyName}'s consistent bedtime is building healthy sleep habits!"
+"💪 ${babyName} is transitioning beautifully—longer wake windows are right on track!"`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -157,26 +155,31 @@ Examples:
     const whyPrompt = `You are a helpful parenting expert. Based on the data below, explain what this sleep stage means for the parent's daily life.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current naps per day: ${napsPerDayThisWeek}
-Nap transition: ${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps` : 'stable pattern'}
-Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
-${transitionInfo}
-${predictedSchedule || ''}
+${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today}-nap schedule (use THIS number in your explanation)` : `Current pattern: ${napsPerDayThisWeek} naps/day (${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek}` : 'stable'})`}
+Bedtime: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
+${transitionInfo || ''}
 
-CRITICAL: Your explanation MUST align with the transition state. If transitioning, explain what that means. If stable, explain the current pattern.
+CRITICAL INSTRUCTIONS:
+${aiPrediction ? `- You MUST reference the ${aiPrediction.total_naps_today}-nap pattern, NOT any other nap count` : ''}
+${aiPrediction?.is_transitioning ? '- Explain what the transition means practically' : '- Explain the stable pattern benefits'}
+- Your explanation must match the nap count and transition state above exactly
 
 RULES:
 - Write 2-3 sentences (under 50 words total)
-- Explain what this means developmentally
-- Make it ACTIONABLE - how can parents use this information?
-- Focus on practical implications for daily planning
+- Explain practical implications for daily planning
+- Make it actionable
 - Sound helpful and specific
 - Do NOT use markdown formatting
 
-Examples:
-"${babyName}'s stable 3-nap pattern means consistent daily structure. You can reliably plan your outings around predictable wake windows, offering more predictability to your day."
-"Moving from 3-4 naps to 2-3 means ${babyName}'s wake windows are stretching. You've got about 3 hours between morning wake and first nap—great for errands!"
-"Consistent bedtimes mean ${babyName}'s circadian rhythm is maturing. You can plan evening activities with more confidence."`;
+Examples for 2-nap pattern:
+"${babyName}'s 2-nap rhythm means longer wake windows—perfect for morning activities and afternoon errands between naps."
+"With 2 naps, you have predictable blocks of awake time to plan outings and activities with confidence."
+
+Examples for 3-nap pattern:
+"${babyName}'s 3-nap schedule means shorter wake windows. Plan activities in bite-sized chunks between naps."
+
+Examples for transitions:
+"During this 3-to-2 nap transition, some days will feel unpredictable. Follow ${babyName}'s sleepy cues and stay flexible."`;
 
     const whyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
