@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, type ScheduleEvent } from "@/utils/schedulePredictor";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
+import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
+import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 
 interface Activity {
   id: string;
@@ -190,6 +192,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showStreakInsight, setShowStreakInsight] = useState(false);
   const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
   const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
+  const [rhythmInsights, setRhythmInsights] = useState<{ 
+    heroInsight: string; 
+    whyThisMatters: string; 
+    confidenceScore: string;
+  } | null>(null);
+  const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -321,6 +329,71 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       insightCardsCount: insightCards.length
     });
   }, [activities.length, naps.length, feeds.length, hasMinimumData, babyName, babyAgeInWeeks, hasInitialized, insightCards.length]);
+
+  // Fetch rhythm insights once daily
+  useEffect(() => {
+    if (!hasMinimumData || !household) return;
+    
+    const fetchRhythmInsights = async () => {
+      setRhythmInsightsLoading(true);
+      try {
+        console.log('🔄 Fetching rhythm insights from edge function...');
+        const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
+          body: { 
+            activities: activities.slice(-300), // Last 300 activities for performance
+            babyName: household.baby_name,
+            babyAge: babyAgeInWeeks,
+            babyBirthday: household.baby_birthday
+          }
+        });
+        
+        if (error) {
+          console.error('❌ Error fetching rhythm insights:', error);
+          return;
+        }
+        
+        if (data) {
+          console.log('✅ Rhythm insights fetched:', data);
+          setRhythmInsights({
+            heroInsight: data.heroInsight,
+            whyThisMatters: data.whyThisMatters,
+            confidenceScore: data.confidenceScore
+          });
+          localStorage.setItem('rhythmInsights', JSON.stringify(data));
+          localStorage.setItem('rhythmInsightsLastFetch', new Date().toISOString());
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch rhythm insights:', err);
+      } finally {
+        setRhythmInsightsLoading(false);
+      }
+    };
+
+    // Check if we need to fetch - once per day
+    const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
+    const cached = localStorage.getItem('rhythmInsights');
+    
+    // Load cached data first
+    if (cached && !rhythmInsights) {
+      try {
+        const parsed = JSON.parse(cached);
+        console.log('📦 Loaded cached rhythm insights');
+        setRhythmInsights(parsed);
+      } catch (e) {
+        console.error('Failed to parse cached rhythm insights:', e);
+        localStorage.removeItem('rhythmInsights');
+      }
+    }
+    
+    // Fetch fresh data once per day (after midnight)
+    const shouldFetch = !lastFetch || 
+      (new Date().toDateString() !== new Date(lastFetch).toDateString());
+    
+    if (shouldFetch && hasMinimumData) {
+      console.log('🚀 Fetching fresh rhythm insights...');
+      fetchRhythmInsights();
+    }
+  }, [hasMinimumData, household, activities.length, rhythmInsights, babyAgeInWeeks]);
 
   // Fetch guide sections once daily at 5am
   useEffect(() => {
@@ -677,10 +750,29 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Main Content */}
           <ScrollArea className="flex-1">
         <div ref={scrollRef} className="px-4 pt-4 space-y-6">
+          {/* Hero Insight Card */}
+          {!needsBirthdaySetup && hasMinimumData && (
+            <HeroInsightCard 
+              insight={rhythmInsights?.heroInsight || ''}
+              confidence={rhythmInsights?.confidenceScore || 'High confidence'}
+              loading={rhythmInsightsLoading || !rhythmInsights}
+            />
+          )}
+
           {/* Predicted Schedule with Timeline View */}
           {!needsBirthdaySetup && hasMinimumData && (() => {
             const schedule = generatePredictedSchedule(activities, household?.baby_birthday);
-            return <ScheduleTimeline schedule={schedule} babyName={babyName} />;
+            return (
+              <>
+                <ScheduleTimeline schedule={schedule} babyName={babyName} />
+                
+                {/* Why This Matters Card */}
+                <WhyThisMattersCard 
+                  explanation={rhythmInsights?.whyThisMatters || ''}
+                  loading={rhythmInsightsLoading || !rhythmInsights}
+                />
+              </>
+            );
           })()}
 
           {/* Streak Chip */}

@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.generate-guide-sections]
 verify_jwt = true
+
+[functions.generate-rhythm-insights]
+verify_jwt = true
