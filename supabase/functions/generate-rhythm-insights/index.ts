@@ -325,26 +325,29 @@ Examples:
     const heroInsight = heroData.choices[0].message.content.trim();
 
     // CALL 2: Generate "What To Do"
-    const whatToDoPrompt = `You are a practical parenting coach. Based on ${babyName}'s sleep data, provide 2-3 specific, actionable tips.
+    const whatToDoPrompt = `You are giving specific advice based on ${babyName}'s ACTUAL OBSERVED patterns.
 
-Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-TODAY'S ACTUAL NAPS: ${actualNapsToday} naps
-Current pattern: ${napsPerDayThisWeek} naps/day
-Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}${dstContext}
+OBSERVED DATA:
+- ${babyName} currently: ${napsPerDayThisWeek} naps/day (was ${napsPerDayLastWeek}/day last week)
+- Today so far: ${actualNapsToday} naps logged
+- Bedtime: ${bedtimeVariation < 15 ? `very stable at ${aiPrediction?.predicted_bedtime || 'same time daily'}` : bedtimeVariation < 30 ? `fairly consistent around ${aiPrediction?.predicted_bedtime || '7-8pm'}` : 'still variable'}
+- Nap range this week: ${minNapCount}-${maxNapCount} naps per day
+${transitionInfo ? `- ${transitionInfo}` : ''}${dstContext}
 
-CRITICAL FORMAT RULES:
-- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
-- Return EXACTLY 2-3 tips, one per line
-- Each tip is a single sentence (under 20 words)
-- Start each line directly with the tip text (NO bullets, NO dashes, NO numbers)
-- Do NOT use any markdown, asterisks, or special formatting
-- Do NOT add extra blank lines between tips
-- Focus on what the parent can do TODAY
+TASK: Give 2-3 tips that DIRECTLY respond to these patterns. Make it feel like advice tailored to ${babyName}, not generic baby tips.
 
-Example output format (copy this style exactly):
-Watch for sleepy cues 2-3 hours after waking
-Keep bedtime between 7-8pm for best night sleep
-Protect the first morning nap—it's usually the strongest`;
+RULES:
+- Always use "${babyName}" by name
+- Reference specific patterns (e.g., "Keep ${babyName}'s ${napsPerDayThisWeek}-nap rhythm consistent")
+- Make tips actionable for TODAY
+- Each tip is ONE sentence (under 20 words)
+- NO bullets, numbers, dashes, or markdown
+- One tip per line, no blank lines
+
+BAD (too generic): "Watch for sleepy cues"
+GOOD: "Aim for ${babyName}'s naps at the times that worked yesterday—consistency builds on success"
+GOOD: "Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime since it's working so well"
+GOOD: "If ${babyName} seems extra sleepy today, offer an earlier nap—transitions take energy"`;
 
     const whatToDoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -383,22 +386,26 @@ Protect the first morning nap—it's usually the strongest`;
       });
 
     // CALL 3: Generate "What's Next"
-    const whatsNextPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep stage, explain what's coming next.
+    const whatsNextPrompt = `Based on ${babyName}'s CURRENT trajectory, predict what's coming next specifically for them.
 
-Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current pattern: ${napsPerDayThisWeek} naps/day${dstContext}
+OBSERVED TRAJECTORY:
+- Age: ${ageInMonths ? `${ageInMonths} months old` : 'unknown'}
+- Pattern: ${napsPerDayLastWeek} naps/day → ${napsPerDayThisWeek} naps/day (this week)
+- Consistency: ${bedtimeVariation < 15 ? 'very stable routine' : bedtimeVariation < 30 ? 'moderate stability' : 'still finding rhythm'}
+${transitionInfo ? `- Current phase: ${transitionInfo}` : ''}${dstContext}
 
-CRITICAL FORMAT RULES:
-- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
-- Write 2-3 sentences (50-60 words total)
-- Explain the next developmental sleep milestone
-- Be specific about timing if relevant
-- Sound encouraging and informative
-- Do NOT use markdown formatting (no bold, no italics, no asterisks)
-- Write in plain, natural language
+TASK: Based on ${babyName}'s SPECIFIC trajectory (not generic milestones), predict what's coming next for THEM.
 
-Example output:
-Around 15-18 months, most babies consolidate to a single afternoon nap. Watch for signs like fighting the morning nap or taking forever to fall asleep. This transition usually happens gradually over 2-3 weeks.`;
+RULES:
+- Always use "${babyName}" by name
+- Reference their specific pattern (e.g., "Since ${babyName} recently moved to ${napsPerDayThisWeek} naps...")
+- Predict based on THEIR trajectory, not generic age ranges
+- 2-3 sentences, 50-60 words
+- NO markdown, plain language
+
+BAD (too generic): "Around 15 months, babies drop to 1 nap"
+GOOD: "Since ${babyName} just settled into ${napsPerDayThisWeek} naps, expect this pattern to hold for ${ageInMonths && ageInMonths < 12 ? '3-4 months' : ageInMonths && ageInMonths < 15 ? '2-3 months' : 'several weeks'}. Watch for ${napsPerDayThisWeek === 2 ? 'fighting the morning nap or needing later wake times' : 'shorter naps or bedtime resistance'} as signs of the next shift."
+GOOD: "With that ${bedtimeVariation < 15 ? 'rock-solid' : 'improving'} bedtime, ${babyName} is ready for any upcoming transitions. ${transitionInfo ? 'The current adjustment should settle within a week' : 'Enjoy this stable phase—it makes future changes easier'}."`;
 
     const whatsNextResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -427,22 +434,26 @@ Around 15-18 months, most babies consolidate to a single afternoon nap. Watch fo
       .replace(/\*/g, '');  // Remove any italic markdown
 
     // CALL 4: Generate "Prep Tip"
-    const prepTipPrompt = `You are a forward-thinking parenting coach. Give ONE specific prep tip for ${babyName}'s upcoming sleep stage.
+    const prepTipPrompt = `Based on where ${babyName} is headed next, give ONE concrete prep action.
 
-Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current pattern: ${napsPerDayThisWeek} naps/day${dstContext}
+CURRENT STATE:
+- ${babyName}: ${napsPerDayThisWeek} naps/day, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
+- Recent change: ${napsPerDayLastWeek} → ${napsPerDayThisWeek} naps/day
+${transitionInfo ? `- ${transitionInfo}` : ''}${dstContext}
 
-CRITICAL FORMAT RULES:
-- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
-- Write ONE sentence only (20-25 words max)
-- Make it actionable and specific
-- Focus on preparing for the next stage
-- Sound helpful and practical
-- Do NOT use markdown formatting (no bold, no italics, no asterisks)
-- Write in plain, natural language
+TASK: Give ONE prep tip for what's coming next based on ${babyName}'s specific trajectory (not generic advice).
 
-Example output:
-Start pushing the morning nap later by 15 minutes each week to ease into the 1-nap transition.`;
+RULES:
+- Always use "${babyName}" by name
+- Make it specific to THEIR next stage (e.g., if they just went 3→2 naps, prep for 2→1)
+- ONE sentence, 20-25 words
+- Actionable and concrete
+- NO markdown, plain language
+
+BAD (too generic): "Start pushing naps later"
+GOOD: "Track ${babyName}'s wake windows for 3 days to spot the ideal timing before making any schedule changes"
+GOOD: "When ${babyName} resists the morning nap consistently, shift it 30 minutes later rather than dropping it cold"
+GOOD: "Keep ${babyName}'s room dark until 6:30am to preserve that solid bedtime as wake windows lengthen"`;
 
     const prepTipResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -475,22 +486,53 @@ Start pushing the morning nap later by 15 minutes each week to ease into the 1-n
 
     // CALL 4: Generate "Why This Matters"
     console.log('🔍 Generating why this matters explanation...');
-    const whyThisMattersPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep patterns and developmental stage, explain in 2-3 sentences why understanding their rhythm matters right now.
+    
+    // Calculate specific pattern details for more concrete explanations
+    const recentWakeTimes = last7Days
+      .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep)
+      .map((a: Activity) => {
+        const date = new Date(a.logged_at);
+        const wakeTime = a.details?.wakeTime ? new Date(a.details.wakeTime) : null;
+        return wakeTime ? `${wakeTime.getHours()}:${wakeTime.getMinutes().toString().padStart(2, '0')}` : null;
+      })
+      .filter(Boolean);
+    
+    const avgNapDurations = last7Days
+      .filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep)
+      .map((a: Activity) => {
+        if (a.details?.duration) {
+          const [hours, mins] = a.details.duration.split(':').map(Number);
+          return (hours || 0) * 60 + (mins || 0);
+        }
+        return null;
+      })
+      .filter((d): d is number => d !== null);
+    
+    const avgNapMinutes = avgNapDurations.length > 0 
+      ? Math.round(avgNapDurations.reduce((a, b) => a + b, 0) / avgNapDurations.length)
+      : null;
+    
+    const whyThisMattersPrompt = `You are explaining why the SPECIFIC patterns you're observing matter for ${babyName}'s development.
 
-Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current pattern: ${napsPerDayThisWeek} naps/day
-${transitionInfo || ''}${dstContext}
+OBSERVED DATA:
+- ${babyName} is currently doing ${napsPerDayThisWeek} naps per day (changed from ${napsPerDayLastWeek} last week)
+- Bedtime consistency: ${bedtimeVariation < 15 ? `very stable (±${Math.round(bedtimeVariation)} min)` : bedtimeVariation < 30 ? `fairly consistent (±${Math.round(bedtimeVariation)} min)` : `still variable (±${Math.round(bedtimeVariation)} min)`}
+- Average nap length: ${avgNapMinutes ? `${Math.round(avgNapMinutes)} minutes` : 'varying'}
+${transitionInfo ? `- ${transitionInfo}` : ''}
+${actualNapsToday ? `- Today specifically: ${actualNapsToday} naps logged so far` : ''}${dstContext}
 
-CRITICAL FORMAT RULES:
-- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
-- Write 2-3 sentences (50-60 words total)
-- Focus on developmental benefits and how rhythm supports growth
-- Be warm and encouraging
-- Do NOT use markdown formatting (no bold, no italics, no asterisks)
-- Write in plain, natural language
+TASK: Explain why THIS SPECIFIC PATTERN matters for ${babyName} right now. Connect the dots between what you're seeing and what it means.
 
-Example output:
-Understanding ${babyName}'s rhythm helps you respond to emerging needs before they become overwhelming. At this age, predictable patterns support brain development and emotional regulation. Recognizing these patterns early makes transitions smoother for everyone.`;
+RULES:
+- Always use "${babyName}" by name
+- Reference the SPECIFIC patterns above (e.g., "the shift from ${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps", "those ${avgNapMinutes}-minute naps")
+- Explain what these patterns reveal about ${babyName}'s development
+- Make it feel personal to THEIR journey, not generic advice
+- 2-3 sentences, 50-60 words
+- NO markdown, plain language
+
+BAD (too generic): "Understanding your baby's rhythm helps with sleep. Patterns support development."
+GOOD: "${babyName}'s shift to ${napsPerDayThisWeek} naps shows their wake windows are lengthening—a sign of maturing circadian rhythms. That ${bedtimeVariation < 15 ? 'rock-solid' : 'improving'} bedtime consistency means their internal clock is strengthening, making future transitions smoother."`;
 
     const whyThisMattersResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
