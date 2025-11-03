@@ -56,6 +56,35 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     if (period === 'AM' && hours === 12) hours = 0;
     return hours * 60 + minutes;
   };
+  
+  // Convert exact time to approximate time range
+  const formatTimeRange = (timeStr: string): string => {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (!match) return timeStr;
+    
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+    
+    // Round to nearest 15 minutes for range display
+    const roundedMinutes = Math.round(minutes / 15) * 15;
+    const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
+    const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
+    
+    // Create a ±15 minute range
+    const lowerBound = finalMinutes - 15 >= 0 ? finalMinutes - 15 : 60 + (finalMinutes - 15);
+    const upperBound = finalMinutes + 15 <= 59 ? finalMinutes + 15 : (finalMinutes + 15) - 60;
+    
+    const lowerHour = lowerBound < 0 ? (adjustedHours - 1 + 12) % 12 || 12 : adjustedHours;
+    const upperHour = upperBound < finalMinutes ? (adjustedHours + 1) % 12 || 12 : adjustedHours;
+    
+    // Format as "around X:XX" or "X:XX - X:XX" range
+    if (schedule.confidence === 'high') {
+      return `around ${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    return `${lowerHour}:${Math.abs(lowerBound).toString().padStart(2, '0')} - ${upperHour}:${upperBound.toString().padStart(2, '0')} ${period}`;
+  };
 
   const toggleExpanded = (eventId: string) => {
     setExpandedEvents(prev => {
@@ -138,37 +167,66 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   const feedCount = schedule.events.filter(e => e.type === 'feed').length;
   const bedtimeActivity = groupedActivities.find(a => a.type === 'bedtime');
   
+  // Determine model state display
+  const getModelStateDisplay = () => {
+    if (schedule.accuracyScore === undefined || schedule.accuracyScore === 0) {
+      return null;
+    }
+    
+    if (schedule.accuracyScore < 80) {
+      return {
+        text: `Still tuning to ${babyName}'s evolving rhythm`,
+        variant: 'outline' as const,
+        showTooltip: true
+      };
+    }
+    
+    return {
+      text: `${schedule.accuracyScore}% accurate`,
+      variant: 'outline' as const,
+      showTooltip: true
+    };
+  };
+
+  const modelState = getModelStateDisplay();
+  
   return (
     <div className="space-y-4">
-      {/* Header with confidence badge and accuracy */}
+      {/* Header with confidence badge and model state */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           {babyName}'s Predicted Schedule
         </h3>
         <div className="flex items-center gap-2">
-          {schedule.accuracyScore !== undefined && schedule.accuracyScore > 0 && (
+          {modelState && (
             <div className="relative">
               <Collapsible>
                 <CollapsibleTrigger asChild>
                   <button className="flex items-center gap-1 group">
-                    <Badge variant="outline" className="text-xs cursor-pointer hover:bg-accent">
-                      {schedule.accuracyScore}% accurate
+                    <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent">
+                      {modelState.text}
                     </Badge>
-                    <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
+                    {modelState.showTooltip && (
+                      <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
+                    )}
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
-                  <p className="font-medium text-foreground">How accuracy works:</p>
-                  <p>
-                    We compare predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
-                  </p>
-                  <p>
-                    As you log more activities, the schedule adapts in real-time using today&apos;s actual wake time and patterns, improving accuracy over time.
-                  </p>
-                  <p className="text-primary font-medium">
-                    {schedule.accuracyScore}% means predictions are still learning your baby&apos;s unique rhythm!
-                  </p>
-                </CollapsibleContent>
+                {modelState.showTooltip && (
+                  <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
+                    <p className="font-medium text-foreground">How this works:</p>
+                    <p>
+                      We compare predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
+                    </p>
+                    <p>
+                      As you log more activities, the schedule adapts in real-time using today&apos;s actual wake time and patterns.
+                    </p>
+                    {schedule.accuracyScore !== undefined && schedule.accuracyScore < 80 && (
+                      <p className="text-primary font-medium">
+                        The model is learning {babyName}&apos;s unique patterns. Accuracy improves with each logged activity!
+                      </p>
+                    )}
+                  </CollapsibleContent>
+                )}
               </Collapsible>
             </div>
           )}
@@ -231,16 +289,11 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {activity.time}
+                        {formatTimeRange(activity.time)}
                       </span>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                      <span className="text-xs text-muted-foreground">
                         {activity.title}
                       </span>
-                      {matchingEvent?.confidence && (
-                        <Badge variant="outline" className="text-[10px] h-4">
-                          {matchingEvent.confidence}
-                        </Badge>
-                      )}
                     </div>
                     {activity.feedTime && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
@@ -289,19 +342,14 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-bold text-foreground">
-                        {activity.time}
+                        {formatTimeRange(activity.time)}
                       </span>
-                      <span className="text-xs font-medium text-foreground uppercase tracking-wide">
+                      <span className="text-xs font-medium text-foreground">
                         {activity.title}
                       </span>
-                      <span className="text-xs font-medium text-blue-600">
-                        {activity.napDuration}
+                      <span className="text-xs text-muted-foreground">
+                        ({activity.napDuration})
                       </span>
-                      {matchingEvent?.confidence && (
-                        <Badge variant="outline" className="text-[10px] h-4">
-                          {matchingEvent.confidence}
-                        </Badge>
-                      )}
                     </div>
                     {activity.feedTime && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
@@ -347,16 +395,11 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {activity.time}
+                        {formatTimeRange(activity.time)}
                       </span>
-                      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                      <span className="text-xs text-muted-foreground">
                         {activity.title}
                       </span>
-                      {matchingEvent?.confidence && (
-                        <Badge variant="outline" className="text-[10px] h-4">
-                          {matchingEvent.confidence}
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
                       <Bed className="w-3 h-3" />

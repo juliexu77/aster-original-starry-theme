@@ -24,6 +24,7 @@ import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
+import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 
 interface Activity {
   id: string;
@@ -219,6 +220,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return stored !== null ? stored === 'true' : true; // Default enabled
   });
   const previousScheduleRef = useRef<PredictedSchedule | null>(null);
+  const [scheduleUpdatedRecently, setScheduleUpdatedRecently] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -782,6 +784,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       setPredictedSchedule(localSchedule);
       setLastActivityCount(activities.length);
       
+      // Show adaptive feedback indicator
+      if (activityCountChanged && lastActivityCount > 0) {
+        setScheduleUpdatedRecently(true);
+        setTimeout(() => setScheduleUpdatedRecently(false), 5000); // Clear after 5 seconds
+      }
+      
       console.log('✅ Schedule updated successfully');
     } catch (error) {
       console.error('❌ Error generating hybrid schedule:', error);
@@ -1125,17 +1133,31 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               )}
               
               {displaySchedule && (
-                <ScheduleTimeline 
-                  schedule={displaySchedule} 
-                  babyName={babyName}
-                />
+                <>
+                  {scheduleUpdatedRecently && (
+                    <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-4">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <p className="text-xs text-primary font-medium">
+                        Schedule adapted to recent activity
+                      </p>
+                    </div>
+                  )}
+                  <ScheduleTimeline 
+                    schedule={displaySchedule} 
+                    babyName={babyName}
+                  />
+                </>
               )}
               
-              {/* Why This Matters Card - Only for Tier 3 */}
-              {hasTier3Data && (
-                <WhyThisMattersCard 
-                  explanation={rhythmInsights?.whyThisMatters || ''}
-                  loading={rhythmInsightsLoading || !rhythmInsights}
+              {/* Unified Insight Card - Combines all guidance */}
+              {hasMinimumData && (
+                <UnifiedInsightCard
+                  whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
+                  whatToKnow={guideSections?.what_to_know}
+                  whatToDo={guideSections?.what_to_do}
+                  whatsNext={guideSections?.whats_next}
+                  prepTip={guideSections?.prep_tip}
+                  loading={(guideSectionsLoading && !guideSections) || (hasTier3Data && (rhythmInsightsLoading || !rhythmInsights))}
                 />
               )}
             </>
@@ -1163,242 +1185,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <p className="text-sm text-muted-foreground leading-relaxed italic">
                 {toneFrequencies.currentStreak}-day &apos;{toneFrequencies.streakTone}&apos; streak — typically appears during steady growth or after routines stabilize.
               </p>
-            </div>
-          )}
-
-          {/* Empty State with Ghost Cards - Preview of AI Intelligence */}
-          {!hasTier1Data && !needsBirthdaySetup && (
-            <div className="space-y-4">
-              {/* Header Message */}
-              <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
-                <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  Log your first activity to see {babyName}'s predicted schedule
-                </p>
-                <p className="text-xs text-muted-foreground/70">
-                  Predictions will personalize as we learn {babyName}'s unique patterns
-                </p>
-              </div>
-
-              {/* Ghost Card: Data Pulse Preview */}
-              <div className="p-4 bg-accent/10 rounded-lg border border-border/40 opacity-50">
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
-                  </div>
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
-                </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Moon className="w-4 h-4 text-primary" />
-                      <span className="text-sm text-foreground">Total sleep</span>
-                    </div>
-                    <span className="text-sm font-medium text-foreground">+23 min</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Bed className="w-4 h-4 text-primary" />
-                      <span className="text-sm text-foreground">Naps</span>
-                    </div>
-                    <span className="text-sm font-medium text-foreground">+1</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span className="text-sm text-foreground">Wake average</span>
-                    </div>
-                    <span className="text-sm font-medium text-foreground">-12 min</span>
-                  </div>
-                  
-                  <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
-                    AI detects subtle pattern changes and alerts you to shifts in {babyName}'s rhythm
-                  </p>
-                </div>
-              </div>
-
-              {/* Ghost Card: What to Know Preview */}
-              <div className="space-y-3 opacity-50">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
-                </div>
-                <div className="space-y-2 pl-1">
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {babyName}'s wake windows are extending as they develop—expect slightly longer periods between naps
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Morning naps are becoming more consolidated, a sign of maturing sleep patterns
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ghost Card: What To Do Preview */}
-              <div className="space-y-3 opacity-50">
-                <div className="flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
-                </div>
-                <div className="space-y-2 pl-1">
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Try extending the first wake window to 2 hours to align with their natural rhythm
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Watch for early sleepy cues in the afternoon—overtiredness can disrupt bedtime
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ghost Card: What's Next Preview */}
-              <div className="space-y-3 opacity-50">
-                <div className="flex items-center gap-2">
-                  <ArrowRight className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
-                </div>
-                <div className="space-y-3 pl-1">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Based on current patterns, {babyName} may be ready to drop to 3 naps within the next 2 weeks. AI will guide you through this transition.
-                  </p>
-                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
-                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-foreground">
-                      <span className="font-medium">Prep tip:</span> Start tracking wake-up times to help AI predict optimal nap windows
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom CTA */}
-              <div className="text-center pt-2">
-                <p className="text-xs text-muted-foreground italic">
-                  Keep logging to unlock {babyName}'s personalized AI insights
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Guide Sections Loading Indicator */}
-          {hasMinimumData && guideSectionsLoading && !guideSections && (
-            <div className="p-6 bg-accent/10 rounded-lg border border-border/40 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-              <p className="text-sm text-muted-foreground">
-                Generating personalized guidance...
-              </p>
-            </div>
-          )}
-
-          {/* What to Know */}
-          {hasMinimumData && guideSections && guideSections.what_to_know && (
-            <div className="space-y-3">
-              <Collapsible>
-                <CollapsibleTrigger asChild>
-                  <button className="flex items-center justify-between w-full group">
-                    <div className="flex items-center gap-2">
-                      <Lightbulb className="w-4 h-4 text-primary" />
-                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What to Know</h3>
-                    </div>
-                    {guideSections.what_to_know.length > 1 && (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
-                <div className="space-y-2 pl-1 mt-3">
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {guideSections.what_to_know[0]}
-                    </p>
-                  </div>
-                  {guideSections.what_to_know.length > 1 && (
-                    <CollapsibleContent>
-                      {guideSections.what_to_know.slice(1).map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2 mt-2">
-                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  )}
-                </div>
-              </Collapsible>
-            </div>
-          )}
-
-          {/* What To Do */}
-          {hasMinimumData && guideSections && guideSections.what_to_do && (
-            <div className="space-y-3">
-              <Collapsible>
-                <CollapsibleTrigger asChild>
-                  <button className="flex items-center justify-between w-full group">
-                    <div className="flex items-center gap-2">
-                      <CheckSquare className="w-4 h-4 text-primary" />
-                      <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What To Do</h3>
-                    </div>
-                    {guideSections.what_to_do.length > 1 && (
-                      <ChevronDown className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform group-data-[state=open]:rotate-180" />
-                    )}
-                  </button>
-                </CollapsibleTrigger>
-                <div className="space-y-2 pl-1 mt-3">
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {guideSections.what_to_do[0]}
-                    </p>
-                  </div>
-                  {guideSections.what_to_do.length > 1 && (
-                    <CollapsibleContent>
-                      {guideSections.what_to_do.slice(1).map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2 mt-2">
-                          <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {item}
-                          </p>
-                        </div>
-                      ))}
-                    </CollapsibleContent>
-                  )}
-                </div>
-              </Collapsible>
-            </div>
-          )}
-
-          {/* What's Next */}
-          {hasMinimumData && guideSections && guideSections.whats_next && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <ArrowRight className="w-4 h-4 text-primary" />
-                <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">What's Next</h3>
-              </div>
-              <div className="space-y-3 pl-1">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {guideSections.whats_next}
-                </p>
-                {guideSections.prep_tip && (
-                  <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
-                    <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-foreground">
-                      <span className="font-medium">Prep tip:</span> {guideSections.prep_tip}
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
