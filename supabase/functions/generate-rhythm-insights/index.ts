@@ -105,10 +105,16 @@ Deno.serve(async (req) => {
       ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
-    // Build nap count info - prioritize AI prediction over historical average
-    const currentNapInfo = aiPrediction 
-      ? `${aiPrediction.total_naps_today} naps (predicted for today)`
-      : `${napsPerDayThisWeek} naps per day (this week's average)`;
+    // Get ACTUAL nap count for TODAY (not prediction)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const actualNapsToday = activities.filter((a: Activity) => {
+      const activityDate = new Date(a.logged_at);
+      activityDate.setHours(0, 0, 0, 0);
+      return a.type === 'nap' && activityDate.getTime() === today.getTime();
+    }).length;
+
+    console.log(`📊 Today's ACTUAL naps: ${actualNapsToday}, AI predicted: ${aiPrediction?.total_naps_today || 'none'}`);
     
     // VALIDATE transition claim against actual data
     // Only allow transition claims that match the observed nap counts
@@ -140,16 +146,18 @@ Deno.serve(async (req) => {
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today} naps today (use THIS number in your insight)` : `Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week`}
+TODAY'S ACTUAL NAPS: ${actualNapsToday} naps (this is reality, use THIS exact number)
+${aiPrediction ? `Predicted naps: ${aiPrediction.total_naps_today} (was the forecast, but actual is ${actualNapsToday})` : ''}
+Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week
 Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
 Bedtime: ${aiPrediction?.predicted_bedtime || 'consistency varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : ''}
 ${transitionInfo || ''}
 
 CRITICAL INSTRUCTIONS:
-${aiPrediction ? `- You MUST reference ${aiPrediction.total_naps_today} naps, NOT any other nap count` : ''}
+- You MUST reference ${actualNapsToday} naps as today's reality, NOT the prediction
 ${transitionInfo ? '- You MUST acknowledge the pattern/transition stated above' : ''}
-- Do NOT contradict the nap count or pattern information above
-- Do NOT mention nap counts that weren't observed (e.g., don't say "4 naps" if max is 3)
+- Do NOT contradict the nap count information above
+- Do NOT mention nap counts that weren't observed (e.g., don't say "2 naps" when actual is ${actualNapsToday})
 
 RULES:
 - Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
@@ -191,15 +199,16 @@ Examples:
     const whyPrompt = `You are a helpful parenting expert. Based on the data below, explain what this sleep stage means for the parent's daily life.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today}-nap schedule (use THIS number in your explanation)` : `Current pattern: ${napsPerDayThisWeek} naps/day (${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek}` : 'stable'})`}
+TODAY'S ACTUAL NAPS: ${actualNapsToday} naps (this is reality, use THIS number)
+Current pattern: ${napsPerDayThisWeek} naps/day (${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek}` : 'stable'})
 Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
 Bedtime: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
 ${transitionInfo || ''}
 
 CRITICAL INSTRUCTIONS:
-${aiPrediction ? `- You MUST reference the ${aiPrediction.total_naps_today}-nap pattern, NOT any other nap count` : ''}
+- You MUST reference the ${actualNapsToday}-nap reality for today, NOT predictions
 ${transitionInfo ? '- Explain what the stated pattern/transition means practically' : '- Explain the stable pattern benefits'}
-- Your explanation must match the nap count and pattern stated above exactly
+- Your explanation must match the actual nap count: ${actualNapsToday} naps today
 - Do NOT mention nap counts that weren't observed in the last 7 days (range: ${minNapCount}–${maxNapCount})
 
 RULES:
