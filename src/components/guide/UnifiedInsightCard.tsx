@@ -4,7 +4,6 @@ import { useState } from "react";
 
 interface UnifiedInsightCardProps {
   whyThisMatters?: string;
-  whatToKnow?: string[];
   whatToDo?: string[];
   whatsNext?: string;
   prepTip?: string;
@@ -13,7 +12,6 @@ interface UnifiedInsightCardProps {
 
 export const UnifiedInsightCard = ({
   whyThisMatters,
-  whatToKnow,
   whatToDo,
   whatsNext,
   prepTip,
