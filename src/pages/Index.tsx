@@ -68,7 +68,7 @@ const Index = () => {
   const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
 
   // Convert database activities to UI activities
-  const activities: Activity[] = dbActivities 
+  const rawActivities: Activity[] = dbActivities 
     ? dbActivities.map(dbActivity => {
         // Use displayTime from details if available (for consistent display), 
         // otherwise fall back to converting logged_at
@@ -98,6 +98,57 @@ const Index = () => {
         };
       })
     : [];
+
+  // Enrich activities with isNightSleep flag
+  const activities = rawActivities.map(activity => {
+    if (activity.type === 'nap') {
+      // For completed naps, detect if this is night sleep based on end time
+      if (activity.details?.endTime) {
+        const nightSleep = detectNightSleep(rawActivities, nightSleepEndHour);
+        const isNightSleep = nightSleep?.id === activity.id;
+        
+        return {
+          ...activity,
+          details: {
+            ...activity.details,
+            isNightSleep
+          }
+        };
+      }
+      
+      // For ongoing naps, check if start time is close to night sleep time
+      if (activity.details?.startTime) {
+        const parseTimeToMinutes = (timeStr: string): number | null => {
+          const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+          if (!match) return null;
+          
+          let hours = parseInt(match[1], 10);
+          const minutes = parseInt(match[2], 10);
+          const period = match[3].toUpperCase();
+          
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          
+          return hours * 60 + minutes;
+        };
+        
+        const startMinutes = parseTimeToMinutes(activity.details.startTime);
+        if (startMinutes !== null) {
+          // If nap starts between 6 PM and 9 AM, it's likely night sleep
+          const isNightTime = startMinutes >= 18 * 60 || startMinutes <= 9 * 60;
+          
+          return {
+            ...activity,
+            details: {
+              ...activity.details,
+              isNightSleep: isNightTime
+            }
+          };
+        }
+      }
+    }
+    return activity;
+  });
 
   console.log('🏠 Index.tsx - Activities loaded:', {
     user: !!user,

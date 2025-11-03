@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Moon, Milk, Sun } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface RightNowStatusProps {
   currentActivity: {
@@ -38,69 +36,6 @@ export const RightNowStatus = ({
   babyAge,
   activities
 }: RightNowStatusProps) => {
-  const [aiTip, setAiTip] = useState<string>('');
-  const [tipLoading, setTipLoading] = useState(false);
-
-  // Fetch AI tip when current activity changes
-  useEffect(() => {
-    if (!currentActivity) return;
-
-    // Create a duration bucket for cache key (0-30, 30-60, 60-90, 90-120, 120+)
-    const getDurationBucket = (duration: number) => {
-      if (duration < 30) return '0-30';
-      if (duration < 60) return '30-60';
-      if (duration < 90) return '60-90';
-      if (duration < 120) return '90-120';
-      return '120+';
-    };
-
-    const durationBucket = getDurationBucket(currentActivity.duration);
-    const cacheKey = `status-tip-${currentActivity.type}-${durationBucket}-${Math.floor(Date.now() / (15 * 60 * 1000))}`; // 15-min cache with duration bucket
-    const cached = sessionStorage.getItem(cacheKey);
-    
-    if (cached) {
-      setAiTip(cached);
-      return;
-    }
-
-    const fetchTip = async () => {
-      setTipLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-home-insights', {
-          body: {
-            insightType: 'status-tip',
-            activities: activities.slice(-20),
-            babyName,
-            babyAge,
-            currentActivity: {
-              type: currentActivity.type,
-              duration: currentActivity.duration,
-              status: 'on track', // TODO: Calculate deviation status
-              nextEvent: nextPrediction?.activity,
-              timeUntilNext: nextPrediction?.countdown
-            }
-          }
-        });
-
-        if (error) {
-          console.error('Error fetching status tip:', error);
-          return;
-        }
-
-        if (data?.insight) {
-          setAiTip(data.insight);
-          sessionStorage.setItem(cacheKey, data.insight);
-        }
-      } catch (err) {
-        console.error('Failed to fetch status tip:', err);
-      } finally {
-        setTipLoading(false);
-      }
-    };
-
-    fetchTip();
-  }, [currentActivity?.type, currentActivity?.duration, babyName, babyAge, activities, nextPrediction]);
-
   if (!currentActivity) {
     return (
       <div className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 mb-4">
@@ -203,20 +138,6 @@ export const RightNowStatus = ({
           </Button>
         )}
       </div>
-
-      {/* AI Tip */}
-      {tipLoading ? (
-        <div className="flex items-center gap-2 p-2 bg-primary/5 rounded-lg animate-pulse">
-          <div className="h-3 w-3 bg-primary/20 rounded-full"></div>
-          <div className="h-3 flex-1 bg-primary/20 rounded"></div>
-        </div>
-      ) : aiTip ? (
-        <div className="flex items-start gap-2 p-2 bg-primary/5 rounded-lg">
-          <p className="text-xs text-foreground leading-relaxed">
-            {aiTip}
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 };
