@@ -24,6 +24,7 @@ import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
+import { clearAppCache } from "@/utils/clearAppCache";
 
 interface Activity {
   id: string;
@@ -423,6 +424,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       localStorage.removeItem('aiPredictionLastFetch');
       localStorage.setItem('cacheCleared_v10', 'true');
     }
+    
+    // Also clear session storage caches
+    clearAppCache();
   }, []);
 
   // Debug logging

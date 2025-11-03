@@ -43,6 +43,14 @@ interface GroupedActivity {
 export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   
+  // Debug: Log schedule events to verify feeds are included
+  console.log('📋 ScheduleTimeline - Events:', schedule.events.map(e => ({ 
+    time: e.time, 
+    type: e.type, 
+    notes: e.notes 
+  })));
+  console.log('📋 Feed count in schedule:', schedule.events.filter(e => e.type === 'feed').length);
+  
   // Check for DST transition
   const dstInfo = useMemo(() => {
     const result = checkDSTTransition();
@@ -97,6 +105,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   // Group related activities
   const groupedActivities: GroupedActivity[] = [];
   
+  console.log('🔄 Starting to group activities...');
+  
   let napCounter = 0;
   for (let i = 0; i < schedule.events.length; i++) {
     const event = schedule.events[i];
@@ -145,18 +155,30 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         id: `wake-${i}`,
         type: 'morning',
         time: event.time,
-        title: 'Morning wake'
+        title: 'Wake up'
       });
     }
     else if (event.type === 'feed') {
+      // Show feed with proper icon
       groupedActivities.push({
         id: `feed-${i}`,
         type: 'morning',
         time: event.time,
-        title: 'Feed'
+        feedTime: event.time, // Mark as a feed-only event
+        title: event.notes || 'Feed'
       });
     }
   }
+  
+  console.log('✅ Grouped activities:', groupedActivities.map(a => ({ 
+    id: a.id, 
+    type: a.type, 
+    time: a.time, 
+    title: a.title,
+    feedTime: a.feedTime 
+  })));
+  console.log('🍼 Total feed events in grouped activities:', 
+    groupedActivities.filter(a => a.feedTime).length);
   
   // Calculate summary
   const napCount = groupedActivities.filter(a => a.type === 'nap-block').length;
@@ -310,6 +332,9 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                                      matchingEvent?.confidence === 'medium' ? 'opacity-80' : 'opacity-60';
           
           if (activity.type === 'morning') {
+            // Check if this is a standalone feed (feedTime === time)
+            const isStandaloneFeed = activity.feedTime && activity.feedTime === activity.time;
+            
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
                 {isCurrent && (
@@ -324,8 +349,16 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                 )}
                 <div className="flex items-start gap-3 group">
                   <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-amber-500/20' : 'bg-amber-500/10'} flex items-center justify-center flex-shrink-0`}>
-                      <Sun className="w-4 h-4 text-amber-600" />
+                    <div className={`w-8 h-8 rounded-full ${
+                      isStandaloneFeed 
+                        ? (isPast ? 'bg-green-500/20' : 'bg-green-500/10')
+                        : (isPast ? 'bg-amber-500/20' : 'bg-amber-500/10')
+                    } flex items-center justify-center flex-shrink-0`}>
+                      {isStandaloneFeed ? (
+                        <Milk className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Sun className="w-4 h-4 text-amber-600" />
+                      )}
                     </div>
                     <div className="w-0.5 h-4 bg-border/40" />
                   </div>
@@ -338,7 +371,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                         {activity.title}
                       </span>
                     </div>
-                    {activity.feedTime && (
+                    {activity.feedTime && !isStandaloneFeed && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
                         <Milk className="w-3 h-3" />
                         <span>Feed at {formatTime(activity.feedTime)}</span>
