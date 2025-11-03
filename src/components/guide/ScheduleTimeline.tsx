@@ -306,9 +306,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
               </Collapsible>
             </div>
           )}
-          <Badge variant={schedule.confidence === 'high' ? 'default' : 'secondary'}>
-            {schedule.confidence} confidence
-          </Badge>
         </div>
       </div>
       

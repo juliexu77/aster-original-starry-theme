@@ -417,14 +417,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV7 = localStorage.getItem('cacheCleared_v7');
-    if (!hasClearedV7) {
-      console.log('🧹 Clearing stale prediction caches (v7 - Why This Matters added)...');
+    const hasClearedV8 = localStorage.getItem('cacheCleared_v8');
+    if (!hasClearedV8) {
+      console.log('🧹 Clearing stale prediction caches (v8 - 6-hour refresh interval)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v7', 'true');
+      localStorage.setItem('cacheCleared_v8', 'true');
     }
   }, []);
 
@@ -494,7 +494,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     };
 
-    // Check if we need to fetch - once per day
+    // Check if we need to fetch - once every 6 hours
     const lastFetch = localStorage.getItem('rhythmInsightsLastFetch');
     const cached = localStorage.getItem('rhythmInsights');
     
@@ -553,20 +553,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Check if cache is still valid (same day)
+    // Check if cache is still valid (within 6 hours)
     if (rhythmInsights && lastFetch) {
-      const isSameDay = new Date().toDateString() === new Date(lastFetch).toDateString();
-      if (isSameDay && !hasNapCountMismatch()) {
+      const hoursSinceLastFetch = (Date.now() - new Date(lastFetch).getTime()) / (1000 * 60 * 60);
+      if (hoursSinceLastFetch < 6 && !hasNapCountMismatch()) {
         setRhythmInsightsLoading(false);
         return; // Already have valid data
       }
     }
     
-    // Fetch fresh data if: new day, no cache, or nap count mismatch
+    // Fetch fresh data if: more than 6 hours, no cache, or nap count mismatch
     const napMismatch = hasNapCountMismatch();
-    const shouldFetch = !lastFetch || 
-      (new Date().toDateString() !== new Date(lastFetch).toDateString()) ||
-      napMismatch;
+    const hoursSinceLastFetch = lastFetch ? (Date.now() - new Date(lastFetch).getTime()) / (1000 * 60 * 60) : Infinity;
+    const shouldFetch = !lastFetch || hoursSinceLastFetch >= 6 || napMismatch;
     
     if (shouldFetch) {
       if (napMismatch) {
