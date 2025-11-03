@@ -64,6 +64,18 @@ Deno.serve(async (req) => {
     const napsPerDayThisWeek = Math.round(napsThisWeek / 7);
     const napsPerDayLastWeek = Math.round(napsLastWeek / 7);
 
+    // Calculate actual daily nap counts for last 7 days to validate transitions
+    const dailyNapCounts: { [key: string]: number } = {};
+    last7Days.forEach((a: Activity) => {
+      if (a.type === 'nap') {
+        const date = new Date(a.logged_at).toDateString();
+        dailyNapCounts[date] = (dailyNapCounts[date] || 0) + 1;
+      }
+    });
+    const napCountsArray = Object.values(dailyNapCounts);
+    const maxNapCount = napCountsArray.length ? Math.max(...napCountsArray) : 0;
+    const minNapCount = napCountsArray.length ? Math.min(...napCountsArray) : 0;
+
     // Calculate bedtime consistency (standard deviation)
     const bedtimes = last14Days
       .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep)
@@ -98,22 +110,46 @@ Deno.serve(async (req) => {
       ? `${aiPrediction.total_naps_today} naps (predicted for today)`
       : `${napsPerDayThisWeek} naps per day (this week's average)`;
     
-    const transitionInfo = aiPrediction?.is_transitioning 
-      ? `TRANSITION: ${aiPrediction.transition_note || 'Baby is transitioning nap counts'}`
-      : null;
+    // VALIDATE transition claim against actual data
+    // Only allow transition claims that match the observed nap counts
+    let validatedTransitionInfo: string | null = null;
+    if (aiPrediction?.is_transitioning && aiPrediction.transition_note) {
+      const transitionNote = aiPrediction.transition_note.toLowerCase();
+      
+      // Check if transition mentions "4 to 3" but last 7 days never had 4+ naps
+      if (transitionNote.includes('4 to 3') || transitionNote.includes('4-to-3')) {
+        const hadFourNapDay = napCountsArray.some(count => count >= 4);
+        if (!hadFourNapDay) {
+          console.log(`⚠️ Rejecting invalid "4→3" transition claim. Last 7 days nap range: ${minNapCount}–${maxNapCount}`);
+          // Override with accurate description
+          validatedTransitionInfo = maxNapCount > minNapCount 
+            ? `PATTERN: Stabilizing between ${minNapCount}–${maxNapCount} naps per day`
+            : null;
+        } else {
+          validatedTransitionInfo = `TRANSITION: ${aiPrediction.transition_note}`;
+        }
+      } else {
+        // Other transitions are fine
+        validatedTransitionInfo = `TRANSITION: ${aiPrediction.transition_note}`;
+      }
+    }
+    
+    const transitionInfo = validatedTransitionInfo;
 
     // CALL 1: Generate Hero Insight
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 ${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today} naps today (use THIS number in your insight)` : `Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week`}
+Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
 Bedtime: ${aiPrediction?.predicted_bedtime || 'consistency varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : ''}
 ${transitionInfo || ''}
 
 CRITICAL INSTRUCTIONS:
 ${aiPrediction ? `- You MUST reference ${aiPrediction.total_naps_today} naps, NOT any other nap count` : ''}
-${aiPrediction?.is_transitioning ? '- You MUST acknowledge the transition in your insight' : ''}
-- Do NOT contradict the nap count or transition state provided above
+${transitionInfo ? '- You MUST acknowledge the pattern/transition stated above' : ''}
+- Do NOT contradict the nap count or pattern information above
+- Do NOT mention nap counts that weren't observed (e.g., don't say "4 naps" if max is 3)
 
 RULES:
 - Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
@@ -156,13 +192,15 @@ Examples:
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 ${aiPrediction ? `CURRENT NAP PATTERN: ${aiPrediction.total_naps_today}-nap schedule (use THIS number in your explanation)` : `Current pattern: ${napsPerDayThisWeek} naps/day (${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek}` : 'stable'})`}
+Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
 Bedtime: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
 ${transitionInfo || ''}
 
 CRITICAL INSTRUCTIONS:
 ${aiPrediction ? `- You MUST reference the ${aiPrediction.total_naps_today}-nap pattern, NOT any other nap count` : ''}
-${aiPrediction?.is_transitioning ? '- Explain what the transition means practically' : '- Explain the stable pattern benefits'}
-- Your explanation must match the nap count and transition state above exactly
+${transitionInfo ? '- Explain what the stated pattern/transition means practically' : '- Explain the stable pattern benefits'}
+- Your explanation must match the nap count and pattern stated above exactly
+- Do NOT mention nap counts that weren't observed in the last 7 days (range: ${minNapCount}–${maxNapCount})
 
 RULES:
 - Write 2-3 sentences (under 50 words total)

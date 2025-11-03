@@ -402,6 +402,20 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, []);
 
   // ===== ALL EFFECTS =====
+  // Clear stale caches to force refetch with new logic
+  useEffect(() => {
+    // Clear rhythm insights and AI prediction caches once to force refresh
+    const hasClearedV2 = localStorage.getItem('cacheCleared_v2');
+    if (!hasClearedV2) {
+      console.log('🧹 Clearing stale prediction caches...');
+      localStorage.removeItem('rhythmInsights');
+      localStorage.removeItem('rhythmInsightsLastFetch');
+      localStorage.removeItem('aiPrediction');
+      localStorage.removeItem('aiPredictionLastFetch');
+      localStorage.setItem('cacheCleared_v2', 'true');
+    }
+  }, []);
+
   // Debug logging
   useEffect(() => {
     console.log('🔍 GuideTab Debug:', {
