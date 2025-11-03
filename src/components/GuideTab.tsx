@@ -333,9 +333,35 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const smoothFlowDiff = thisMonthSmoothFlow - lastMonthSmoothFlow;
 
   const CHAT_URL = "https://ufpavzvrtdzxwcwasaqj.functions.supabase.co/parenting-chat";
-  const { isNightTime } = useNightSleepWindow();
+  const { isNightTime, isNightTimeString } = useNightSleepWindow();
 
   const needsBirthdaySetup = !babyAgeInWeeks || babyAgeInWeeks === 0;
+  
+  // Enrich activities with isNightSleep flag based on user's settings
+  const enrichedActivities = useMemo(() => {
+    return activities.map(activity => {
+      if (activity.type !== 'nap') return activity;
+      
+      // Check if this nap falls within night sleep window
+      const startTime = activity.details?.startTime;
+      const endTime = activity.details?.endTime;
+      
+      let isNight = false;
+      if (startTime && isNightTimeString(startTime)) {
+        isNight = true;
+      } else if (endTime && isNightTimeString(endTime)) {
+        isNight = true;
+      }
+      
+      return {
+        ...activity,
+        details: {
+          ...activity.details,
+          isNightSleep: isNight
+        }
+      };
+    });
+  }, [activities, isNightTimeString]);
 
   // Tiered data requirements
   // Filter out night sleep - only count daytime naps
@@ -415,14 +441,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV10 = localStorage.getItem('cacheCleared_v10');
-    if (!hasClearedV10) {
-      console.log('🧹 Clearing stale prediction caches (v10 - timezone-aware nap counting fix)...');
+    const hasClearedV11 = localStorage.getItem('cacheCleared_v11');
+    if (!hasClearedV11) {
+      console.log('🧹 Clearing stale prediction caches (v11 - night sleep flag enrichment fix)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v10', 'true');
+      localStorage.setItem('cacheCleared_v11', 'true');
     }
     
     // Also clear session storage caches
@@ -460,7 +486,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         console.log('🔄 Fetching rhythm insights from edge function...');
         const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
           body: { 
-            activities: activities.slice(-300), // Last 300 activities for performance
+            activities: enrichedActivities.slice(-300), // Send enriched activities with isNightSleep flags
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
             babyBirthday: household.baby_birthday,
