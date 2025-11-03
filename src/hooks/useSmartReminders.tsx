@@ -68,6 +68,15 @@ export function useSmartReminders({ schedule, enabled }: UseSmartRemindersProps)
     const checkReminders = () => {
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const currentDate = now.toDateString();
+      
+      // Verify we're still on the same day (handles timezone changes)
+      const storedDate = localStorage.getItem('remindersResetDate');
+      if (storedDate !== currentDate) {
+        shownRemindersRef.current.clear();
+        localStorage.setItem('remindersResetDate', currentDate);
+        localStorage.removeItem('shownReminders');
+      }
 
       schedule.events.forEach((event) => {
         const eventMinutes = parseTime(event.time);
