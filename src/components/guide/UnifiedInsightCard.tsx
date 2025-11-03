@@ -48,17 +48,17 @@ export const UnifiedInsightCard = ({
   }
 
   return (
-    <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-5">
+    <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
       {/* Why This Matters - Always shown if available */}
       {whyThisMatters && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-5 h-5 text-amber-600" />
-            <h3 className="text-sm font-semibold text-foreground">
+            <Lightbulb className="w-4 h-4 text-amber-600" />
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
               Why This Matters
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed pl-1">
             {whyThisMatters}
           </p>
         </div>
@@ -79,10 +79,10 @@ export const UnifiedInsightCard = ({
             </div>
             <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('do') ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-2 pl-1 mt-3">
+          <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
             {whatToDo.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <div className="w-1 h-1 rounded-full bg-foreground mt-2 flex-shrink-0" />
+              <div key={idx} className="flex items-start gap-2.5">
+                <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {item}
                 </p>
@@ -107,15 +107,15 @@ export const UnifiedInsightCard = ({
             </div>
             <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('next') ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-3 pl-1 mt-3">
+          <CollapsibleContent className="pl-1 mt-3 space-y-3">
             <p className="text-sm text-muted-foreground leading-relaxed">
               {whatsNext}
             </p>
             {prepTip && (
-              <div className="flex items-start gap-2 p-3 bg-accent/10 rounded-lg border border-border/30">
-                <Compass className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-foreground">
-                  <span className="font-medium">Prep tip:</span> {prepTip}
+              <div className="flex items-start gap-2.5 p-3 bg-accent/20 rounded-lg border border-border/40">
+                <Compass className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <span className="font-medium text-foreground">Prep tip:</span> {prepTip}
                 </p>
               </div>
             )}

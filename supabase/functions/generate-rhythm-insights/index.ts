@@ -212,21 +212,15 @@ ${transitionInfo ? '- Explain what the stated pattern/transition means practical
 - Do NOT mention nap counts that weren't observed in the last 7 days (range: ${minNapCount}–${maxNapCount})
 
 RULES:
-- Write 2-3 sentences (under 50 words total)
+- Write 2-3 sentences (40-50 words total)
 - Explain practical implications for daily planning
-- Make it actionable
-- Sound helpful and specific
-- Do NOT use markdown formatting
+- Make it actionable and specific
+- Sound helpful and conversational
+- Do NOT use markdown formatting (no bold, no italics, no asterisks)
+- Write in plain, natural language
 
-Examples for 2-nap pattern:
-"${babyName}'s 2-nap rhythm means longer wake windows—perfect for morning activities and afternoon errands between naps."
-"With 2 naps, you have predictable blocks of awake time to plan outings and activities with confidence."
-
-Examples for 3-nap pattern:
-"${babyName}'s 3-nap schedule means shorter wake windows. Plan activities in bite-sized chunks between naps."
-
-Examples for transitions:
-"During this 3-to-2 nap transition, some days will feel unpredictable. Follow ${babyName}'s sleepy cues and stay flexible."`;
+Example output for 2-nap pattern:
+${babyName}'s 2-nap rhythm means longer wake windows—perfect for morning activities and afternoon errands between naps. You'll have predictable blocks of awake time to plan outings and activities with confidence.
 
     const whyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -250,7 +244,9 @@ Examples for transitions:
     }
 
     const whyData = await whyResponse.json();
-    const whyThisMatters = whyData.choices[0].message.content.trim();
+    const whyThisMatters = whyData.choices[0].message.content.trim()
+      .replace(/\*\*/g, '') // Remove any bold markdown
+      .replace(/\*/g, '');  // Remove any italic markdown
 
     // CALL 3: Generate "What To Do"
     const whatToDoPrompt = `You are a practical parenting coach. Based on ${babyName}'s sleep data, provide 2-3 specific, actionable tips.
@@ -260,18 +256,18 @@ TODAY'S ACTUAL NAPS: ${actualNapsToday} naps
 Current pattern: ${napsPerDayThisWeek} naps/day
 Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
 
-RULES:
-- Return 2-3 actionable bullet points
-- Each point should be specific and practical
+CRITICAL FORMAT RULES:
+- Return EXACTLY 2-3 tips, one per line
+- Each tip is a single sentence (under 20 words)
+- Start each line directly with the tip text (NO bullets, NO dashes, NO numbers)
+- Do NOT use any markdown, asterisks, or special formatting
+- Do NOT add extra blank lines between tips
 - Focus on what the parent can do TODAY
-- Keep each point under 20 words
-- Do NOT use markdown formatting
-- Return as a simple list, one item per line
 
-Examples:
-"Watch for sleepy cues 2-3 hours after waking"
-"Keep bedtime between 7-8pm for best night sleep"
-"Protect the first morning nap—it's usually the strongest"`;
+Example output format (copy this style exactly):
+Watch for sleepy cues 2-3 hours after waking
+Keep bedtime between 7-8pm for best night sleep
+Protect the first morning nap—it's usually the strongest`;
 
     const whatToDoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -296,7 +292,18 @@ Examples:
 
     const whatToDoData = await whatToDoResponse.json();
     const whatToDoText = whatToDoData.choices[0].message.content.trim();
-    const whatToDo = whatToDoText.split('\n').filter((line: string) => line.trim().length > 0);
+    // Parse lines, remove empty lines, and clean up any accidental bullets/numbers
+    const whatToDo = whatToDoText
+      .split('\n')
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0)
+      .map((line: string) => {
+        // Remove common prefixes: bullets (•, -, *), numbers (1., 2.), quotes
+        return line.replace(/^[\-\*\•]\s*/, '')
+                   .replace(/^\d+\.\s*/, '')
+                   .replace(/^["']|["']$/g, '')
+                   .trim();
+      });
 
     // CALL 4: Generate "What's Next"
     const whatsNextPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep stage, explain what's coming next.
@@ -304,16 +311,16 @@ Examples:
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 Current pattern: ${napsPerDayThisWeek} naps/day
 
-RULES:
-- Write 2-3 sentences (under 60 words)
+CRITICAL FORMAT RULES:
+- Write 2-3 sentences (50-60 words total)
 - Explain the next developmental sleep milestone
 - Be specific about timing if relevant
 - Sound encouraging and informative
-- Do NOT use markdown formatting
+- Do NOT use markdown formatting (no bold, no italics, no asterisks)
+- Write in plain, natural language
 
-Examples:
-"Around 15-18 months, most babies consolidate to a single afternoon nap. Watch for signs like fighting the morning nap or taking forever to fall asleep."
-"${babyName} is solidly in the 2-nap stage, which typically lasts until 15-18 months. This is a stable, predictable phase—enjoy it!"`;
+Example output:
+Around 15-18 months, most babies consolidate to a single afternoon nap. Watch for signs like fighting the morning nap or taking forever to fall asleep. This transition usually happens gradually over 2-3 weeks.`;
 
     const whatsNextResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -337,7 +344,9 @@ Examples:
     }
 
     const whatsNextData = await whatsNextResponse.json();
-    const whatsNext = whatsNextData.choices[0].message.content.trim();
+    const whatsNext = whatsNextData.choices[0].message.content.trim()
+      .replace(/\*\*/g, '') // Remove any bold markdown
+      .replace(/\*/g, '');  // Remove any italic markdown
 
     // CALL 5: Generate "Prep Tip"
     const prepTipPrompt = `You are a forward-thinking parenting coach. Give ONE specific prep tip for ${babyName}'s upcoming sleep stage.
@@ -345,16 +354,16 @@ Examples:
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 Current pattern: ${napsPerDayThisWeek} naps/day
 
-RULES:
-- Write ONE sentence (under 25 words)
+CRITICAL FORMAT RULES:
+- Write ONE sentence only (20-25 words max)
 - Make it actionable and specific
 - Focus on preparing for the next stage
 - Sound helpful and practical
-- Do NOT use markdown formatting
+- Do NOT use markdown formatting (no bold, no italics, no asterisks)
+- Write in plain, natural language
 
-Examples:
-"Start pushing the morning nap later by 15 minutes each week to ease into the 1-nap transition."
-"Keep bedtime consistent now—it makes future transitions so much smoother."`;
+Example output:
+Start pushing the morning nap later by 15 minutes each week to ease into the 1-nap transition.`;
 
     const prepTipResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -378,7 +387,10 @@ Examples:
     }
 
     const prepTipData = await prepTipResponse.json();
-    const prepTip = prepTipData.choices[0].message.content.trim();
+    const prepTip = prepTipData.choices[0].message.content.trim()
+      .replace(/\*\*/g, '') // Remove any bold markdown
+      .replace(/\*/g, '')   // Remove any italic markdown
+      .replace(/^["']|["']$/g, ''); // Remove quotes if present
 
     return new Response(
       JSON.stringify({
