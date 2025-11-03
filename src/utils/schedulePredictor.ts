@@ -1,3 +1,5 @@
+import { toZonedTime } from 'date-fns-tz';
+
 export interface GuideTabActivity {
   id: string;
   type: string;
@@ -30,35 +32,44 @@ export interface PredictedSchedule {
  */
 export function generatePredictedSchedule(
   activities: GuideTabActivity[],
-  babyBirthday?: string
+  babyBirthday?: string,
+  timezone: string = 'UTC'
 ): PredictedSchedule {
   
-  // Get today's activities to check if wake time already logged
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get today's activities to check if wake time already logged (in user's timezone)
+  const nowLocal = toZonedTime(new Date(), timezone);
+  const todayLocal = new Date(nowLocal);
+  todayLocal.setHours(0, 0, 0, 0);
+  
   const todayActivities = activities.filter(a => {
-    const actDate = new Date(a.logged_at);
-    return actDate >= today;
+    const actDateUTC = new Date(a.logged_at);
+    const actDateLocal = toZonedTime(actDateUTC, timezone);
+    return actDateLocal >= todayLocal;
   });
   
-  // Check if there's a wake time logged today
-  const todayWakeActivity = todayActivities.find(a => a.type === 'wake' || 
-    (a.type === 'nap' && a.details?.endTime && new Date(a.logged_at).getHours() < 10));
+  console.log('📅 Timezone:', timezone, '| Today local:', todayLocal.toISOString(), '| Today activities:', todayActivities.length);
   
-  // Calculate average wake time from night sleep patterns
+  // Check if there's a wake time logged today (using local time)
+  const todayWakeActivity = todayActivities.find(a => {
+    if (a.type === 'wake') return true;
+    // For naps, check if end time is in morning (4-11 AM local)
+    if (a.type === 'nap' && a.details?.endTime) {
+      const actDateLocal = toZonedTime(new Date(a.logged_at), timezone);
+      const localHour = actDateLocal.getHours();
+      return localHour >= 4 && localHour <= 11;
+    }
+    return false;
+  });
+  
+  // Calculate average wake time from night sleep patterns (convert to local time)
   const nightSleeps = activities
     .filter(a => a.type === 'nap' && a.details?.endTime)
     .map(nap => {
-      // For GuideTab activities, extract time from logged_at
-      const loggedDate = new Date(nap.logged_at);
-      const timeStr = loggedDate.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        hour12: true 
-      });
-      const startTime = parseTimeString(nap.details?.startTime || timeStr);
+      const startTime = parseTimeString(nap.details?.startTime || '');
       const endTime = parseTimeString(nap.details?.endTime!);
-      return { startTime, endTime, duration: calculateDuration(startTime, endTime) };
+      const duration = calculateDuration(startTime, endTime);
+      const loggedAtLocal = toZonedTime(new Date(nap.logged_at), timezone);
+      return { startTime, endTime, duration, loggedAt: loggedAtLocal.getTime() };
     })
     .filter(nap => nap.duration > 360); // Night sleep > 6 hours
   
@@ -71,7 +82,8 @@ export function generatePredictedSchedule(
       const start = parseTimeString(a.details.startTime);
       const end = parseTimeString(a.details.endTime);
       const duration = calculateDuration(start, end);
-      return { start, end, duration, loggedAt: new Date(a.logged_at).getTime() };
+      const loggedAtLocal = toZonedTime(new Date(a.logged_at), timezone);
+      return { start, end, duration, loggedAt: loggedAtLocal.getTime() };
     })
     .filter(s => s.duration > 360 && s.end >= 240 && s.end <= 660) // 4:00–11:00
     .sort((a, b) => b.loggedAt - a.loggedAt);
@@ -82,7 +94,7 @@ export function generatePredictedSchedule(
   } else if (todayWakeActivity) {
     // Parse the actual wake time from today
     const wakeTimeStr = todayWakeActivity.details?.endTime || 
-      new Date(todayWakeActivity.logged_at).toLocaleTimeString('en-US', { 
+      toZonedTime(new Date(todayWakeActivity.logged_at), timezone).toLocaleTimeString('en-US', { 
         hour: 'numeric', 
         minute: '2-digit', 
         hour12: true 
@@ -242,14 +254,17 @@ export function generatePredictedSchedule(
  */
 export function calculatePredictionAccuracy(
   predictedSchedule: PredictedSchedule,
-  actualActivities: GuideTabActivity[]
+  actualActivities: GuideTabActivity[],
+  timezone: string = 'UTC'
 ): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const nowLocal = toZonedTime(new Date(), timezone);
+  const todayLocal = new Date(nowLocal);
+  todayLocal.setHours(0, 0, 0, 0);
   
   const todayActivities = actualActivities.filter(a => {
-    const actDate = new Date(a.logged_at);
-    return actDate >= today;
+    const actDateUTC = new Date(a.logged_at);
+    const actDateLocal = toZonedTime(actDateUTC, timezone);
+    return actDateLocal >= todayLocal;
   });
 
   if (todayActivities.length === 0) return 0;
@@ -268,8 +283,9 @@ export function calculatePredictionAccuracy(
         return false;
       }
       
-      const actualTime = new Date(actual.logged_at);
-      const actualMinutes = actualTime.getHours() * 60 + actualTime.getMinutes();
+      const actualTimeUTC = new Date(actual.logged_at);
+      const actualTimeLocal = toZonedTime(actualTimeUTC, timezone);
+      const actualMinutes = actualTimeLocal.getHours() * 60 + actualTimeLocal.getMinutes();
       const diff = Math.abs(actualMinutes - predictedMinutes);
       
       return diff <= 45; // Within 45 minutes is considered a match

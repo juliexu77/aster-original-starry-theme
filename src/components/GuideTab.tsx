@@ -367,6 +367,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
 
+  // Get user's timezone
+  const userTimezone = useMemo(() => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }, []);
+
   // Memoized fallback schedule - always available as backup
   const fallbackSchedule = useMemo(() => {
     if (!hasMinimumData) {
@@ -375,14 +380,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
     try {
       console.log('🔄 Generating fallback schedule with', normalizedActivities.length, 'activities');
-      const schedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+      const schedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
       console.log('✅ Fallback schedule generated:', schedule);
       return schedule;
     } catch (error) {
       console.error('❌ Failed to generate fallback schedule:', error);
       return null;
     }
-  }, [normalizedActivities, household?.baby_birthday, hasMinimumData]);
+  }, [normalizedActivities, household?.baby_birthday, hasMinimumData, userTimezone]);
 
   // Use predicted schedule if available, otherwise use fallback
   const displaySchedule = predictedSchedule || fallbackSchedule;
@@ -675,7 +680,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
     try {
       // Always start with local prediction for instant results
-      const localSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+      const localSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
       
       if (!localSchedule) {
         console.error('❌ Failed to generate local schedule - returned null');
@@ -734,7 +739,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
         
         if (isToday) {
-          const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, normalizedActivities);
+          const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, normalizedActivities, userTimezone);
           localSchedule.accuracyScore = accuracy;
           console.log('📊 Prediction accuracy:', accuracy + '%');
         }
@@ -783,7 +788,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       // Fallback to basic schedule
       try {
         console.log('🔄 Attempting fallback schedule generation...');
-        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
+        const fallbackSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday, userTimezone);
         if (fallbackSchedule) {
           previousScheduleRef.current = fallbackSchedule;
           setPredictedSchedule(fallbackSchedule);
