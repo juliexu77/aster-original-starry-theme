@@ -18,20 +18,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const match = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
       if (match) {
         const minuteParsed = parseInt(match[2]);
-        // Round to nearest 5-minute increment to handle legacy data
-        const minuteRounded = Math.round(minuteParsed / 5) * 5;
         return {
           hour: parseInt(match[1]),
-          minute: Math.min(55, Math.max(0, minuteRounded)),
+          minute: Math.min(59, Math.max(0, minuteParsed)),
           period: match[3].toUpperCase() as "AM" | "PM",
         };
       }
     }
     const now = new Date();
-    const rounded = Math.round(now.getMinutes() / 5) * 5;
     return {
       hour: now.getHours() % 12 || 12,
-      minute: Math.min(55, Math.max(0, rounded)),
+      minute: now.getMinutes(),
       period: (now.getHours() >= 12 ? "PM" : "AM") as "AM" | "PM",
     };
   };
@@ -70,9 +67,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       if (match) {
         setSelectedHour(parseInt(match[1]));
         const minuteParsed = parseInt(match[2]);
-        // Round to nearest 5-minute increment to handle legacy data
-        const minuteRounded = Math.round(minuteParsed / 5) * 5;
-        const minuteSafe = Math.min(55, Math.max(0, minuteRounded));
+        const minuteSafe = Math.min(59, Math.max(0, minuteParsed));
         setSelectedMinute(minuteSafe);
         setSelectedPeriod(match[3].toUpperCase() as "AM" | "PM");
         setHasUserInteracted(false); // Reset interaction flag
@@ -108,9 +103,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     ...Array.from({ length: 12 }, (_, i) => i + 1)  // Another duplicate
   ];
   const minutes = [
-    ...Array.from({ length: 12 }, (_, i) => i * 5), // Original 0-55
-    ...Array.from({ length: 12 }, (_, i) => i * 5), // Duplicate for continuity  
-    ...Array.from({ length: 12 }, (_, i) => i * 5)  // Another duplicate
+    ...Array.from({ length: 60 }, (_, i) => i), // Original 0-59
+    ...Array.from({ length: 60 }, (_, i) => i), // Duplicate for continuity  
+    ...Array.from({ length: 60 }, (_, i) => i)  // Another duplicate
   ];
   const periods = ["AM", "PM"];
 
@@ -118,7 +113,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   useEffect(() => {
     // Only emit initial time if no value was provided (new entry)
     if (!value) {
-      const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
+      const minuteSafe = Math.min(59, Math.max(0, selectedMinute));
       const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
       onChange(timeString);
     }
@@ -127,7 +122,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   useEffect(() => {
     // Update time when user interacts
     if (hasUserInteracted) {
-      const minuteSafe = Math.min(55, Math.max(0, selectedMinute));
+      const minuteSafe = Math.min(59, Math.max(0, selectedMinute));
       if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
       const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
       onChange(timeString);
@@ -145,14 +140,15 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     ref: React.RefObject<HTMLDivElement>,
     value: number,
     items: any[],
-    programmaticRef?: React.MutableRefObject<boolean>
+    programmaticRef?: React.MutableRefObject<boolean>,
+    baseSectionSize?: number
   ) => {
     if (ref.current) {
       const itemHeight = 32;
-      const baseSectionSize = 12;
-      const valueIndex = items.slice(0, baseSectionSize).indexOf(value);
+      const sectionSize = baseSectionSize || (items.length / 3);
+      const valueIndex = items.slice(0, sectionSize).indexOf(value);
       if (valueIndex >= 0) {
-        const middleIndex = baseSectionSize + valueIndex;
+        const middleIndex = sectionSize + valueIndex;
         if (programmaticRef) programmaticRef.current = true;
         ref.current.scrollTop = middleIndex * itemHeight;
         // Allow scroll event to fire, then clear programmatic flag
@@ -165,8 +161,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   useEffect(() => {
     // Scroll to selected values whenever they change (programmatic)
-    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll);
-    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll);
+    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll, 12);
+    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll, 60);
     
     // Scroll to selected date (programmatic)
     if (dateRef.current) {
@@ -314,7 +310,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         {/* Minutes - Scrollable */}
         <div 
           ref={minuteRef}
-          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}

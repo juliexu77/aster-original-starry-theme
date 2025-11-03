@@ -42,22 +42,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const setOpen = onClose ? onClose : setInternalOpen;
   const [activityType, setActivityType] = useState<"feed" | "diaper" | "nap" | "note" | "measure" | "photo" | "">(""); 
   
-  // Helper function to round time to nearest 5 minutes
-  const getRoundedTime = (date: Date = new Date()) => {
-    const minutes = date.getMinutes();
-    const roundedMinutes = Math.round(minutes / 5) * 5;
-    const roundedDate = new Date(date);
-    roundedDate.setMinutes(roundedMinutes);
-    roundedDate.setSeconds(0);
-    roundedDate.setMilliseconds(0);
-    return roundedDate.toLocaleTimeString("en-US", { 
+  // Helper function to get exact current time
+  const getCurrentTime = (date: Date = new Date()) => {
+    return date.toLocaleTimeString("en-US", { 
       hour: "numeric", 
       minute: "2-digit",
       hour12: true 
     });
   };
   
-  const [time, setTime] = useState(() => getRoundedTime());
+  const [time, setTime] = useState(() => getCurrentTime());
   
   // Feed state
   const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
@@ -199,7 +193,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   // Ensure new entries default to current local time when opening (but skip for quick add)
   useEffect(() => {
     if (open && !editingActivity && !quickAddType) {
-      const current = getRoundedTime();
+      const current = getCurrentTime();
       setTime(current);
       if (!startTime) setStartTime(current);
       // Reset unit to household default for new bottle feeds
@@ -214,7 +208,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       setActivityType(quickAddType);
       
       // ALWAYS use current time for quick add (never prefill time)
-      const currentTime = getRoundedTime();
+      const currentTime = getCurrentTime();
       setTime(currentTime);
       setStartTime(currentTime); // Also set start time
       
@@ -256,7 +250,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   }, [open, quickAddType, prefillActivity, editingActivity]);
 
   const resetForm = () => {
-    setTime(getRoundedTime());
+    setTime(getCurrentTime());
     setFeedType("bottle");
     setQuantity("");
     setUnit(getLastBottleUnit()); // Reset to household default unit
@@ -286,7 +280,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const startNapTimer = async () => {
     setIsTimerActive(true);
     setTimerStart(new Date());
-    const startTime = getRoundedTime();
+    const startTime = getCurrentTime();
     setStartTime(startTime);
     setHasEndTime(false); // Don't include end time when using timer
     
@@ -314,7 +308,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
 
   const stopNapTimer = () => {
     setIsTimerActive(false);
-    setEndTime(getRoundedTime());
+    setEndTime(getCurrentTime());
   };
 
   const handleQuantityShortcut = (value: string) => {
@@ -418,10 +412,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       return;
     }
 
-    // Ensure time has a value, use current rounded time if not set
+    // Ensure time has a value, use current time if not set
     let activityTime = time;
     if (!activityTime && activityType !== "nap") {
-      activityTime = getRoundedTime();
+      activityTime = getCurrentTime();
       setTime(activityTime);
     }
 

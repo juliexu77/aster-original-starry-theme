@@ -451,11 +451,10 @@ const ongoingNap = (() => {
           minute = minutes;
           dateToUse = activityDate;
         } else {
-          // Fallback: use current local time (rounded to 5 mins)
+          // Fallback: use current local time
           const now = new Date();
-          const rounded = Math.round(now.getMinutes() / 5) * 5;
           hour24 = now.getHours();
-          minute = Math.min(55, Math.max(0, rounded));
+          minute = now.getMinutes();
           dateToUse = activityDate;
         }
       } else {
@@ -527,17 +526,7 @@ const ongoingNap = (() => {
     setJustEndedNapId(ongoingNap.id);
     try {
       const now = new Date();
-      const rounded = Math.round(now.getMinutes() / 5) * 5;
-      const safeMins = Math.min(55, Math.max(0, rounded));
-      const endStr = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        now.getHours(),
-        safeMins,
-        0,
-        0
-      ).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+      const endStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 
       console.log('Updating nap with endTime:', endStr);
       const { error } = await supabase
