@@ -64,6 +64,8 @@ CRITICAL RULES:
 - If baby just woke up (awake < 30 minutes), DO NOT suggest a nap - acknowledge they just woke
 - If baby is awake 90+ minutes, suggest nap is approaching
 - If baby is awake 120+ minutes, gently remind about nap readiness
+- NEVER mention parent's break, rest, or well-deserved time - focus only on baby's needs
+- Avoid phrases like "Enjoy your break", "Long nap ahead", or similar parent-focused messages
 
 Examples:
 "Right on track for morning rhythm! 🎯"
