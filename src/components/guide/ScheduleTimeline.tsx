@@ -111,7 +111,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     });
   };
 
-  // Group related activities
+  // Group related activities - exclude feeds
   const groupedActivities: GroupedActivity[] = [];
   
   let napCounter = 0;
@@ -119,58 +119,47 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const event = schedule.events[i];
     const nextEvent = schedule.events[i + 1];
     
-    // Morning routine (wake + morning feed)
-    if (event.type === 'wake' && nextEvent?.type === 'feed' && nextEvent.notes?.includes('Morning')) {
+    // Skip all feed events
+    if (event.type === 'feed') {
+      continue;
+    }
+    
+    // Morning routine (wake only, no feed)
+    if (event.type === 'wake') {
+      // Skip morning feed if present
+      if (nextEvent?.type === 'feed' && nextEvent.notes?.includes('Morning')) {
+        i++; // Skip the feed
+      }
       groupedActivities.push({
         id: `morning-${i}`,
         type: 'morning',
         time: event.time,
-        feedTime: nextEvent.time,
-        title: 'Morning routine'
+        title: 'Morning wake'
       });
-      i++; // Skip the next feed since we grouped it
     }
-    // Nap block (nap + post-nap feed)
+    // Nap block (nap only, no post-nap feed)
     else if (event.type === 'nap') {
       napCounter++;
-      const postNapFeed = nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap') ? nextEvent : null;
+      // Skip post-nap feed if present
+      if (nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap')) {
+        i++; // Skip the feed
+      }
       groupedActivities.push({
         id: `nap-${i}`,
         type: 'nap-block',
         time: event.time,
         napDuration: event.duration || '1h 30m',
-        feedTime: postNapFeed?.time,
         napNumber: napCounter,
         title: `Nap ${napCounter}`
       });
-      if (postNapFeed) i++; // Skip the post-nap feed if grouped
     }
-    // Bedtime routine (bedtime feed + bed)
-    else if (event.type === 'feed' && event.notes?.includes('Bedtime') && nextEvent?.type === 'bed') {
+    // Bedtime (skip bedtime feed, only show bed event)
+    else if (event.type === 'bed') {
       groupedActivities.push({
         id: `bedtime-${i}`,
         type: 'bedtime',
         time: event.time,
-        endTime: nextEvent.time,
-        title: 'Bedtime routine'
-      });
-      i++; // Skip the bed event since we grouped it
-    }
-    // Standalone wake or feed events
-    else if (event.type === 'wake') {
-      groupedActivities.push({
-        id: `wake-${i}`,
-        type: 'morning', // Use morning styling for wake
-        time: event.time,
-        title: 'Morning wake'
-      });
-    }
-    else if (event.type === 'feed') {
-      groupedActivities.push({
-        id: `feed-${i}`,
-        type: 'morning', // Use morning type for styling
-        time: event.time,
-        title: 'Feed'
+        title: 'Bedtime'
       });
     }
   }
@@ -372,26 +361,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                         {activity.title}
                       </span>
                     </div>
-                    {activity.feedTime && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Milk className="w-3 h-3" />
-                        <span>Feed at {activity.feedTime}</span>
-                      </div>
-                    )}
-                    {matchingEvent?.reasoning && (
-                      <Collapsible open={expandedEvents.has(activity.id)}>
-                        <CollapsibleTrigger 
-                          onClick={() => toggleExpanded(activity.id)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
-                        >
-                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
-                          Why this time?
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
-                          {matchingEvent.reasoning}
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
                   </div>
                 </div>
               </div>
@@ -432,26 +401,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                         ({activity.napDuration})
                       </span>
                     </div>
-                    {activity.feedTime && (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
-                        <Milk className="w-3 h-3" />
-                        <span>Feed at {activity.feedTime}</span>
-                      </div>
-                    )}
-                    {matchingEvent?.reasoning && (
-                      <Collapsible open={expandedEvents.has(activity.id)}>
-                        <CollapsibleTrigger 
-                          onClick={() => toggleExpanded(activity.id)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline mt-1"
-                        >
-                          <ChevronDown className={`w-3 h-3 transition-transform ${expandedEvents.has(activity.id) ? 'rotate-180' : ''}`} />
-                          Why this time?
-                        </CollapsibleTrigger>
-                        <CollapsibleContent className="text-xs text-muted-foreground mt-1 pl-4 border-l-2 border-primary/20">
-                          {matchingEvent.reasoning}
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
                   </div>
                 </div>
               </div>
