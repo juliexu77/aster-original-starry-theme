@@ -630,7 +630,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     } else {
       setRhythmInsightsLoading(false);
     }
-  }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction, rhythmInsights]);
+  }, [hasTier3Data, household, babyAgeInWeeks, aiPrediction]);
 
   // Separate effect to check time-based refresh every minute
   useEffect(() => {

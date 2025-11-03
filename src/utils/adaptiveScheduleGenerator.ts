@@ -99,10 +99,8 @@ export function generateAdaptiveSchedule(
     scheduleStartTime = new Date(now);
     scheduleStartTime.setHours(avgWakeHour, 0, 0, 0);
     
-    // If it's already past the predicted wake time, start from now
-    if (scheduleStartTime < now) {
-      scheduleStartTime = now;
-    }
+    // Keep the morning wake time even if it's in the past
+    // This ensures the full day schedule remains visible
     
     events.push({
       time: formatTime(scheduleStartTime),
