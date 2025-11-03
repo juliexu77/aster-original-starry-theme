@@ -388,7 +388,7 @@ const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'b
                         {formatTime(activity.time)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {activity.title}
+                        {isStandaloneFeed ? 'Feed' : activity.title}
                       </span>
                     </div>
                     {activity.feedTime && !isStandaloneFeed && (
