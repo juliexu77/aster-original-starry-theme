@@ -18,6 +18,7 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
 import { generatePredictedSchedule, calculatePredictionAccuracy, type ScheduleEvent, type PredictedSchedule } from "@/utils/schedulePredictor";
+import { useGuideSections } from "@/hooks/useGuideSections";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
@@ -193,9 +194,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showPrimaryInsight, setShowPrimaryInsight] = useState(false);
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
-  const [guideSections, setGuideSections] = useState<GuideSections | null>(null);
-  const [guideSectionsLoading, setGuideSectionsLoading] = useState(false);
-  const [rhythmInsights, setRhythmInsights] = useState<{ 
+  const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
+  const [rhythmInsights, setRhythmInsights] = useState<{
     heroInsight: string; 
     whyThisMatters: string; 
     confidenceScore: string;
@@ -628,81 +628,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       fetchAiPrediction();
     }
   }, [hasTier2Data, household, activities.length, aiPrediction]);
-
-  // Fetch guide sections once daily at 5am (only for Tier 3)
-  useEffect(() => {
-    if (!hasTier3Data || !user || !household) return;
-    
-    const fetchGuideSections = async () => {
-      setGuideSectionsLoading(true);
-      try {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        console.log('🔄 Fetching guide sections from edge function...');
-        const { data, error } = await supabase.functions.invoke('generate-guide-sections', {
-          body: { timezone }
-        });
-        
-        if (error) {
-          console.error('❌ Error fetching guide sections:', error);
-          return;
-        }
-        
-        if (data) {
-          console.log('✅ Guide sections fetched:', data);
-          setGuideSections(data);
-          localStorage.setItem('guideSections', JSON.stringify(data));
-          localStorage.setItem('guideSectionsLastFetch', new Date().toISOString());
-        }
-      } catch (err) {
-        console.error('❌ Failed to fetch guide sections:', err);
-      } finally {
-        setGuideSectionsLoading(false);
-      }
-    };
-
-    // Check if we need to fetch
-    const lastFetch = localStorage.getItem('guideSectionsLastFetch');
-    const cached = localStorage.getItem('guideSections');
-    const now = new Date();
-    const fiveAM = new Date();
-    fiveAM.setHours(5, 0, 0, 0);
-    
-    // Load cached data first
-    if (cached && !guideSections) {
-      try {
-        const parsed = JSON.parse(cached);
-        console.log('📦 Loaded cached guide sections:', parsed);
-        // Check if cached data has new format with data_pulse
-        if (!parsed.data_pulse) {
-          console.log('⚠️ Old cache format detected, will fetch fresh data');
-          localStorage.removeItem('guideSections');
-          localStorage.removeItem('guideSectionsLastFetch');
-        } else {
-          setGuideSections(parsed);
-        }
-      } catch (e) {
-        console.error('Failed to parse cached guide sections:', e);
-        localStorage.removeItem('guideSections');
-      }
-    }
-    
-    // Determine if we should fetch new data - only once per day at 5am
-    let shouldFetch = false;
-    
-    if (!lastFetch) {
-      // Never fetched before, fetch now if we're past 5am today
-      shouldFetch = now >= fiveAM;
-    } else {
-      const lastFetchDate = new Date(lastFetch);
-      // Check if last fetch was before today's 5am
-      shouldFetch = now >= fiveAM && lastFetchDate < fiveAM;
-    }
-    
-    if (shouldFetch && hasMinimumData) {
-      console.log('🚀 Fetching fresh guide sections...');
-      fetchGuideSections();
-    }
-  }, [hasMinimumData, user, guideSections, household]);
 
   // Generate and update predicted schedule with HYBRID prediction (local + AI)
   useEffect(() => {
@@ -1303,56 +1228,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               <p className="text-sm text-muted-foreground">
                 Generating personalized guidance...
               </p>
-            </div>
-          )}
-
-          {/* Data Pulse */}
-          {hasMinimumData && guideSections && guideSections.data_pulse && (
-            <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
-              <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-primary" />
-                  <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
-                </div>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
-              </div>
-              
-              <div className="space-y-2">
-                
-                {guideSections.data_pulse.metrics.length > 0 ? (
-                  guideSections.data_pulse.metrics.map((metric, idx) => {
-                    const getMetricIcon = () => {
-                      if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
-                      if (metric.name === 'Naps') return <Bed className="w-4 h-4 text-primary" />;
-                      if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
-                      if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
-                      if (metric.name === 'Nap duration') return <Bed className="w-4 h-4 text-primary" />;
-                      if (metric.name === 'Feed duration') return <Timer className="w-4 h-4 text-primary" />;
-                      return <Activity className="w-4 h-4 text-primary" />;
-                    };
-                    
-                    return (
-                      <div key={idx} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          {getMetricIcon()}
-                          <span className="text-sm text-foreground">{metric.name}</span>
-                        </div>
-                        <span className="text-sm font-medium text-foreground">
-                          {metric.change}
-                        </span>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-sm text-muted-foreground text-center py-2">
-                    No significant changes detected
-                  </p>
-                )}
-                
-                <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
-                  {guideSections.data_pulse.note}
-                </p>
-              </div>
             </div>
           )}
 

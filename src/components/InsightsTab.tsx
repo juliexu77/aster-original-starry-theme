@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Baby, Clock, Milk, Moon, Lightbulb, Brain, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { calculateAgeInWeeks, getWakeWindowForAge, getFeedingGuidanceForAge } from "@/utils/huckleberrySchedules";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useActivityPercentile } from "@/hooks/useActivityPercentile";
+import { useGuideSections } from "@/hooks/useGuideSections";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 
@@ -14,6 +16,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { t } = useLanguage();
   const { insights } = usePatternAnalysis(activities);
+  const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -201,6 +204,63 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
 
 return (
   <div className="space-y-6">
+    {/* Data Pulse - Show at the top */}
+    {guideSections && guideSections.data_pulse && (
+      <div className="p-4 bg-accent/10 rounded-lg border border-border/40">
+        <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
+          </div>
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
+        </div>
+        
+        <div className="space-y-2">
+          {guideSections.data_pulse.metrics.length > 0 ? (
+            guideSections.data_pulse.metrics.map((metric, idx) => {
+              const getMetricIcon = () => {
+                if (metric.name === 'Total sleep') return <Moon className="w-4 h-4 text-primary" />;
+                if (metric.name === 'Naps') return <Baby className="w-4 h-4 text-primary" />;
+                if (metric.name === 'Feed volume') return <Milk className="w-4 h-4 text-primary" />;
+                if (metric.name === 'Wake average') return <Clock className="w-4 h-4 text-primary" />;
+                if (metric.name === 'Nap duration') return <Moon className="w-4 h-4 text-primary" />;
+                return <TrendingUp className="w-4 h-4 text-primary" />;
+              };
+              
+              const getTrendIcon = () => {
+                if (metric.change.includes('+')) return <TrendingUp className="w-3 h-3 text-green-500" />;
+                if (metric.change.includes('-')) return <TrendingDown className="w-3 h-3 text-red-500" />;
+                return <Minus className="w-3 h-3 text-muted-foreground" />;
+              };
+              
+              return (
+                <div key={idx} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getMetricIcon()}
+                    <span className="text-sm text-foreground">{metric.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {getTrendIcon()}
+                    <span className="text-sm font-medium text-foreground">
+                      {metric.change}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-2">
+              No significant changes detected
+            </p>
+          )}
+          
+          <p className="text-xs text-muted-foreground pt-2 border-t border-border/20">
+            {guideSections.data_pulse.note}
+          </p>
+        </div>
+      </div>
+    )}
+
     {/* Age-Appropriate Guidance - NOW FIRST */}
     <div className="bg-card rounded-xl p-6 shadow-card border border-border">
       <div className="flex items-center gap-2 mb-4">
