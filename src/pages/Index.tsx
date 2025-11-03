@@ -66,6 +66,10 @@ const Index = () => {
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [babyProfile, setBabyProfile] = useState<{ name: string; birthday?: string } | null>(null);
   const [hasEverBeenCollaborator, setHasEverBeenCollaborator] = useState<boolean | null>(null);
+  
+  // Optimistic updates state
+  const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
+  const [optimisticNapEndTimes, setOptimisticNapEndTimes] = useState<Record<string, string>>({});
 
   // Convert database activities to UI activities
   const rawActivities: Activity[] = dbActivities 
@@ -173,9 +177,6 @@ const Index = () => {
 
   // Calculate activity percentile
   const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
-
-const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
-const [optimisticNapEndTimes, setOptimisticNapEndTimes] = useState<Record<string, string>>({});
 
 // Clear optimistic end times when activities update with actual end times
 useEffect(() => {
