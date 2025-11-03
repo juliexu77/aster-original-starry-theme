@@ -48,9 +48,15 @@ export function generateAdaptiveSchedule(
   const todayWakeActivity = todayActivities.find(a => {
     // Check for morning wake from night sleep (nap ending between 4-11 AM)
     if (a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep) {
-      const actDate = new Date(a.loggedAt);
-      const hour = actDate.getHours();
-      return hour >= 4 && hour <= 11;
+      // Parse the endTime string (e.g., "7:18 AM") to get the hour
+      const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (timeMatch) {
+        let hour = parseInt(timeMatch[1]);
+        const period = timeMatch[3].toUpperCase();
+        if (period === 'PM' && hour !== 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        return hour >= 4 && hour <= 11;
+      }
     }
     return false;
   });
@@ -59,8 +65,25 @@ export function generateAdaptiveSchedule(
   let hasActualWake = false;
   
   if (todayWakeActivity) {
-    // Use today's actual wake time
-    scheduleStartTime = new Date(todayWakeActivity.loggedAt);
+    // Use today's actual wake time from the endTime field
+    const endTimeStr = todayWakeActivity.details?.endTime || '';
+    const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    
+    if (timeMatch) {
+      let hour = parseInt(timeMatch[1]);
+      const minute = parseInt(timeMatch[2]);
+      const period = timeMatch[3].toUpperCase();
+      
+      if (period === 'PM' && hour !== 12) hour += 12;
+      if (period === 'AM' && hour === 12) hour = 0;
+      
+      scheduleStartTime = new Date(now);
+      scheduleStartTime.setHours(hour, minute, 0, 0);
+    } else {
+      // Fallback to loggedAt if endTime parsing fails
+      scheduleStartTime = new Date(todayWakeActivity.loggedAt);
+    }
+    
     hasActualWake = true;
     
     events.push({
@@ -68,7 +91,7 @@ export function generateAdaptiveSchedule(
       type: 'wake',
       notes: 'Morning wake up',
       confidence: 'high',
-      reasoning: 'Actual wake time logged today'
+      reasoning: `Actual wake time logged today at ${endTimeStr}`
     });
   } else {
     // Use predicted wake time (typically 6-8 AM based on patterns)
@@ -92,20 +115,18 @@ export function generateAdaptiveSchedule(
   
   // Generate schedule by simulating time progression
   let currentTime = new Date(scheduleStartTime.getTime());
-  const endOfDay = new Date(now);
-  endOfDay.setHours(22, 0, 0, 0); // End schedule at 10 PM
+  const endOfDay = new Date(scheduleStartTime);
+  endOfDay.setHours(20, 0, 0, 0); // End schedule at 8 PM (before bedtime routine)
   
   let napCount = 0;
-  const maxNaps = 5; // Safety limit
-  const maxFeeds = 10; // Safety limit
   let feedCount = 0;
   let lastEventType: string | null = null;
   let lastEventTime = currentTime.getTime();
+  let iterationCount = 0;
+  const maxIterations = 50; // Safety limit to prevent infinite loops
   
-  // Track if we've already added events that were actually logged
-  const loggedEventIds = new Set<string>();
-  
-  while (currentTime < endOfDay && napCount < maxNaps && feedCount < maxFeeds) {
+  while (currentTime < endOfDay && iterationCount < maxIterations) {
+    iterationCount++;
     // Get prediction for this timestamp
     const prediction = engine.getNextAction(currentTime);
     
@@ -191,36 +212,33 @@ export function generateAdaptiveSchedule(
       currentTime = new Date(currentTime.getTime() + 30 * 60000);
     }
     
-    // Safety check - don't loop forever
-    if (events.length > 20) break;
   }
   
-  // Add bedtime routine at the end
-  const bedtimeStart = new Date(now);
+  // Add bedtime routine at the end (always add to complete the day)
+  const bedtimeStart = new Date(scheduleStartTime);
   bedtimeStart.setHours(19, 30, 0, 0); // 7:30 PM
   
-  if (bedtimeStart > currentTime) {
-    // Add final feed before bed
+  // Add final feed before bed if there's a gap
+  const timeSinceLastEvent = bedtimeStart.getTime() - lastEventTime;
+  if (timeSinceLastEvent > 90 * 60000) { // More than 1.5 hours since last event
     const finalFeedTime = new Date(bedtimeStart.getTime() - 30 * 60000);
-    if (finalFeedTime > currentTime) {
-      events.push({
-        time: formatTime(finalFeedTime),
-        type: 'feed',
-        notes: 'Bedtime feed',
-        confidence: 'high',
-        reasoning: 'Part of bedtime routine'
-      });
-    }
-    
-    // Add bedtime
     events.push({
-      time: formatTime(bedtimeStart),
-      type: 'bed',
-      notes: 'Bedtime',
+      time: formatTime(finalFeedTime),
+      type: 'feed',
+      notes: 'Bedtime feed',
       confidence: 'high',
-      reasoning: 'Based on age-appropriate bedtime'
+      reasoning: 'Part of bedtime routine'
     });
   }
+  
+  // Add bedtime
+  events.push({
+    time: formatTime(bedtimeStart),
+    type: 'bed',
+    notes: 'Bedtime',
+    confidence: 'high',
+    reasoning: 'Based on age-appropriate bedtime'
+  });
   
   // Determine overall confidence
   const dataStability = engine['internals']?.dataStability || 'sparse';
