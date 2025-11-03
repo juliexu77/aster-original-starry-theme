@@ -99,8 +99,19 @@ const Index = () => {
       })
     : [];
 
-  // Enrich activities with isNightSleep flag
+  // Enrich activities with isNightSleep flag and optimistic end times
   const activities = rawActivities.map(activity => {
+    // Apply optimistic end time if pending
+    if (activity.type === 'nap' && optimisticNapEndTimes[activity.id]) {
+      activity = {
+        ...activity,
+        details: {
+          ...activity.details,
+          endTime: optimisticNapEndTimes[activity.id]
+        }
+      };
+    }
+    
     if (activity.type === 'nap') {
       // For completed naps, detect if this is night sleep based on end time
       if (activity.details?.endTime) {
@@ -164,17 +175,24 @@ const Index = () => {
   const { percentile, showBadge } = useActivityPercentile(household?.id, activities.length);
 
 const [justEndedNapId, setJustEndedNapId] = useState<string | null>(null);
+const [optimisticNapEndTimes, setOptimisticNapEndTimes] = useState<Record<string, string>>({});
 
-// Clear justEndedNapId when the nap is confirmed to have an endTime in activities
+// Clear optimistic end times when activities update with actual end times
 useEffect(() => {
-  if (justEndedNapId) {
-    const endedNap = activities.find(a => a.id === justEndedNapId);
-    if (endedNap?.details?.endTime) {
-      // The nap now has an endTime, safe to clear the flag
-      setJustEndedNapId(null);
+  if (Object.keys(optimisticNapEndTimes).length > 0) {
+    const stillNeeded: Record<string, string> = {};
+    Object.entries(optimisticNapEndTimes).forEach(([id, endTime]) => {
+      const activity = activities.find(a => a.id === id);
+      // Keep optimistic time if activity doesn't have endTime yet
+      if (activity && !activity.details?.endTime) {
+        stillNeeded[id] = endTime;
+      }
+    });
+    if (Object.keys(stillNeeded).length !== Object.keys(optimisticNapEndTimes).length) {
+      setOptimisticNapEndTimes(stillNeeded);
     }
   }
-}, [activities, justEndedNapId]);
+}, [activities, optimisticNapEndTimes]);
 
 // Helper: parse local date (YYYY-MM-DD) and 12h time (e.g., "7:15 PM") into a local Date
 const parseLocalDateTime = (dateLocal: string, timeStr: string): Date => {
@@ -533,12 +551,15 @@ const ongoingNap = (() => {
       console.log('No ongoing nap found');
       return;
     }
-    // Hide the button immediately to avoid lingering UI while we save
+    
+    const now = new Date();
+    const endStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    
+    // Immediately apply optimistic update to local state
+    setOptimisticNapEndTimes(prev => ({ ...prev, [ongoingNap.id]: endStr }));
     setJustEndedNapId(ongoingNap.id);
+    
     try {
-      const now = new Date();
-      const endStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-
       console.log('Updating nap with endTime:', endStr);
       const { error } = await supabase
         .from('activities')
@@ -552,10 +573,17 @@ const ongoingNap = (() => {
       console.log('Successfully updated nap');
       toast({ title: "Saved", description: `${babyProfile?.name || 'Baby'} woke up at ${endStr}` });
       
-      // Refetch activities - justEndedNapId will be cleared by useEffect when update is confirmed
+      // Refetch activities - optimistic state will be cleared by useEffect when real data arrives
       await refetchActivities();
+      setJustEndedNapId(null);
     } catch (e) {
       console.error('Error in markWakeUp:', e);
+      // Remove optimistic update on error
+      setOptimisticNapEndTimes(prev => {
+        const next = { ...prev };
+        delete next[ongoingNap.id];
+        return next;
+      });
       setJustEndedNapId(null);
       toast({ title: "Error", description: "Could not mark wake-up", variant: "destructive" });
     }
