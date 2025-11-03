@@ -3,7 +3,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useState } from "react";
 
 interface UnifiedInsightCardProps {
-  whyThisMatters?: string;
   whatToDo?: string[];
   whatsNext?: string;
   prepTip?: string;
@@ -11,7 +10,6 @@ interface UnifiedInsightCardProps {
 }
 
 export const UnifiedInsightCard = ({
-  whyThisMatters,
   whatToDo,
   whatsNext,
   prepTip,
@@ -43,27 +41,12 @@ export const UnifiedInsightCard = ({
   }
 
   // If we have nothing to show, don't render
-  if (!whyThisMatters && !whatToDo?.length && !whatsNext) {
+  if (!whatToDo?.length && !whatsNext) {
     return null;
   }
 
   return (
     <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
-      {/* Why This Matters - Always shown if available */}
-      {whyThisMatters && (
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <Lightbulb className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">
-              Why This Matters
-            </h3>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed pl-1">
-            {whyThisMatters}
-          </p>
-        </div>
-      )}
-
       {/* What To Do - Collapsible */}
       {whatToDo && whatToDo.length > 0 && (
         <Collapsible open={expandedSections.has('do')}>

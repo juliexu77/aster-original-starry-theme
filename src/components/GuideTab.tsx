@@ -185,8 +185,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showSecondaryInsight, setShowSecondaryInsight] = useState(false);
   const [showStreakInsight, setShowStreakInsight] = useState(false);
   const [rhythmInsights, setRhythmInsights] = useState<{
-    heroInsight: string; 
-    whyThisMatters: string;
+    heroInsight: string;
     whatToDo?: string[];
     whatsNext?: string;
     prepTip?: string;
@@ -417,14 +416,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV4 = localStorage.getItem('cacheCleared_v4');
-    if (!hasClearedV4) {
-      console.log('🧹 Clearing stale prediction caches (v4 - unified sections format)...');
+    const hasClearedV5 = localStorage.getItem('cacheCleared_v5');
+    if (!hasClearedV5) {
+      console.log('🧹 Clearing stale prediction caches (v5 - removed why this matters, fixed feeds)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v4', 'true');
+      localStorage.setItem('cacheCleared_v5', 'true');
     }
   }, []);
 
@@ -477,7 +476,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           console.log('✅ Rhythm insights fetched:', data);
           setRhythmInsights({
             heroInsight: data.heroInsight,
-            whyThisMatters: data.whyThisMatters,
+            whatToDo: data.whatToDo,
+            whatsNext: data.whatsNext,
+            prepTip: data.prepTip,
             confidenceScore: data.confidenceScore
           });
           localStorage.setItem('rhythmInsights', JSON.stringify(data));
@@ -1143,7 +1144,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               {/* AI-Generated Guidance - Personalized to your data */}
               {hasMinimumData && (
                 <UnifiedInsightCard
-                  whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
                   prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}

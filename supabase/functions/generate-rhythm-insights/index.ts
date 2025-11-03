@@ -195,60 +195,7 @@ Examples:
     const heroData = await heroResponse.json();
     const heroInsight = heroData.choices[0].message.content.trim();
 
-    // CALL 2: Generate "Why This Matters"
-    const whyPrompt = `You are a helpful parenting expert. Based on the data below, explain what this sleep stage means for the parent's daily life.
-
-Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-TODAY'S ACTUAL NAPS: ${actualNapsToday} naps (this is reality, use THIS number)
-Current pattern: ${napsPerDayThisWeek} naps/day (${napsPerDayLastWeek !== napsPerDayThisWeek ? `shifted from ${napsPerDayLastWeek}` : 'stable'})
-Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
-Bedtime: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
-${transitionInfo || ''}
-
-CRITICAL INSTRUCTIONS:
-- You MUST reference the ${actualNapsToday}-nap reality for today, NOT predictions
-${transitionInfo ? '- Explain what the stated pattern/transition means practically' : '- Explain the stable pattern benefits'}
-- Your explanation must match the actual nap count: ${actualNapsToday} naps today
-- Do NOT mention nap counts that weren't observed in the last 7 days (range: ${minNapCount}–${maxNapCount})
-
-RULES:
-- Write 2-3 sentences (40-50 words total)
-- Explain practical implications for daily planning
-- Make it actionable and specific
-- Sound helpful and conversational
-- Do NOT use markdown formatting (no bold, no italics, no asterisks)
-- Write in plain, natural language
-
-Example output for 2-nap pattern:
-${babyName}'s 2-nap rhythm means longer wake windows—perfect for morning activities and afternoon errands between naps. You'll have predictable blocks of awake time to plan outings and activities with confidence.
-
-    const whyResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a helpful parenting expert who explains sleep patterns in practical, actionable terms.' },
-          { role: 'user', content: whyPrompt }
-        ],
-      }),
-    });
-
-    if (!whyResponse.ok) {
-      const errorText = await whyResponse.text();
-      console.error('Why this matters error:', whyResponse.status, errorText);
-      throw new Error('Failed to generate why this matters');
-    }
-
-    const whyData = await whyResponse.json();
-    const whyThisMatters = whyData.choices[0].message.content.trim()
-      .replace(/\*\*/g, '') // Remove any bold markdown
-      .replace(/\*/g, '');  // Remove any italic markdown
-
-    // CALL 3: Generate "What To Do"
+    // CALL 2: Generate "What To Do"
     const whatToDoPrompt = `You are a practical parenting coach. Based on ${babyName}'s sleep data, provide 2-3 specific, actionable tips.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
@@ -257,6 +204,7 @@ Current pattern: ${napsPerDayThisWeek} naps/day
 Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
 
 CRITICAL FORMAT RULES:
+- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
 - Return EXACTLY 2-3 tips, one per line
 - Each tip is a single sentence (under 20 words)
 - Start each line directly with the tip text (NO bullets, NO dashes, NO numbers)
@@ -305,13 +253,14 @@ Protect the first morning nap—it's usually the strongest`;
                    .trim();
       });
 
-    // CALL 4: Generate "What's Next"
+    // CALL 3: Generate "What's Next"
     const whatsNextPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep stage, explain what's coming next.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 Current pattern: ${napsPerDayThisWeek} naps/day
 
 CRITICAL FORMAT RULES:
+- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
 - Write 2-3 sentences (50-60 words total)
 - Explain the next developmental sleep milestone
 - Be specific about timing if relevant
@@ -348,13 +297,14 @@ Around 15-18 months, most babies consolidate to a single afternoon nap. Watch fo
       .replace(/\*\*/g, '') // Remove any bold markdown
       .replace(/\*/g, '');  // Remove any italic markdown
 
-    // CALL 5: Generate "Prep Tip"
+    // CALL 4: Generate "Prep Tip"
     const prepTipPrompt = `You are a forward-thinking parenting coach. Give ONE specific prep tip for ${babyName}'s upcoming sleep stage.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 Current pattern: ${napsPerDayThisWeek} naps/day
 
 CRITICAL FORMAT RULES:
+- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
 - Write ONE sentence only (20-25 words max)
 - Make it actionable and specific
 - Focus on preparing for the next stage
@@ -395,7 +345,6 @@ Start pushing the morning nap later by 15 minutes each week to ease into the 1-n
     return new Response(
       JSON.stringify({
         heroInsight,
-        whyThisMatters,
         whatToDo,
         whatsNext,
         prepTip,

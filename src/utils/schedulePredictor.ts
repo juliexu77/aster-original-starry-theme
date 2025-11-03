@@ -186,10 +186,15 @@ export function generatePredictedSchedule(
   // Generate naps and feeds throughout the day
   let napCount = 0;
   const targetNaps = getExpectedNaps(babyBirthday);
+  let lastFeedTime = currentTime; // Track last feed to determine next feed time
   
   while (currentTime < bedTime - 120) { // Stop 2 hours before bed
     // Add wake window
     currentTime += wakeWindows.typical;
+    
+    // Check if it's time for a feed (based on feed interval)
+    const timeSinceLastFeed = currentTime - lastFeedTime;
+    const shouldAddFeed = timeSinceLastFeed >= feedIntervals.typical && currentTime < bedTime - 90;
     
     // Add nap if we haven't hit the target
     if (napCount < targetNaps) {
@@ -207,17 +212,33 @@ export function generatePredictedSchedule(
       currentTime += napDuration;
       napCount++;
       
-      // Add feed after nap (usually within 30 min)
-      if (currentTime < bedTime - 120) {
+      // Add feed after nap if enough time has passed since last feed
+      const timeSinceLastFeedAfterNap = currentTime - lastFeedTime;
+      if (timeSinceLastFeedAfterNap >= feedIntervals.typical * 0.8 && currentTime < bedTime - 90) {
         currentTime += 20;
         events.push({
           time: formatTime(currentTime),
           type: 'feed',
           notes: 'Post-nap feed',
           confidence: eventConfidence('feed'),
-          reasoning: 'Post-nap feeds help establish routine'
+          reasoning: feedIntervals.typical > 0
+            ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
+            : 'Post-nap feeds help establish routine'
         });
+        lastFeedTime = currentTime;
       }
+    } else if (shouldAddFeed) {
+      // Add feed even without nap if interval has passed
+      events.push({
+        time: formatTime(currentTime),
+        type: 'feed',
+        notes: 'Feed',
+        confidence: eventConfidence('feed'),
+        reasoning: feedIntervals.typical > 0
+          ? `Average feed interval: ${Math.floor(feedIntervals.typical / 60)}h ${feedIntervals.typical % 60}m`
+          : 'Regular feeding pattern'
+      });
+      lastFeedTime = currentTime;
     }
   }
   
