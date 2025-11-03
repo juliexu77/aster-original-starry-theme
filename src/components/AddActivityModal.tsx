@@ -122,7 +122,34 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (editingActivity.loggedAt) {
         const loggedDate = new Date(editingActivity.loggedAt);
         setSelectedDate(loggedDate);
-        setSelectedEndDate(loggedDate); // Initialize end date to same day by default
+        
+        // For naps, check if it's an overnight sleep (end time < start time)
+        if (editingActivity.type === "nap" && editingActivity.details.startTime && editingActivity.details.endTime) {
+          const parseTimeToMinutes = (timeStr: string): number => {
+            const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (!match) return 0;
+            let hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const period = match[3].toUpperCase();
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            return hours * 60 + minutes;
+          };
+          
+          const startMinutes = parseTimeToMinutes(editingActivity.details.startTime);
+          const endMinutes = parseTimeToMinutes(editingActivity.details.endTime);
+          
+          // If end time is before start time, it's an overnight sleep - set end date to next day
+          if (endMinutes < startMinutes) {
+            const nextDay = new Date(loggedDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            setSelectedEndDate(nextDay);
+          } else {
+            setSelectedEndDate(loggedDate);
+          }
+        } else {
+          setSelectedEndDate(loggedDate); // Initialize end date to same day by default
+        }
       }
       
       if (editingActivity.type === "feed") {
