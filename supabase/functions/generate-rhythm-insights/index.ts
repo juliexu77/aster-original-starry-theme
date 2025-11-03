@@ -18,13 +18,142 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { activities, babyName, babyAge, babyBirthday, aiPrediction } = await req.json();
+    const { activities, babyName, babyAge, babyBirthday, aiPrediction, timezone } = await req.json();
     
     if (!activities || !babyName) {
       return new Response(
         JSON.stringify({ error: 'Missing required fields: activities, babyName' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    const userTimezone = timezone || 'America/Los_Angeles';
+
+    // ===== DST DETECTION =====
+    const checkDSTTransition = (tz: string) => {
+      // Check if timezone observes DST
+      const doesObserveDST = () => {
+        const january = new Date(new Date().getFullYear(), 0, 1);
+        const july = new Date(new Date().getFullYear(), 6, 1);
+        const janOffset = new Date(january.toLocaleString('en-US', { timeZone: tz })).getTimezoneOffset();
+        const julyOffset = new Date(july.toLocaleString('en-US', { timeZone: tz })).getTimezoneOffset();
+        return janOffset !== julyOffset;
+      };
+
+      if (!doesObserveDST()) {
+        return { isDSTTransitionPeriod: false, transitionType: null, daysUntilNext: null };
+      }
+
+      // Get DST transition dates for current year
+      const getDSTDates = (year: number) => {
+        let springTransition: string | null = null;
+        let fallTransition: string | null = null;
+        let previousOffset: number | null = null;
+
+        for (let month = 0; month < 12; month++) {
+          for (let day = 1; day <= 31; day++) {
+            try {
+              const date = new Date(Date.UTC(year, month, day, 12, 0, 0));
+              if (date.getUTCMonth() !== month) break;
+
+              const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: tz,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                hour12: false
+              });
+
+              const parts = formatter.formatToParts(date);
+              const localHour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+              const offset = 12 - localHour;
+
+              if (previousOffset !== null && offset !== previousOffset) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                if (offset < previousOffset) {
+                  springTransition = dateStr;
+                } else {
+                  fallTransition = dateStr;
+                }
+              }
+              previousOffset = offset;
+            } catch (e) {
+              continue;
+            }
+          }
+        }
+        return { spring: springTransition, fall: fallTransition };
+      };
+
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+      const { spring, fall } = getDSTDates(now.getFullYear());
+
+      // Check if today or yesterday was DST transition
+      const isSpringToday = spring === todayStr;
+      const isFallToday = fall === todayStr;
+      const wasSpringYesterday = spring === yesterdayStr;
+      const wasFallYesterday = fall === yesterdayStr;
+      
+      const isDSTTransitionPeriod = isSpringToday || isFallToday || wasSpringYesterday || wasFallYesterday;
+      let transitionType: 'spring-forward' | 'fall-back' | null = null;
+
+      if (isSpringToday || wasSpringYesterday) {
+        transitionType = 'spring-forward';
+      } else if (isFallToday || wasFallYesterday) {
+        transitionType = 'fall-back';
+      }
+
+      // Check for upcoming DST in next 14 days
+      let daysUntilNext: { days: number; type: 'spring-forward' | 'fall-back' } | null = null;
+      if (spring || fall) {
+        const checkDaysUntil = (transDate: string, type: 'spring-forward' | 'fall-back') => {
+          const transitionDate = new Date(transDate);
+          const diffTime = transitionDate.getTime() - now.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays > 0 && diffDays <= 14) {
+            return { days: diffDays, type };
+          }
+          return null;
+        };
+
+        if (spring) {
+          const springCheck = checkDaysUntil(spring, 'spring-forward');
+          if (springCheck) daysUntilNext = springCheck;
+        }
+        if (fall && !daysUntilNext) {
+          const fallCheck = checkDaysUntil(fall, 'fall-back');
+          if (fallCheck) daysUntilNext = fallCheck;
+        }
+      }
+
+      return { isDSTTransitionPeriod, transitionType, daysUntilNext };
+    };
+
+    const dstInfo = checkDSTTransition(userTimezone);
+    console.log('🕐 DST Info:', dstInfo);
+
+    // Build DST context for AI
+    let dstContext = '';
+    if (dstInfo.isDSTTransitionPeriod) {
+      if (dstInfo.transitionType === 'spring-forward') {
+        dstContext = '\n\nDST CONTEXT: Spring forward happened today/yesterday (clocks moved ahead 1 hour). Baby may wake earlier, be cranky, or resist bedtime. Adjust expectations and be flexible for 3-5 days.';
+      } else if (dstInfo.transitionType === 'fall-back') {
+        dstContext = '\n\nDST CONTEXT: Fall back happened today/yesterday (gained 1 hour). Baby may wake earlier than usual or struggle to fall asleep at bedtime. This typically resolves in 3-5 days.';
+      }
+    } else if (dstInfo.daysUntilNext) {
+      const { days, type } = dstInfo.daysUntilNext;
+      if (type === 'spring-forward') {
+        dstContext = `\n\nUPCOMING DST: Spring forward in ${days} days (clocks move ahead 1 hour). To prepare: Shift baby's schedule 15 minutes earlier every 2-3 days starting now.`;
+      } else {
+        dstContext = `\n\nUPCOMING DST: Fall back in ${days} days (gain 1 hour). To prepare: Shift baby's bedtime 15 minutes later every 2-3 days starting now.`;
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
@@ -201,7 +330,7 @@ Examples:
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 TODAY'S ACTUAL NAPS: ${actualNapsToday} naps
 Current pattern: ${napsPerDayThisWeek} naps/day
-Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}
+Bedtime consistency: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'still establishing'}${dstContext}
 
 CRITICAL FORMAT RULES:
 - Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
@@ -257,7 +386,7 @@ Protect the first morning nap—it's usually the strongest`;
     const whatsNextPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep stage, explain what's coming next.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current pattern: ${napsPerDayThisWeek} naps/day
+Current pattern: ${napsPerDayThisWeek} naps/day${dstContext}
 
 CRITICAL FORMAT RULES:
 - Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
@@ -301,7 +430,7 @@ Around 15-18 months, most babies consolidate to a single afternoon nap. Watch fo
     const prepTipPrompt = `You are a forward-thinking parenting coach. Give ONE specific prep tip for ${babyName}'s upcoming sleep stage.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-Current pattern: ${napsPerDayThisWeek} naps/day
+Current pattern: ${napsPerDayThisWeek} naps/day${dstContext}
 
 CRITICAL FORMAT RULES:
 - Always use "${babyName}" instead of generic terms like "the baby" or "your baby"

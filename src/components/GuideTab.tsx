@@ -416,14 +416,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV5 = localStorage.getItem('cacheCleared_v5');
-    if (!hasClearedV5) {
-      console.log('🧹 Clearing stale prediction caches (v5 - removed why this matters, fixed feeds)...');
+    const hasClearedV6 = localStorage.getItem('cacheCleared_v6');
+    if (!hasClearedV6) {
+      console.log('🧹 Clearing stale prediction caches (v6 - DST awareness added)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v5', 'true');
+      localStorage.setItem('cacheCleared_v6', 'true');
     }
   }, []);
 
@@ -462,7 +462,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
             babyBirthday: household.baby_birthday,
-            aiPrediction: aiPrediction // Pass schedule prediction for consistency
+            aiPrediction: aiPrediction, // Pass schedule prediction for consistency
+            timezone: userTimezone
           }
         });
         
