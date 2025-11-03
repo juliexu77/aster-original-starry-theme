@@ -64,7 +64,22 @@ export function generatePredictedSchedule(
   
   // Use today's actual wake time if logged, otherwise use average
   let wakeTime: number;
-  if (todayWakeActivity) {
+  // Prefer an actual night sleep end that looks like this morning (4–11am)
+  const nightSleepCandidates = activities
+    .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.endTime)
+    .map(a => {
+      const start = parseTimeString(a.details.startTime);
+      const end = parseTimeString(a.details.endTime);
+      const duration = calculateDuration(start, end);
+      return { start, end, duration, loggedAt: new Date(a.logged_at).getTime() };
+    })
+    .filter(s => s.duration > 360 && s.end >= 240 && s.end <= 660) // 4:00–11:00
+    .sort((a, b) => b.loggedAt - a.loggedAt);
+
+  if (nightSleepCandidates.length > 0) {
+    wakeTime = nightSleepCandidates[0].end;
+    console.log('🌅 Using last night\'s wake (by endTime):', formatTime(wakeTime));
+  } else if (todayWakeActivity) {
     // Parse the actual wake time from today
     const wakeTimeStr = todayWakeActivity.details?.endTime || 
       new Date(todayWakeActivity.logged_at).toLocaleTimeString('en-US', { 

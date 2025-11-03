@@ -114,7 +114,15 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       });
       i++; // Skip the bed event since we grouped it
     }
-    // Standalone events (shouldn't happen often with our grouping logic)
+    // Standalone wake or feed events
+    else if (event.type === 'wake') {
+      groupedActivities.push({
+        id: `wake-${i}`,
+        type: 'morning', // Use morning styling for wake
+        time: event.time,
+        title: 'Morning wake'
+      });
+    }
     else if (event.type === 'feed') {
       groupedActivities.push({
         id: `feed-${i}`,
