@@ -164,6 +164,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         type: 'bedtime',
         time: event.time,
         endTime: nextEvent.time,
+        feedTime: event.time, // Include feed time so it displays
         title: 'Bedtime routine'
       });
       i++; // Skip the bed event since we grouped it
