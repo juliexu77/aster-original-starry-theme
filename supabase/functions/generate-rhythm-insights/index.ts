@@ -164,41 +164,61 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Analyze recent data
-    const last7Days = activities.filter((a: Activity) => {
-      const activityDate = new Date(a.logged_at);
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      return activityDate >= sevenDaysAgo;
-    });
+    // Analyze recent data (timezone-aware and day-boundary safe)
+    const tz = userTimezone;
 
-    const last14Days = activities.filter((a: Activity) => {
-      const activityDate = new Date(a.logged_at);
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      return activityDate >= fourteenDaysAgo;
-    });
+    // Helper: format a Date into YYYY-MM-DD in the user's timezone
+    const formatDateInTZ = (date: Date): string => {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+      const parts = formatter.formatToParts(date);
+      const year = parts.find(p => p.type === 'year')!.value;
+      const month = parts.find(p => p.type === 'month')!.value;
+      const day = parts.find(p => p.type === 'day')!.value;
+      return `${year}-${month}-${day}`;
+    };
+
+    // Helper: derive activity's local date string (prefer explicit local date if present)
+    const getActivityDateStr = (a: Activity): string => {
+      if (a.details?.date_local) return a.details.date_local; // already YYYY-MM-DD
+      return formatDateInTZ(new Date(a.logged_at));
+    };
+
+    const nowLocal = new Date();
+    const todayDateStr = formatDateInTZ(nowLocal);
+    const sevenDaysAgo = new Date(nowLocal.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(nowLocal.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgoStr = formatDateInTZ(sevenDaysAgo);
+    const fourteenDaysAgoStr = formatDateInTZ(fourteenDaysAgo);
+
+    // Build windows using local-date strings. Exclude TODAY to avoid partial-day bias.
+    const inRange = (a: Activity, startStr: string, endStr: string) => {
+      const ds = getActivityDateStr(a);
+      return ds >= startStr && ds < endStr; // end exclusive
+    };
+
+    const last7Days = activities.filter((a: Activity) => inRange(a, sevenDaysAgoStr, todayDateStr));
+    const last14Days = activities.filter((a: Activity) => inRange(a, fourteenDaysAgoStr, todayDateStr));
 
     const napsThisWeek = last7Days.filter((a: Activity) => a.type === 'nap').length;
-    const napsLastWeek = last14Days.filter((a: Activity) => {
-      const activityDate = new Date(a.logged_at);
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const fourteenDaysAgo = new Date();
-      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
-      return activityDate >= fourteenDaysAgo && activityDate < sevenDaysAgo && a.type === 'nap';
-    }).length;
 
-    // Calculate average naps per day
+    // Naps in the previous 7-day window (14->7 days ago), also timezone-aware
+    const napsLastWeek = activities.filter((a: Activity) => inRange(a, fourteenDaysAgoStr, sevenDaysAgoStr) && a.type === 'nap').length;
+
+    // Calculate average naps per day (based on 7 complete days)
     const napsPerDayThisWeek = Math.round(napsThisWeek / 7);
     const napsPerDayLastWeek = Math.round(napsLastWeek / 7);
 
-    // Calculate actual daily nap counts for last 7 days to validate transitions
+    // Calculate actual daily nap counts for last 7 complete days to validate transitions
     const dailyNapCounts: { [key: string]: number } = {};
     last7Days.forEach((a: Activity) => {
       if (a.type === 'nap') {
-        const date = new Date(a.logged_at).toDateString();
-        dailyNapCounts[date] = (dailyNapCounts[date] || 0) + 1;
+        const dateStr = getActivityDateStr(a);
+        dailyNapCounts[dateStr] = (dailyNapCounts[dateStr] || 0) + 1;
       }
     });
     const napCountsArray = Object.values(dailyNapCounts);
@@ -234,13 +254,11 @@ Deno.serve(async (req) => {
       ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
       : null;
 
-    // Get ACTUAL nap count for TODAY (not prediction)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Get ACTUAL nap count for TODAY (not prediction) using user's timezone
     const actualNapsToday = activities.filter((a: Activity) => {
-      const activityDate = new Date(a.logged_at);
-      activityDate.setHours(0, 0, 0, 0);
-      return a.type === 'nap' && activityDate.getTime() === today.getTime();
+      if (a.type !== 'nap') return false;
+      const ds = getActivityDateStr(a);
+      return ds === todayDateStr;
     }).length;
 
     console.log(`📊 Today's ACTUAL naps: ${actualNapsToday}, AI predicted: ${aiPrediction?.total_naps_today || 'none'}`);

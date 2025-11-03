@@ -417,14 +417,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV9 = localStorage.getItem('cacheCleared_v9');
-    if (!hasClearedV9) {
-      console.log('🧹 Clearing stale prediction caches (v9 - fixed parenting-chat hallucination)...');
+    const hasClearedV10 = localStorage.getItem('cacheCleared_v10');
+    if (!hasClearedV10) {
+      console.log('🧹 Clearing stale prediction caches (v10 - timezone-aware nap counting fix)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v9', 'true');
+      localStorage.setItem('cacheCleared_v10', 'true');
     }
   }, []);
 
