@@ -159,9 +159,9 @@ export function checkDSTTransition(timezone?: string): DSTTransition {
   } else if (isFallToday || wasFallYesterday) {
     transitionType = 'fall-back';
     if (isFallToday) {
-      message = "Today's Daylight Saving Time change may shift rhythms. Bedtime and wake times may vary more than usual.";
+      message = "Today's Daylight Saving Time change may shift rhythms. Expect earlier wake times—try keeping bedtime consistent and using blackout curtains to ease the transition.";
     } else {
-      message = "Adjusting to yesterday's time change. Schedule may still be settling.";
+      message = "Adjusting to yesterday's time change. Keep bedtime consistent and watch for earlier wake times as rhythms settle.";
     }
   }
   
