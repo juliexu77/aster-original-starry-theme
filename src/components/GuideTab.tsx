@@ -785,7 +785,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const fallbackSchedule = generatePredictedSchedule(activities, household.baby_birthday);
       setPredictedSchedule(fallbackSchedule);
     }
-  }, [activities.length, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
+  }, [activities, household?.baby_birthday, hasMinimumData, aiPrediction, hasTier2Data]);
 
 
   // Load initial insight
@@ -1126,10 +1126,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 </Button>
               </div>
               
-              <ScheduleTimeline 
-                schedule={predictedSchedule || generatePredictedSchedule(activities, household?.baby_birthday)} 
-                babyName={babyName} 
-              />
+              {predictedSchedule && (
+                <ScheduleTimeline 
+                  schedule={predictedSchedule} 
+                  babyName={babyName}
+                />
+              )}
               
               {/* Why This Matters Card - Only for Tier 3 */}
               {hasTier3Data && (
