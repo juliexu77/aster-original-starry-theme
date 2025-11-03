@@ -1,7 +1,8 @@
 import { Moon, Sun, Milk, Bed, Clock, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { checkDSTTransition } from "@/utils/dstDetection";
 
 interface ScheduleEvent {
   time: string;
@@ -41,6 +42,9 @@ interface GroupedActivity {
 
 export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
+  
+  // Check for DST transition
+  const dstInfo = useMemo(() => checkDSTTransition(), []);
 
   // Get current time for progress indicator
   const now = new Date();
@@ -58,7 +62,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   };
   
   // Convert exact time to approximate time range
-  const formatTimeRange = (timeStr: string): string => {
+  const formatTimeRange = (timeStr: string, eventType: string, isDSTTransition: boolean): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
     
@@ -71,7 +75,19 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
-    // Show as "time ± 15 min" for medium/low confidence
+    // Show as range for wake and bed times, or during DST transitions
+    if (eventType === 'wake' || eventType === 'bed' || isDSTTransition) {
+      // Wider range during DST (±30 min instead of ±15 min)
+      const rangeMinutes = isDSTTransition ? 30 : 15;
+      
+      if (schedule.confidence === 'high' && !isDSTTransition) {
+        return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± ${rangeMinutes} min`;
+      }
+      
+      return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period} ± ${rangeMinutes} min`;
+    }
+    
+    // Show as "time ± 15 min" for other events with medium/low confidence
     if (schedule.confidence === 'high') {
       return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
     }
@@ -231,6 +247,23 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
         </div>
       )}
       
+      {/* DST Transition Notice */}
+      {dstInfo.isDSTTransitionPeriod && (
+        <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+          <div className="flex items-start gap-2">
+            <Clock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-medium text-amber-900 dark:text-amber-200 mb-1">
+                Daylight Saving Time Adjustment
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-300">
+                {dstInfo.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Header with confidence badge and model state */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
@@ -332,7 +365,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {formatTimeRange(activity.time)}
+                        {formatTimeRange(activity.time, 'wake', dstInfo.isDSTTransitionPeriod)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {activity.title}
@@ -389,7 +422,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-bold text-foreground">
-                        {formatTimeRange(activity.time)}
+                        {formatTimeRange(activity.time, 'nap', dstInfo.isDSTTransitionPeriod)}
                       </span>
                       <span className="text-xs font-medium text-foreground">
                         {activity.title}
@@ -446,7 +479,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <div className="flex-1 pb-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-semibold text-foreground">
-                        {formatTimeRange(activity.time)}
+                        {formatTimeRange(activity.time, 'bed', dstInfo.isDSTTransitionPeriod)}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {activity.title}
@@ -454,7 +487,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
                       <Bed className="w-3 h-3" />
-                      <span>Bedtime at {activity.endTime}</span>
+                      <span>Bedtime at {formatTimeRange(activity.endTime || activity.time, 'bed', dstInfo.isDSTTransitionPeriod)}</span>
                     </div>
                     {matchingEvent?.reasoning && (
                       <Collapsible open={expandedEvents.has(activity.id)}>
