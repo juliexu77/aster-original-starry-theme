@@ -1382,7 +1382,8 @@ const lastDiaper = displayActivities
         {/* Zone 2: Smart Quick Actions */}
         <SmartQuickActions
           suggestions={smartSuggestions}
-          onOpenAddActivity={() => onAddActivity()}
+          onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
+          activities={activities}
         />
 
         {/* Zone 3: Today's Pulse (replaces Daily Summary) */}

@@ -1,6 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Plus, Moon, Milk, Sun } from "lucide-react";
 
+export interface Activity {
+  id: string;
+  type: "feed" | "diaper" | "nap" | "note" | "measure" | "photo";
+  time: string;
+  loggedAt?: string;
+  timezone?: string;
+  details: any;
+}
+
 interface SmartQuickActionsProps {
   suggestions: Array<{
     id: string;
@@ -11,16 +20,57 @@ interface SmartQuickActionsProps {
     icon: React.ReactNode;
     onClick: () => void;
   }>;
-  onOpenAddActivity?: () => void;
+  onOpenAddActivity?: (type?: 'feed' | 'nap', prefillActivity?: Activity) => void;
+  activities?: Activity[];
 }
 
 export const SmartQuickActions = ({
   suggestions,
-  onOpenAddActivity
+  onOpenAddActivity,
+  activities = []
 }: SmartQuickActionsProps) => {
   const topSuggestions = suggestions
     .sort((a, b) => b.priority - a.priority)
     .slice(0, 3);
+
+  // Find the last feed and last nap for prefilling
+  const lastFeed = activities
+    .filter(a => a.type === 'feed')
+    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+  
+  const lastNap = activities
+    .filter(a => a.type === 'nap')
+    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+
+  // Create prefill activities with current time
+  const now = new Date();
+  const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+
+  const prefillFeed = lastFeed ? {
+    ...lastFeed,
+    id: '', // Clear ID so it creates a new activity
+    time: currentTime,
+    loggedAt: now.toISOString(),
+    details: {
+      ...lastFeed.details,
+      startTime: undefined, // Clear time-specific fields
+      endTime: undefined,
+      displayTime: currentTime
+    }
+  } : undefined;
+
+  const prefillNap = lastNap ? {
+    ...lastNap,
+    id: '', // Clear ID so it creates a new activity
+    time: currentTime,
+    loggedAt: now.toISOString(),
+    details: {
+      ...lastNap.details,
+      startTime: currentTime, // Set start time to now for naps
+      endTime: undefined,
+      displayTime: currentTime
+    }
+  } : undefined;
 
   if (topSuggestions.length === 0) {
     return (
@@ -28,15 +78,26 @@ export const SmartQuickActions = ({
         <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
           Quick Actions
         </h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onOpenAddActivity}
-          className="w-full"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Log something
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenAddActivity?.('nap', prefillNap)}
+            className="w-full"
+          >
+            <Moon className="w-4 h-4 mr-2" />
+            Log Sleep
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
+            className="w-full"
+          >
+            <Milk className="w-4 h-4 mr-2" />
+            Log Feed
+          </Button>
+        </div>
       </div>
     );
   }
@@ -70,15 +131,26 @@ export const SmartQuickActions = ({
         ))}
         
         {topSuggestions.length < 3 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onOpenAddActivity}
-            className="w-full"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Log something else
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
+              className="w-full"
+            >
+              <Moon className="w-4 h-4 mr-2" />
+              Log Sleep
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
+              className="w-full"
+            >
+              <Milk className="w-4 h-4 mr-2" />
+              Log Feed
+            </Button>
+          </div>
         )}
       </div>
     </div>
