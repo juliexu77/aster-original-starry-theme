@@ -218,6 +218,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true; // Default enabled
   });
+  const previousScheduleRef = useRef<PredictedSchedule | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
@@ -736,12 +737,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
         
         // Calculate accuracy if we had a previous prediction from today
-        if (predictedSchedule && predictedSchedule.lastUpdated) {
-          const prevUpdateDate = new Date(predictedSchedule.lastUpdated);
+        if (previousScheduleRef.current && previousScheduleRef.current.lastUpdated) {
+          const prevUpdateDate = new Date(previousScheduleRef.current.lastUpdated);
           const isToday = prevUpdateDate.toDateString() === new Date().toDateString();
           
           if (isToday) {
-            const accuracy = calculatePredictionAccuracy(predictedSchedule, activities);
+            const accuracy = calculatePredictionAccuracy(previousScheduleRef.current, activities);
             localSchedule.accuracyScore = accuracy;
             console.log('📊 Prediction accuracy:', accuracy + '%');
           }
@@ -772,6 +773,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           }
         }
         
+        previousScheduleRef.current = localSchedule;
         setPredictedSchedule(localSchedule);
         setLastActivityCount(activities.length);
       };
