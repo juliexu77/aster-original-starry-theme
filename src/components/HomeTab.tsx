@@ -14,11 +14,13 @@ import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { LearningProgress } from "@/components/LearningProgress";
 import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
+import { ParentingChat } from "@/components/ParentingChat";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
+import { useHousehold } from "@/hooks/useHousehold";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -44,6 +46,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { t } = useLanguage();
   const { toast } = useToast();
   const { nightSleepEndHour } = useNightSleepWindow();
+  const { household } = useHousehold();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showFeedDetails, setShowFeedDetails] = useState(false);
   const [showSleepDetails, setShowSleepDetails] = useState(false);
@@ -129,6 +132,18 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   const babyAge = getBabyAge();
   const babyAgeMonths = babyAge?.months || null;
+  
+  // Calculate baby age in weeks for chat
+  const getBabyAgeInWeeks = () => {
+    if (!babyBirthday) return undefined;
+    const birthDate = new Date(babyBirthday);
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - birthDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.floor(diffDays / 7);
+  };
+  
+  const babyAgeInWeeks = getBabyAgeInWeeks();
 
   // Update current time every minute
   useEffect(() => {
@@ -1506,6 +1521,25 @@ const lastDiaper = displayActivities
             )}
           </div>
         )}
+
+        {/* AI Chat Section */}
+        <div className="pt-6 border-t border-border/40">
+          <h3 className="text-base font-semibold text-foreground mb-4 px-4">Chat with your guide</h3>
+          <ParentingChat
+            activities={activities.map(a => ({
+              id: a.id,
+              type: a.type,
+              logged_at: a.loggedAt || "",
+              details: a.details
+            }))}
+            babyName={babyName}
+            babyAgeInWeeks={babyAgeInWeeks}
+            babySex={household?.baby_sex || undefined}
+            userName={userName}
+            predictionIntent={prediction?.intent}
+            predictionConfidence={prediction?.confidence}
+          />
+        </div>
 
       </div>
     </div>
