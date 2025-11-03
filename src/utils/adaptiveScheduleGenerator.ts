@@ -212,6 +212,8 @@ export function generateAdaptiveSchedule(
       currentTime = new Date(currentTime.getTime() + 30 * 60000);
     }
     
+    // Safety check - don't create excessive events
+    if (events.length > 20) break;
   }
   
   // Add bedtime routine at the end (always add to complete the day)
