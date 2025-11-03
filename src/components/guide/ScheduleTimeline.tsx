@@ -352,16 +352,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
-                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
-                        <span className="text-xs font-semibold text-primary">Now</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 <div className="flex items-start gap-3 group">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${
@@ -401,16 +391,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           if (activity.type === 'nap-block') {
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
-                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
-                        <span className="text-xs font-semibold text-primary">Now</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 <div className="flex items-start gap-3 group">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-blue-500/20' : 'bg-blue-500/10'} flex items-center justify-center flex-shrink-0`}>
@@ -447,16 +427,6 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           if (activity.type === 'bedtime') {
             return (
               <div key={activity.id} className={`relative ${confidenceOpacity} transition-opacity`}>
-                {isCurrent && (
-                  <div className="absolute -left-4 top-0 right-0 flex items-center gap-2 animate-fade-in z-10 mb-3">
-                    <div className="flex-1 h-8 bg-primary/20 rounded-lg border-l-4 border-primary flex items-center justify-end pr-3">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-3.5 h-3.5 text-primary animate-pulse" />
-                        <span className="text-xs font-semibold text-primary">Now</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 <div className="flex items-start gap-3 group">
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full ${isPast ? 'bg-purple-500/20' : 'bg-purple-500/10'} flex items-center justify-center flex-shrink-0`}>
