@@ -73,9 +73,11 @@ export function generatePredictedSchedule(
         hour12: true 
       });
     wakeTime = parseTimeString(wakeTimeStr);
+    console.log('🌅 Using today\'s wake time:', wakeTimeStr, '→', wakeTime, 'minutes');
   } else {
     // Get average wake time (most common end time for night sleeps)
     wakeTime = getAverageWakeTime(nightSleeps);
+    console.log('🌅 Using average wake time:', wakeTime, 'minutes (', formatTime(wakeTime), ')');
   }
   
   // Get average bed time (most common start time for night sleeps)
@@ -129,6 +131,7 @@ export function generatePredictedSchedule(
   };
 
   // Add wake time
+  console.log('📅 Adding wake event at:', formatTime(wakeTime));
   events.push({
     time: formatTime(wakeTime),
     type: 'wake',
