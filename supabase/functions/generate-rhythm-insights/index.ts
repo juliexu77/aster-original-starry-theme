@@ -471,12 +471,63 @@ Start pushing the morning nap later by 15 minutes each week to ease into the 1-n
       .replace(/\*/g, '')   // Remove any italic markdown
       .replace(/^["']|["']$/g, ''); // Remove quotes if present
 
+    console.log('✅ Prep tip generated successfully');
+
+    // CALL 4: Generate "Why This Matters"
+    console.log('🔍 Generating why this matters explanation...');
+    const whyThisMattersPrompt = `You are a developmental expert. Based on ${babyName}'s current sleep patterns and developmental stage, explain in 2-3 sentences why understanding their rhythm matters right now.
+
+Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
+Current pattern: ${napsPerDayThisWeek} naps/day
+${transitionInfo || ''}${dstContext}
+
+CRITICAL FORMAT RULES:
+- Always use "${babyName}" instead of generic terms like "the baby" or "your baby"
+- Write 2-3 sentences (50-60 words total)
+- Focus on developmental benefits and how rhythm supports growth
+- Be warm and encouraging
+- Do NOT use markdown formatting (no bold, no italics, no asterisks)
+- Write in plain, natural language
+
+Example output:
+Understanding ${babyName}'s rhythm helps you respond to emerging needs before they become overwhelming. At this age, predictable patterns support brain development and emotional regulation. Recognizing these patterns early makes transitions smoother for everyone.`;
+
+    const whyThisMattersResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: 'You are a developmental expert who explains why understanding sleep patterns is important.' },
+          { role: 'user', content: whyThisMattersPrompt }
+        ],
+      }),
+    });
+
+    if (!whyThisMattersResponse.ok) {
+      const errorText = await whyThisMattersResponse.text();
+      console.error('Why this matters error:', whyThisMattersResponse.status, errorText);
+      throw new Error('Failed to generate why this matters');
+    }
+
+    const whyThisMattersData = await whyThisMattersResponse.json();
+    const whyThisMatters = whyThisMattersData.choices[0].message.content.trim()
+      .replace(/\*\*/g, '') // Remove any bold markdown
+      .replace(/\*/g, '')   // Remove any italic markdown
+      .replace(/^["']|["']$/g, ''); // Remove quotes if present
+
+    console.log('✅ Why this matters generated successfully');
+
     return new Response(
       JSON.stringify({
         heroInsight,
         whatToDo,
         whatsNext,
         prepTip,
+        whyThisMatters,
         confidenceScore,
         dataQuality: {
           dataPoints,

@@ -189,6 +189,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     whatToDo?: string[];
     whatsNext?: string;
     prepTip?: string;
+    whyThisMatters?: string;
     confidenceScore: string;
   } | null>(null);
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
@@ -416,14 +417,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Clear stale caches to force refetch with new logic
   useEffect(() => {
     // Clear rhythm insights and AI prediction caches once to force refresh
-    const hasClearedV6 = localStorage.getItem('cacheCleared_v6');
-    if (!hasClearedV6) {
-      console.log('🧹 Clearing stale prediction caches (v6 - DST awareness added)...');
+    const hasClearedV7 = localStorage.getItem('cacheCleared_v7');
+    if (!hasClearedV7) {
+      console.log('🧹 Clearing stale prediction caches (v7 - Why This Matters added)...');
       localStorage.removeItem('rhythmInsights');
       localStorage.removeItem('rhythmInsightsLastFetch');
       localStorage.removeItem('aiPrediction');
       localStorage.removeItem('aiPredictionLastFetch');
-      localStorage.setItem('cacheCleared_v6', 'true');
+      localStorage.setItem('cacheCleared_v7', 'true');
     }
   }, []);
 
@@ -480,6 +481,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             whatToDo: data.whatToDo,
             whatsNext: data.whatsNext,
             prepTip: data.prepTip,
+            whyThisMatters: data.whyThisMatters,
             confidenceScore: data.confidenceScore
           });
           localStorage.setItem('rhythmInsights', JSON.stringify(data));
@@ -1148,6 +1150,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
                   prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}
+                  whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
                 />
               )}
