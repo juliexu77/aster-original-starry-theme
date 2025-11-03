@@ -271,6 +271,41 @@ Deno.serve(async (req) => {
     
     const transitionInfo = validatedTransitionInfo;
 
+    // Calculate specific pattern details for more concrete explanations
+    const recentWakeTimes = last7Days
+      .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep)
+      .map((a: Activity) => {
+        const date = new Date(a.logged_at);
+        const wakeTime = a.details?.wakeTime ? new Date(a.details.wakeTime) : null;
+        return wakeTime ? `${wakeTime.getHours()}:${wakeTime.getMinutes().toString().padStart(2, '0')}` : null;
+      })
+      .filter(Boolean);
+    
+    const avgNapDurations = last7Days
+      .filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep)
+      .map((a: Activity) => {
+        if (a.details?.duration) {
+          const [hours, mins] = a.details.duration.split(':').map(Number);
+          return (hours || 0) * 60 + (mins || 0);
+        }
+        return null;
+      })
+      .filter((d): d is number => d !== null);
+    
+    const avgNapMinutes = avgNapDurations.length > 0 
+      ? Math.round(avgNapDurations.reduce((a, b) => a + b, 0) / avgNapDurations.length)
+      : null;
+
+    // Create consistent context for all calls
+    const sharedContext = `CRITICAL - USE THESE EXACT NUMBERS:
+- Current average: ${napsPerDayThisWeek} naps per day this week
+- Previous average: ${napsPerDayLastWeek} naps per day last week
+- Last 7 days range: ${minNapCount}-${maxNapCount} naps per day
+- Today's actual count: ${actualNapsToday} naps logged
+${transitionInfo ? `- Pattern status: ${transitionInfo}` : ''}
+
+DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPerDayThisWeek}. DO NOT invent transitions that aren't in the data.`;
+
     // CALL 1: Generate Hero Insight
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
@@ -325,29 +360,22 @@ Examples:
     const heroInsight = heroData.choices[0].message.content.trim();
 
     // CALL 2: Generate "What To Do"
-    const whatToDoPrompt = `You are giving specific advice based on ${babyName}'s ACTUAL OBSERVED patterns.
+    const whatToDoPrompt = `${sharedContext}
 
-OBSERVED DATA:
-- ${babyName} currently: ${napsPerDayThisWeek} naps/day (was ${napsPerDayLastWeek}/day last week)
-- Today so far: ${actualNapsToday} naps logged
-- Bedtime: ${bedtimeVariation < 15 ? `very stable at ${aiPrediction?.predicted_bedtime || 'same time daily'}` : bedtimeVariation < 30 ? `fairly consistent around ${aiPrediction?.predicted_bedtime || '7-8pm'}` : 'still variable'}
-- Nap range this week: ${minNapCount}-${maxNapCount} naps per day
-${transitionInfo ? `- ${transitionInfo}` : ''}${dstContext}
-
-TASK: Give 2-3 tips that DIRECTLY respond to these patterns. Make it feel like advice tailored to ${babyName}, not generic baby tips.
+TASK: Give 2-3 tips for ${babyName}'s ACTUAL pattern (${napsPerDayThisWeek} naps/day currently).
 
 RULES:
+- Use ONLY the numbers from "CRITICAL" section
 - Always use "${babyName}" by name
-- Reference specific patterns (e.g., "Keep ${babyName}'s ${napsPerDayThisWeek}-nap rhythm consistent")
-- Make tips actionable for TODAY
-- Each tip is ONE sentence (under 20 words)
-- NO bullets, numbers, dashes, or markdown
-- One tip per line, no blank lines
+- Keep their ${napsPerDayThisWeek}-nap pattern (don't suggest changing to different number)
+- Each tip: ONE sentence under 20 words
+- NO bullets, numbers, dashes, markdown
+- One tip per line
 
-BAD (too generic): "Watch for sleepy cues"
-GOOD: "Aim for ${babyName}'s naps at the times that worked yesterday—consistency builds on success"
-GOOD: "Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime since it's working so well"
-GOOD: "If ${babyName} seems extra sleepy today, offer an earlier nap—transitions take energy"`;
+Example (use actual numbers):
+"Keep ${babyName}'s ${napsPerDayThisWeek} naps at consistent times each day to reinforce the rhythm"
+"Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime—it's working well"
+"Watch for ${babyName}'s sleepy cues and respond quickly during this ${transitionInfo ? 'adjustment phase' : 'phase'}"`;
 
     const whatToDoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -386,26 +414,21 @@ GOOD: "If ${babyName} seems extra sleepy today, offer an earlier nap—transitio
       });
 
     // CALL 3: Generate "What's Next"
-    const whatsNextPrompt = `Based on ${babyName}'s CURRENT trajectory, predict what's coming next specifically for them.
+    const whatsNextPrompt = `${sharedContext}
 
-OBSERVED TRAJECTORY:
-- Age: ${ageInMonths ? `${ageInMonths} months old` : 'unknown'}
-- Pattern: ${napsPerDayLastWeek} naps/day → ${napsPerDayThisWeek} naps/day (this week)
-- Consistency: ${bedtimeVariation < 15 ? 'very stable routine' : bedtimeVariation < 30 ? 'moderate stability' : 'still finding rhythm'}
-${transitionInfo ? `- Current phase: ${transitionInfo}` : ''}${dstContext}
-
-TASK: Based on ${babyName}'s SPECIFIC trajectory (not generic milestones), predict what's coming next for THEM.
+TASK: Predict what comes AFTER ${babyName}'s current ${napsPerDayThisWeek}-nap pattern.
 
 RULES:
-- Always use "${babyName}" by name
-- Reference their specific pattern (e.g., "Since ${babyName} recently moved to ${napsPerDayThisWeek} naps...")
-- Predict based on THEIR trajectory, not generic age ranges
+- Use ONLY the numbers from "CRITICAL" section
+- State current pattern first: "${babyName} is at ${napsPerDayThisWeek} naps/day"
+- Then predict the NEXT stage (e.g., if at 3 naps, next is 2 naps)
 - 2-3 sentences, 50-60 words
-- NO markdown, plain language
+- NO markdown
 
-BAD (too generic): "Around 15 months, babies drop to 1 nap"
-GOOD: "Since ${babyName} just settled into ${napsPerDayThisWeek} naps, expect this pattern to hold for ${ageInMonths && ageInMonths < 12 ? '3-4 months' : ageInMonths && ageInMonths < 15 ? '2-3 months' : 'several weeks'}. Watch for ${napsPerDayThisWeek === 2 ? 'fighting the morning nap or needing later wake times' : 'shorter naps or bedtime resistance'} as signs of the next shift."
-GOOD: "With that ${bedtimeVariation < 15 ? 'rock-solid' : 'improving'} bedtime, ${babyName} is ready for any upcoming transitions. ${transitionInfo ? 'The current adjustment should settle within a week' : 'Enjoy this stable phase—it makes future changes easier'}."`;
+Example logic:
+- If ${napsPerDayThisWeek} = 4: "Since ${babyName} settled into 4 naps, expect this for 1-2 months before transitioning to 3 naps..."
+- If ${napsPerDayThisWeek} = 3: "Since ${babyName} is at 3 naps, expect this through 8-9 months before moving to 2 naps..."
+- If ${napsPerDayThisWeek} = 2: "Since ${babyName} is at 2 naps, this pattern typically holds until 15-18 months before the final drop to 1 nap..."`;
 
     const whatsNextResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -433,27 +456,21 @@ GOOD: "With that ${bedtimeVariation < 15 ? 'rock-solid' : 'improving'} bedtime, 
       .replace(/\*\*/g, '') // Remove any bold markdown
       .replace(/\*/g, '');  // Remove any italic markdown
 
-    // CALL 4: Generate "Prep Tip"
-    const prepTipPrompt = `Based on where ${babyName} is headed next, give ONE concrete prep action.
+    // CALL 4: Generate "Prep Tip"  
+    const prepTipPrompt = `${sharedContext}
 
-CURRENT STATE:
-- ${babyName}: ${napsPerDayThisWeek} naps/day, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-- Recent change: ${napsPerDayLastWeek} → ${napsPerDayThisWeek} naps/day
-${transitionInfo ? `- ${transitionInfo}` : ''}${dstContext}
-
-TASK: Give ONE prep tip for what's coming next based on ${babyName}'s specific trajectory (not generic advice).
+TASK: ONE prep tip for ${babyName}'s NEXT transition after ${napsPerDayThisWeek} naps.
 
 RULES:
-- Always use "${babyName}" by name
-- Make it specific to THEIR next stage (e.g., if they just went 3→2 naps, prep for 2→1)
+- Use ONLY numbers from "CRITICAL" section
+- Prep for transition FROM ${napsPerDayThisWeek} naps TO ${napsPerDayThisWeek - 1} naps (the next drop)
 - ONE sentence, 20-25 words
-- Actionable and concrete
-- NO markdown, plain language
+- NO markdown
 
-BAD (too generic): "Start pushing naps later"
-GOOD: "Track ${babyName}'s wake windows for 3 days to spot the ideal timing before making any schedule changes"
-GOOD: "When ${babyName} resists the morning nap consistently, shift it 30 minutes later rather than dropping it cold"
-GOOD: "Keep ${babyName}'s room dark until 6:30am to preserve that solid bedtime as wake windows lengthen"`;
+Example logic:
+- If ${napsPerDayThisWeek} = 4: "Watch for ${babyName} to resist the 4th nap consistently for 3-4 days before dropping to 3 naps"
+- If ${napsPerDayThisWeek} = 3: "When ${babyName} fights the 3rd nap, extend wake windows by 15 minutes before moving to 2 naps"
+- If ${napsPerDayThisWeek} = 2: "Track ${babyName}'s morning nap resistance as the first sign of readiness for 1 afternoon nap"`;
 
     const prepTipResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -484,55 +501,22 @@ GOOD: "Keep ${babyName}'s room dark until 6:30am to preserve that solid bedtime 
 
     console.log('✅ Prep tip generated successfully');
 
-    // CALL 4: Generate "Why This Matters"
+    // CALL 5: Generate "Why This Matters"
     console.log('🔍 Generating why this matters explanation...');
     
-    // Calculate specific pattern details for more concrete explanations
-    const recentWakeTimes = last7Days
-      .filter((a: Activity) => a.type === 'nap' && a.details?.isNightSleep)
-      .map((a: Activity) => {
-        const date = new Date(a.logged_at);
-        const wakeTime = a.details?.wakeTime ? new Date(a.details.wakeTime) : null;
-        return wakeTime ? `${wakeTime.getHours()}:${wakeTime.getMinutes().toString().padStart(2, '0')}` : null;
-      })
-      .filter(Boolean);
-    
-    const avgNapDurations = last7Days
-      .filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep)
-      .map((a: Activity) => {
-        if (a.details?.duration) {
-          const [hours, mins] = a.details.duration.split(':').map(Number);
-          return (hours || 0) * 60 + (mins || 0);
-        }
-        return null;
-      })
-      .filter((d): d is number => d !== null);
-    
-    const avgNapMinutes = avgNapDurations.length > 0 
-      ? Math.round(avgNapDurations.reduce((a, b) => a + b, 0) / avgNapDurations.length)
-      : null;
-    
-    const whyThisMattersPrompt = `You are explaining why the SPECIFIC patterns you're observing matter for ${babyName}'s development.
+    const whyThisMattersPrompt = `${sharedContext}
 
-OBSERVED DATA:
-- ${babyName} is currently doing ${napsPerDayThisWeek} naps per day (changed from ${napsPerDayLastWeek} last week)
-- Bedtime consistency: ${bedtimeVariation < 15 ? `very stable (±${Math.round(bedtimeVariation)} min)` : bedtimeVariation < 30 ? `fairly consistent (±${Math.round(bedtimeVariation)} min)` : `still variable (±${Math.round(bedtimeVariation)} min)`}
-- Average nap length: ${avgNapMinutes ? `${Math.round(avgNapMinutes)} minutes` : 'varying'}
-${transitionInfo ? `- ${transitionInfo}` : ''}
-${actualNapsToday ? `- Today specifically: ${actualNapsToday} naps logged so far` : ''}${dstContext}
-
-TASK: Explain why THIS SPECIFIC PATTERN matters for ${babyName} right now. Connect the dots between what you're seeing and what it means.
+TASK: Explain why ${babyName}'s ACTUAL pattern (${napsPerDayThisWeek} naps/day, was ${napsPerDayLastWeek}/day) matters for development.
 
 RULES:
+- Use ONLY the numbers from "CRITICAL" section above
 - Always use "${babyName}" by name
-- Reference the SPECIFIC patterns above (e.g., "the shift from ${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps", "those ${avgNapMinutes}-minute naps")
-- Explain what these patterns reveal about ${babyName}'s development
-- Make it feel personal to THEIR journey, not generic advice
+- Reference their ACTUAL shift: "${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps"
 - 2-3 sentences, 50-60 words
-- NO markdown, plain language
+- NO markdown
 
-BAD (too generic): "Understanding your baby's rhythm helps with sleep. Patterns support development."
-GOOD: "${babyName}'s shift to ${napsPerDayThisWeek} naps shows their wake windows are lengthening—a sign of maturing circadian rhythms. That ${bedtimeVariation < 15 ? 'rock-solid' : 'improving'} bedtime consistency means their internal clock is strengthening, making future transitions smoother."`;
+Example (adjust to actual numbers):
+"${babyName}'s ${napsPerDayThisWeek}-nap pattern shows maturing wake windows—a sign of developing circadian rhythms. The ${bedtimeVariation < 15 ? 'consistent' : 'stabilizing'} bedtime strengthens their internal clock, making future adjustments easier."`;
 
     const whyThisMattersResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
