@@ -105,7 +105,7 @@ const Index = () => {
     dbActivitiesCount: dbActivities?.length || 0,
     activitiesCount: activities.length,
     feedCount: activities.filter(a => a.type === 'feed').length,
-    napCount: activities.filter(a => a.type === 'nap').length,
+    napCount: activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length,
     sampleActivities: activities.slice(0, 3).map(a => ({ type: a.type, loggedAt: a.loggedAt }))
   });
 
@@ -676,7 +676,7 @@ const ongoingNap = (() => {
               {(() => {
                   const todayActivities = getTodayActivities(activities);
                   
-                  const naps = todayActivities.filter(a => a.type === 'nap' && a.details.endTime).length;
+                  const naps = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details.endTime).length;
                   const feeds = todayActivities.filter(a => a.type === 'feed').length;
                   const diapers = todayActivities.filter(a => a.type === 'diaper').length;
                   

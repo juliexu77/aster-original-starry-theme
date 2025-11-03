@@ -25,6 +25,7 @@ export interface Activity {
     // Nap details
     startTime?: string;
     endTime?: string;
+    isNightSleep?: boolean;
     // Measure details
     weightLbs?: string;
     weightOz?: string;

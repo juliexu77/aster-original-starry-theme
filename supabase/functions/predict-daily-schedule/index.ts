@@ -62,8 +62,8 @@ serve(async (req) => {
       if (!dailyPatterns[date]) {
         dailyPatterns[date] = { naps: 0, feeds: 0 };
       }
-      // Only count daytime naps (not night sleep)
-      if (activity.type === 'nap' && !isNightTime(new Date(activity.logged_at))) {
+      // Only count daytime naps (exclude night sleep by flag)
+      if (activity.type === 'nap' && !activity.details?.isNightSleep) {
         dailyPatterns[date].naps++;
       }
       if (activity.type === 'feed') dailyPatterns[date].feeds++;
@@ -88,11 +88,11 @@ serve(async (req) => {
 
     // Today's activities summary (exclude night sleep)
     const todayNaps = (todayActivities || [])
-      .filter((a: Activity) => a.type === 'nap' && !isNightTime(new Date(a.logged_at)))
+      .filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep)
       .length;
     const todayFeeds = (todayActivities || []).filter((a: Activity) => a.type === 'feed').length;
     const lastNap = (todayActivities || [])
-      .filter((a: Activity) => a.type === 'nap' && !isNightTime(new Date(a.logged_at)))
+      .filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep)
       .sort((a: Activity, b: Activity) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime())[0];
 
     // Robust last-nap duration in minutes

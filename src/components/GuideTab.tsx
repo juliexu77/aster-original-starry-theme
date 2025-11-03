@@ -338,11 +338,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Tiered data requirements
   // Filter out night sleep - only count daytime naps
-  const allSleepActivities = activities.filter(a => a.type === 'nap');
-  const daytimeNaps = allSleepActivities.filter(a => {
-    const activityTime = new Date(a.logged_at);
-    return !isNightTime(activityTime);
-  });
+  const allSleepActivities = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+  const daytimeNaps = allSleepActivities;
   
   const feeds = activities.filter(a => a.type === 'feed');
   const totalActivities = activities.length;

@@ -40,7 +40,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   
   // Calculate actual sleep metrics from activities (daytime naps only)
   const calculateSleepMetrics = () => {
-    const naps = activities.filter(a => a.type === 'nap' && a.details.startTime && a.details.endTime);
+    const naps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details.startTime && a.details.endTime);
     
     // Helper to parse time to minutes
     const parseTimeToMinutes = (timeStr: string) => {

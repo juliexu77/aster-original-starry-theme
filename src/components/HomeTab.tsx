@@ -100,12 +100,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   
   // Show educational content until user has logged at least one feed AND one sleep, OR 5+ total activities
   const hasFeed = activities.some(a => a.type === 'feed');
-  const hasSleep = activities.some(a => a.type === 'nap');
+  const hasSleep = activities.some(a => a.type === 'nap' && !a.details?.isNightSleep);
   const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
   const showEducationalContent = !hasMinimumLogs;
 
   // Check if rhythm is unlocked
-  const napsCount = activities.filter(a => a.type === 'nap').length;
+  const napsCount = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length;
   const feedsCount = activities.filter(a => a.type === 'feed').length;
   const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
 
@@ -256,7 +256,7 @@ const ongoingNap = passedOngoingNap;
 
     // Find the most recent completed nap from displayActivities (today or yesterday)
     const recentNaps = displayActivities.filter(a =>
-      a.type === 'nap' && a.details?.endTime
+      a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime
     );
 
     if (recentNaps.length === 0) return null;
@@ -430,7 +430,7 @@ const lastDiaper = displayActivities
     
     // Check cumulative activity counts (all time, not just today)
     const totalFeeds = activities.filter(a => a.type === 'feed').length;
-    const totalNaps = activities.filter(a => a.type === 'nap').length;
+    const totalNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length;
     
     // Early state message - insufficient cumulative data (but past first 24 hours)
     if (totalFeeds < 4 || totalNaps < 4) {
@@ -439,12 +439,12 @@ const lastDiaper = displayActivities
     
     // Calculate 7-day rolling averages (simplified for now)
     const recentFeeds = activities.filter(a => a.type === 'feed').length / 7;
-    const recentNaps = activities.filter(a => a.type === 'nap' && a.details?.endTime).length / 7;
+    const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime).length / 7;
     
     // Sleep insights
     if (summary.napCount > 0 && expectedNaps) {
       const napDurations = displayActivities
-        .filter(a => a.type === 'nap' && a.details?.endTime)
+        .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime)
         .map(nap => {
           const parseTime = (timeStr: string) => {
             const [time, period] = timeStr.split(' ');
@@ -476,7 +476,7 @@ const lastDiaper = displayActivities
       
       // 3. Earlier wake trend (would need historical data, simplified)
       const firstNap = displayActivities
-        .filter(a => a.type === 'nap' && a.details?.startTime)
+        .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.startTime)
         .sort((a, b) => getComparableTime(a) - getComparableTime(b))[0];
       
       if (firstNap) {

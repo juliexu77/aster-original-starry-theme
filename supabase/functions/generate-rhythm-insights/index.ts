@@ -204,10 +204,10 @@ Deno.serve(async (req) => {
     const last7Days = activities.filter((a: Activity) => inRange(a, sevenDaysAgoStr, todayDateStr));
     const last14Days = activities.filter((a: Activity) => inRange(a, fourteenDaysAgoStr, todayDateStr));
 
-    const napsThisWeek = last7Days.filter((a: Activity) => a.type === 'nap').length;
+    const napsThisWeek = last7Days.filter((a: Activity) => a.type === 'nap' && !a.details?.isNightSleep).length;
 
     // Naps in the previous 7-day window (14->7 days ago), also timezone-aware
-    const napsLastWeek = activities.filter((a: Activity) => inRange(a, fourteenDaysAgoStr, sevenDaysAgoStr) && a.type === 'nap').length;
+    const napsLastWeek = activities.filter((a: Activity) => inRange(a, fourteenDaysAgoStr, sevenDaysAgoStr) && a.type === 'nap' && !a.details?.isNightSleep).length;
 
     // Calculate average naps per day (based on 7 complete days)
     const napsPerDayThisWeek = Math.round(napsThisWeek / 7);
@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
     // Calculate actual daily nap counts for last 7 complete days to validate transitions
     const dailyNapCounts: { [key: string]: number } = {};
     last7Days.forEach((a: Activity) => {
-      if (a.type === 'nap') {
+      if (a.type === 'nap' && !a.details?.isNightSleep) {
         const dateStr = getActivityDateStr(a);
         dailyNapCounts[dateStr] = (dailyNapCounts[dateStr] || 0) + 1;
       }
@@ -256,7 +256,7 @@ Deno.serve(async (req) => {
 
     // Get ACTUAL nap count for TODAY (not prediction) using user's timezone
     const actualNapsToday = activities.filter((a: Activity) => {
-      if (a.type !== 'nap') return false;
+      if (a.type !== 'nap' || a.details?.isNightSleep) return false;
       const ds = getActivityDateStr(a);
       return ds === todayDateStr;
     }).length;
