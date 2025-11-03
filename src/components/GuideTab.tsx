@@ -354,8 +354,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const feeds = activities.filter(a => a.type === 'feed');
   const totalActivities = activities.length;
   
-  // Tier 1: Age-based predictions (1+ activity, has birthday)
-  const hasTier1Data = totalActivities >= 1 && !needsBirthdaySetup;
+  // Tier 1: Age-based predictions (1+ activity)
+  const hasTier1Data = totalActivities >= 1;
   
   // Tier 2: Pattern emerging (4+ total activities)
   const hasTier2Data = totalActivities >= 4 && !needsBirthdaySetup;
@@ -369,9 +369,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Memoized fallback schedule - always available as backup
   const fallbackSchedule = useMemo(() => {
-    if (!household?.baby_birthday || !hasMinimumData) return null;
+    if (!hasMinimumData) return null;
     try {
-      return generatePredictedSchedule(normalizedActivities, household.baby_birthday);
+      return generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
     } catch (error) {
       console.error('Failed to generate fallback schedule:', error);
       return null;
@@ -631,14 +631,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Generate and update predicted schedule with HYBRID prediction (local + AI)
   useEffect(() => {
-    if (!household?.baby_birthday || !hasMinimumData) {
+    if (!hasMinimumData) {
       setPredictedSchedule(null);
       return;
     }
 
     try {
       // Always start with local prediction for instant results
-      const localSchedule = generatePredictedSchedule(normalizedActivities, household.baby_birthday);
+      const localSchedule = generatePredictedSchedule(normalizedActivities, household?.baby_birthday);
       
       // Enhance with AI insights if available (Tier 2+)
       if (aiPrediction && hasTier2Data) {
@@ -1044,7 +1044,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
           {/* Predicted Schedule - Show for Tier 1+ */}
-          {!needsBirthdaySetup && hasMinimumData && (
+          {hasMinimumData && (
             <>
               {/* Only show transition detection for Tier 2+ */}
               {hasTier2Data && (
