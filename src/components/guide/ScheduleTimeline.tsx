@@ -125,18 +125,36 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     }
     // Nap block (nap + post-nap feed)
     else if (event.type === 'nap') {
-      napCounter++;
-      const postNapFeed = nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap') ? nextEvent : null;
-      groupedActivities.push({
-        id: `nap-${i}`,
-        type: 'nap-block',
-        time: event.time,
-        napDuration: event.duration || '1h 30m',
-        feedTime: postNapFeed?.time,
-        napNumber: napCounter,
-        title: `Nap ${napCounter}`
-      });
-      if (postNapFeed) i++; // Skip the post-nap feed if grouped
+      const minutes = parseTime(event.time);
+      const isNightWindow = minutes >= 20 * 60 || minutes < 8 * 60; // 8:00 PM - 8:00 AM
+
+      if (isNightWindow) {
+        // Reclassify naps in the night window as night sleep so they are not counted as day naps
+        console.log('🌙 Reclassifying nap as night sleep in ScheduleTimeline:', { time: event.time, notes: event.notes });
+        const endIsWake = nextEvent?.type === 'wake';
+        groupedActivities.push({
+          id: `night-${i}`,
+          type: 'bedtime',
+          time: event.time,
+          endTime: endIsWake ? nextEvent!.time : undefined,
+          title: 'Night sleep'
+        });
+        // Do not increment napCounter for night sleep
+        // Do not skip next event so morning routines still group correctly
+      } else {
+        napCounter++;
+        const postNapFeed = nextEvent?.type === 'feed' && nextEvent.notes?.includes('Post-nap') ? nextEvent : null;
+        groupedActivities.push({
+          id: `nap-${i}`,
+          type: 'nap-block',
+          time: event.time,
+          napDuration: event.duration || '1h 30m',
+          feedTime: postNapFeed?.time,
+          napNumber: napCounter,
+          title: `Nap ${napCounter}`
+        });
+        if (postNapFeed) i++;
+      }
     }
     // Bedtime routine (bedtime feed + bed)
     else if (event.type === 'feed' && event.notes?.includes('Bedtime') && nextEvent?.type === 'bed') {
@@ -183,7 +201,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
   // Calculate summary
   const napCount = groupedActivities.filter(a => a.type === 'nap-block').length;
   const feedCount = schedule.events.filter(e => e.type === 'feed').length;
-  const bedtimeActivity = groupedActivities.find(a => a.type === 'bedtime');
+const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
   
   // Determine model state display
   const getModelStateDisplay = () => {
@@ -205,7 +223,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     if (groupedActivities.length === 0) return { percent: 0, timeUntilBedtime: '' };
     
     const firstEventTime = parseTime(groupedActivities[0].time);
-    const bedtimeActivity = groupedActivities.find(a => a.type === 'bedtime');
+    const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
     const lastEventTime = bedtimeActivity ? parseTime(bedtimeActivity.endTime || bedtimeActivity.time) : parseTime(groupedActivities[groupedActivities.length - 1].time);
     
     const dayDuration = lastEventTime - firstEventTime;
