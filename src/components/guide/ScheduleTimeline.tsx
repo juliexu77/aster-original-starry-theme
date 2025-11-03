@@ -175,8 +175,62 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
 
   const modelState = getModelStateDisplay();
   
+  // Calculate day progress for countdown to bedtime
+  const getDayProgress = () => {
+    if (groupedActivities.length === 0) return { percent: 0, timeUntilBedtime: '' };
+    
+    const firstEventTime = parseTime(groupedActivities[0].time);
+    const bedtimeActivity = groupedActivities.find(a => a.type === 'bedtime');
+    const lastEventTime = bedtimeActivity ? parseTime(bedtimeActivity.endTime || bedtimeActivity.time) : parseTime(groupedActivities[groupedActivities.length - 1].time);
+    
+    const dayDuration = lastEventTime - firstEventTime;
+    if (dayDuration <= 0) return { percent: 0, timeUntilBedtime: '' };
+    
+    const currentProgress = currentMinutes - firstEventTime;
+    const progressPercent = Math.min(Math.max((currentProgress / dayDuration) * 100, 0), 100);
+    
+    // Calculate time until bedtime
+    const minutesUntilBedtime = lastEventTime - currentMinutes;
+    let timeUntilBedtime = '';
+    if (minutesUntilBedtime > 0) {
+      const hours = Math.floor(minutesUntilBedtime / 60);
+      const mins = minutesUntilBedtime % 60;
+      if (hours > 0) {
+        timeUntilBedtime = `${hours}h ${mins}m until bedtime`;
+      } else {
+        timeUntilBedtime = `${mins}m until bedtime`;
+      }
+    }
+    
+    return { percent: progressPercent, timeUntilBedtime };
+  };
+  
+  const dayProgress = getDayProgress();
+  
   return (
     <div className="space-y-4">
+      {/* Day Progress Bar - Countdown to Bedtime */}
+      {groupedActivities.length > 0 && dayProgress.percent < 100 && dayProgress.timeUntilBedtime && (
+        <div className="space-y-2 p-3 bg-accent/20 rounded-lg border border-border/40">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Day Progress</span>
+            <span className="text-primary font-semibold">
+              {dayProgress.timeUntilBedtime}
+            </span>
+          </div>
+          <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/60 via-primary to-primary transition-all duration-500 ease-out"
+              style={{ width: `${dayProgress.percent}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+            <span>{Math.round(dayProgress.percent)}% complete</span>
+            <span>You've got this! 💪</span>
+          </div>
+        </div>
+      )}
+      
       {/* Header with confidence badge and model state */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
