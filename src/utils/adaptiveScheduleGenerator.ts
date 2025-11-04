@@ -10,6 +10,14 @@ export interface ScheduleEvent {
   reasoning?: string;
 }
 
+export interface AISchedulePrediction {
+  total_naps_today: number;
+  confidence: 'high' | 'medium' | 'low';
+  is_transitioning: boolean;
+  transition_note?: string;
+  reasoning: string;
+}
+
 export interface AdaptiveSchedule {
   events: ScheduleEvent[];
   confidence: 'high' | 'medium' | 'low';
@@ -20,14 +28,21 @@ export interface AdaptiveSchedule {
 }
 
 /**
- * Generate an adaptive schedule focused on sleep patterns
- * Detects nap transitions and indicates uncertain naps
+ * Generate an adaptive schedule using AI pattern prediction + historical timing data
+ * AI provides high-level pattern (nap count, transitions, confidence)
+ * This function calculates all specific times, wake windows, and bedtime
  */
 export function generateAdaptiveSchedule(
   activities: Activity[],
-  babyBirthday?: string
+  babyBirthday?: string,
+  aiPrediction?: AISchedulePrediction
 ): AdaptiveSchedule {
-  console.log('🔮 Generating adaptive schedule from sleep patterns');
+  console.log('🔮 Generating adaptive schedule:', {
+    hasAIPrediction: !!aiPrediction,
+    aiNapCount: aiPrediction?.total_naps_today,
+    aiConfidence: aiPrediction?.confidence,
+    isTransitioning: aiPrediction?.is_transitioning
+  });
   
   const events: ScheduleEvent[] = [];
   const now = new Date();
@@ -192,15 +207,38 @@ export function generateAdaptiveSchedule(
     }
   });
   
-  // Determine if in transition
-  const isInTransition = detectNapTransition(napCountsPerDay);
-  const mostCommonNapCount = getMostCommonValue(napCountsPerDay) || 2;
-  const transitioningToCount = isInTransition ? mostCommonNapCount : null;
+  // Use AI prediction if available, otherwise fall back to historical analysis
+  let napCount: number;
+  let isInTransition: boolean;
+  let transitioningToCount: number | null;
   
-  // Generate nap schedule
+  if (aiPrediction) {
+    // AI tells us the expected nap count and transition state
+    napCount = aiPrediction.total_naps_today;
+    isInTransition = aiPrediction.is_transitioning;
+    transitioningToCount = isInTransition ? napCount : null;
+    console.log('📊 Using AI prediction for schedule structure:', {
+      napCount,
+      isInTransition,
+      confidence: aiPrediction.confidence,
+      reasoning: aiPrediction.reasoning
+    });
+  } else {
+    // Fallback to historical pattern detection
+    isInTransition = detectNapTransition(napCountsPerDay);
+    napCount = getMostCommonValue(napCountsPerDay) || 2;
+    transitioningToCount = isInTransition ? napCount : null;
+    console.log('📊 Using historical analysis for schedule structure:', {
+      napCount,
+      isInTransition,
+      napCountsPerDay
+    });
+  }
+  
+  // Generate nap schedule with AI-predicted nap count
   const napSchedule = generateNapSchedule(
     scheduleStartTime,
-    mostCommonNapCount,
+    napCount,
     napDurationsByPosition,
     napTimingsMinutesFromWake,
     isInTransition,
@@ -278,32 +316,45 @@ export function generateAdaptiveSchedule(
     reasoning: ''
   });
   
-  // Determine confidence
-  const dataStability = activities.length > 100 ? 'stable' : activities.length > 30 ? 'unstable' : 'sparse';
-  let overallConfidence: 'high' | 'medium' | 'low' = 'low';
-  
-  if (dataStability === 'stable') {
-    overallConfidence = 'high';
-  } else if (dataStability === 'unstable') {
-    overallConfidence = 'medium';
+  // Use AI confidence if available, otherwise determine from data stability
+  let overallConfidence: 'high' | 'medium' | 'low';
+  if (aiPrediction) {
+    overallConfidence = aiPrediction.confidence;
+  } else {
+    const dataStability = activities.length > 100 ? 'stable' : activities.length > 30 ? 'unstable' : 'sparse';
+    if (dataStability === 'stable') {
+      overallConfidence = 'high';
+    } else if (dataStability === 'unstable') {
+      overallConfidence = 'medium';
+    } else {
+      overallConfidence = 'low';
+    }
   }
   
   const activitiesCount = activities.length;
   const daysOfData = Math.ceil(activitiesCount / 8);
-  const basedOn = `Based on ${activitiesCount} activities over ${daysOfData} days with adaptive learning`;
+  const basedOn = aiPrediction 
+    ? `AI pattern analysis: ${aiPrediction.reasoning}`
+    : `Based on ${activitiesCount} activities over ${daysOfData} days`;
+  
+  const adjustmentNote = aiPrediction?.is_transitioning 
+    ? aiPrediction.transition_note 
+    : undefined;
   
   console.log('✅ Adaptive schedule generated:', {
     eventsCount: events.length,
     confidence: overallConfidence,
     hasActualWake,
-    mostCommonNapCount,
-    isInTransition
+    napCount,
+    isInTransition,
+    usedAIPrediction: !!aiPrediction
   });
   
   return {
     events,
     confidence: overallConfidence,
-    basedOn
+    basedOn,
+    adjustmentNote
   };
 }
 

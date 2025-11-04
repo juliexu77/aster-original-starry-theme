@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
-import { generateAdaptiveSchedule, type AdaptiveSchedule } from "@/utils/adaptiveScheduleGenerator";
+import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
@@ -194,16 +194,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     confidenceScore: string;
   } | null>(null);
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
-  const [aiPrediction, setAiPrediction] = useState<{
-    total_naps_today: number;
-    remaining_naps: number;
-    total_feeds_today: number;
-    predicted_bedtime: string;
-    confidence: 'high' | 'medium' | 'low';
-    reasoning: string;
-    is_transitioning: boolean;
-    transition_note?: string;
-  } | null>(null);
+  const [aiPrediction, setAiPrediction] = useState<AISchedulePrediction | null>(null);
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
   const [predictedSchedule, setPredictedSchedule] = useState<AdaptiveSchedule | null>(null);
   const [lastActivityCount, setLastActivityCount] = useState(0);
@@ -430,14 +421,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         details: a.details
       }));
       
-      const schedule = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday);
+      const schedule = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, aiPrediction);
       console.log('✅ Adaptive schedule generated:', schedule);
       return schedule;
     } catch (error) {
       console.error('❌ Failed to generate adaptive schedule:', error);
       return null;
     }
-  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone]);
+  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone, aiPrediction]);
 
   // Use adaptive schedule (unified with Home tab prediction engine)
   const displaySchedule = predictedSchedule || adaptiveSchedule;
@@ -769,7 +760,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         details: a.details
       }));
       
-      const schedule = generateAdaptiveSchedule(activitiesForEngine, household?.baby_birthday);
+      const schedule = generateAdaptiveSchedule(activitiesForEngine, household?.baby_birthday, aiPrediction);
       
       if (!schedule) {
         console.error('❌ Failed to generate adaptive schedule - returned null');

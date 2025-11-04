@@ -134,40 +134,35 @@ serve(async (req) => {
     }
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-    const prompt = `You are analyzing baby sleep and feeding patterns to predict today's schedule.
+    const prompt = `You are a baby sleep pattern analyst. Your job is HIGH-LEVEL pattern recognition only.
+The detailed schedule timing will be calculated separately by the adaptive schedule generator.
 
 Baby age: ${babyAgeMonths ? `${babyAgeMonths} months` : 'Unknown'}
 
-Recent 7-day pattern (DAYTIME NAPS ONLY, excluding night sleep):
+Recent 7-day pattern (DAYTIME NAPS ONLY):
 ${patternSummary}
 
-Last 7 days DAYTIME nap counts: ${napCountsLine}
-Typical DAYTIME nap range (last 7): ${minNapCount}–${maxNapCount}
+Last 7 days nap counts: ${napCountsLine}
+Range: ${minNapCount}–${maxNapCount} naps
 
-Today so far (current time: ${currentTime}):
-- ${todayNaps} DAYTIME nap${todayNaps !== 1 ? 's' : ''} logged (not including night sleep)
+Today so far (${currentTime}):
+- ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
 - ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
-${lastNap ? `- Last nap duration: ${lastNapDuration} minutes` : ''}
+${lastNap ? `- Last nap: ${lastNapDuration} min` : ''}
 
-CRITICAL: All nap counts refer to DAYTIME naps only (before 8pm, after 6am). Do NOT count night sleep as naps.
+Your task: Analyze ONLY the high-level pattern. Do NOT calculate times, wake windows, or bedtimes.
 
-Strict rules:
-- Only analyze DAYTIME naps (6am-8pm). Night sleep is tracked separately.
-- Do NOT mention a transition from 4 to 3 naps unless the last 7 days include a day with 4+ DAYTIME naps.
-- Align all claims with the provided nap counts; do not infer unseen nap numbers.
-- If nap counts vary between 2 and 3 without 4, describe it as stabilizing between 2–3 naps (not 4→3).
-- Do NOT calculate bedtime - it is calculated separately on the client side.
+Answer these questions:
+1. What is the expected TOTAL nap count for today? (not remaining—TOTAL including already logged)
+2. Is the baby transitioning between nap schedules? (e.g., moving from 3→2 naps)
+3. What's your confidence level (high/medium/low) in this prediction?
+4. Brief reasoning (1-2 sentences about the pattern you see)
 
-Analyze:
-1. Is baby transitioning DAYTIME nap counts? (e.g., some days 3 naps, some days 2)
-2. Based on today's activities so far, how many MORE DAYTIME naps are expected?
-3. What's the total expected DAYTIME nap count for today?
-4. How many total feeds expected today?
-5. Confidence level (high/medium/low) and why?
-
-Note: For bedtime prediction, return "Calculated on client" - the adaptive schedule generator handles this.
-
-Provide a prediction for the REST OF TODAY based on what's already logged.`;
+Rules:
+- Only analyze DAYTIME naps (6am-8pm). Night sleep tracked separately.
+- Do NOT infer transitions from 4→3 naps unless you see 4+ nap days in the data.
+- If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
+- Do NOT calculate specific times—that's handled by the schedule generator.`;
 
     console.log('Calling Lovable AI for schedule prediction...');
 
@@ -193,60 +188,45 @@ Provide a prediction for the REST OF TODAY based on what's already logged.`;
           {
             type: 'function',
             function: {
-              name: 'predict_schedule',
-              description: 'Predict remaining schedule for today',
+              name: 'analyze_schedule_pattern',
+              description: 'High-level pattern analysis only - do not calculate specific times',
               parameters: {
                 type: 'object',
                 properties: {
                   total_naps_today: {
                     type: 'number',
-                    description: 'Total expected naps for the full day (including already logged)'
-                  },
-                  remaining_naps: {
-                    type: 'number',
-                    description: 'How many more naps expected after current time'
-                  },
-                  total_feeds_today: {
-                    type: 'number',
-                    description: 'Total expected feeds for the full day (including already logged)'
-                  },
-                  predicted_bedtime: {
-                    type: 'string',
-                    description: 'Return "Calculated on client" - bedtime is handled by adaptive schedule'
+                    description: 'Total expected daytime naps for the full day (including already logged)'
                   },
                   confidence: {
                     type: 'string',
                     enum: ['high', 'medium', 'low'],
-                    description: 'Confidence level in this prediction'
-                  },
-                  reasoning: {
-                    type: 'string',
-                    description: 'Brief explanation of the prediction (max 2 sentences)'
+                    description: 'Confidence level based on pattern consistency'
                   },
                   is_transitioning: {
                     type: 'boolean',
-                    description: 'Is baby transitioning between nap counts?'
+                    description: 'Is baby transitioning between nap schedules?'
                   },
                   transition_note: {
                     type: 'string',
-                    description: 'If transitioning, explain the pattern (e.g., "Moving from 3 to 2 naps")'
+                    description: 'If transitioning, brief explanation (e.g., "Moving from 3 to 2 naps")'
+                  },
+                  reasoning: {
+                    type: 'string',
+                    description: 'Brief explanation of the pattern observed (1-2 sentences)'
                   }
                 },
                 required: [
                   'total_naps_today',
-                  'remaining_naps',
-                  'total_feeds_today',
-                  'predicted_bedtime',
                   'confidence',
-                  'reasoning',
-                  'is_transitioning'
+                  'is_transitioning',
+                  'reasoning'
                 ],
                 additionalProperties: false
               }
             }
           }
         ],
-        tool_choice: { type: 'function', function: { name: 'predict_schedule' } }
+        tool_choice: { type: 'function', function: { name: 'analyze_schedule_pattern' } }
       }),
     });
 

@@ -1,19 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
-
-interface AiPrediction {
-  total_naps_today: number;
-  remaining_naps: number;
-  total_feeds_today: number;
-  predicted_bedtime: string;
-  confidence: 'high' | 'medium' | 'low';
-  reasoning: string;
-  is_transitioning: boolean;
-  transition_note?: string;
-}
+import { AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
 
 interface TodayAtGlanceProps {
-  prediction: AiPrediction | null;
+  prediction: AISchedulePrediction | null;
   loading: boolean;
 }
 
@@ -31,28 +21,22 @@ export const TodayAtGlance = ({ prediction, loading }: TodayAtGlanceProps) => {
     return null;
   }
 
-  const parts: string[] = [];
-  
-  // Add naps
-  if (prediction.total_naps_today > 0) {
-    parts.push(`${prediction.total_naps_today} ${prediction.total_naps_today === 1 ? 'nap' : 'naps'}`);
+  // Show transition info if baby is transitioning schedules
+  if (prediction.is_transitioning && prediction.transition_note) {
+    return (
+      <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+        <div className="flex items-center gap-2 mb-1">
+          <Badge variant="outline" className="text-xs">
+            Schedule Transition
+          </Badge>
+        </div>
+        <p className="text-sm text-foreground">
+          {prediction.transition_note}
+        </p>
+      </div>
+    );
   }
-  
-  // Add feeds
-  if (prediction.total_feeds_today > 0) {
-    parts.push(`${prediction.total_feeds_today} ${prediction.total_feeds_today === 1 ? 'feed' : 'feeds'}`);
-  }
-  
-  // Add bedtime
-  if (prediction.predicted_bedtime) {
-    parts.push(`bedtime at ${prediction.predicted_bedtime}`);
-  }
-  
-  // If no data, don't render anything
-  if (parts.length === 0 && (!prediction.is_transitioning || !prediction.transition_note)) {
-    return null;
-  }
-  
-  // Component no longer displays any content
+
+  // Don't render anything if not transitioning (schedule timeline shows all details)
   return null;
 };
