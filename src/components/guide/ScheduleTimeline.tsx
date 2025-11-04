@@ -199,6 +199,15 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       });
       i++; // Skip the bed event since we grouped it
     }
+    // Standalone bed event (bedtime without preceding feed)
+    else if (event.type === 'bed') {
+      groupedActivities.push({
+        id: `bedtime-${i}`,
+        type: 'bedtime',
+        time: event.time,
+        title: 'Bedtime'
+      });
+    }
     // Standalone wake or feed events
     else if (event.type === 'wake') {
       groupedActivities.push({
