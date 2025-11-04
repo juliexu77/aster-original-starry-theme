@@ -1521,27 +1521,22 @@ const lastDiaper = displayActivities
         )}
 
         {/* AI Chat Section */}
-        <Card className="p-0 overflow-hidden">
-          <div className="bg-muted/30 px-4 py-3 border-b border-border/40">
-            <h3 className="text-base font-semibold text-foreground">Chat with your guide</h3>
-          </div>
-          <div className="h-[500px]">
-            <ParentingChat
-              activities={activities.map(a => ({
-                id: a.id,
-                type: a.type,
-                logged_at: a.loggedAt || "",
-                details: a.details
-              }))}
-              babyName={babyName}
-              babyAgeInWeeks={babyAgeInWeeks}
-              babySex={household?.baby_sex || undefined}
-              userName={userName}
-              predictionIntent={prediction?.intent}
-              predictionConfidence={prediction?.confidence}
-            />
-          </div>
-        </Card>
+        <div className="h-[500px]">
+          <ParentingChat
+            activities={activities.map(a => ({
+              id: a.id,
+              type: a.type,
+              logged_at: a.loggedAt || "",
+              details: a.details
+            }))}
+            babyName={babyName}
+            babyAgeInWeeks={babyAgeInWeeks}
+            babySex={household?.baby_sex || undefined}
+            userName={userName}
+            predictionIntent={prediction?.intent}
+            predictionConfidence={prediction?.confidence}
+          />
+        </div>
 
       </div>
     </div>

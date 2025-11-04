@@ -1173,75 +1173,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           )}
 
 
-          {/* Chat Messages */}
-          {messages.length > 0 && (
-            <div className="space-y-4 pt-4 border-t border-border/40">
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Sprout className="w-4 h-4 text-primary" />
-                    </div>
-                  )}
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-accent/30"
-                    }`}
-                  >
-                    <div className="text-sm leading-relaxed">
-                      {formatText(msg.content)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* Loading Indicator */}
-              {isLoading && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sprout className="w-4 h-4 text-primary animate-pulse" />
-                  </div>
-                  <div className="bg-accent/30 rounded-2xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </ScrollArea>
-
-      {/* Chat Input */}
-      <Separator className="mt-4 bg-border" />
-      <div className="bg-background p-4">
-        <div className="flex gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Ask about patterns, routines, or development..."
-            className="min-h-[44px] max-h-32 resize-none"
-            disabled={isLoading}
-          />
-          <Button
-            onClick={() => handleSendMessage(input)}
-            disabled={!input.trim() || isLoading}
-            size="icon"
-            className="h-[44px] w-[44px] flex-shrink-0"
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
         </>
       )}
     </div>
