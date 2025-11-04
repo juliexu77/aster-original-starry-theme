@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Delete, ChevronDown } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Delete } from "lucide-react";
 
 interface NumericKeypadProps {
   isOpen: boolean;
@@ -88,26 +90,24 @@ useEffect(() => {
         
         <div className="space-y-4">
           {/* Display */}
-          <div className="bg-muted/50 rounded-lg p-4 text-center">
+          <div className="bg-muted/50 rounded-lg p-4">
+            <div className="text-3xl font-bold text-foreground text-center mb-3">
+              {value || "0"}
+            </div>
+            
+            {/* Unit toggle */}
             <div className="flex items-center justify-center gap-2">
-              <div className="text-3xl font-bold text-foreground min-w-[80px]">
-                {value || "0"}
-              </div>
-              
-              {/* Unit toggle button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 text-lg font-medium hover:bg-muted/50"
-                onClick={() => {
-                  const next = unit === "oz" ? "ml" : "oz";
+              <Label htmlFor="unit-toggle" className="text-sm text-muted-foreground cursor-pointer">ml</Label>
+              <Switch
+                id="unit-toggle"
+                checked={unit === "oz"}
+                onCheckedChange={(checked) => {
+                  const next = checked ? "oz" : "ml";
                   onUnitChange?.(next);
                   try { localStorage.setItem('lastUsedUnit', next); } catch (e) {}
                 }}
-              >
-                {unit}
-                <ChevronDown className="ml-1 h-4 w-4 opacity-50" />
-              </Button>
+              />
+              <Label htmlFor="unit-toggle" className="text-sm text-muted-foreground cursor-pointer">oz</Label>
             </div>
           </div>
 
