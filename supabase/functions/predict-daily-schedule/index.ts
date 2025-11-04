@@ -67,11 +67,17 @@ serve(async (req) => {
         dailyPatterns[date].naps++;
       }
       if (activity.type === 'feed') dailyPatterns[date].feeds++;
-      if (activity.type === 'night_sleep' && activity.details?.end_time) {
-        dailyPatterns[date].bedtime = new Date(activity.details.end_time).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit'
-        });
+      // Extract bedtime from naps that start in evening (7 PM or later)
+      if (activity.type === 'nap' && activity.details?.startTime) {
+        const startTime = activity.details.startTime;
+        const hour = parseInt(startTime.match(/(\d{1,2})/)?.[1] || '0');
+        const isPM = startTime.toUpperCase().includes('PM');
+        const hour24 = isPM && hour !== 12 ? hour + 12 : (hour === 12 && !isPM ? 0 : hour);
+        
+        // Consider naps starting between 7 PM and 11 PM as bedtime
+        if (hour24 >= 19 && hour24 <= 23) {
+          dailyPatterns[date].bedtime = startTime;
+        }
       }
     });
 
