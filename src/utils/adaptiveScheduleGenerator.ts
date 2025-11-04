@@ -209,37 +209,34 @@ export function generateAdaptiveSchedule(
   
   events.push(...napSchedule);
   
-  // Calculate bedtime from historical night sleep data
-  const recentNightSleepsForBedtime = activities
-    .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.isNightSleep)
-    .slice(0, 14);
+  // Calculate bedtime - use same logic as edge function (from nap activities that start in evening)
+  const napsForBedtime = activities
+    .filter(a => a.type === 'nap' && a.details?.startTime)
+    .slice(0, 50);
   
   let bedtimeHour = 19;
   let bedtimeMinute = 0;
   
-  if (recentNightSleepsForBedtime.length > 0) {
-    let totalMinutes = 0;
-    let count = 0;
-    
-    recentNightSleepsForBedtime.forEach(sleep => {
-      const startTime = parseTimeString(sleep.details.startTime);
+  const bedtimes: number[] = [];
+  napsForBedtime.forEach(nap => {
+    if (nap.details?.startTime) {
+      const startTime = parseTimeString(nap.details.startTime);
       if (startTime) {
-        let hour = startTime.getHours();
+        const hour = startTime.getHours();
         const minute = startTime.getMinutes();
         
-        // Consider bedtimes from 6 PM to 11 PM
-        if (hour >= 18 && hour <= 23) {
-          totalMinutes += hour * 60 + minute;
-          count++;
+        // Consider naps starting between 7 PM and 11 PM as bedtime (matching edge function logic)
+        if (hour >= 19 && hour <= 23) {
+          bedtimes.push(hour * 60 + minute);
         }
       }
-    });
-    
-    if (count > 0) {
-      const avgTotalMinutes = Math.round(totalMinutes / count);
-      bedtimeHour = Math.floor(avgTotalMinutes / 60);
-      bedtimeMinute = avgTotalMinutes % 60;
     }
+  });
+  
+  if (bedtimes.length > 0) {
+    const avgTotalMinutes = Math.round(bedtimes.reduce((a, b) => a + b, 0) / bedtimes.length);
+    bedtimeHour = Math.floor(avgTotalMinutes / 60);
+    bedtimeMinute = avgTotalMinutes % 60;
   }
   
   const bedtimeRoutine = new Date(scheduleStartTime);
@@ -249,8 +246,8 @@ export function generateAdaptiveSchedule(
     time: formatTime(bedtimeRoutine),
     type: 'bed',
     notes: 'Bedtime routine',
-    confidence: recentNightSleepsForBedtime.length > 0 ? 'high' : 'medium',
-    reasoning: recentNightSleepsForBedtime.length > 0 ? 'Based on typical bedtime' : 'Age-appropriate bedtime'
+    confidence: bedtimes.length > 0 ? 'high' : 'medium',
+    reasoning: bedtimes.length > 0 ? 'Based on typical bedtime' : 'Age-appropriate bedtime'
   });
   
   const sleepBy = new Date(bedtimeRoutine.getTime() + 30 * 60000);
