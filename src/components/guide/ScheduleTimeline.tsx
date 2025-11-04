@@ -82,12 +82,16 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     const minutes = parseInt(match[2]);
     const period = match[3].toUpperCase();
     
+    console.log(`⏰ formatTime input: ${timeStr} (${hours}:${minutes} ${period})`);
+    
     // Round to nearest 15 minutes for display
     const roundedMinutes = Math.round(minutes / 15) * 15;
     const adjustedHours = roundedMinutes === 60 ? hours + 1 : hours;
     const finalMinutes = roundedMinutes === 60 ? 0 : roundedMinutes;
     
-    return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
+    const result = `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
+    console.log(`⏰ formatTime output: ${result}`);
+    return result;
   };
 
   // Calculate end time from start time and duration
