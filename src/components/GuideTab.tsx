@@ -1152,6 +1152,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
                   prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}
                   whyThisMatters={hasTier3Data ? rhythmInsights?.whyThisMatters : undefined}
+                  babyName={babyName}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
                 />
               )}

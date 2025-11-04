@@ -7,6 +7,7 @@ interface UnifiedInsightCardProps {
   whatsNext?: string;
   prepTip?: string;
   whyThisMatters?: string;
+  babyName?: string;
   loading?: boolean;
 }
 
@@ -15,9 +16,10 @@ export const UnifiedInsightCard = ({
   whatsNext,
   prepTip,
   whyThisMatters,
+  babyName = "Your baby",
   loading
 }: UnifiedInsightCardProps) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['why']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set()); // Collapsed by default
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -49,28 +51,41 @@ export const UnifiedInsightCard = ({
 
   return (
     <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
-      {/* Why This Matters - Collapsible */}
-      {whyThisMatters && (
-        <Collapsible open={expandedSections.has('why')}>
-          <CollapsibleTrigger 
-            onClick={() => toggleSection('why')}
-            className="flex items-center justify-between w-full group"
-          >
-            <div className="flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-600" />
-              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                Why This Matters
-              </h4>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('why') ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pl-1 mt-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {whyThisMatters}
-            </p>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+      {/* Understanding Baby's Rhythm - Collapsible with preview */}
+      {whyThisMatters && (() => {
+        // Extract first sentence as preview
+        const firstSentence = whyThisMatters.split(/[.!?]/)[0] + (whyThisMatters.includes('.') ? '.' : '');
+        const isExpanded = expandedSections.has('why');
+        
+        return (
+          <Collapsible open={isExpanded}>
+            <CollapsibleTrigger 
+              onClick={() => toggleSection('why')}
+              className="flex items-start justify-between w-full group cursor-pointer"
+            >
+              <div className="flex items-start gap-2 flex-1">
+                <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-medium text-foreground tracking-wide mb-1">
+                    Understanding {babyName}'s Rhythm
+                  </h4>
+                  {!isExpanded && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
+                      {firstSentence}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 mt-0.5 ${isExpanded ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-6 mt-2">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {whyThisMatters}
+              </p>
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })()}
 
       {/* What To Do - Collapsible */}
       {whatToDo && whatToDo.length > 0 && (
