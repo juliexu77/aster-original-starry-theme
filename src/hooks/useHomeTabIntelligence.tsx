@@ -302,7 +302,31 @@ export const useHomeTabIntelligence = (
       .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())[0];
     
     if (lastFeed) {
-      const minutesSinceFeed = differenceInMinutes(new Date(), new Date(lastFeed.loggedAt));
+      const now = new Date();
+      const lastFeedTime = new Date(lastFeed.loggedAt);
+      const minutesSinceFeed = differenceInMinutes(now, lastFeedTime);
+      
+      // Debug logging for timezone investigation
+      console.log('🍼 Feed Time Calculation:', {
+        now: now.toISOString(),
+        nowLocal: now.toLocaleString(),
+        lastFeedLoggedAt: lastFeed.loggedAt,
+        lastFeedParsed: lastFeedTime.toISOString(),
+        lastFeedLocal: lastFeedTime.toLocaleString(),
+        minutesSinceFeed,
+        hoursSinceFeed: Math.floor(minutesSinceFeed / 60),
+        allFeedsCount: activities.filter(a => a.type === 'feed').length,
+        lastThreeFeeds: activities
+          .filter(a => a.type === 'feed')
+          .sort((a, b) => new Date(b.loggedAt).getTime() - new Date(a.loggedAt).getTime())
+          .slice(0, 3)
+          .map(f => ({
+            id: f.id?.slice(0, 8),
+            loggedAt: f.loggedAt,
+            parsedLocal: new Date(f.loggedAt).toLocaleString()
+          }))
+      });
+      
       if (minutesSinceFeed > 150) {
         suggestions.push({
           id: 'feed-due',
