@@ -373,58 +373,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       </div>
       
       {/* Timeline view with time blocks */}
-      <div className="space-y-1 relative pl-6">
-        {/* Vertical timeline line - heartbeat motif */}
-        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary/20 via-primary/40 to-primary/20" />
-        
-        {/* Animated pulse indicator showing current time */}
-        {(() => {
-          const essentialActivities = groupedActivities.filter(a => 
-            (a.type === 'morning' && !a.feedTime) ||
-            a.type === 'nap-block' || 
-            a.type === 'bedtime'
-          );
-          
-          // Deduplicate bedtimes for pulse calculation
-          const deduplicatedActivities = essentialActivities.filter((activity, idx, arr) => {
-            if (activity.type === 'bedtime') {
-              const lastBedtimeIdx = arr.map(a => a.type).lastIndexOf('bedtime');
-              return idx === lastBedtimeIdx;
-            }
-            return true;
-          });
-          
-          const currentActivityIndex = deduplicatedActivities.findIndex(a => {
-            const eventTime = parseTime(a.time);
-            return eventTime >= currentMinutes;
-          });
-          
-            if (currentActivityIndex >= 0) {
-              const progress = (currentActivityIndex / Math.max(deduplicatedActivities.length - 1, 1)) * 100;
-            return (
-              <>
-                {/* Gradient that moves down */}
-                <div 
-                  className="absolute left-[14px] top-0 w-1 h-full bg-gradient-to-b from-transparent via-primary to-transparent opacity-60 transition-all duration-1000"
-                  style={{ 
-                    transform: `translateY(${progress}%)`,
-                    height: '120px',
-                    filter: 'blur(2px)'
-                  }}
-                />
-                {/* Pulsing dot at current position */}
-                <div 
-                  className="absolute left-[11px] w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-lg"
-                  style={{ 
-                    top: `${progress}%`,
-                    boxShadow: '0 0 12px hsl(var(--primary))'
-                  }}
-                />
-              </>
-            );
-          }
-          return null;
-        })()}
+      <div className="space-y-1">
         
         {(() => {
           // Filter to only show wake, naps, and bedtime
