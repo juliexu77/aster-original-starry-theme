@@ -240,7 +240,7 @@ export function generateAdaptiveSchedule(
     ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
     : null;
   
-  // Generate nap schedule with AI-predicted nap count
+  // Generate nap schedule with AI-predicted nap count and historical data for validation
   const napSchedule = generateNapSchedule(
     scheduleStartTime,
     napCount,
@@ -248,7 +248,8 @@ export function generateAdaptiveSchedule(
     napTimingsMinutesFromWake,
     isInTransition,
     transitioningToCount,
-    babyAgeMonths
+    babyAgeMonths,
+    daysWithWakeAndNaps // Pass historical day sleep data for validation
   );
   
   events.push(...napSchedule);
@@ -539,7 +540,8 @@ function generateNapSchedule(
   timingsFromWake: number[],
   isInTransition: boolean,
   transitioningToCount: number | null,
-  babyAgeMonths: number | null
+  babyAgeMonths: number | null,
+  historicalDaySleepData: Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
   
@@ -615,20 +617,46 @@ function generateNapSchedule(
     });
   });
   
-  // Age-appropriate total day sleep recommendations (in hours)
-  const getRecommendedDaySleep = (months: number | null): number => {
-    if (months === null) return 3.5; // default
-    if (months <= 3) return 5.0;  // 0-3 months: ~5h
-    if (months <= 6) return 4.0;  // 4-6 months: ~4h
-    if (months <= 9) return 3.5;  // 7-9 months: ~3.5h
-    if (months <= 12) return 3.0; // 10-12 months: ~3h
-    if (months <= 18) return 2.5; // 13-18 months: ~2.5h
-    return 2.0; // 18+ months: ~2h
-  };
+  // Calculate average total DAY sleep from historical data (excludes night sleep)
+  const historicalDailySleepTotals: number[] = [];
+  historicalDaySleepData.forEach(day => {
+    // day.naps already contains only daytime naps (night sleep filtered out earlier)
+    const totalDayMinutes = day.naps.reduce((sum, nap) => sum + nap.duration, 0);
+    if (totalDayMinutes > 0 && totalDayMinutes < 600) { // Sanity check: 0-10 hours
+      historicalDailySleepTotals.push(totalDayMinutes);
+    }
+  });
   
-  // Validate total day sleep and adjust last nap if needed
-  const recommendedHours = getRecommendedDaySleep(babyAgeMonths);
-  const recommendedMinutes = recommendedHours * 60;
+  // Use historical average as the target, with age-based fallback
+  let recommendedMinutes: number;
+  if (historicalDailySleepTotals.length >= 3) {
+    // Use historical average from last 3+ days
+    recommendedMinutes = Math.round(
+      historicalDailySleepTotals.reduce((a, b) => a + b, 0) / historicalDailySleepTotals.length
+    );
+    console.log('💤 Using historical day sleep average:', {
+      days: historicalDailySleepTotals.length,
+      avgHours: (recommendedMinutes / 60).toFixed(1),
+      samples: historicalDailySleepTotals.map(m => (m / 60).toFixed(1))
+    });
+  } else {
+    // Fallback to age-appropriate defaults if insufficient data
+    const getDefaultDaySleep = (months: number | null): number => {
+      if (months === null) return 3.5;
+      if (months <= 3) return 5.0;
+      if (months <= 6) return 4.0;
+      if (months <= 9) return 3.5;
+      if (months <= 12) return 3.0;
+      if (months <= 18) return 2.5;
+      return 2.0;
+    };
+    recommendedMinutes = getDefaultDaySleep(babyAgeMonths) * 60;
+    console.log('💤 Using age-based fallback for day sleep:', {
+      ageMonths: babyAgeMonths,
+      hours: (recommendedMinutes / 60).toFixed(1),
+      reason: `Only ${historicalDailySleepTotals.length} days of data`
+    });
+  }
   
   const parseDurationToMinutes = (dur: string): number => {
     const match = dur.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/i);
@@ -641,13 +669,13 @@ function generateNapSchedule(
   const totalDaySleepMinutes = naps.reduce((sum, nap) => sum + parseDurationToMinutes(nap.duration || '90m'), 0);
   
   console.log('💤 Day sleep validation:', {
-    ageMonths: babyAgeMonths,
-    recommendedHours,
-    totalScheduledHours: (totalDaySleepMinutes / 60).toFixed(1),
-    napCount: naps.length
+    recommendedHours: (recommendedMinutes / 60).toFixed(1),
+    scheduledHours: (totalDaySleepMinutes / 60).toFixed(1),
+    napCount: naps.length,
+    source: historicalDailySleepTotals.length >= 3 ? 'historical' : 'age-based'
   });
   
-  // If total exceeds recommendation by more than 30 minutes, shorten last nap
+  // If total exceeds historical average by more than 30 minutes, shorten last nap
   if (totalDaySleepMinutes > recommendedMinutes + 30 && naps.length > 0) {
     const excess = totalDaySleepMinutes - recommendedMinutes;
     const lastNap = naps[naps.length - 1];
@@ -657,13 +685,13 @@ function generateNapSchedule(
     naps[naps.length - 1] = {
       ...lastNap,
       duration: formatDuration(newLastNapMinutes),
-      notes: `${lastNap.notes} (adjusted for age-appropriate sleep)`
+      notes: lastNap.notes // Keep original notes, adjustment is transparent
     };
     
     console.log('🔧 Shortened last nap:', {
       from: formatDuration(lastNapMinutes),
       to: formatDuration(newLastNapMinutes),
-      reason: 'Exceeded recommended day sleep'
+      reason: `Exceeded typical day sleep by ${Math.round(excess)}m`
     });
   }
   
