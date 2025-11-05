@@ -530,11 +530,12 @@ RULES:
 - Use ONLY the numbers from "CRITICAL" section above
 - Always use "${babyName}" by name
 - Reference their ACTUAL shift: "${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps"
-- 2-3 sentences, 50-60 words
+- MAXIMUM 100 characters total (strict limit for UI display)
+- 1-2 short sentences ONLY
 - NO markdown
 
 Example (adjust to actual numbers):
-"${babyName}'s ${napsPerDayThisWeek}-nap pattern shows maturing wake windows—a sign of developing circadian rhythms. The ${bedtimeVariation < 15 ? 'consistent' : 'stabilizing'} bedtime strengthens their internal clock, making future adjustments easier."`;
+"${babyName}'s ${napsPerDayThisWeek}-nap pattern shows maturing wake windows and developing circadian rhythms."`;
 
     const whyThisMattersResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

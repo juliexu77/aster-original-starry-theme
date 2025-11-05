@@ -59,13 +59,11 @@ export const UnifiedInsightCard = ({
       <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
         {/* What to Know - Collapsible with preview */}
         {whyThisMatters && (() => {
-          // Split into sentences/bullet points
-          const bullets = whyThisMatters
-            .split(/[.!?]+/)
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
+          // Enforce 100 character limit to ensure max 2 rows
+          const truncatedText = whyThisMatters.length > 100 
+            ? whyThisMatters.substring(0, 97) + '...' 
+            : whyThisMatters;
           
-          const firstBullet = bullets[0] || '';
           const isExpanded = expandedSections.has('know');
           
           return (
@@ -80,9 +78,9 @@ export const UnifiedInsightCard = ({
                     <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                       What to Know
                     </h4>
-                    {!isExpanded && firstBullet && (
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
-                        {firstBullet}
+                    {!isExpanded && (
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-1">
+                        {truncatedText}
                       </p>
                     )}
                   </div>
@@ -90,14 +88,9 @@ export const UnifiedInsightCard = ({
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
-                {bullets.map((bullet, idx) => (
-                  <div key={idx} className="flex items-start gap-2.5">
-                    <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {bullet}
-                    </p>
-                  </div>
-                ))}
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {whyThisMatters}
+                </p>
               </CollapsibleContent>
             </Collapsible>
           );
