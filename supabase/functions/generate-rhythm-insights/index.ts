@@ -376,6 +376,7 @@ CRITICAL INSTRUCTIONS:
 ${transitionInfo ? '- You MUST acknowledge the pattern/transition stated above' : ''}
 - Do NOT contradict the nap count information above
 - Do NOT mention nap counts that weren't observed (e.g., don't say "2 naps" when actual is ${actualNapsToday})
+- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 
 RULES:
 - Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
@@ -420,7 +421,7 @@ TASK: Give 2-3 tips for ${babyName}'s ACTUAL pattern (${napsPerDayThisWeek} naps
 
 RULES:
 - Use ONLY the numbers from "CRITICAL" section
-- Always use "${babyName}" by name
+- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 - Keep their ${napsPerDayThisWeek}-nap pattern (don't suggest changing to different number)
 - Each tip: ONE sentence under 20 words
 - NO bullets, numbers, dashes, markdown
@@ -428,7 +429,7 @@ RULES:
 
 Example (use actual numbers):
 "Keep ${babyName}'s ${napsPerDayThisWeek} naps at consistent times each day to reinforce the rhythm"
-"Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime—it's working well"
+"Protect that ${aiPrediction?.predicted_bedtime || '7-8pm'} bedtime—it's working well for ${babyName}"
 "Watch for ${babyName}'s sleepy cues and respond quickly during this ${transitionInfo ? 'adjustment phase' : 'phase'}"`;
 
     const whatToDoResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -474,6 +475,7 @@ TASK: Predict what comes AFTER ${babyName}'s current ${napsPerDayThisWeek}-nap p
 
 RULES:
 - Use ONLY the numbers from "CRITICAL" section
+- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 - State current pattern first: "${babyName} is at ${napsPerDayThisWeek} naps/day"
 - Then predict the NEXT stage (e.g., if at 3 naps, next is 2 naps)
 - 2-3 sentences, 50-60 words
@@ -517,6 +519,7 @@ TASK: ONE prep tip for ${babyName}'s NEXT transition after ${napsPerDayThisWeek}
 
 RULES:
 - Use ONLY numbers from "CRITICAL" section
+- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 - Prep for transition FROM ${napsPerDayThisWeek} naps TO ${napsPerDayThisWeek - 1} naps (the next drop)
 - ONE sentence, 20-25 words
 - NO markdown
@@ -564,7 +567,7 @@ TASK: Explain why ${babyName}'s ACTUAL pattern (${napsPerDayThisWeek} naps/day, 
 
 RULES:
 - Use ONLY the numbers from "CRITICAL" section above
-- Always use "${babyName}" by name
+- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 - Reference their ACTUAL shift: "${napsPerDayLastWeek} to ${napsPerDayThisWeek} naps"
 - MAXIMUM 100 characters total (strict limit for UI display)
 - 1-2 short sentences ONLY
