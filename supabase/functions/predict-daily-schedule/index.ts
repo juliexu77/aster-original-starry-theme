@@ -173,6 +173,7 @@ Rules:
 - If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
 - Do NOT calculate specific times—that's handled by the schedule generator.
 - ALWAYS predict the most common nap count unless there's sustained evidence of change.
+`;
 
     console.log('Calling Lovable AI for schedule prediction...');
 
