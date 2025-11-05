@@ -56,7 +56,7 @@ export const UnifiedInsightCard = ({
         Understanding {babyName}&apos;s Rhythm
       </h3>
       
-      <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4">
+      <div className="p-5 bg-accent/30 rounded-xl border border-border space-y-4 text-left">
         {/* What to Know - Collapsible with preview */}
         {whyThisMatters && (() => {
           const isExpanded = expandedSections.has('know');
@@ -70,11 +70,11 @@ export const UnifiedInsightCard = ({
                 <div className="flex items-start gap-2">
                   <Lightbulb className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider text-left">
                       What to Know
                     </h4>
                     {!isExpanded && (
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-1">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-1 text-left">
                         {whyThisMatters}
                       </p>
                     )}
@@ -83,7 +83,7 @@ export const UnifiedInsightCard = ({
                 <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-2.5 pl-6 mt-3">
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed text-left">
                   {whyThisMatters}
                 </p>
               </CollapsibleContent>
@@ -104,11 +104,11 @@ export const UnifiedInsightCard = ({
               <div className="flex items-start gap-2">
                 <CheckSquare className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider text-left">
                     What To Do
                   </h4>
                   {!isExpanded && whatToDo.length > 0 && (
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1 text-left">
                       {whatToDo[0]}
                     </p>
                   )}
@@ -120,7 +120,7 @@ export const UnifiedInsightCard = ({
               {whatToDo.map((item, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed text-left">
                     {item}
                   </p>
                 </div>
@@ -143,11 +143,11 @@ export const UnifiedInsightCard = ({
               <div className="flex items-start gap-2">
                 <ArrowRight className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider text-left">
                     What's Next
                   </h4>
                   {!isExpanded && (
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1 text-left">
                       {whatsNext}
                     </p>
                   )}
@@ -156,13 +156,13 @@ export const UnifiedInsightCard = ({
               <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="pl-6 mt-3 space-y-3">
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed text-left">
                 {whatsNext}
               </p>
               {prepTip && (
                 <div className="flex items-start gap-2.5 p-3 bg-accent/20 rounded-lg border border-border/40">
                   <Compass className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed text-left">
                     <span className="font-medium text-foreground">Prep tip:</span> {prepTip}
                   </p>
                 </div>
