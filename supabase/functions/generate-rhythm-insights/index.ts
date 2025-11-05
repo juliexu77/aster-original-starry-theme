@@ -284,8 +284,8 @@ Deno.serve(async (req) => {
       console.log('⏰ Too early to generate insights - showing forward-looking content instead');
       return new Response(
         JSON.stringify({
-          insight: `🌅 Good morning! Based on recent patterns, ${babyName} typically has ${napsPerDayThisWeek} naps today. First nap usually around ${aiPrediction?.predicted_bedtime ? 'mid-morning' : '9-10am'}.`,
-          confidence: 'Looking ahead',
+          heroInsight: `🌅 Good morning! Based on recent patterns, ${babyName} typically has ${napsPerDayThisWeek} naps today. First nap usually around ${aiPrediction?.predicted_bedtime ? 'mid-morning' : '9-10am'}.`,
+          confidenceScore: 'Looking ahead',
           whyThisMatters: `Right now is about following ${babyName}'s natural rhythm. Watch for sleepy cues like eye rubbing, yawning, or fussiness as morning wake time builds.`,
           prepTip: `Start winding down 15 minutes before the first nap. Dim lights, quiet play, and consistent pre-nap routine help ${babyName} transition smoothly to sleep.`,
           whatToDo: [
