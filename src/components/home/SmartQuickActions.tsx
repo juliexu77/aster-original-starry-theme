@@ -163,6 +163,27 @@ export const SmartQuickActions = ({
             </button>
           ))}
           
+          <div className="grid grid-cols-2 gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
+              className="w-full"
+            >
+              <span className="mr-2">+</span>
+              Log Sleep
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
+              className="w-full"
+            >
+              <span className="mr-2">+</span>
+              Log Feed
+            </Button>
+          </div>
+          
           {chatComponent && (
             <button
               onClick={() => setIsChatOpen(true)}
