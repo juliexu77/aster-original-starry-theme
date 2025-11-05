@@ -271,7 +271,8 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
     
     const firstEventTime = parseTime(groupedActivities[0].time);
     const bedtimeActivity = [...groupedActivities].reverse().find(a => a.type === 'bedtime');
-    const lastEventTime = bedtimeActivity ? parseTime(bedtimeActivity.endTime || bedtimeActivity.time) : parseTime(groupedActivities[groupedActivities.length - 1].time);
+    if (!bedtimeActivity) return { percent: 0, timeUntilBedtime: '', minutesUntilBedtime: 0 };
+    const lastEventTime = parseTime(bedtimeActivity.endTime || bedtimeActivity.time);
     
     const dayDuration = lastEventTime - firstEventTime;
     if (dayDuration <= 0) return { percent: 0, timeUntilBedtime: '', minutesUntilBedtime: 0 };
@@ -376,11 +377,10 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
       <div className="space-y-1">
         
         {(() => {
-          // Filter to only show wake, naps, and bedtime
+          // Filter to only show wake and naps (hide bedtime on this tab)
           const essentialActivities = groupedActivities.filter(a => 
             (a.type === 'morning' && !a.feedTime) || // Wake up only (not feeds)
-            a.type === 'nap-block' || 
-            a.type === 'bedtime'
+            a.type === 'nap-block'
           );
           
           // Group by time blocks
