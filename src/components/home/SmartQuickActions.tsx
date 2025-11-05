@@ -85,7 +85,7 @@ export const SmartQuickActions = ({
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
             Quick Actions
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -104,17 +104,18 @@ export const SmartQuickActions = ({
               <span className="mr-2">+</span>
               Log Feed
             </Button>
-            {chatComponent && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsChatOpen(true)}
-                className="w-full"
-              >
-                <MessageCircle className="w-4 h-4" />
-              </Button>
-            )}
           </div>
+          
+          {chatComponent && (
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="w-full mt-3 text-center group"
+            >
+              <span className="text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+                Ask Me Anything →
+              </span>
+            </button>
+          )}
         </div>
         
         {chatComponent && (
