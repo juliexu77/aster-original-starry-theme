@@ -388,17 +388,10 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           // Group by time blocks
           let currentBlock: string | null = null;
           
-          // Keep only the first bedtime entry to avoid picking 'sleep by' helper
-          const deduplicatedActivities = essentialActivities.filter((activity, idx, arr) => {
-            if (activity.type === 'bedtime') {
-              // Find the first bedtime index
-              const firstBedtimeIdx = arr.findIndex(a => a.type === 'bedtime');
-              return idx === firstBedtimeIdx; // Only keep the first one
-            }
-            return true; // Keep all non-bedtime activities
-          });
+          // No need to deduplicate - only one bedtime entry now
+          const displayActivities = essentialActivities;
           
-          return deduplicatedActivities.map((activity, idx) => {
+          return displayActivities.map((activity, idx) => {
             // Determine time block for visual grouping
             const timeBlock = getTimeBlock(activity.time);
             const showBlockDivider = currentBlock !== null && currentBlock !== timeBlock;
@@ -408,7 +401,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
             const matchingEvent = schedule.events.find(e => e.time === activity.time);
             const eventTime = parseTime(activity.time);
             const isPast = eventTime < currentMinutes;
-            const isCurrent = !isPast && idx === deduplicatedActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+            const isCurrent = !isPast && idx === displayActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
             
             // Confidence styling
             const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
@@ -451,7 +444,7 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                 
                 {activity.type === 'nap-block' && (() => {
                   // Calculate wake window from previous activity
-                  const prevActivity = deduplicatedActivities[idx - 1];
+                  const prevActivity = displayActivities[idx - 1];
                   let wakeWindowText = '';
                   if (prevActivity) {
                     let prevEndTime: string | undefined;

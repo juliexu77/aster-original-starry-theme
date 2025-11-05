@@ -346,16 +346,6 @@ export function generateAdaptiveSchedule(
     reasoning: bedtimeReason
   });
   
-  // Optional helper: suggest sleep-by time ~30m after bedtime routine starts
-  const sleepByTime = new Date(computedBedtime!.getTime() + 30 * 60000);
-  events.push({
-    time: `Sleep by ${formatTime(sleepByTime)}`,
-    type: 'bed',
-    notes: '',
-    confidence: 'high',
-    reasoning: ''
-  });
-  
   // Use AI confidence if available, otherwise determine from data stability
   let overallConfidence: 'high' | 'medium' | 'low';
   if (aiPrediction) {
