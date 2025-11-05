@@ -388,12 +388,12 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
           // Group by time blocks
           let currentBlock: string | null = null;
           
-          // Keep only the last bedtime entry to avoid duplicates
+          // Keep only the first bedtime entry to avoid picking 'sleep by' helper
           const deduplicatedActivities = essentialActivities.filter((activity, idx, arr) => {
             if (activity.type === 'bedtime') {
-              // Find the last bedtime index
-              const lastBedtimeIdx = arr.map(a => a.type).lastIndexOf('bedtime');
-              return idx === lastBedtimeIdx; // Only keep the last one
+              // Find the first bedtime index
+              const firstBedtimeIdx = arr.findIndex(a => a.type === 'bedtime');
+              return idx === firstBedtimeIdx; // Only keep the first one
             }
             return true; // Keep all non-bedtime activities
           });
