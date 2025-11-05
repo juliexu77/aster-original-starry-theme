@@ -19,7 +19,7 @@ export const UnifiedInsightCard = ({
   babyName = "Your baby",
   loading
 }: UnifiedInsightCardProps) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set()); // Collapsed by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['know'])); // First section expanded by default
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
