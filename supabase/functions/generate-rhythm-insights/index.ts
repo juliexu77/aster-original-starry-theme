@@ -361,21 +361,21 @@ ${transitionInfo ? `- Pattern status: ${transitionInfo}` : ''}
 DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPerDayThisWeek}. DO NOT invent transitions that aren't in the data.`;
 
     // CALL 1: Generate Hero Insight
+    const predictedNapsToday = aiPrediction?.total_naps_today || napsPerDayThisWeek;
     const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-TODAY'S ACTUAL NAPS: ${actualNapsToday} naps (this is reality, use THIS exact number)
-${aiPrediction ? `Predicted naps: ${aiPrediction.total_naps_today} (was the forecast, but actual is ${actualNapsToday})` : ''}
+TODAY'S PATTERN: ${predictedNapsToday} naps predicted for the full day (${actualNapsToday} logged so far)
 Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week
 Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
 Bedtime: ${aiPrediction?.predicted_bedtime || 'consistency varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : ''}
 ${transitionInfo || ''}
 
 CRITICAL INSTRUCTIONS:
-- You MUST reference ${actualNapsToday} naps as today's reality, NOT the prediction
+- Focus on the FULL-DAY pattern (${predictedNapsToday} naps), NOT the partial count (${actualNapsToday} so far)
+- Describe ${babyName}'s overall rhythm and developmental progress
 ${transitionInfo ? '- You MUST acknowledge the pattern/transition stated above' : ''}
 - Do NOT contradict the nap count information above
-- Do NOT mention nap counts that weren't observed (e.g., don't say "2 naps" when actual is ${actualNapsToday})
 - ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
 
 RULES:
@@ -386,9 +386,9 @@ RULES:
 - Do NOT use markdown formatting
 
 Examples:
-"🌿 ${babyName}'s settling into a 2-nap rhythm—those longer wake windows show great progress!"
-"🎉 What a star! ${babyName}'s consistent bedtime is building healthy sleep habits!"
-"💪 ${babyName} is transitioning beautifully—longer wake windows are right on track!"`;
+"🌿 ${babyName}'s settling into a ${predictedNapsToday}-nap rhythm—those longer wake windows show great progress!"
+"🎉 What a star! ${babyName}'s consistent ${predictedNapsToday}-nap pattern is building healthy sleep habits!"
+"💪 ${babyName} is transitioning beautifully to ${predictedNapsToday} naps—longer wake windows are right on track!"`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
