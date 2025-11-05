@@ -278,86 +278,34 @@ export function generateAdaptiveSchedule(
     return h * 60 + min;
   };
   
-  const recommendedFWW = (naps: number, months: number | null): number => {
-    // minutes
-    if (naps <= 1) return 210; // ~3h30m
-    if (naps === 2) return 180; // ~3h
-    if (naps >= 3) return 135; // ~2h15m
-    return 180;
-  };
-  
-  // Determine napCount we generated above
-  const predictedNapCount = napCount;
-  
-  // Today's last logged nap end (daytime only)
-  const todayNaps = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
-  const lastLoggedNapEnd: Date | null = (() => {
-    let latest: Date | null = null;
-    for (const a of todayNaps) {
-      const endStr = a.details?.endTime as string | undefined;
-      if (!endStr) continue;
-      const parsed = parseTimeString(endStr);
-      if (!parsed) continue;
-      const d = new Date(now);
-      d.setHours(parsed.getHours(), parsed.getMinutes(), 0, 0);
-      if (!latest || d > latest) latest = d;
-    }
-    return latest;
-  })();
-  
-  // Predicted last nap end from our napSchedule
-  const lastPredictedNapEnd: Date | null = (() => {
-    const napEvents = [...napSchedule].filter(e => e.type === 'nap');
-    if (napEvents.length === 0) return null;
-    const lastNap = napEvents[napEvents.length - 1];
-    const startParsed = parseTimeString(lastNap.time);
-    if (!startParsed) return null;
-    const end = new Date(scheduleStartTime);
-    end.setHours(startParsed.getHours(), startParsed.getMinutes(), 0, 0);
-    end.setMinutes(end.getMinutes() + parseDurationToMinutes(lastNap.duration));
-    return end;
-  })();
-  
-  const fwwMinutes = recommendedFWW(predictedNapCount, ageMonths);
-  
+  // Bedtime based on historical average only
   let computedBedtime: Date | null = null;
   let bedtimeConfidence: 'high' | 'medium' | 'low' = 'medium';
   let bedtimeReason = '';
   
-  if (lastLoggedNapEnd) {
-    computedBedtime = new Date(lastLoggedNapEnd);
-    computedBedtime.setMinutes(computedBedtime.getMinutes() + fwwMinutes);
-    bedtimeConfidence = 'high';
-    bedtimeReason = 'Final wake window from today\'s last nap';
-  } else if (lastPredictedNapEnd) {
-    computedBedtime = new Date(lastPredictedNapEnd);
-    computedBedtime.setMinutes(computedBedtime.getMinutes() + fwwMinutes);
-    bedtimeConfidence = 'medium';
-    bedtimeReason = 'Final wake window from predicted last nap';
+  // Historical average: average of night sleep start times over last 7 days
+  const sevenDaysAgo = new Date(scheduleStartTime);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const nightStarts: number[] = activities
+    .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.isNightSleep)
+    .filter(a => new Date(a.loggedAt) >= sevenDaysAgo)
+    .map(a => parseTimeString(a.details!.startTime))
+    .filter((d): d is Date => !!d)
+    .map(d => d.getHours() * 60 + d.getMinutes());
+  
+  if (nightStarts.length > 0) {
+    const avg = Math.round(nightStarts.reduce((a,b)=>a+b,0)/nightStarts.length);
+    const h = Math.floor(avg/60), m = avg%60;
+    computedBedtime = new Date(scheduleStartTime);
+    computedBedtime.setHours(h, m, 0, 0);
+    bedtimeConfidence = nightStarts.length >= 5 ? 'high' : 'medium';
+    bedtimeReason = `Based on ${nightStarts.length} nights of historical data`;
   } else {
-    // Historical fallback: average of night sleep start times over last 7 days
-    const sevenDaysAgo = new Date(scheduleStartTime);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const nightStarts: number[] = activities
-      .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.isNightSleep)
-      .filter(a => new Date(a.loggedAt) >= sevenDaysAgo)
-      .map(a => parseTimeString(a.details!.startTime))
-      .filter((d): d is Date => !!d)
-      .map(d => d.getHours() * 60 + d.getMinutes());
-    if (nightStarts.length > 0) {
-      const avg = Math.round(nightStarts.reduce((a,b)=>a+b,0)/nightStarts.length);
-      const h = Math.floor(avg/60), m = avg%60;
-      computedBedtime = new Date(scheduleStartTime);
-      computedBedtime.setHours(h, m, 0, 0);
-      bedtimeConfidence = 'low';
-      bedtimeReason = 'Historical average of night sleep start';
-    } else {
-      // Sensible default near 7:30 PM
-      computedBedtime = new Date(scheduleStartTime);
-      computedBedtime.setHours(19, 30, 0, 0);
-      bedtimeConfidence = 'low';
-      bedtimeReason = 'Default bedtime';
-    }
+    // Sensible default near 7:30 PM
+    computedBedtime = new Date(scheduleStartTime);
+    computedBedtime.setHours(19, 30, 0, 0);
+    bedtimeConfidence = 'low';
+    bedtimeReason = 'Default bedtime (no historical data)';
   }
   
   // Clamp between 6:30 PM and 9:30 PM
@@ -371,12 +319,8 @@ export function generateAdaptiveSchedule(
   
   computedBedtime = clamp(computedBedtime!);
   
-  console.log('🛏️ Rebuilt bedtime:', {
-    lastLoggedNapEnd,
-    lastPredictedNapEnd,
-    fwwMinutes,
-    ageMonths,
-    napCount: predictedNapCount,
+  console.log('🛏️ Bedtime (historical average):', {
+    nightSamplesCount: nightStarts.length,
     computed: formatTime(computedBedtime!),
     reason: bedtimeReason,
     confidence: bedtimeConfidence
