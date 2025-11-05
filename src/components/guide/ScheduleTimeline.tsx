@@ -345,14 +345,14 @@ export const ScheduleTimeline = ({ schedule, babyName }: ScheduleTimelineProps) 
                   <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
                     <p className="font-medium text-foreground">How this works:</p>
                     <p>
-                      We compare predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
+                      This schedule is generated once per day at 5am based on your baby's recent patterns. It stays fixed throughout the day so you can plan ahead.
                     </p>
                     <p>
-                      As you log more activities, the schedule adapts in real-time using today&apos;s actual wake time and patterns.
+                      We track accuracy by comparing predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
                     </p>
                     {schedule.accuracyScore !== undefined && schedule.accuracyScore < 80 && (
                       <p className="text-primary font-medium">
-                        The model is learning {babyName}&apos;s unique patterns. Accuracy improves with each logged activity!
+                        The model is learning {babyName}&apos;s unique patterns. Accuracy improves with consistent logging!
                       </p>
                     )}
                   </CollapsibleContent>

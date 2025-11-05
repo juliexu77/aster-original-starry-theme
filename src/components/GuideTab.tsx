@@ -684,6 +684,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             recentActivities,
             todayActivities,
             babyBirthday: household?.baby_birthday,
+            householdId: household?.id,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             aiPrediction: aiPrediction // Pass existing prediction for consistency
           }
         });
@@ -706,7 +708,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     };
 
-    // Check if we need to fetch - refresh every 30 minutes or when today's activities change
+    // Check if we need to fetch - only generate new prediction at 5am each day
     const lastFetch = localStorage.getItem('aiPredictionLastFetch');
     const cached = localStorage.getItem('aiPrediction');
     
@@ -722,13 +724,28 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       }
     }
     
-    // Refresh every 30 minutes or if it's a new day
-    const shouldFetch = !lastFetch || 
-      (Date.now() - new Date(lastFetch).getTime() > 30 * 60 * 1000) ||
-      (new Date().toDateString() !== new Date(lastFetch).toDateString());
+    // Only fetch new prediction if:
+    // 1. No cached prediction exists, OR
+    // 2. It's past 5am AND we haven't fetched today yet
+    let shouldFetch = false;
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    if (!lastFetch) {
+      // No cached prediction - fetch now
+      shouldFetch = true;
+    } else {
+      const lastFetchDate = new Date(lastFetch);
+      const isNewDay = now.toDateString() !== lastFetchDate.toDateString();
+      
+      // Only fetch if it's a new day AND we're past 5am
+      if (isNewDay && currentHour >= 5) {
+        shouldFetch = true;
+      }
+    }
     
     if (shouldFetch && hasTier2Data) {
-      console.log('🚀 Fetching fresh AI prediction...');
+      console.log('🚀 Fetching fresh AI prediction (5am refresh)...');
       fetchAiPrediction();
     }
   }, [hasTier2Data, household, activities.length, aiPrediction]);

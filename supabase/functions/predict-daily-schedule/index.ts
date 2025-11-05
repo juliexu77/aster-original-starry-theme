@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +19,7 @@ serve(async (req) => {
   }
 
   try {
-    const { recentActivities, todayActivities, babyBirthday } = await req.json();
+    const { recentActivities, todayActivities, babyBirthday, householdId, timezone } = await req.json();
 
     if (!recentActivities || !Array.isArray(recentActivities)) {
       return new Response(
@@ -26,6 +27,107 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    if (!householdId || !timezone) {
+      return new Response(
+        JSON.stringify({ error: 'householdId and timezone are required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Initialize Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Helper function to calculate accuracy
+    const calculateAccuracy = (predictedSchedule: any, actualActivities: Activity[]): number => {
+      if (!predictedSchedule?.events || predictedSchedule.events.length === 0) return 0;
+      if (actualActivities.length === 0) return 0;
+
+      let correctPredictions = 0;
+      let totalPredictions = 0;
+
+      predictedSchedule.events.forEach((event: any) => {
+        if (event.type === 'nap' || event.type === 'feed') {
+          totalPredictions++;
+          const predictedMinutes = parseTimeToMinutes(event.time);
+          
+          // Find matching actual activity within ±30 minutes
+          const match = actualActivities.find(actual => {
+            if (actual.type !== event.type) return false;
+            const actualDate = new Date(actual.logged_at);
+            const actualMinutes = actualDate.getHours() * 60 + actualDate.getMinutes();
+            return Math.abs(actualMinutes - predictedMinutes) <= 30;
+          });
+
+          if (match) correctPredictions++;
+        }
+      });
+
+      return totalPredictions > 0 ? Math.round((correctPredictions / totalPredictions) * 100) : 0;
+    };
+
+    const parseTimeToMinutes = (timeStr: string): number => {
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (!match) return 0;
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3].toUpperCase();
+      if (period === 'PM' && hours !== 12) hours += 12;
+      if (period === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+
+    // Get today's date in the user's timezone
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: timezone }); // YYYY-MM-DD format
+    const currentHourNum = parseInt(new Date().toLocaleString('en-US', { timeZone: timezone, hour: 'numeric', hour12: false }));
+
+    console.log(`🔍 Checking for existing prediction for ${todayDate}, current hour: ${currentHourNum}`);
+
+    // Check if we already have a prediction for today
+    const { data: existingPrediction, error: fetchError } = await supabaseClient
+      .from('daily_schedule_predictions')
+      .select('*')
+      .eq('household_id', householdId)
+      .eq('prediction_date', todayDate)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error('Error fetching existing prediction:', fetchError);
+    }
+
+    // If we have a prediction and it's not yet 5am, calculate accuracy and return it
+    if (existingPrediction && currentHourNum < 5) {
+      console.log('📊 Existing prediction found, calculating accuracy...');
+      
+      const accuracy = calculateAccuracy(existingPrediction.predicted_schedule, todayActivities || []);
+      
+      // Update accuracy in database
+      await supabaseClient
+        .from('daily_schedule_predictions')
+        .update({
+          accuracy_score: accuracy,
+          last_accuracy_check: new Date().toISOString()
+        })
+        .eq('id', existingPrediction.id);
+
+      console.log(`✅ Returning cached prediction with ${accuracy}% accuracy`);
+      
+      return new Response(
+        JSON.stringify({
+          ...existingPrediction.predicted_schedule,
+          accuracyScore: accuracy,
+          lastUpdated: existingPrediction.generated_at,
+          cached: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Generate new prediction (either no existing prediction or it's past 5am)
+    console.log('🔮 Generating new prediction...');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -100,17 +202,7 @@ serve(async (req) => {
       if (m) mins += parseInt(m[1], 10);
       return mins;
     };
-    const parseTimeToMinutes = (timeStr?: string): number => {
-      if (!timeStr) return 0;
-      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-      if (!match) return 0;
-      let hours = parseInt(match[1], 10);
-      const minutes = parseInt(match[2], 10);
-      const period = match[3].toUpperCase();
-      if (period === 'PM' && hours !== 12) hours += 12;
-      if (period === 'AM' && hours === 12) hours = 0;
-      return hours * 60 + minutes;
-    };
+    // Removed parseTimeToMinutes - now defined earlier in the function
     let lastNapDuration = 0;
     if (lastNap) {
       const dm = typeof lastNap.details?.duration_minutes === 'number' ? lastNap.details.duration_minutes
@@ -279,8 +371,31 @@ Rules:
 
     const prediction = JSON.parse(toolCall.function.arguments);
 
+    // Store the prediction in the database
+    const { error: upsertError } = await supabaseClient
+      .from('daily_schedule_predictions')
+      .upsert({
+        household_id: householdId,
+        prediction_date: todayDate,
+        predicted_schedule: prediction,
+        generated_at: new Date().toISOString()
+      }, {
+        onConflict: 'household_id,prediction_date'
+      });
+
+    if (upsertError) {
+      console.error('Error storing prediction:', upsertError);
+    } else {
+      console.log('✅ Prediction stored successfully');
+    }
+
     return new Response(
-      JSON.stringify(prediction),
+      JSON.stringify({
+        ...prediction,
+        accuracyScore: 0,
+        lastUpdated: new Date().toISOString(),
+        cached: false
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

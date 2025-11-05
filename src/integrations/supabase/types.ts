@@ -238,6 +238,47 @@ export type Database = {
           },
         ]
       }
+      daily_schedule_predictions: {
+        Row: {
+          accuracy_score: number | null
+          created_at: string
+          generated_at: string
+          household_id: string
+          id: string
+          last_accuracy_check: string | null
+          predicted_schedule: Json
+          prediction_date: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          created_at?: string
+          generated_at?: string
+          household_id: string
+          id?: string
+          last_accuracy_check?: string | null
+          predicted_schedule: Json
+          prediction_date: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          created_at?: string
+          generated_at?: string
+          household_id?: string
+          id?: string
+          last_accuracy_check?: string | null
+          predicted_schedule?: Json
+          prediction_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_schedule_predictions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       households: {
         Row: {
           baby_birthday: string | null
