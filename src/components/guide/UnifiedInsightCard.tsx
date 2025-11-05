@@ -19,7 +19,7 @@ export const UnifiedInsightCard = ({
   babyName = "Your baby",
   loading
 }: UnifiedInsightCardProps) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['know'])); // First section expanded by default
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set()); // All collapsed, show previews
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -91,64 +91,86 @@ export const UnifiedInsightCard = ({
           );
         })()}
 
-      {/* What To Do - Collapsible */}
-      {whatToDo && whatToDo.length > 0 && (
-        <Collapsible open={expandedSections.has('do')}>
-          <CollapsibleTrigger 
-            onClick={() => toggleSection('do')}
-            className="flex items-center justify-between w-full group"
-          >
-            <div className="flex items-center gap-2">
-              <CheckSquare className="w-4 h-4 text-primary" />
-              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                What To Do
-              </h4>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('do') ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
-            {whatToDo.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2.5">
-                <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item}
-                </p>
+      {/* What To Do - Collapsible with preview */}
+      {whatToDo && whatToDo.length > 0 && (() => {
+        const isExpanded = expandedSections.has('do');
+        
+        return (
+          <Collapsible open={isExpanded}>
+            <CollapsibleTrigger 
+              onClick={() => toggleSection('do')}
+              className="flex items-center justify-between w-full group"
+            >
+              <div className="flex items-center gap-2">
+                <CheckSquare className="w-4 h-4 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                    What To Do
+                  </h4>
+                  {!isExpanded && whatToDo.length > 0 && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
+                      {whatToDo[0]}
+                    </p>
+                  )}
+                </div>
               </div>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
+              {whatToDo.map((item, idx) => (
+                <div key={idx} className="flex items-start gap-2.5">
+                  <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item}
+                  </p>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })()}
 
-      {/* What's Next - Collapsible */}
-      {whatsNext && (
-        <Collapsible open={expandedSections.has('next')}>
-          <CollapsibleTrigger 
-            onClick={() => toggleSection('next')}
-            className="flex items-center justify-between w-full group"
-          >
-            <div className="flex items-center gap-2">
-              <ArrowRight className="w-4 h-4 text-primary" />
-              <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                What's Next
-              </h4>
-            </div>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${expandedSections.has('next') ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pl-1 mt-3 space-y-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {whatsNext}
-            </p>
-            {prepTip && (
-              <div className="flex items-start gap-2.5 p-3 bg-accent/20 rounded-lg border border-border/40">
-                <Compass className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  <span className="font-medium text-foreground">Prep tip:</span> {prepTip}
-                </p>
+      {/* What's Next - Collapsible with preview */}
+      {whatsNext && (() => {
+        const isExpanded = expandedSections.has('next');
+        
+        return (
+          <Collapsible open={isExpanded}>
+            <CollapsibleTrigger 
+              onClick={() => toggleSection('next')}
+              className="flex items-center justify-between w-full group"
+            >
+              <div className="flex items-center gap-2">
+                <ArrowRight className="w-4 h-4 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
+                    What's Next
+                  </h4>
+                  {!isExpanded && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">
+                      {whatsNext}
+                    </p>
+                  )}
+                </div>
               </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-1 mt-3 space-y-3">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {whatsNext}
+              </p>
+              {prepTip && (
+                <div className="flex items-start gap-2.5 p-3 bg-accent/20 rounded-lg border border-border/40">
+                  <Compass className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="font-medium text-foreground">Prep tip:</span> {prepTip}
+                  </p>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
+        );
+      })()}
       </div>
     </div>
   );
