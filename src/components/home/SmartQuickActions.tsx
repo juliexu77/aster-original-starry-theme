@@ -163,41 +163,16 @@ export const SmartQuickActions = ({
             </button>
           ))}
           
-          <div className="grid grid-cols-3 gap-2 pt-2">
-            {topSuggestions.length < 3 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-                  className="w-full"
-                >
-                  <span className="mr-2">+</span>
-                  Log Sleep
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-                  className="w-full"
-                >
-                  <span className="mr-2">+</span>
-                  Log Feed
-                </Button>
-              </>
-            )}
-            {chatComponent && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsChatOpen(true)}
-                className="w-full col-span-1"
-              >
-                <MessageCircle className="w-4 h-4 mr-1" />
-                Chat
-              </Button>
-            )}
-          </div>
+          {chatComponent && (
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="w-full mt-3 text-center group"
+            >
+              <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+                Ask Me Anything →
+              </span>
+            </button>
+          )}
         </div>
       </div>
       
