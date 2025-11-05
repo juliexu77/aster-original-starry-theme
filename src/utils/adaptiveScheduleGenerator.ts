@@ -286,10 +286,18 @@ export function generateAdaptiveSchedule(
   let bedtimeReason = '';
   
   // Historical average: average of night sleep start times over last 7 days
+  // Detect night sleep by TIMING (6 PM - midnight) not just the isNightSleep flag
   const sevenDaysAgo = new Date(scheduleStartTime);
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const nightStarts: number[] = activities
-    .filter(a => a.type === 'nap' && a.details?.startTime && a.details?.isNightSleep)
+    .filter(a => {
+      if (a.type !== 'nap' || !a.details?.startTime) return false;
+      const startTime = parseTimeString(a.details.startTime);
+      if (!startTime) return false;
+      const hour = startTime.getHours();
+      // Night sleep typically starts between 6 PM (18) and midnight (23)
+      return hour >= 18 && hour <= 23;
+    })
     .filter(a => new Date(a.loggedAt) >= sevenDaysAgo)
     .map(a => parseTimeString(a.details!.startTime))
     .filter((d): d is Date => !!d)
