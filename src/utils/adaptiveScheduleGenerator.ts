@@ -235,6 +235,11 @@ export function generateAdaptiveSchedule(
     });
   }
   
+  // Calculate baby's age in months
+  const babyAgeMonths = babyBirthday 
+    ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+    : null;
+  
   // Generate nap schedule with AI-predicted nap count
   const napSchedule = generateNapSchedule(
     scheduleStartTime,
@@ -242,7 +247,8 @@ export function generateAdaptiveSchedule(
     napDurationsByPosition,
     napTimingsMinutesFromWake,
     isInTransition,
-    transitioningToCount
+    transitioningToCount,
+    babyAgeMonths
   );
   
   events.push(...napSchedule);
@@ -418,20 +424,69 @@ export function generateAdaptiveSchedule(
     ? aiPrediction.transition_note 
     : undefined;
   
+  
+  // Calculate accuracy score by comparing with today's activities
+  let accuracyScore = 0;
+  if (hasActualWake && todayActivities.length >= 3) {
+    let accurateCount = 0;
+    let totalPredictions = 0;
+    
+    // Check wake accuracy (already logged)
+    if (hasActualWake) {
+      accurateCount++;
+      totalPredictions++;
+    }
+    
+    // Check nap accuracies
+    const todayNaps = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+    const predictedNaps = events.filter(e => e.type === 'nap');
+    
+    todayNaps.forEach(actualNap => {
+      if (!actualNap.details?.startTime) return;
+      const actualTime = parseTimeString(actualNap.details.startTime);
+      if (!actualTime) return;
+      
+      // Find closest predicted nap
+      const actualMinutes = actualTime.getHours() * 60 + actualTime.getMinutes();
+      const closestPredicted = predictedNaps.reduce((closest, pred) => {
+        const predTime = parseTimeString(pred.time);
+        if (!predTime) return closest;
+        const predMinutes = predTime.getHours() * 60 + predTime.getMinutes();
+        const diff = Math.abs(predMinutes - actualMinutes);
+        
+        if (!closest || diff < closest.diff) {
+          return { pred, diff };
+        }
+        return closest;
+      }, null as { pred: ScheduleEvent; diff: number } | null);
+      
+      if (closestPredicted && closestPredicted.diff <= 30) {
+        accurateCount++;
+      }
+      totalPredictions++;
+    });
+    
+    if (totalPredictions > 0) {
+      accuracyScore = Math.round((accurateCount / totalPredictions) * 100);
+    }
+  }
+  
   console.log('✅ Adaptive schedule generated:', {
     eventsCount: events.length,
     confidence: overallConfidence,
     hasActualWake,
     napCount,
     isInTransition,
-    usedAIPrediction: !!aiPrediction
+    usedAIPrediction: !!aiPrediction,
+    accuracyScore
   });
   
   return {
     events,
     confidence: overallConfidence,
     basedOn,
-    adjustmentNote
+    adjustmentNote,
+    accuracyScore: accuracyScore > 0 ? accuracyScore : undefined
   };
 }
 
@@ -483,7 +538,8 @@ function generateNapSchedule(
   napDurationsByPosition: Map<number, number[]>,
   timingsFromWake: number[],
   isInTransition: boolean,
-  transitioningToCount: number | null
+  transitioningToCount: number | null,
+  babyAgeMonths: number | null
 ): ScheduleEvent[] {
   const naps: ScheduleEvent[] = [];
   
@@ -522,7 +578,7 @@ function generateNapSchedule(
     }
   }
   
-  // Generate nap events
+  // Generate initial nap events
   napStartTimes.forEach((minutesFromWake, index) => {
     const napTime = new Date(wakeTime.getTime() + minutesFromWake * 60000);
     
@@ -558,6 +614,58 @@ function generateNapSchedule(
       reasoning: confidence === 'low' ? 'Nap schedule transitioning' : 'Based on typical nap timing'
     });
   });
+  
+  // Age-appropriate total day sleep recommendations (in hours)
+  const getRecommendedDaySleep = (months: number | null): number => {
+    if (months === null) return 3.5; // default
+    if (months <= 3) return 5.0;  // 0-3 months: ~5h
+    if (months <= 6) return 4.0;  // 4-6 months: ~4h
+    if (months <= 9) return 3.5;  // 7-9 months: ~3.5h
+    if (months <= 12) return 3.0; // 10-12 months: ~3h
+    if (months <= 18) return 2.5; // 13-18 months: ~2.5h
+    return 2.0; // 18+ months: ~2h
+  };
+  
+  // Validate total day sleep and adjust last nap if needed
+  const recommendedHours = getRecommendedDaySleep(babyAgeMonths);
+  const recommendedMinutes = recommendedHours * 60;
+  
+  const parseDurationToMinutes = (dur: string): number => {
+    const match = dur.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/i);
+    if (!match) return 90;
+    const h = match[1] ? parseInt(match[1]) : 0;
+    const m = match[2] ? parseInt(match[2]) : 0;
+    return h * 60 + m;
+  };
+  
+  const totalDaySleepMinutes = naps.reduce((sum, nap) => sum + parseDurationToMinutes(nap.duration || '90m'), 0);
+  
+  console.log('💤 Day sleep validation:', {
+    ageMonths: babyAgeMonths,
+    recommendedHours,
+    totalScheduledHours: (totalDaySleepMinutes / 60).toFixed(1),
+    napCount: naps.length
+  });
+  
+  // If total exceeds recommendation by more than 30 minutes, shorten last nap
+  if (totalDaySleepMinutes > recommendedMinutes + 30 && naps.length > 0) {
+    const excess = totalDaySleepMinutes - recommendedMinutes;
+    const lastNap = naps[naps.length - 1];
+    const lastNapMinutes = parseDurationToMinutes(lastNap.duration || '90m');
+    const newLastNapMinutes = Math.max(30, lastNapMinutes - excess); // Minimum 30 min nap
+    
+    naps[naps.length - 1] = {
+      ...lastNap,
+      duration: formatDuration(newLastNapMinutes),
+      notes: `${lastNap.notes} (adjusted for age-appropriate sleep)`
+    };
+    
+    console.log('🔧 Shortened last nap:', {
+      from: formatDuration(lastNapMinutes),
+      to: formatDuration(newLastNapMinutes),
+      reason: 'Exceeded recommended day sleep'
+    });
+  }
   
   return naps;
 }
