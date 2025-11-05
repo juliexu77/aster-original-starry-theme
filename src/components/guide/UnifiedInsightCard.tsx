@@ -65,10 +65,10 @@ export const UnifiedInsightCard = ({
             <Collapsible open={isExpanded}>
               <CollapsibleTrigger 
                 onClick={() => toggleSection('know')}
-                className="flex items-center justify-between w-full group"
+                className="flex items-start justify-between w-full group"
               >
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-4 h-4 text-primary" />
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                       What to Know
@@ -80,7 +80,7 @@ export const UnifiedInsightCard = ({
                     )}
                   </div>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
                 <p className="text-sm text-muted-foreground leading-relaxed">
@@ -99,10 +99,10 @@ export const UnifiedInsightCard = ({
           <Collapsible open={isExpanded}>
             <CollapsibleTrigger 
               onClick={() => toggleSection('do')}
-              className="flex items-center justify-between w-full group"
+              className="flex items-start justify-between w-full group"
             >
-              <div className="flex items-center gap-2">
-                <CheckSquare className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-2">
+                <CheckSquare className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                     What To Do
@@ -114,7 +114,7 @@ export const UnifiedInsightCard = ({
                   )}
                 </div>
               </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-2.5 pl-1 mt-3">
               {whatToDo.map((item, idx) => (
@@ -138,10 +138,10 @@ export const UnifiedInsightCard = ({
           <Collapsible open={isExpanded}>
             <CollapsibleTrigger 
               onClick={() => toggleSection('next')}
-              className="flex items-center justify-between w-full group"
+              className="flex items-start justify-between w-full group"
             >
-              <div className="flex items-center gap-2">
-                <ArrowRight className="w-4 h-4 text-primary" />
+              <div className="flex items-start gap-2">
+                <ArrowRight className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
                     What's Next
@@ -153,7 +153,7 @@ export const UnifiedInsightCard = ({
                   )}
                 </div>
               </div>
-              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-4 h-4 text-muted-foreground group-hover:text-foreground transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`} />
             </CollapsibleTrigger>
             <CollapsibleContent className="pl-1 mt-3 space-y-3">
               <p className="text-sm text-muted-foreground leading-relaxed">
