@@ -43,7 +43,8 @@ export const useHomeTabIntelligence = (
   activities: Activity[],
   ongoingNap: Activity | null,
   babyName: string = 'Baby',
-  onAddActivity?: (type: 'feed' | 'nap') => void
+  onAddActivity?: (type: 'feed' | 'nap') => void,
+  babyBirthday?: string
 ) => {
   // Use the prediction engine for intelligent forecasting
   const { prediction } = usePredictionEngine(activities);
@@ -345,7 +346,7 @@ export const useHomeTabIntelligence = (
     return suggestions;
   }, [activities, currentActivity, onAddActivity]);
 
-  // Calculate today's pulse deviations
+  // Calculate today's pulse deviations with intelligent analysis
   const todaysPulse = useMemo((): { deviations: DeviationData[]; biggestDeviation?: any } => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -354,38 +355,190 @@ export const useHomeTabIntelligence = (
       new Date(a.loggedAt) >= todayStart
     );
 
-    const napsToday = todayActivities.filter(a => a.type === 'nap');
+    // Calculate baby age in months
+    let babyAgeMonths = 0;
+    if (babyBirthday) {
+      const birthDate = new Date(babyBirthday);
+      babyAgeMonths = Math.max(0, 
+        (now.getFullYear() - birthDate.getFullYear()) * 12 + 
+        (now.getMonth() - birthDate.getMonth())
+      );
+    }
+
+    // Age-appropriate baselines (feeds per day, naps per day)
+    const getExpectedRanges = (ageMonths: number) => {
+      if (ageMonths < 1) return { feeds: [8, 12], naps: [4, 6], wakeWindow: [45, 90] };
+      if (ageMonths < 3) return { feeds: [7, 10], naps: [4, 5], wakeWindow: [60, 120] };
+      if (ageMonths < 6) return { feeds: [6, 8], naps: [3, 4], wakeWindow: [90, 150] };
+      if (ageMonths < 9) return { feeds: [5, 7], naps: [3, 3], wakeWindow: [120, 180] };
+      if (ageMonths < 12) return { feeds: [4, 6], naps: [2, 3], wakeWindow: [150, 210] };
+      return { feeds: [3, 5], naps: [1, 2], wakeWindow: [180, 300] };
+    };
+
+    const expected = getExpectedRanges(babyAgeMonths);
+
+    // Get last 7 days for pattern analysis
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const last7DaysActivities = activities.filter(a => 
+      new Date(a.loggedAt) >= sevenDaysAgo
+    );
+
+    // Calculate 7-day averages
+    const daysWithData = new Set<string>();
+    last7DaysActivities.forEach(a => {
+      const date = new Date(a.loggedAt).toDateString();
+      daysWithData.add(date);
+    });
+    const numDays = Math.max(1, daysWithData.size);
+
+    const last7DaysNaps = last7DaysActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+    const last7DaysFeeds = last7DaysActivities.filter(a => a.type === 'feed');
+    
+    const avg7DayNaps = last7DaysNaps.length / numDays;
+    const avg7DayFeeds = last7DaysFeeds.length / numDays;
+
+    // Today's counts
+    const napsToday = todayActivities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
     const feedsToday = todayActivities.filter(a => a.type === 'feed');
+    
+    const napCount = napsToday.length;
+    const feedCount = feedsToday.length;
+
+    // Analyze sleep
+    let sleepStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
+    let sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} so far`;
+    let sleepHasDeviation = false;
+
+    if (napCount === 0 && now.getHours() >= 12) {
+      sleepStatus = 'needs-attention';
+      sleepDetails = 'No naps logged yet today';
+      sleepHasDeviation = true;
+    } else if (napCount < expected.naps[0] - 1 && now.getHours() >= 16) {
+      sleepStatus = 'needs-attention';
+      sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} — below expected ${expected.naps[0]}-${expected.naps[1]}`;
+      sleepHasDeviation = true;
+    } else if (napCount > avg7DayNaps * 1.3 && napCount > 2) {
+      sleepStatus = 'unusually-good';
+      sleepDetails = `${napCount} naps today — more than usual (avg: ${avg7DayNaps.toFixed(1)})`;
+      sleepHasDeviation = true;
+    } else if (napCount >= expected.naps[0] && napCount <= expected.naps[1]) {
+      sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} — right on track`;
+    }
+
+    // Analyze feeding
+    let feedStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
+    let feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} so far`;
+    let feedHasDeviation = false;
+
+    if (feedCount === 0 && now.getHours() >= 10) {
+      feedStatus = 'needs-attention';
+      feedDetails = 'No feeds logged yet today';
+      feedHasDeviation = true;
+    } else if (feedCount < expected.feeds[0] - 2 && now.getHours() >= 16) {
+      feedStatus = 'needs-attention';
+      feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} — below expected ${expected.feeds[0]}-${expected.feeds[1]}`;
+      feedHasDeviation = true;
+    } else if (feedCount > avg7DayFeeds * 1.4) {
+      feedStatus = 'unusually-good';
+      feedDetails = `${feedCount} feeds today — cluster feeding (avg: ${avg7DayFeeds.toFixed(1)})`;
+      feedHasDeviation = true;
+    } else if (feedCount >= expected.feeds[0] && feedCount <= expected.feeds[1]) {
+      feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''}, right on schedule`;
+    }
+
+    // Analyze schedule timing
+    let scheduleStatus: 'normal' | 'needs-attention' | 'unusually-good' = 'normal';
+    let scheduleDetails = 'On track';
+    let scheduleHasDeviation = false;
+
+    // Check wake window if baby is currently awake
+    if (currentActivity?.type === 'awake' && currentActivity.duration) {
+      const currentWakeMinutes = currentActivity.duration;
+      const expectedMaxWake = expected.wakeWindow[1];
+      
+      if (currentWakeMinutes > expectedMaxWake + 30) {
+        scheduleStatus = 'needs-attention';
+        scheduleDetails = `Awake ${Math.floor(currentWakeMinutes / 60)}h ${currentWakeMinutes % 60}m — longer than typical`;
+        scheduleHasDeviation = true;
+      } else if (currentWakeMinutes > expectedMaxWake) {
+        scheduleDetails = `Approaching nap window`;
+      }
+    }
+
+    // Check feed spacing
+    if (feedsToday.length >= 2) {
+      const sortedFeeds = [...feedsToday].sort((a, b) => 
+        new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime()
+      );
+      
+      const gaps = [];
+      for (let i = 1; i < sortedFeeds.length; i++) {
+        const gap = differenceInMinutes(
+          new Date(sortedFeeds[i].loggedAt),
+          new Date(sortedFeeds[i - 1].loggedAt)
+        );
+        gaps.push(gap);
+      }
+      
+      const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+      const minGap = Math.min(...gaps);
+      
+      // Detect cluster feeding
+      if (gaps.filter(g => g < 90).length >= 2) {
+        scheduleStatus = 'needs-attention';
+        scheduleDetails = 'Cluster feeding detected — possible growth spurt';
+        scheduleHasDeviation = true;
+      } else if (avgGap >= 180 && avgGap <= 240 && babyAgeMonths < 6) {
+        scheduleStatus = 'unusually-good';
+        scheduleDetails = 'Great feed spacing today';
+        scheduleHasDeviation = true;
+      }
+    }
 
     const deviations: DeviationData[] = [
       {
         category: 'sleep',
-        status: 'normal',
+        status: sleepStatus,
         icon: <Moon className="w-5 h-5" />,
         title: 'Sleep',
-        details: `${napsToday.length} nap${napsToday.length !== 1 ? 's' : ''} so far`,
-        hasDeviation: false
+        details: sleepDetails,
+        hasDeviation: sleepHasDeviation
       },
       {
         category: 'feeding',
-        status: 'normal',
+        status: feedStatus,
         icon: <Milk className="w-5 h-5" />,
         title: 'Feeding',
-        details: `${feedsToday.length} feed${feedsToday.length !== 1 ? 's' : ''}, right on schedule`,
-        hasDeviation: false
+        details: feedDetails,
+        hasDeviation: feedHasDeviation
       },
       {
         category: 'schedule',
-        status: 'normal',
+        status: scheduleStatus,
         icon: <Sun className="w-5 h-5" />,
         title: 'Schedule Timing',
-        details: 'On track',
-        hasDeviation: false
+        details: scheduleDetails,
+        hasDeviation: scheduleHasDeviation
       }
     ];
 
-    return { deviations };
-  }, [activities]);
+    // Identify biggest deviation for AI explanation
+    let biggestDeviation;
+    const deviationsWithIssues = deviations.filter(d => d.hasDeviation);
+    if (deviationsWithIssues.length > 0) {
+      const priority = deviationsWithIssues.find(d => d.status === 'needs-attention') || deviationsWithIssues[0];
+      biggestDeviation = {
+        description: `${priority.title}: ${priority.details}`,
+        normal: `Expected ${priority.category === 'sleep' ? expected.naps[0] + '-' + expected.naps[1] + ' naps' : expected.feeds[0] + '-' + expected.feeds[1] + ' feeds'}`,
+        actual: priority.details,
+        context: `7-day average: ${priority.category === 'sleep' ? avg7DayNaps.toFixed(1) + ' naps' : avg7DayFeeds.toFixed(1) + ' feeds'}`
+      };
+    }
+
+    return { deviations, biggestDeviation };
+  }, [activities, currentActivity, babyBirthday]);
 
   return {
     currentActivity,
