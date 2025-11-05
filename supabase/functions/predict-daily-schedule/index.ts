@@ -208,7 +208,7 @@ Rules:
                   },
                   transition_note: {
                     type: 'string',
-                    description: 'If transitioning, brief concise note (max 2 rows). Use baby name from context, e.g., "Emma is moving from 3 to 2 naps."'
+                    description: 'If transitioning, write a warm, encouraging 1-2 sentence note that helps parents understand what\'s happening. Use baby name from context. Focus on what to expect and reassurance. Examples: "Caleb is beautifully transitioning from 3 to 2 naps — you might see some longer naps or earlier bedtimes as his body adjusts" or "Emma is moving toward 2 naps a day, which is perfect for her age. Some days might still have 3 shorter naps, and that\'s completely normal during this shift."'
                   },
                   reasoning: {
                     type: 'string',
