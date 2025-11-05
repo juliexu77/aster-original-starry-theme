@@ -516,7 +516,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
             babyBirthday: household.baby_birthday,
-            aiPrediction: aiPrediction, // Pass schedule prediction for consistency
+            aiPrediction: {
+              ...aiPrediction,
+              predicted_bedtime: predictedSchedule?.predictedBedtime // Add bedtime from adaptive schedule
+            },
             timezone: userTimezone
           }
         });

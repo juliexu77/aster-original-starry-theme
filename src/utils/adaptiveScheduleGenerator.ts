@@ -25,6 +25,8 @@ export interface AdaptiveSchedule {
   adjustmentNote?: string;
   accuracyScore?: number; // 0-100 percentage
   lastUpdated?: string;
+  predictedBedtime?: string; // e.g., "7:30 PM"
+  bedtimeConfidence?: 'high' | 'medium' | 'low';
 }
 
 /**
@@ -326,8 +328,10 @@ export function generateAdaptiveSchedule(
     confidence: bedtimeConfidence
   });
   
+  const predictedBedtimeStr = formatTime(computedBedtime!);
+  
   events.push({
-    time: formatTime(computedBedtime!),
+    time: predictedBedtimeStr,
     type: 'bed',
     notes: 'Bedtime',
     confidence: bedtimeConfidence,
@@ -431,7 +435,9 @@ export function generateAdaptiveSchedule(
     confidence: overallConfidence,
     basedOn,
     adjustmentNote,
-    accuracyScore: accuracyScore > 0 ? accuracyScore : undefined
+    accuracyScore: accuracyScore > 0 ? accuracyScore : undefined,
+    predictedBedtime: predictedBedtimeStr,
+    bedtimeConfidence
   };
 }
 
