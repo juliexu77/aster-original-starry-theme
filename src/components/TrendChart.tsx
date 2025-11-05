@@ -69,13 +69,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     };
   };
 
-  // Calculate real feed volume data for the past 7 days
+  // Calculate real feed volume data for the past 7 days (excluding today)
   const generateFeedData = () => {
     const days = 7;
     const data = [];
     const today = new Date();
     
-    for (let i = days - 1; i >= 0; i--) {
+    // Start from yesterday (i = 1) to exclude incomplete current day
+    for (let i = days; i >= 1; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
       
@@ -177,13 +178,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return 0;
   };
 
-  // Calculate real nap duration data for the past 7 days
+  // Calculate real nap duration data for the past 7 days (excluding today)
   const generateNapData = () => {
     const days = 7;
     const data = [];
     const today = new Date();
     
-    for (let i = days - 1; i >= 0; i--) {
+    // Start from yesterday (i = 1) to exclude incomplete current day
+    for (let i = days; i >= 1; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -348,6 +350,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   
   const prevNapSummary = {
     avgDuration: prevWeekNapData.reduce((sum, d) => sum + d.value, 0) / prevWeekNapData.filter(d => d.value > 0).length || 0,
+    avgNapsPerDay: prevWeekNapData.reduce((sum, d) => sum + d.napCount, 0) / prevWeekNapData.filter(d => d.napCount > 0).length || 0,
   };
   
   // Calculate percentage changes
@@ -361,6 +364,10 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     
   const napDurationChange = prevNapSummary.avgDuration > 0
     ? ((napSummary.avgDuration - prevNapSummary.avgDuration) / prevNapSummary.avgDuration * 100)
+    : 0;
+  
+  const napCountChange = prevNapSummary.avgNapsPerDay > 0
+    ? (napSummary.avgDaytimeNapsPerDay - prevNapSummary.avgNapsPerDay)
     : 0;
   
   // Generate interpretive text based on patterns
@@ -618,9 +625,12 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
               <div className="text-2xl font-semibold text-foreground tracking-tight">
                 {napSummary.avgDaytimeNapsPerDay.toFixed(1)} <span className="text-base text-muted-foreground font-normal">naps/day</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Daytime only
-              </p>
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className={`w-3 h-3 ${napCountChange > 0 ? 'text-green-600' : napCountChange < 0 ? 'text-red-600' : 'text-muted-foreground'}`} />
+                <p className="text-xs text-muted-foreground">
+                  {napCountChange > 0 ? '+' : ''}{napCountChange.toFixed(1)} vs last week
+                </p>
+              </div>
             </div>
           </div>
         </div>
