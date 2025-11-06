@@ -401,13 +401,17 @@ export const ScheduleTimeline = ({
         </h3>
         <div className="flex items-center gap-2">
           {schedule.accuracyScore !== undefined ? (
-            <span className="text-xs text-muted-foreground">
-              {schedule.accuracyScore}% accurate
-            </span>
+            <div className="px-2.5 py-1 rounded-md bg-[#9b2c2c]/10 border border-[#9b2c2c]/20">
+              <span className="text-[11px] font-medium text-[#9b2c2c]">
+                {schedule.accuracyScore}% prediction accuracy
+              </span>
+            </div>
           ) : (
-            <span className="text-xs text-muted-foreground/70">
-              Calculating...
-            </span>
+            <div className="px-2.5 py-1 rounded-md bg-muted/50 border border-border/50">
+              <span className="text-[11px] font-medium text-muted-foreground/70">
+                Calculating...
+              </span>
+            </div>
           )}
           {modelState && (
             <div className="relative">
