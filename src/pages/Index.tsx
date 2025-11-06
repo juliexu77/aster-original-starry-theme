@@ -10,6 +10,7 @@ import { GuideTab } from "@/components/GuideTab";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
 import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
+import { ExportCSVModal } from "@/components/ExportCSVModal";
 
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { TrendChart } from "@/components/TrendChart";
@@ -308,6 +309,7 @@ const ongoingNap = (() => {
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showReportConfig, setShowReportConfig] = useState(false);
+  const [showCSVExport, setShowCSVExport] = useState(false);
   const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
   const [showReportShare, setShowReportShare] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
@@ -757,7 +759,14 @@ const ongoingNap = (() => {
                   onClick={() => setShowReportConfig(true)}
                   className="text-sm text-foreground underline hover:text-primary transition-colors"
                 >
-                  Export
+                  Pediatrician Report
+                </button>
+                
+                <button 
+                  onClick={() => setShowCSVExport(true)}
+                  className="text-sm text-foreground underline hover:text-primary transition-colors"
+                >
+                  Export to CSV
                 </button>
               </div>
             </div>
@@ -1368,6 +1377,13 @@ return (
               console.error('Error deleting activity:', error);
             }
           }}
+        />
+
+        <ExportCSVModal
+          open={showCSVExport}
+          onOpenChange={setShowCSVExport}
+          activities={activities}
+          babyName={babyProfile?.name}
         />
 
         <ReportConfigModal
