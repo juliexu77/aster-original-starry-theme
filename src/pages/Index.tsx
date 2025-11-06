@@ -23,7 +23,6 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Settings, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
@@ -44,7 +43,7 @@ const Index = () => {
   const { user, loading } = useAuth();
   const { t } = useLanguage();
   const { userProfile } = useUserProfile();
-  const { nightSleepEndHour } = useNightSleepWindow();
+  const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const {
     household, 
     collaborators,
@@ -119,51 +118,64 @@ const Index = () => {
     }
     
     if (activity.type === 'nap') {
-      // For completed naps, detect if this is night sleep based on end time
-      if (activity.details?.endTime) {
-        const nightSleep = detectNightSleep(rawActivities, nightSleepEndHour);
-        const isNightSleep = nightSleep?.id === activity.id;
-        
-        return {
-          ...activity,
-          details: {
-            ...activity.details,
-            isNightSleep
-          }
-        };
-      }
+      // Detect night sleep based on user settings (fallback to 7 PM - 7 AM)
+      const nightStart = nightSleepStartHour ?? 19; // Default 7 PM
+      const nightEnd = nightSleepEndHour ?? 7; // Default 7 AM
       
-      // For ongoing naps, check if start time is close to night sleep time
-      if (activity.details?.startTime) {
-        const parseTimeToMinutes = (timeStr: string): number | null => {
-          const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-          if (!match) return null;
-          
-          let hours = parseInt(match[1], 10);
-          const minutes = parseInt(match[2], 10);
-          const period = match[3].toUpperCase();
-          
-          if (period === 'PM' && hours !== 12) hours += 12;
-          if (period === 'AM' && hours === 12) hours = 0;
-          
-          return hours * 60 + minutes;
-        };
+      const parseTimeToMinutes = (timeStr: string): number | null => {
+        const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (!match) return null;
         
-        const startMinutes = parseTimeToMinutes(activity.details.startTime);
-        if (startMinutes !== null) {
-          // If nap starts between 6 PM and 9 AM, it's likely night sleep
-          const isNightTime = startMinutes >= 18 * 60 || startMinutes <= 9 * 60;
-          
-          return {
-            ...activity,
-            details: {
-              ...activity.details,
-              isNightSleep: isNightTime
-            }
-          };
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const period = match[3].toUpperCase();
+        
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        return hours * 60 + minutes;
+      };
+      
+      const isInNightWindow = (timeMinutes: number): boolean => {
+        const startMinutes = nightStart * 60;
+        const endMinutes = nightEnd * 60;
+        
+        // Handle overnight window (e.g., 19:00 to 07:00)
+        if (startMinutes > endMinutes) {
+          return timeMinutes >= startMinutes || timeMinutes <= endMinutes;
+        }
+        // Handle same-day window
+        return timeMinutes >= startMinutes && timeMinutes <= endMinutes;
+      };
+      
+      const startTime = activity.details?.startTime;
+      const endTime = activity.details?.endTime;
+      
+      let isNightSleep = false;
+      
+      if (startTime) {
+        const startMinutes = parseTimeToMinutes(startTime);
+        if (startMinutes !== null && isInNightWindow(startMinutes)) {
+          isNightSleep = true;
         }
       }
+      
+      if (!isNightSleep && endTime) {
+        const endMinutes = parseTimeToMinutes(endTime);
+        if (endMinutes !== null && isInNightWindow(endMinutes)) {
+          isNightSleep = true;
+        }
+      }
+      
+      return {
+        ...activity,
+        details: {
+          ...activity.details,
+          isNightSleep
+        }
+      };
     }
+    
     return activity;
   });
 
@@ -897,9 +909,9 @@ const ongoingNap = (() => {
                                     const previousDayActivities = activityGroups[previousDateKey] || [];
                                     const activitiesToCheck = [...previousDayActivities, ...currentDayActivities];
                                     
-                                    // Detect night sleep from these activities
-                                    const nightSleep = detectNightSleep(activitiesToCheck, nightSleepEndHour);
-                                    const wakeTime = nightSleep ? getWakeTime(nightSleep) : null;
+                                    // Detect night sleep from these activities (simplified: just find any nap with isNightSleep flag)
+                                    const nightSleep = activitiesToCheck.find(a => a.type === 'nap' && a.details?.isNightSleep && a.details?.endTime);
+                                    const wakeTime = nightSleep?.details?.endTime || null;
                                     
                                     // Check if this night sleep's wake-up belongs to the current date
                                     let showWakeUpHere = false;

@@ -438,7 +438,7 @@ export const ScheduleTimeline = ({
       
       {/* Transition toggle - unified button with two sides */}
       {isTransitioning && transitionNapCounts && (
-        <div className="flex items-start mb-3">
+        <div className="flex items-center justify-between mb-3">
           <div className="inline-flex rounded-lg border border-border/50 overflow-hidden">
             {(() => {
               // Always show lower nap count on the left
@@ -472,6 +472,11 @@ export const ScheduleTimeline = ({
               );
             })()}
           </div>
+          {schedule.accuracyScore !== undefined && schedule.accuracyScore > 0 && (
+            <span className="text-xs text-muted-foreground ml-auto">
+              {schedule.accuracyScore}% accurate
+            </span>
+          )}
         </div>
       )}
       

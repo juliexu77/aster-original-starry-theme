@@ -18,7 +18,6 @@ import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { ParentingChat } from "@/components/ParentingChat";
 import { useToast } from "@/hooks/use-toast";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
-import { detectNightSleep, getWakeTime } from "@/utils/nightSleepDetection";
 import { getDailySentiment as calculateDailySentiment } from "@/utils/sentimentAnalysis";
 import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDateFilters";
 import { useHousehold } from "@/hooks/useHousehold";
