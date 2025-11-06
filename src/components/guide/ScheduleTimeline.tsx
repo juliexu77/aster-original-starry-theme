@@ -387,7 +387,7 @@ export const ScheduleTimeline = ({
       </div>
       
       
-      {/* Recalculate button */}
+      {/* Recalculate button - for midday adjustments */}
       {onRecalculate && (
         <Button
           variant="outline"
@@ -396,7 +396,7 @@ export const ScheduleTimeline = ({
           className="w-full text-xs mb-2"
         >
           <Clock className="w-3 h-3 mr-2" />
-          Recalculate Schedule
+          Adjust rest of day
         </Button>
       )}
       

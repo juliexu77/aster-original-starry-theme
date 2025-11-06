@@ -448,17 +448,53 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // Use adaptive schedule (unified with Home tab prediction engine)
   const displaySchedule = adaptiveSchedule || predictedSchedule;
   
-  // Recalculate schedule function
+  // Auto-recalculate schedule when morning wake is logged
+  useEffect(() => {
+    if (!hasTier3Data) return;
+    
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    // Check if there's a wake-up logged today
+    const todayWakeActivity = enrichedActivities.find(a => {
+      const actDate = new Date(a.logged_at);
+      if (actDate < todayStart) return false;
+      
+      // Detect morning wake from night sleep end
+      if (a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep) {
+        const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (timeMatch) {
+          let hour = parseInt(timeMatch[1]);
+          const period = timeMatch[3].toUpperCase();
+          if (period === 'PM' && hour !== 12) hour += 12;
+          if (period === 'AM' && hour === 12) hour = 0;
+          return hour >= 4 && hour <= 11; // Morning wake between 4-11 AM
+        }
+      }
+      return false;
+    });
+    
+    // Auto-clear cache when morning wake is detected to force recalculation
+    if (todayWakeActivity) {
+      const hasRecalculatedToday = sessionStorage.getItem(`schedule-recalc-${todayStart.toDateString()}`);
+      if (!hasRecalculatedToday) {
+        console.log('🌅 Morning wake detected - auto-recalculating schedule');
+        localStorage.removeItem('aiPrediction');
+        localStorage.removeItem('aiPredictionLastFetch');
+        sessionStorage.setItem(`schedule-recalc-${todayStart.toDateString()}`, 'true');
+      }
+    }
+  }, [enrichedActivities, hasTier3Data]);
+  
+  // Recalculate schedule function - for manual midday adjustments
   const handleRecalculateSchedule = () => {
-    console.log('🔄 Manually recalculating schedule...');
-    // Clear cache and force regeneration
+    console.log('🔄 Manually recalculating schedule for midday adjustment...');
     localStorage.removeItem('aiPrediction');
     localStorage.removeItem('aiPredictionLastFetch');
     toast({
-      title: "Recalculating schedule",
-      description: "Schedule will update based on today's activities",
+      title: "Schedule adjusted",
+      description: "Rest of day updated based on latest activities",
     });
-    // Trigger re-render by clearing state
     setAiPrediction(null);
     setAiPredictionLoading(true);
   };
