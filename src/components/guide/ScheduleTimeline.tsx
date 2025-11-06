@@ -104,23 +104,49 @@ export const ScheduleTimeline = ({
     return `${adjustedHours}:${finalMinutes.toString().padStart(2, '0')} ${period}`;
   };
 
-  // Calculate end time from start time and duration
-  const calculateEndTime = (startTime: string, duration: string): string => {
+  // Calculate end time and recalculate duration to match rounded times
+  const calculateEndTimeAndDuration = (startTime: string, duration: string): { endTime: string; adjustedDuration: string } => {
+    // Parse the original start time (unrounded)
     const startMinutes = parseTime(startTime);
+    
+    // Round start time to nearest 10 minutes
+    const roundedStartMinutes = Math.round(startMinutes / 10) * 10;
+    
+    // Parse duration
     const durationMatch = duration.match(/(\d+)h?\s*(\d+)?m?/);
-    if (!durationMatch) return startTime;
+    if (!durationMatch) return { endTime: startTime, adjustedDuration: duration };
     
-    const hours = parseInt(durationMatch[1]) || 0;
-    const mins = parseInt(durationMatch[2]) || 0;
-    const durationMinutes = hours * 60 + mins;
+    const durationHours = parseInt(durationMatch[1]) || 0;
+    const durationMins = parseInt(durationMatch[2]) || 0;
+    const totalDurationMinutes = durationHours * 60 + durationMins;
     
-    const endMinutes = startMinutes + durationMinutes;
-    const endHours = Math.floor(endMinutes / 60) % 24;
-    const endMins = endMinutes % 60;
+    // Calculate end time from rounded start + duration
+    const rawEndMinutes = roundedStartMinutes + totalDurationMinutes;
+    
+    // Round end time to nearest 10 minutes
+    const roundedEndMinutes = Math.round(rawEndMinutes / 10) * 10;
+    
+    // Calculate the actual duration based on rounded times
+    const actualDurationMinutes = roundedEndMinutes - roundedStartMinutes;
+    
+    // Format end time
+    const endHours = Math.floor(roundedEndMinutes / 60) % 24;
+    const endMins = roundedEndMinutes % 60;
     const period = endHours >= 12 ? 'PM' : 'AM';
     const displayHours = endHours > 12 ? endHours - 12 : (endHours === 0 ? 12 : endHours);
+    const endTime = `${displayHours}:${endMins.toString().padStart(2, '0')} ${period}`;
     
-    return `${displayHours}:${endMins.toString().padStart(2, '0')} ${period}`;
+    // Format adjusted duration
+    const adjHours = Math.floor(actualDurationMinutes / 60);
+    const adjMins = actualDurationMinutes % 60;
+    let adjustedDuration = '';
+    if (adjHours > 0) {
+      adjustedDuration = `${adjHours}h ${adjMins}m`;
+    } else {
+      adjustedDuration = `${adjMins}m`;
+    }
+    
+    return { endTime, adjustedDuration };
   };
 
   // Get time block for an activity
@@ -195,11 +221,13 @@ export const ScheduleTimeline = ({
         });
       } else {
         napCounter++;
+        // Calculate properly rounded end time and adjusted duration
+        const { adjustedDuration } = calculateEndTimeAndDuration(event.time, event.duration || '1h 30m');
         groupedActivities.push({
           id: `nap-${i}`,
           type: 'nap-block',
           time: event.time,
-          napDuration: event.duration || '1h 30m',
+          napDuration: adjustedDuration,
           napNumber: napCounter,
           title: `Nap ${napCounter}`
         });
@@ -545,7 +573,8 @@ export const ScheduleTimeline = ({
                   if (prevActivity) {
                     let prevEndTime: string | undefined;
                     if (prevActivity.type === 'nap-block') {
-                      prevEndTime = calculateEndTime(prevActivity.time, prevActivity.napDuration || '1h 30m');
+                      const { endTime } = calculateEndTimeAndDuration(prevActivity.time, prevActivity.napDuration || '1h 30m');
+                      prevEndTime = endTime;
                     } else if (prevActivity.type === 'morning') {
                       prevEndTime = prevActivity.time;
                     } else if (prevActivity.type === 'bedtime' && prevActivity.endTime) {
@@ -581,7 +610,10 @@ export const ScheduleTimeline = ({
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-semibold text-foreground">
-                                {formatTime(activity.time)} - {calculateEndTime(activity.time, activity.napDuration || '1h 30m')}
+                                {(() => {
+                                  const { endTime, adjustedDuration } = calculateEndTimeAndDuration(activity.time, activity.napDuration || '1h 30m');
+                                  return `${formatTime(activity.time)} - ${endTime}`;
+                                })()}
                               </span>
                               <span className="text-xs font-medium text-muted-foreground">
                                 {activity.title} ({activity.napDuration?.replace('h', 'h ')?.replace('m', 'min') || '1h 30min'})

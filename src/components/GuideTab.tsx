@@ -197,16 +197,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
   const [aiPrediction, setAiPrediction] = useState<AISchedulePrediction | null>(null);
   const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
-  const [predictedSchedule, setPredictedSchedule] = useState<AdaptiveSchedule | null>(null);
-  const [lastActivityCount, setLastActivityCount] = useState(0);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [adjustmentContext, setAdjustmentContext] = useState<string>("");
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
     const stored = localStorage.getItem('smartRemindersEnabled');
     return stored !== null ? stored === 'true' : true; // Default enabled
   });
-  const previousScheduleRef = useRef<AdaptiveSchedule | null>(null);
-  const [scheduleUpdatedRecently, setScheduleUpdatedRecently] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [patternMilestones, setPatternMilestones] = useState<Set<string>>(() => {
     const stored = localStorage.getItem('patternMilestones');
@@ -447,8 +443,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone, aiPrediction]);
 
-  // Use adaptive schedule (unified with Home tab prediction engine)
-  const displaySchedule = adaptiveSchedule || predictedSchedule;
+  // Use adaptive schedule directly
+  const displaySchedule = adaptiveSchedule;
   
   // Calculate baby age for anticipatory transition windows
   const babyAgeInDays = useMemo(() => {
@@ -713,8 +709,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Enable smart reminders - only when we have adaptive schedule
   useSmartReminders({ 
-    schedule: displaySchedule as any, // Type compatibility with old interface
-    enabled: remindersEnabled && hasTier3Data && !!displaySchedule
+    schedule: adaptiveSchedule as any, // Type compatibility with old interface
+    enabled: remindersEnabled && hasTier3Data && !!adaptiveSchedule
   });
 
   // Sync reminder state with localStorage
@@ -1010,75 +1006,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
   }, [hasTier2Data, household, activities.length, aiPrediction]);
 
-  // Generate and update adaptive schedule using prediction engine
-  useEffect(() => {
-    if (!hasTier3Data) {
-      console.log('⚠️ Insufficient data for adaptive schedule, clearing schedule');
-      setPredictedSchedule(null);
-      return;
-    }
-
-    console.log('📅 Generating adaptive schedule with data:', {
-      hasTier3Data,
-      enrichedActivitiesCount: enrichedActivities.length,
-      hasBirthday: !!household?.baby_birthday,
-      lastActivityCount,
-      currentActivityCount: activities.length
-    });
-
-    try {
-      // Generate adaptive schedule using prediction engine (same as Home tab)
-      const activitiesForEngine = enrichedActivities.map(a => ({
-        id: a.id,
-        type: a.type as any,
-        time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        }),
-        loggedAt: a.logged_at,
-        timezone: userTimezone,
-        details: a.details
-      }));
-      
-      const schedule = generateAdaptiveSchedule(activitiesForEngine, household?.baby_birthday, aiPrediction);
-      
-      if (!schedule) {
-        console.error('❌ Failed to generate adaptive schedule - returned null');
-        setPredictedSchedule(null);
-        return;
-      }
-      
-      console.log('✅ Adaptive schedule generated:', {
-        eventsCount: schedule.events.length,
-        confidence: schedule.confidence,
-        basedOn: schedule.basedOn
-      });
-      
-      // Update refs and state
-      previousScheduleRef.current = schedule;
-      setPredictedSchedule(schedule);
-      setLastActivityCount(activities.length);
-      
-      // Show adaptive feedback indicator when schedule changes
-      const activityCountChanged = lastActivityCount > 0 && lastActivityCount !== activities.length;
-      if (activityCountChanged) {
-        setScheduleUpdatedRecently(true);
-        setTimeout(() => setScheduleUpdatedRecently(false), 3000);
-        
-        // Show toast notification
-        toast({
-          title: "Schedule Updated",
-          description: "Predictions adjusted based on recent activity",
-          duration: 3000,
-        });
-      }
-      
-    } catch (error) {
-      console.error('❌ Error generating adaptive schedule:', error);
-      setPredictedSchedule(null);
-    }
-  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, activities.length, lastActivityCount, userTimezone, toast]);
+  // Adaptive schedule is now generated via useMemo, no need for separate effect
 
   // 🎉 Celebrate accuracy improvements
   useEffect(() => {
@@ -1500,15 +1428,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               
               {displaySchedule && (
                 <>
-                  {scheduleUpdatedRecently && (
-                    <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg animate-fade-in mb-4">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      <p className="text-xs text-primary font-medium">
-                        Schedule adapted to recent activity
-                      </p>
-                    </div>
-                  )}
-                  <ScheduleTimeline 
+                  <ScheduleTimeline
                     schedule={activeDisplaySchedule} 
                     babyName={babyName}
                     onRecalculate={handleRecalculateSchedule}
