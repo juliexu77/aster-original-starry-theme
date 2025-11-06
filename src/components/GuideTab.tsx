@@ -434,7 +434,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         details: a.details
       }));
       
-      const schedule = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, aiPrediction);
+      const schedule = generateAdaptiveSchedule(
+        activitiesForEngine, 
+        household.baby_birthday, 
+        aiPrediction,
+        activities.length // Pass total activities count for "basedOn" text
+      );
       console.log('✅ Adaptive schedule generated:', schedule);
       return schedule;
     } catch (error) {

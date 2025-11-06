@@ -37,7 +37,8 @@ export interface AdaptiveSchedule {
 export function generateAdaptiveSchedule(
   activities: Activity[],
   babyBirthday?: string,
-  aiPrediction?: AISchedulePrediction
+  aiPrediction?: AISchedulePrediction,
+  totalActivitiesCount?: number
 ): AdaptiveSchedule {
   console.log('🔮 Generating adaptive schedule:', {
     hasAIPrediction: !!aiPrediction,
@@ -401,11 +402,10 @@ export function generateAdaptiveSchedule(
     }
   }
   
-  const activitiesCount = activities.length;
-  const daysOfData = Math.ceil(activitiesCount / 8);
-  const basedOn = aiPrediction 
-    ? `AI pattern analysis: ${aiPrediction.reasoning}`
-    : `Based on ${activitiesCount} activities over ${daysOfData} days`;
+  // Use total activities count if provided, otherwise use filtered count
+  const displayActivitiesCount = totalActivitiesCount ?? activities.length;
+  const daysOfData = Math.ceil(displayActivitiesCount / 8);
+  const basedOn = `${displayActivitiesCount} activities over ${daysOfData} days`;
   
   const adjustmentNote = aiPrediction?.is_transitioning 
     ? aiPrediction.transition_note 
