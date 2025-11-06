@@ -90,7 +90,7 @@ useEffect(() => {
         <div className="space-y-4">
           {/* Display */}
           <div className="bg-muted/50 rounded-lg p-4">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-2">
               <div className="text-3xl font-bold text-foreground flex-1 text-center">
                 {value || "0"}
               </div>
@@ -103,17 +103,17 @@ useEffect(() => {
                     try { localStorage.setItem('lastUsedUnit', value); } catch (e) {}
                   }
                 }}
-                className="border border-input rounded-lg overflow-hidden"
+                className="rounded-lg overflow-hidden"
               >
                 <ToggleGroupItem 
                   value="oz" 
-                  className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground border-r border-input"
+                  className="h-10 px-4 border border-input data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:border-accent data-[state=off]:bg-background"
                 >
                   oz
                 </ToggleGroupItem>
                 <ToggleGroupItem 
                   value="ml" 
-                  className="h-10 px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+                  className="h-10 px-4 border border-input data-[state=on]:bg-accent data-[state=on]:text-accent-foreground data-[state=on]:border-accent data-[state=off]:bg-background"
                 >
                   mL
                 </ToggleGroupItem>
