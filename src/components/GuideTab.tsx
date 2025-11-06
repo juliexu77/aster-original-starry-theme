@@ -663,18 +663,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         return null;
       }
       
+      console.log('🔄 Generating alternate schedule:', {
+        currentNapCount: aiPrediction.total_naps_today,
+        alternateNapCount,
+        transitionInfo,
+        showingAlternate: showAlternateSchedule
+      });
+      
       const alternateAIPrediction: AISchedulePrediction = {
         total_naps_today: alternateNapCount,
         confidence: aiPrediction.confidence,
         is_transitioning: true,
         reasoning: `Alternative ${alternateNapCount}-nap schedule`
       };
-      
-      console.log('🔄 Generating alternate schedule:', {
-        currentNapCount: aiPrediction.total_naps_today,
-        alternateNapCount,
-        showingAlternate: showAlternateSchedule
-      });
       
       const activitiesForEngine = enrichedActivities.map(a => ({
         id: a.id,
@@ -703,14 +704,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     ? alternateSchedule 
     : displaySchedule;
   
-  console.log('📅 Schedule Debug:', {
-    hasMinimumData,
-    hasTier3Data,
-    hasAdaptiveSchedule: !!adaptiveSchedule,
-    hasPredictedSchedule: !!predictedSchedule,
+  console.log('📅 Active Schedule Debug:', {
+    showAlternateSchedule,
+    hasAlternateSchedule: !!alternateSchedule,
     hasDisplaySchedule: !!displaySchedule,
-    enrichedActivitiesCount: enrichedActivities.length,
-    accuracyScore: displaySchedule?.accuracyScore
+    displayScheduleNaps: displaySchedule?.events.filter(e => e.type === 'nap').length,
+    alternateScheduleNaps: alternateSchedule?.events.filter(e => e.type === 'nap').length,
+    activeScheduleNaps: activeDisplaySchedule?.events.filter(e => e.type === 'nap').length,
+    transitionInfo,
+    aiPredictionNaps: aiPrediction?.total_naps_today
   });
 
   // Enable smart reminders - only when we have adaptive schedule
