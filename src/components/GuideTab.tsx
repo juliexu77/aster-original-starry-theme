@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -1200,24 +1201,84 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               {patternMilestones.size > 0 && (
                 <div className="flex flex-wrap gap-2 animate-fade-in">
                   {patternMilestones.has('first_pattern') && (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-primary/5">
-                      🌟 First Pattern
-                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
+                            🌟 First Pattern
+                          </Badge>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>🌟 First Pattern Detected</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 text-sm">
+                          <p>Congratulations! The AI has identified {babyName}'s first recognizable daily pattern.</p>
+                          <p className="text-muted-foreground">This means your baby's activities are starting to show consistency. Keep logging to help the AI learn their unique rhythm even better!</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                   {patternMilestones.has('streak_3') && (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-amber-500/10">
-                      🔥 3-Day Streak
-                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-amber-500/10 cursor-pointer hover:bg-amber-500/20 transition-colors">
+                            🔥 3-Day Streak
+                          </Badge>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>🔥 3-Day Consistency Streak</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 text-sm">
+                          <p>{babyName} has maintained consistent patterns for 3 days in a row!</p>
+                          <p className="text-muted-foreground">This consistency helps the AI make more accurate predictions about nap times, feeding windows, and bedtime routines.</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                   {patternMilestones.has('streak_7') && (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-green-500/10">
-                      🏆 Week Consistency
-                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-green-500/10 cursor-pointer hover:bg-green-500/20 transition-colors">
+                            🏆 Week Consistency
+                          </Badge>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>🏆 Week-Long Consistency</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 text-sm">
+                          <p>Amazing! {babyName} has shown steady patterns for an entire week!</p>
+                          <p className="text-muted-foreground">This level of consistency indicates a well-established rhythm. The AI can now make highly accurate predictions to help you plan your day with confidence.</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                   {patternMilestones.has('accuracy_80') && (
-                    <Badge variant="outline" className="text-xs px-3 py-1 bg-blue-500/10">
-                      🎯 80% Accurate
-                    </Badge>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-blue-500/10 cursor-pointer hover:bg-blue-500/20 transition-colors">
+                            🎯 80% Accurate
+                          </Badge>
+                        </button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>🎯 High Accuracy Achieved</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3 text-sm">
+                          <p>The schedule predictions are now 80%+ accurate!</p>
+                          <p className="text-muted-foreground">This means the AI's predictions are within 30 minutes of actual events most of the time. You can trust these predictions to plan your day effectively.</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                 </div>
               )}
