@@ -409,26 +409,26 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Transition toggle - segmented control */}
+      {/* Transition toggle - unified button with two sides */}
       {isTransitioning && transitionNapCounts && (
-        <div className="flex items-center justify-center mb-3">
-          <div className="inline-flex rounded-lg bg-muted/50 p-1">
+        <div className="flex items-start mb-3">
+          <div className="inline-flex rounded-lg border border-border/50 overflow-hidden">
             <button
               onClick={() => onToggleAlternate?.(false)}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`px-4 py-2 text-xs font-medium transition-all border-r border-border/50 ${
                 !showAlternate 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {transitionNapCounts.current}-nap day
             </button>
             <button
               onClick={() => onToggleAlternate?.(true)}
-              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+              className={`px-4 py-2 text-xs font-medium transition-all ${
                 showAlternate 
-                  ? 'bg-background text-foreground shadow-sm' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary text-primary-foreground' 
+                  : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               {transitionNapCounts.transitioning}-nap day
