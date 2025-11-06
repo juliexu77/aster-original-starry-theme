@@ -576,14 +576,16 @@ export const ScheduleTimeline = ({
                       const { endTime } = calculateEndTimeAndDuration(prevActivity.time, prevActivity.napDuration || '1h 30m');
                       prevEndTime = endTime;
                     } else if (prevActivity.type === 'morning') {
-                      prevEndTime = prevActivity.time;
+                      prevEndTime = formatTime(prevActivity.time); // Use rounded time
                     } else if (prevActivity.type === 'bedtime' && prevActivity.endTime) {
-                      prevEndTime = prevActivity.endTime;
+                      prevEndTime = formatTime(prevActivity.endTime); // Use rounded time
                     }
                     
                     if (prevEndTime) {
                       const prevMinutes = parseTime(prevEndTime);
-                      const currentMinutes = parseTime(activity.time);
+                      // Use rounded start time for consistency
+                      const currentStartRounded = formatTime(activity.time);
+                      const currentMinutes = parseTime(currentStartRounded);
                       const wakeWindowMinutes = currentMinutes - prevMinutes;
                       if (wakeWindowMinutes > 0) {
                         const hours = Math.floor(wakeWindowMinutes / 60);
