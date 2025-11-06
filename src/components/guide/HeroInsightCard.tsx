@@ -20,6 +20,9 @@ export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCar
     );
   }
 
+  // Extract first sentence only
+  const firstSentence = insight.split(/[.!?]/).filter(s => s.trim())[0] + '.';
+
   return (
     <div className="mb-6 p-5 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 rounded-xl border border-primary/20 shadow-sm">
       <div className="flex items-center gap-2 mb-3">
@@ -29,7 +32,7 @@ export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCar
         </h3>
       </div>
       <p className="text-base text-foreground leading-relaxed">
-        {insight}
+        {firstSentence}
       </p>
     </div>
   );

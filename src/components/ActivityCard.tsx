@@ -9,6 +9,7 @@ export interface Activity {
   time: string;
   loggedAt?: string; // The original logged timestamp
   timezone?: string; // IANA timezone name where activity was logged
+  createdBy?: string; // User ID of who created the activity
   details: {
     // Feed details
     feedType?: "bottle" | "nursing" | "solid";
@@ -44,6 +45,8 @@ interface ActivityCardProps {
   babyName?: string;
   onEdit?: (activity: Activity) => void;
   onDelete?: (activityId: string) => void;
+  createdBy?: string;
+  caregiverName?: string;
 }
 
 const getActivityIcon = (type: string) => {
@@ -196,7 +199,7 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
   }
 };
 
-export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: ActivityCardProps) => {
+export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete, createdBy, caregiverName }: ActivityCardProps) => {
   const { t } = useLanguage();
   const activityText = getPersonalizedActivityText(activity, babyName, t);
 
@@ -232,6 +235,11 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           <p className="text-sm text-foreground font-medium break-words hover:text-primary transition-colors">
             {activityText}
           </p>
+          {caregiverName && (
+            <p className="text-[10px] text-muted-foreground/80 mt-0.5">
+              by {caregiverName}
+            </p>
+          )}
         </button>
         <div className="flex items-center gap-2 flex-shrink-0">
           <span className="text-xs text-muted-foreground whitespace-nowrap">

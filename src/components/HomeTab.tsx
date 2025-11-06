@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { SyncIndicator } from "@/components/SyncIndicator";
 import { Baby, Droplet, Moon, Clock, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Sprout, Activity as ActivityIcon, FileText, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1290,8 +1291,9 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      {/* 1. Sticky Header - Empty for now */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 px-4 py-2 border-b border-border/40">
+      {/* 1. Sticky Header with Sync Indicator */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b border-border/40">
+        <SyncIndicator />
       </div>
 
       <div className="px-4 pt-3 space-y-4">
