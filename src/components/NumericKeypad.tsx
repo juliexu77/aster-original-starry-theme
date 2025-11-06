@@ -91,23 +91,8 @@ useEffect(() => {
         <div className="space-y-4">
           {/* Display */}
           <div className="bg-muted/50 rounded-lg p-4">
-            <div className="text-3xl font-bold text-foreground text-center mb-3">
+            <div className="text-3xl font-bold text-foreground text-center">
               {value || "0"}
-            </div>
-            
-            {/* Unit toggle */}
-            <div className="flex items-center justify-center gap-2">
-              <Label htmlFor="unit-toggle" className="text-sm text-muted-foreground cursor-pointer">ml</Label>
-              <Switch
-                id="unit-toggle"
-                checked={unit === "oz"}
-                onCheckedChange={(checked) => {
-                  const next = checked ? "oz" : "ml";
-                  onUnitChange?.(next);
-                  try { localStorage.setItem('lastUsedUnit', next); } catch (e) {}
-                }}
-              />
-              <Label htmlFor="unit-toggle" className="text-sm text-muted-foreground cursor-pointer">oz</Label>
             </div>
           </div>
 

@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -724,20 +725,41 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                 {/* Dynamic amount/details based on feed type */}
                 {feedType === "bottle" && (
                   <div className="space-y-3">
-                    <div className="flex items-end gap-3">
-                      <div className="flex-1">
+                    <div className="space-y-3">
+                      <div>
                         <Label className="text-sm font-medium mb-2 block">{t('amount')}</Label>
-                        <Button
-                          variant="outline"
-                          className="w-full h-12 text-left"
-                          onClick={() => setShowKeypad(true)}
-                        >
-                          <span className="text-foreground">
-                            {quantity ? `${quantity} ${unit}` : t('tapToEnterAmount')}
-                          </span>
-                        </Button>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            className="flex-1 h-12 text-left justify-start"
+                            onClick={() => setShowKeypad(true)}
+                          >
+                            <span className="text-foreground text-base">
+                              {quantity || t('tapToEnterAmount')}
+                            </span>
+                          </Button>
+                          <ToggleGroup 
+                            type="single" 
+                            value={unit} 
+                            onValueChange={(value) => value && setUnit(value as "ml" | "oz")}
+                            className="border border-input rounded-lg overflow-hidden h-12"
+                          >
+                            <ToggleGroupItem 
+                              value="oz" 
+                              className="h-full px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground border-r border-input"
+                            >
+                              oz
+                            </ToggleGroupItem>
+                            <ToggleGroupItem 
+                              value="ml" 
+                              className="h-full px-4 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+                            >
+                              mL
+                            </ToggleGroupItem>
+                          </ToggleGroup>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2 pb-2">
+                      <div className="flex items-center space-x-2">
                         <Checkbox
                           id="dream-feed"
                           checked={isDreamFeed}
