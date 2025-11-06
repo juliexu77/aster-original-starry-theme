@@ -117,28 +117,39 @@ export const ScheduleTimeline = ({
 
   // Calculate end time and recalculate duration to match rounded times
   const calculateEndTimeAndDuration = (startTime: string, duration: string): { endTime: string; adjustedDuration: string } => {
+    console.log('🔍 calculateEndTimeAndDuration called:', { startTime, duration });
+    
     // Parse the original start time (unrounded)
     const startMinutes = parseTime(startTime);
+    console.log('  startMinutes:', startMinutes);
     
     // Round start time to nearest 10 minutes
     const roundedStartMinutes = Math.round(startMinutes / 10) * 10;
+    console.log('  roundedStartMinutes:', roundedStartMinutes);
     
     // Parse duration
     const durationMatch = duration.match(/(\d+)h?\s*(\d+)?m?/);
-    if (!durationMatch) return { endTime: startTime, adjustedDuration: duration };
+    if (!durationMatch) {
+      console.log('  ❌ Duration match failed');
+      return { endTime: startTime, adjustedDuration: duration };
+    }
     
     const durationHours = parseInt(durationMatch[1]) || 0;
     const durationMins = parseInt(durationMatch[2]) || 0;
     const totalDurationMinutes = durationHours * 60 + durationMins;
+    console.log('  duration parsed:', { durationHours, durationMins, totalDurationMinutes });
     
     // Calculate end time from rounded start + duration
     const rawEndMinutes = roundedStartMinutes + totalDurationMinutes;
+    console.log('  rawEndMinutes:', rawEndMinutes);
     
     // Round end time to nearest 10 minutes
     const roundedEndMinutes = Math.round(rawEndMinutes / 10) * 10;
+    console.log('  roundedEndMinutes:', roundedEndMinutes);
     
     // Calculate the actual duration based on rounded times
     const actualDurationMinutes = roundedEndMinutes - roundedStartMinutes;
+    console.log('  actualDurationMinutes:', actualDurationMinutes);
     
     // Format end time
     const endHours = Math.floor(roundedEndMinutes / 60) % 24;
@@ -157,6 +168,7 @@ export const ScheduleTimeline = ({
       adjustedDuration = `${adjMins}m`;
     }
     
+    console.log('  ✅ result:', { endTime, adjustedDuration, adjHours, adjMins });
     return { endTime, adjustedDuration };
   };
 
