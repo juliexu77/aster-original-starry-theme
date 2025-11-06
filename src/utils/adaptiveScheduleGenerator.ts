@@ -623,30 +623,55 @@ function generateNapSchedule(
     }
     console.log(`✅ Using historical timings from ${matchingNapCountDays.length} matching days`);
   } else {
-    // Not enough matching data - use age-appropriate defaults based on wake windows
-    console.log(`⚠️ Insufficient ${napCount}-nap day data (${matchingNapCountDays.length} days), using age-based defaults`);
-    
-    // Age-appropriate wake windows (in minutes)
-    const getAgeWakeWindow = (months: number | null): number => {
-      if (months === null) return 120; // 2 hours default
-      if (months <= 2) return 60;   // 1 hour
-      if (months <= 4) return 90;   // 1.5 hours
-      if (months <= 6) return 120;  // 2 hours
-      if (months <= 9) return 150;  // 2.5 hours
-      if (months <= 12) return 180; // 3 hours
-      return 210; // 3.5 hours for 12+ months
-    };
-    
-    const wakeWindow = getAgeWakeWindow(babyAgeMonths);
-    
-    if (napCount === 1) {
-      napStartTimes = [wakeWindow * 2]; // Single nap in middle of day
-    } else if (napCount === 2) {
-      napStartTimes = [wakeWindow, wakeWindow * 3]; // Morning and afternoon
-    } else if (napCount === 3) {
-      napStartTimes = [wakeWindow, wakeWindow * 2, wakeWindow * 3]; // Evenly spaced
-    } else if (napCount === 4) {
-      napStartTimes = [wakeWindow, wakeWindow * 1.75, wakeWindow * 2.5, wakeWindow * 3.25];
+    // Not enough matching data - try absolute-time clustering from matching nap-count days
+    console.log(`⚠️ Insufficient ${napCount}-nap day data (${matchingNapCountDays.length} days), trying absolute-time clustering before age defaults`);
+
+    const minutesOfDay = (d: Date) => d.getHours() * 60 + d.getMinutes();
+    const todaysWakeMinutes = wakeTime.getHours() * 60 + wakeTime.getMinutes();
+
+    const matchingDaysByPos: number[][] = Array.from({ length: napCount }, () => []);
+    Array.from(napsByDay.values())
+      .filter(n => n.length === napCount)
+      .forEach(naps => {
+        naps.forEach((nap, pos) => matchingDaysByPos[pos].push(minutesOfDay(nap.time)));
+      });
+
+    const haveEnoughAbsolute = matchingDaysByPos.every(arr => arr.length >= 2);
+
+    if (haveEnoughAbsolute) {
+      napStartTimes = matchingDaysByPos.map(arr => {
+        const absMinutes = Math.round(median(arr)); // absolute minutes of day
+        // convert to minutes from today's wake (ensure positive)
+        let fromWake = absMinutes - todaysWakeMinutes;
+        if (fromWake < 30) fromWake = Math.max(30, fromWake + 24 * 60); // handle late wake edge cases
+        return fromWake;
+      });
+      console.log(`✅ Using absolute-time clustering from ${matchingDaysByPos[0].length}+ matching days`);
+    } else {
+      // Fallback to age-appropriate defaults based on wake windows
+      console.log(`ℹ️ Absolute-time samples insufficient, using age-based defaults`);
+      // Age-appropriate wake windows (in minutes)
+      const getAgeWakeWindow = (months: number | null): number => {
+        if (months === null) return 120; // 2 hours default
+        if (months <= 2) return 60;   // 1 hour
+        if (months <= 4) return 90;   // 1.5 hours
+        if (months <= 6) return 120;  // 2 hours
+        if (months <= 9) return 150;  // 2.5 hours
+        if (months <= 12) return 180; // 3 hours
+        return 210; // 3.5 hours for 12+ months
+      };
+
+      const wakeWindow = getAgeWakeWindow(babyAgeMonths);
+
+      if (napCount === 1) {
+        napStartTimes = [wakeWindow * 2]; // Single nap in middle of day
+      } else if (napCount === 2) {
+        napStartTimes = [wakeWindow, wakeWindow * 3]; // Morning and afternoon
+      } else if (napCount === 3) {
+        napStartTimes = [wakeWindow, wakeWindow * 2, wakeWindow * 3]; // Evenly spaced
+      } else if (napCount === 4) {
+        napStartTimes = [wakeWindow, wakeWindow * 1.75, wakeWindow * 2.5, wakeWindow * 3.25];
+      }
     }
   }
   
