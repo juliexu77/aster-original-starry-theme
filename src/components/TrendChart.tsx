@@ -69,14 +69,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     };
   };
 
-  // Calculate real feed volume data for the past 7 days (excluding today)
+  // Calculate real feed volume data for the past 7 days (including today)
   const generateFeedData = () => {
     const days = 7;
     const data = [];
     const today = new Date();
     
-    // Start from yesterday (i = 1) to exclude incomplete current day
-    for (let i = days; i >= 1; i--) {
+    // Start from today (i = 0) to include current day
+    for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
       
@@ -178,14 +178,14 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     return 0;
   };
 
-  // Calculate real nap duration data for the past 7 days (excluding today)
+  // Calculate real nap duration data for the past 7 days (including today)
   const generateNapData = () => {
     const days = 7;
     const data = [];
     const today = new Date();
     
-    // Start from yesterday (i = 1) to exclude incomplete current day
-    for (let i = days; i >= 1; i--) {
+    // Start from today (i = 0) to include current day
+    for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i - daysOffset);
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD format
