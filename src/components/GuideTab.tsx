@@ -601,10 +601,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     
     localStorage.removeItem('aiPrediction');
     localStorage.removeItem('aiPredictionLastFetch');
-    toast({
-      title: "Schedule adjusted",
-      description: "Rest of day updated based on latest activities",
-    });
     setAiPrediction(null);
     setAiPredictionLoading(true);
     
