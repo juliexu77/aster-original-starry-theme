@@ -24,7 +24,7 @@ const leftTabs = [
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
-      <div className="max-w-md mx-auto px-4 py-4">
+      <div className="max-w-md mx-auto px-4 py-2">
         <div className="grid grid-cols-5 gap-2 items-center">
           {/* Left tabs */}
           {leftTabs.map((tab) => {
@@ -37,13 +37,13 @@ const leftTabs = [
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 data-tab={dataTab}
-                className={`flex flex-col items-center space-y-1 transition-colors ${
+                className={`flex flex-col items-center space-y-0.5 transition-colors ${
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-[22px] h-[22px]" />
                 <span className="text-label font-medium">{tab.label}</span>
               </button>
             );
@@ -54,11 +54,11 @@ const leftTabs = [
             <button
               ref={addButtonRef}
               onClick={onAddActivity}
-              className="w-14 h-14 bg-primary rounded-full 
+              className="w-12 h-12 bg-primary rounded-full 
                        flex items-center justify-center shadow-lg
                        hover:scale-105 transition-transform duration-200"
             >
-              <Plus className="w-6 h-6 text-primary-foreground" />
+              <Plus className="w-5 h-5 text-primary-foreground" />
             </button>
           </div>
 
@@ -73,13 +73,13 @@ const leftTabs = [
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 data-tab={dataTab}
-                className={`flex flex-col items-center space-y-1 transition-colors ${
+                className={`flex flex-col items-center space-y-0.5 transition-colors ${
                   isActive 
                     ? "text-primary" 
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-[22px] h-[22px]" />
                 <span className="text-label font-medium">{tab.label}</span>
               </button>
             );
