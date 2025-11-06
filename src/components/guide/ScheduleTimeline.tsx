@@ -440,7 +440,7 @@ export const ScheduleTimeline = ({
                     className={`px-4 py-2 text-xs font-medium transition-all border-r border-border/50 ${
                       (isLowerCurrent && !showAlternate) || (!isLowerCurrent && showAlternate)
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground outline outline-1 outline-border'
                     }`}
                   >
                     {lowerCount}-nap day
@@ -450,7 +450,7 @@ export const ScheduleTimeline = ({
                     className={`px-4 py-2 text-xs font-medium transition-all ${
                       (isLowerCurrent && showAlternate) || (!isLowerCurrent && !showAlternate)
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground outline outline-1 outline-border'
                     }`}
                   >
                     {higherCount}-nap day
