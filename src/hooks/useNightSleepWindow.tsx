@@ -11,7 +11,9 @@ export const useNightSleepWindow = () => {
   // Type assertion until migration completes and types regenerate
   const profile = userProfile as any;
   const nightSleepStartHour = profile?.night_sleep_start_hour ?? 19; // Default 7 PM
+  const nightSleepStartMinute = profile?.night_sleep_start_minute ?? 0; // Default :00
   const nightSleepEndHour = profile?.night_sleep_end_hour ?? 7; // Default 7 AM
+  const nightSleepEndMinute = profile?.night_sleep_end_minute ?? 0; // Default :00
 
   /**
    * Check if a given hour (0-23) falls within the night sleep window
@@ -30,7 +32,19 @@ export const useNightSleepWindow = () => {
    * Check if a given timestamp falls within the night sleep window
    */
   const isNightTime = (timestamp: Date): boolean => {
-    return isNightHour(timestamp.getHours());
+    const hour = timestamp.getHours();
+    const minute = timestamp.getMinutes();
+    const totalMinutes = hour * 60 + minute;
+    const startTotalMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
+    const endTotalMinutes = nightSleepEndHour * 60 + nightSleepEndMinute;
+    
+    if (startTotalMinutes > endTotalMinutes) {
+      // Window crosses midnight
+      return totalMinutes >= startTotalMinutes || totalMinutes < endTotalMinutes;
+    } else {
+      // Window doesn't cross midnight
+      return totalMinutes >= startTotalMinutes && totalMinutes < endTotalMinutes;
+    }
   };
 
   /**
@@ -60,7 +74,9 @@ export const useNightSleepWindow = () => {
 
   return {
     nightSleepStartHour,
+    nightSleepStartMinute,
     nightSleepEndHour,
+    nightSleepEndMinute,
     isNightHour,
     isNightTime,
     isNightTimeString,

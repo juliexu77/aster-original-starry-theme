@@ -426,7 +426,7 @@ export const ScheduleTimeline = ({
       {/* Transition toggle - unified button with two sides */}
       {isTransitioning && transitionNapCounts && (
         <div className="flex items-center justify-between mb-3">
-          <div className="inline-flex rounded-lg border border-border/50 overflow-hidden">
+          <div className="inline-flex rounded-lg overflow-hidden border border-border">
             {(() => {
               // Always show lower nap count on the left
               const lowerCount = Math.min(transitionNapCounts.current, transitionNapCounts.transitioning);
@@ -437,10 +437,10 @@ export const ScheduleTimeline = ({
                 <>
                   <button
                     onClick={() => onToggleAlternate?.(isLowerCurrent ? false : true)}
-                    className={`px-4 py-2 text-xs font-medium transition-all border-r border-border/50 ${
+                    className={`px-4 py-2 text-xs font-medium transition-all border-r border-border ${
                       (isLowerCurrent && !showAlternate) || (!isLowerCurrent && showAlternate)
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground outline outline-1 outline-border'
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
                     {lowerCount}-nap day
@@ -450,7 +450,7 @@ export const ScheduleTimeline = ({
                     className={`px-4 py-2 text-xs font-medium transition-all ${
                       (isLowerCurrent && showAlternate) || (!isLowerCurrent && !showAlternate)
                         ? 'bg-primary text-primary-foreground' 
-                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground outline outline-1 outline-border'
+                        : 'bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
                     {higherCount}-nap day
@@ -583,8 +583,15 @@ export const ScheduleTimeline = ({
                     
                     if (nextStartTime) {
                       const nextStartMinutes = parseTime(nextStartTime);
-                      const wakeWindowMinutes = nextStartMinutes - currentEndMinutes;
-                      if (wakeWindowMinutes > 0) {
+                      let wakeWindowMinutes = nextStartMinutes - currentEndMinutes;
+                      
+                      // Handle overnight case (next day)
+                      if (wakeWindowMinutes < 0) {
+                        wakeWindowMinutes += 24 * 60; // Add 24 hours
+                      }
+                      
+                      // Only show if positive and reasonable (< 12 hours)
+                      if (wakeWindowMinutes > 0 && wakeWindowMinutes < 12 * 60) {
                         const hours = Math.floor(wakeWindowMinutes / 60);
                         const mins = wakeWindowMinutes % 60;
                         wakeWindowText = hours > 0 ? `${hours}h ${mins}min` : `${mins}min`;

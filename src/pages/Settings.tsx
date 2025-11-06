@@ -256,28 +256,40 @@ export const Settings = () => {
                   showChevron={false}
                 >
                   <Select
-                    value={((userProfile as any)?.night_sleep_start_hour ?? 19).toString()}
+                    value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
                     onValueChange={async (value) => {
                       try {
-                        await updateUserProfile({ night_sleep_start_hour: parseInt(value) } as any);
+                        const [hour, minute] = value.split(':').map(Number);
+                        await updateUserProfile({ 
+                          night_sleep_start_hour: hour,
+                          night_sleep_start_minute: minute 
+                        } as any);
                       } catch (error) {
                         console.error('Error updating night sleep start:', error);
                       }
                     }}
                   >
-                    <SelectTrigger className="w-[100px]">
+                    <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Only show logical evening hours: 6 PM to 11 PM */}
-                      {Array.from({ length: 6 }, (_, i) => {
-                        const hour = i + 18; // 18-23 (6 PM - 11 PM)
+                      {/* Evening hours: 6 PM to 11:45 PM in 15-min increments */}
+                      {Array.from({ length: 24 }, (_, i) => {
+                        const totalMinutes = (18 * 60) + (i * 15); // Start at 6 PM (18:00)
+                        const hour = Math.floor(totalMinutes / 60);
+                        const minute = totalMinutes % 60;
+                        if (hour >= 24) return null; // Stop at 11:45 PM
+                        
+                        const displayHour = hour > 12 ? hour - 12 : hour;
+                        const minuteStr = minute.toString().padStart(2, '0');
+                        const label = `${displayHour}:${minuteStr} PM`;
+                        
                         return (
-                          <SelectItem key={hour} value={hour.toString()}>
-                            {hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                          <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                            {label}
                           </SelectItem>
                         );
-                      })}
+                      }).filter(Boolean)}
                     </SelectContent>
                   </Select>
                 </SettingsRow>
@@ -288,28 +300,39 @@ export const Settings = () => {
                   showChevron={false}
                 >
                   <Select
-                    value={((userProfile as any)?.night_sleep_end_hour ?? 7).toString()}
+                    value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
                     onValueChange={async (value) => {
                       try {
-                        await updateUserProfile({ night_sleep_end_hour: parseInt(value) } as any);
+                        const [hour, minute] = value.split(':').map(Number);
+                        await updateUserProfile({ 
+                          night_sleep_end_hour: hour,
+                          night_sleep_end_minute: minute 
+                        } as any);
                       } catch (error) {
                         console.error('Error updating night sleep end:', error);
                       }
                     }}
                   >
-                    <SelectTrigger className="w-[100px]">
+                    <SelectTrigger className="w-[120px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Only show logical morning hours: 5 AM to 10 AM */}
-                      {Array.from({ length: 6 }, (_, i) => {
-                        const hour = i + 5; // 5-10 (5 AM - 10 AM)
+                      {/* Morning hours: 5 AM to 10 AM in 15-min increments */}
+                      {Array.from({ length: 21 }, (_, i) => {
+                        const totalMinutes = (5 * 60) + (i * 15); // Start at 5 AM
+                        const hour = Math.floor(totalMinutes / 60);
+                        const minute = totalMinutes % 60;
+                        if (hour > 10) return null; // Stop at 10 AM
+                        
+                        const minuteStr = minute.toString().padStart(2, '0');
+                        const label = `${hour}:${minuteStr} AM`;
+                        
                         return (
-                          <SelectItem key={hour} value={hour.toString()}>
-                            {hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`}
+                          <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                            {label}
                           </SelectItem>
                         );
-                      })}
+                      }).filter(Boolean)}
                     </SelectContent>
                   </Select>
                 </SettingsRow>
