@@ -187,12 +187,19 @@ export function generateAdaptiveSchedule(
   
   console.log('🔍 Nap durations by position:', {
     totalDays: napsByDay.size,
+    totalNaps: recentNaps.length,
+    sampleDays: Array.from(napsByDay.entries()).slice(0, 5).map(([date, naps]) => ({
+      date,
+      napCount: naps.length,
+      durations: naps.map(n => Math.round(n.duration))
+    })),
     positionData: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
       position: pos + 1,
       samples: durs.length,
       avgMinutes: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length),
       min: Math.round(Math.min(...durs)),
-      max: Math.round(Math.max(...durs))
+      max: Math.round(Math.max(...durs)),
+      allSamples: durs.map(d => Math.round(d))
     }))
   });
   
@@ -600,13 +607,15 @@ function generateNapSchedule(
     // Use actual average duration for this nap position, or fall back to 90 minutes
     const positionDurations = napDurationsByPosition.get(index);
     
-    console.log(`📊 Nap ${napNumber} duration calculation:`, {
-      position: index,
-      hasHistoricalData: !!positionDurations,
-      historicalSamples: positionDurations?.length || 0,
-      historicalDurations: positionDurations,
-      allPositions: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
-        position: pos,
+    console.log(`📊 Nap ${napNumber} duration lookup:`, {
+      napPosition: index,
+      napNumber,
+      hasData: !!positionDurations,
+      sampleCount: positionDurations?.length || 0,
+      samples: positionDurations?.map(d => Math.round(d)),
+      allPositionsAvailable: Array.from(napDurationsByPosition.keys()),
+      allPositionsSummary: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
+        pos,
         count: durs.length,
         avg: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length)
       }))
@@ -616,7 +625,7 @@ function generateNapSchedule(
       ? Math.round(positionDurations.reduce((a, b) => a + b, 0) / positionDurations.length)
       : 90;
     
-    console.log(`⏱️ Nap ${napNumber} final duration: ${duration}min (${positionDurations && positionDurations.length > 0 ? 'historical' : 'default'})`);
+    console.log(`⏱️ Nap ${napNumber} FINAL DECISION: ${duration}min (${positionDurations && positionDurations.length > 0 ? 'from ' + positionDurations.length + ' historical samples' : 'DEFAULT 90min - no data found'})`);
     
     // Determine if this specific nap is uncertain
     let confidence: 'high' | 'medium' | 'low' = 'medium';
