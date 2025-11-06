@@ -391,6 +391,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   // This ensures prediction engine has meaningful data (excludes night sleep)
   const hasTier3Data = totalActivities >= 10 && daytimeNaps.length >= 4 && feeds.length >= 4;
   
+  // Progress toward unlocking insights
+  const required = { activities: 10, feeds: 4, naps: 4 };
+  const remaining = {
+    activities: Math.max(0, required.activities - totalActivities),
+    feeds: Math.max(0, required.feeds - feeds.length),
+    naps: Math.max(0, required.naps - daytimeNaps.length),
+  };
+  const unlockPercent = Math.min(100, Math.round(((required.activities - remaining.activities) / required.activities) * 100));
+  
   // Show schedule at Tier 1, AI insights at Tier 3
   const hasMinimumData = hasTier1Data;
 
@@ -1285,21 +1294,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             </>
           )}
           
-          {/* Tier 1 & 2: Simple confidence message */}
+          {/* Tier 1 & 2: Simple confidence message + unlock progress */}
           {!needsBirthdaySetup && hasTier1Data && !hasTier3Data && (
-            <div className="mb-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="mb-4 p-4 bg-accent/20 rounded-lg border border-border/40 space-y-3">
+              <div className="flex items-center gap-2">
                 <Sprout className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium text-foreground">
                   {hasTier2Data 
-                    ? '🌿 Learning Caleb\'s patterns' 
-                    : '🌱 Starting to learn Caleb\'s rhythm'}
+                    ? 'Learning patterns — insights unlock soon'
+                    : 'Starting to learn rhythm — keep logging'}
                 </p>
               </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Unlock progress</span>
+                <span className="text-foreground font-medium">{unlockPercent}%</span>
+              </div>
+              <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary/60 via-primary to-primary transition-all duration-500 ease-out"
+                  style={{ width: `${unlockPercent}%` }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                <span className="px-2 py-1 rounded bg-background border border-border/50">{required.activities - remaining.activities}/{required.activities} activities</span>
+                <span className="px-2 py-1 rounded bg-background border border-border/50">{required.feeds - remaining.feeds}/{required.feeds} feeds</span>
+                <span className="px-2 py-1 rounded bg-background border border-border/50">{required.naps - remaining.naps}/{required.naps} daytime naps</span>
+              </div>
               <p className="text-xs text-muted-foreground">
-                {hasTier2Data
-                  ? `Based on ${totalActivities} activities. Predictions will improve as we gather more data.`
-                  : `Based on age (${Math.floor(babyAgeInWeeks / 4)} months). Predictions will personalize as we learn Caleb's unique patterns.`}
+                Tip: logging today helps unlock personalized guidance and improves schedule accuracy.
               </p>
             </div>
           )}
