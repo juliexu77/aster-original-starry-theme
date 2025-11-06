@@ -651,15 +651,30 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
   
   const alternateSchedule = useMemo(() => {
-    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday) return null;
+    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
     
     try {
-      // Create a modified AI prediction with alternate nap count
+      // Create a modified AI prediction with alternate nap count - force different count
+      const alternateNapCount = transitionInfo.napCounts.transitioning;
+      
+      // Only generate if different from current
+      if (alternateNapCount === aiPrediction.total_naps_today) {
+        console.log('⚠️ Alternate nap count same as current, not generating alternate schedule');
+        return null;
+      }
+      
       const alternateAIPrediction: AISchedulePrediction = {
-        ...aiPrediction!,
-        total_naps_today: transitionInfo.napCounts.transitioning,
-        reasoning: `Alternative ${transitionInfo.napCounts.transitioning}-nap schedule`
+        total_naps_today: alternateNapCount,
+        confidence: aiPrediction.confidence,
+        is_transitioning: true,
+        reasoning: `Alternative ${alternateNapCount}-nap schedule`
       };
+      
+      console.log('🔄 Generating alternate schedule:', {
+        currentNapCount: aiPrediction.total_naps_today,
+        alternateNapCount,
+        showingAlternate: showAlternateSchedule
+      });
       
       const activitiesForEngine = enrichedActivities.map(a => ({
         id: a.id,
@@ -674,12 +689,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         details: a.details
       }));
       
-      return generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, alternateAIPrediction);
+      const result = generateAdaptiveSchedule(activitiesForEngine, household.baby_birthday, alternateAIPrediction);
+      console.log('✅ Alternate schedule generated:', result);
+      return result;
     } catch (error) {
       console.error('Failed to generate alternate schedule:', error);
       return null;
     }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, enrichedActivities, userTimezone]);
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, enrichedActivities, userTimezone, showAlternateSchedule]);
   
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 

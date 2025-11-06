@@ -397,18 +397,6 @@ export const ScheduleTimeline = ({
       </div>
       
       
-      {/* Adjustment animation with context-aware message */}
-      {isAdjusting && adjustmentContext && (
-        <div className="mb-3 p-3 bg-primary/5 border border-primary/20 rounded-lg animate-pulse">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-primary animate-ping" />
-            <p className="text-xs font-medium text-primary">
-              {adjustmentContext}
-            </p>
-          </div>
-        </div>
-      )}
-      
       {/* Transition toggle - unified button with two sides */}
       {isTransitioning && transitionNapCounts && (
         <div className="flex items-start mb-3">
@@ -508,8 +496,10 @@ export const ScheduleTimeline = ({
                 )}
                 
                 {activity.type === 'morning' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor}`}>
-                    <button 
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                    isAdjusting ? 'animate-pulse' : ''
+                  }`}>
+                    <button
                       onClick={() => handleEventClick(activity.id)}
                       className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
                     >
@@ -575,8 +565,10 @@ export const ScheduleTimeline = ({
                   }
                   
                   return (
-                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor}`}>
-                      <button 
+                    <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                      isAdjusting ? 'animate-pulse' : ''
+                    }`}>
+                      <button
                         onClick={() => handleEventClick(activity.id)}
                         className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
                       >
@@ -624,8 +616,10 @@ export const ScheduleTimeline = ({
                 })()}
                 
                 {activity.type === 'bedtime' && (
-                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor}`}>
-                    <button 
+                  <div key={activity.id} className={`relative ${confidenceOpacity} transition-all duration-300 rounded-lg p-3 ${blockBgColor} ${
+                    isAdjusting ? 'animate-pulse' : ''
+                  }`}>
+                    <button
                       onClick={() => handleEventClick(activity.id)}
                       className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
                     >
