@@ -239,6 +239,8 @@ const ongoingNap = (() => {
   const nightStart = nightSleepStartHour ?? 19; // Default 7 PM
   const nightEnd = nightSleepEndHour ?? 7; // Default 7 AM
   
+  console.log('🌙 Night sleep window:', { nightStart, nightEnd });
+  
   const checkIsNightTime = (timeStr: string): boolean => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return false;
@@ -255,10 +257,14 @@ const ongoingNap = (() => {
     
     // Handle overnight window (e.g., 19:00 to 07:00)
     if (startMinutes > endMinutes) {
-      return timeMinutes >= startMinutes || timeMinutes < endMinutes;
+      const isNight = timeMinutes >= startMinutes || timeMinutes < endMinutes;
+      console.log('🌙 Night check (overnight):', { timeStr, hours, timeMinutes, startMinutes, endMinutes, isNight });
+      return isNight;
     }
     // Handle same-day window
-    return timeMinutes >= startMinutes && timeMinutes < endMinutes;
+    const isNight = timeMinutes >= startMinutes && timeMinutes < endMinutes;
+    console.log('🌙 Night check (same-day):', { timeStr, hours, timeMinutes, startMinutes, endMinutes, isNight });
+    return isNight;
   };
   
   const candidates = activities.filter(a => {
@@ -292,9 +298,16 @@ const ongoingNap = (() => {
     const startTime = a.details?.startTime;
     let isNightSleep = a.details?.isNightSleep || false;
     
+    console.log('🛌 Checking nap:', { 
+      id: a.id, 
+      startTime, 
+      currentIsNightSleep: isNightSleep 
+    });
+    
     // If not already marked as night sleep, check the start time
     if (!isNightSleep && startTime) {
       isNightSleep = checkIsNightTime(startTime);
+      console.log('🛌 After runtime check:', { startTime, isNightSleep });
     }
     
     return {
