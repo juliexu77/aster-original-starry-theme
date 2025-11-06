@@ -409,28 +409,30 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Transition toggle - compact and functional */}
+      {/* Transition toggle - segmented control */}
       {isTransitioning && transitionNapCounts && (
-        <div className="flex items-center justify-between px-3 py-2 bg-amber-500/5 border border-amber-500/10 rounded-lg mb-2">
-          <div className="flex items-center gap-2">
-            <Info className="w-3 h-3 text-amber-600" />
-            <span className="text-[11px] font-medium text-muted-foreground">
-              {transitionNapCounts.current} → {transitionNapCounts.transitioning} nap schedule
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">{transitionNapCounts.current}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-5 w-9 p-0 relative rounded-full bg-muted hover:bg-muted"
-              onClick={() => onToggleAlternate?.(!showAlternate)}
+        <div className="flex items-center justify-center mb-3">
+          <div className="inline-flex rounded-lg bg-muted/50 p-1">
+            <button
+              onClick={() => onToggleAlternate?.(false)}
+              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                !showAlternate 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-primary transition-all ${
-                showAlternate ? 'left-4' : 'left-0.5'
-              }`} />
-            </Button>
-            <span className="text-[10px] text-muted-foreground">{transitionNapCounts.transitioning}</span>
+              {transitionNapCounts.current}-nap day
+            </button>
+            <button
+              onClick={() => onToggleAlternate?.(true)}
+              className={`px-4 py-1.5 text-xs font-medium rounded-md transition-all ${
+                showAlternate 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {transitionNapCounts.transitioning}-nap day
+            </button>
           </div>
         </div>
       )}
