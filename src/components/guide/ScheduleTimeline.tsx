@@ -449,6 +449,15 @@ export const ScheduleTimeline = ({
         </p>
       </div>
       
+      {/* Transition insight row - burgundy banner */}
+      {transitionWindow && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-[#f3e8e8] dark:bg-[#4a2c2c] border border-[#e6d0d0] dark:border-[#6b3e3e] rounded-lg mb-3">
+          <span className="text-burgundy-600 dark:text-burgundy-400 text-sm">●</span>
+          <p className="text-sm text-burgundy-700 dark:text-burgundy-300 font-medium">
+            Transitioning between {transitionWindow.from} and {transitionWindow.to} naps
+          </p>
+        </div>
+      )}
       
       {/* Transition toggle - unified button with two sides */}
       {isTransitioning && transitionNapCounts && (
