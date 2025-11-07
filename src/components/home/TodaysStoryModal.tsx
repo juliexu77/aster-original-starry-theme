@@ -124,110 +124,146 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-            <span className="text-2xl">✨</span>
-            {babyName ? `${babyName}'s Day` : "Today's Story"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0">
+        {/* Header with gradient background */}
+        <div className="relative px-6 pt-6 pb-4 bg-gradient-to-b from-background to-transparent">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold tracking-tight flex items-center gap-2.5">
+              <span className="text-3xl animate-story-shimmer">✨</span>
+              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                {babyName ? `${babyName}'s Day` : "Today's Story"}
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-6 pt-2">
-          {/* 1. HERO MOMENT - Photo + Summary */}
-          {heroMoment ? (
-            <div className="space-y-3">
-              {heroMoment.details.photoUrl && (
-                <div className="relative rounded-xl overflow-hidden aspect-[4/3]">
-                  <img 
-                    src={heroMoment.details.photoUrl} 
-                    alt="Today's moment" 
-                    className="w-full h-full object-cover"
-                  />
+        <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-6">
+          <div className="space-y-8">
+            {/* 1. HERO MOMENT - Full-width photo with overlay */}
+            {heroMoment && heroMoment.details.photoUrl ? (
+              <div className="relative w-full aspect-[4/3] overflow-hidden animate-story-hero-enter">
+                <img 
+                  src={heroMoment.details.photoUrl} 
+                  alt="Today's moment" 
+                  className="w-full h-full object-cover"
+                />
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                
+                {/* Overlay text */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <p className="text-lg font-semibold tracking-wide drop-shadow-lg animate-story-shimmer-text">
+                    {getSummaryLine()}
+                  </p>
+                  {heroMoment.details.note && (
+                    <p className="text-sm mt-2 font-light tracking-wide drop-shadow-md opacity-90">
+                      {heroMoment.details.note}
+                    </p>
+                  )}
+                  <p className="text-xs mt-3 font-light uppercase tracking-wider opacity-75">
+                    {heroMoment.time}
+                  </p>
                 </div>
-              )}
-              <p className="text-base text-foreground leading-relaxed font-medium">
-                {getSummaryLine()}
-              </p>
-              {heroMoment.details.note && (
-                <p className="text-sm text-muted-foreground italic leading-relaxed">
-                  "{heroMoment.details.note}"
+
+                {/* Corner accent */}
+                <div className="absolute top-4 right-4">
+                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <span className="text-lg">✨</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="px-6 pt-2 animate-story-hero-enter">
+                <p className="text-xl font-semibold text-foreground leading-relaxed tracking-tight">
+                  {getSummaryLine()}
                 </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-base text-foreground leading-relaxed font-medium">
-              {getSummaryLine()}
-            </p>
-          )}
+              </div>
+            )}
 
-          {/* 2. SUPPORTING STATS - Quick scan */}
-          <div className="flex gap-6 justify-center py-2 border-y border-border/40">
-            <div className="text-center">
-              <div className="text-xl font-bold text-foreground tabular-nums">{feedCount}</div>
-              <div className="text-xs text-muted-foreground">feeds</div>
+            {/* 2. SUPPORTING STATS - Quick scan with refined styling */}
+            <div className="px-6 animate-story-stats-enter">
+              <div className="flex gap-8 justify-center py-4 border-y border-border/30">
+                <div className="text-center">
+                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">{feedCount}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-light mt-1">Feeds</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">{napCount}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-light mt-1">Naps</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-semibold text-foreground tabular-nums tracking-tight">{diaperCount}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-light mt-1">Changes</div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-foreground tabular-nums">{napCount}</div>
-              <div className="text-xs text-muted-foreground">naps</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-foreground tabular-nums">{diaperCount}</div>
-              <div className="text-xs text-muted-foreground">diapers</div>
-            </div>
-          </div>
 
-          {/* 3. HIGHLIGHTS - 2-3 key moments */}
-          {highlights.length > 0 && (
-            <div className="space-y-2">
-              {highlights.map((activity) => (
-                <button
-                  key={activity.id}
-                  className="w-full text-left group"
-                  onClick={() => {}}
-                >
-                  <Card className="p-3 transition-colors hover:bg-muted/50">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-muted-foreground group-hover:text-foreground transition-colors">
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">
-                          {getActivityLabel(activity)}
-                        </p>
-                        {activity.details.note && (
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {activity.details.note}
+            {/* 3. HIGHLIGHTS - Elevated cards with staggered animation */}
+            {highlights.length > 0 && (
+              <div className="px-6 space-y-3">
+                {highlights.map((activity, index) => (
+                  <button
+                    key={activity.id}
+                    className="w-full text-left group"
+                    onClick={() => {}}
+                    style={{
+                      animation: `storyCardEnter 0.5s ease-out ${0.3 + index * 0.1}s both`
+                    }}
+                  >
+                    <Card className="p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-muted/30 hover:bg-muted/50 border-border/40">
+                      <div className="flex items-start gap-4">
+                        <div className="mt-1 text-muted-foreground group-hover:text-foreground transition-colors">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-base font-semibold text-foreground tracking-tight">
+                            {getActivityLabel(activity)}
                           </p>
-                        )}
-                        <p className="text-xs text-muted-foreground/70 mt-1">
-                          {activity.time}
-                        </p>
+                          {activity.details.note && (
+                            <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 font-light leading-relaxed">
+                              {activity.details.note}
+                            </p>
+                          )}
+                          <p className="text-[10px] text-muted-foreground/60 mt-2 uppercase tracking-wider font-light">
+                            {activity.time}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                </button>
-              ))}
-            </div>
-          )}
+                    </Card>
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* 4. OUTRO REFLECTION - Graceful closing */}
-          <div className="pt-2 border-t border-border/40">
-            <p className="text-sm text-muted-foreground leading-relaxed italic text-center">
-              {getOutroReflection()}
-            </p>
+            {/* 4. OUTRO REFLECTION - Graceful closing with animation */}
+            <div className="px-6 pt-2 pb-2 animate-story-outro-enter">
+              <div className="relative py-6 px-5 rounded-2xl bg-gradient-to-br from-muted/40 to-muted/20 border border-border/20">
+                <p className="text-sm text-muted-foreground leading-relaxed italic text-center font-light tracking-wide">
+                  {getOutroReflection()}
+                </p>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="w-6 h-6 rounded-full bg-background border border-border/20 flex items-center justify-center">
+                    <span className="text-xs">💫</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Empty State */}
+            {!heroMoment && highlights.length === 0 && todayActivities.length === 0 && (
+              <div className="text-center py-12 px-6">
+                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl opacity-40">📸</span>
+                </div>
+                <p className="text-base text-muted-foreground font-light">
+                  No moments captured yet today.
+                </p>
+                <p className="text-sm text-muted-foreground/60 mt-2 font-light">
+                  Start logging to build {babyName ? `${babyName}'s` : "your baby's"} story
+                </p>
+              </div>
+            )}
           </div>
-
-          {/* Empty State */}
-          {!heroMoment && highlights.length === 0 && todayActivities.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-sm text-muted-foreground">
-                No special moments captured yet today.
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Start logging to build {babyName ? `${babyName}'s` : "your baby's"} daily story!
-              </p>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
