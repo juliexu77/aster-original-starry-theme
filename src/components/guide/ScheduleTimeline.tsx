@@ -381,7 +381,7 @@ export const ScheduleTimeline = ({
                       <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent px-3 py-1.5">
                         <div className="flex flex-col items-center leading-tight">
                           <span className="text-sm font-semibold text-muted-foreground">{schedule.accuracyScore}%</span>
-                          <span className="text-[10px] text-muted-foreground/70">accurate</span>
+                          <span className="text-[10px] text-muted-foreground/70">prediction accuracy</span>
                         </div>
                       </Badge>
                       {modelState.showTooltip && (
