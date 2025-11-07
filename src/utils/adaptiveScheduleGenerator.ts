@@ -413,8 +413,8 @@ export function generateAdaptiveSchedule(
   
   
   // Calculate accuracy score by comparing with today's activities
-  let accuracyScore = 0;
-  if (hasActualWake && todayActivities.length >= 3) {
+  let accuracyScore: number | undefined = undefined;
+  if (hasActualWake && todayActivities.length >= 1) { // Changed from >= 3 to >= 1 for faster feedback
     let accurateCount = 0;
     let totalPredictions = 0;
     
@@ -473,7 +473,7 @@ export function generateAdaptiveSchedule(
     confidence: overallConfidence,
     basedOn,
     adjustmentNote,
-    accuracyScore: accuracyScore >= 0 ? accuracyScore : undefined,
+    accuracyScore,
     predictedBedtime: predictedBedtimeStr,
     bedtimeConfidence
   };

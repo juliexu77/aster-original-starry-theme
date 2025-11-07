@@ -393,7 +393,6 @@ Rules:
     return new Response(
       JSON.stringify({
         ...prediction,
-        accuracyScore: 0,
         lastUpdated: new Date().toISOString(),
         cached: false
       }),
