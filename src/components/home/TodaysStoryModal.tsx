@@ -89,49 +89,103 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   const diaperCount = todayActivities.filter(a => a.type === "diaper").length;
 
   // Generate summary sentence based on the day
-  // Detect day tone
+  // Calculate daily averages for comparison
+  const avgFeedsPerDay = 6;
+  const avgNapsPerDay = 3;
+  const totalNapMinutes = todayActivities
+    .filter(a => a.type === "nap" && !a.details.isNightSleep)
+    .reduce((sum, a) => {
+      if (a.details.startTime && a.details.endTime) {
+        const start = new Date(`2000-01-01 ${a.details.startTime}`);
+        const end = new Date(`2000-01-01 ${a.details.endTime}`);
+        return sum + (end.getTime() - start.getTime()) / (1000 * 60);
+      }
+      return sum + 90; // Default 90 min if no times
+    }, 0);
+  const totalSleepHours = (totalNapMinutes / 60).toFixed(1);
+  const avgSleepHours = 14;
+
+  // Detect day tone with theme
   const getDayTone = () => {
-    if (feedCount >= 7) return { emoji: "🍼", label: "Feed-Heavy Day" };
-    if (napCount >= 4) return { emoji: "😴", label: "Rest-Focused Day" };
-    if (allHighlights.some(a => a.details.feedType === "solid")) return { emoji: "🥑", label: "New Foods Day" };
-    if (todayActivities.length > 12) return { emoji: "✨", label: "Busy Day" };
-    return { emoji: "🌙", label: "Balanced Day" };
+    const feedDiff = feedCount - avgFeedsPerDay;
+    const napDiff = napCount - avgNapsPerDay;
+    const sleepDiff = parseFloat(totalSleepHours) - avgSleepHours;
+
+    if (feedDiff >= 2) return { emoji: "🍼", theme: "feed", color: "hsl(var(--pp-terracotta))" };
+    if (napDiff >= 2 || sleepDiff >= 2) return { emoji: "😴", theme: "sleep", color: "hsl(var(--pp-lavender))" };
+    if (allHighlights.some(a => a.details.feedType === "solid")) return { emoji: "🥑", theme: "growth", color: "hsl(var(--pp-mint))" };
+    if (Math.abs(feedDiff) <= 1 && Math.abs(napDiff) <= 1) return { emoji: "✨", theme: "balanced", color: "hsl(var(--accent-1))" };
+    return { emoji: "🌙", theme: "calm", color: "hsl(var(--muted-foreground))" };
   };
 
   const dayTone = getDayTone();
 
-  // Generate parent-focused summary
-  const getSummaryLine = () => {
-    if (napCount >= 3) {
-      return `You gave ${babyName || "your baby"} the rest they needed today — what a peaceful rhythm.`;
-    } else if (feedCount >= 6) {
-      return `You kept ${babyName || "your baby"} well-fed and happy today — what a solid rhythm.`;
-    } else if (allHighlights.some(a => a.details.feedType === "solid")) {
-      return `New foods, good feeding — you're helping ${babyName || "your baby"} explore beautifully.`;
-    } else if (todayActivities.length > 10) {
-      return `Another full day together. You're doing this beautifully.`;
-    } else {
-      return `Everything stayed on rhythm today — you've got this down.`;
+  // Generate Oura-style "Day Summary Signal" - ONE clear emotionally-weighted line
+  const getHeadlineSignal = () => {
+    const feedDiff = feedCount - avgFeedsPerDay;
+    const napDiff = napCount - avgNapsPerDay;
+    const sleepDiff = parseFloat(totalSleepHours) - avgSleepHours;
+
+    // Growth day
+    if (feedDiff >= 2) {
+      return "More feeds than usual — a growth day!";
     }
+    
+    // Sleep heavy
+    if (napDiff >= 2) {
+      return "Extra rest today — their body knew what it needed.";
+    }
+    
+    // Slightly off but okay
+    if (sleepDiff < -1 && napDiff < 0) {
+      return "Slightly shorter naps, but total sleep still on track. You're doing great.";
+    }
+    
+    // New milestone
+    if (allHighlights.some(a => a.details.feedType === "solid")) {
+      return "New foods explored — another milestone reached naturally.";
+    }
+    
+    // Perfect balance
+    if (Math.abs(feedDiff) <= 1 && Math.abs(napDiff) <= 1 && Math.abs(sleepDiff) <= 1) {
+      return "A steady rhythm today — well-fed, well-rested, and content.";
+    }
+    
+    // Busy but good
+    if (todayActivities.length > 12) {
+      return "The rhythm stayed smooth all day. You kept pace beautifully.";
+    }
+    
+    // Default positive
+    return "Everything unfolded naturally. You're in sync.";
   };
 
-  // Generate confidence insight based on data
-  const getConfidenceInsight = () => {
-    const avgFeedsPerDay = 6;
-    const avgNapsPerDay = 3;
-    
-    if (Math.abs(feedCount - avgFeedsPerDay) <= 1 && Math.abs(napCount - avgNapsPerDay) <= 1) {
-      return "Everything stayed on rhythm today — great consistency.";
-    } else if (feedCount > avgFeedsPerDay + 1) {
-      return "Feeds slightly above weekly average — likely a growth day.";
-    } else if (napCount >= 4) {
-      return "Extra rest today — their body knows what it needs.";
-    } else if (todayActivities.some(a => a.type === "measure")) {
-      return "Growth check logged — you're tracking the milestones that matter.";
-    } else {
-      return "Steady patterns, no surprises — exactly what you want to see.";
-    }
+  // Calculate balance metrics
+  const getBalanceMetrics = () => {
+    const feedDiff = feedCount - avgFeedsPerDay;
+    const napDiff = napCount - avgNapsPerDay;
+    const sleepDiff = parseFloat(totalSleepHours) - avgSleepHours;
+
+    return {
+      feeds: {
+        value: feedCount,
+        fillPercent: Math.min((feedCount / 8) * 100, 100),
+        comparison: feedDiff > 0 ? `+${feedDiff} above usual` : feedDiff < 0 ? `${feedDiff} below usual` : "steady"
+      },
+      sleep: {
+        value: `${totalSleepHours}h`,
+        fillPercent: Math.min((parseFloat(totalSleepHours) / 16) * 100, 100),
+        comparison: sleepDiff > 0 ? `+${sleepDiff.toFixed(1)}h vs typical` : sleepDiff < 0 ? `${sleepDiff.toFixed(1)}h vs typical` : "on track"
+      },
+      awake: {
+        value: napCount,
+        fillPercent: Math.min((napCount / 5) * 100, 100),
+        comparison: napDiff > 0 ? "more active" : napDiff < 0 ? "more rest" : "steady"
+      }
+    };
   };
+
+  const balanceMetrics = getBalanceMetrics();
 
   // Generate affirming closure
   const getOutroReflection = () => {
@@ -155,22 +209,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0">
-        {/* Header with gradient background */}
-        <div className="relative px-6 pt-6 pb-4 bg-gradient-to-b from-background to-transparent">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-hidden p-0 gap-0 bg-background">
+        {/* Minimal header */}
+        <div className="relative px-6 pt-8 pb-3">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold tracking-tight flex items-center gap-2.5">
-              <span className="text-3xl animate-story-shimmer">✨</span>
-              <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                {babyName ? `${babyName}'s Day` : "Today's Story"}
-              </span>
+            <DialogTitle className="text-sm font-light tracking-widest uppercase text-muted-foreground/60">
+              {babyName ? `${babyName}'s Day` : "Today's Story"}
             </DialogTitle>
           </DialogHeader>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-6">
-          <div className="space-y-8">
-            {/* 1. HERO MOMENT - Full-width photo with overlay */}
+        <div className="overflow-y-auto max-h-[calc(90vh-80px)] pb-8">
+          <div className="space-y-10">
+            {/* 1. HERO MOMENT with overlaid headline */}
             {heroMoment && heroMoment.details.photoUrl ? (
               <div className="relative w-full aspect-[4/3] overflow-hidden animate-story-hero-enter">
                 <img 
@@ -178,72 +229,104 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   alt="Today's moment" 
                   className="w-full h-full object-cover animate-story-photo-zoom"
                 />
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                {/* Soft gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                 
-                {/* Overlay text */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <p className="text-base font-medium tracking-wide drop-shadow-lg animate-story-text-reveal" style={{ animationDelay: '0.3s' }}>
-                    {heroMoment.details.note || `${getActivityLabel(heroMoment)} — ${heroMoment.time}`}
+                {/* Headline Signal overlaid on photo */}
+                <div className="absolute bottom-0 left-0 right-0 p-8">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div 
+                      className="text-3xl animate-story-breathe flex-shrink-0" 
+                      style={{ color: 'white' }}
+                    >
+                      {dayTone.emoji}
+                    </div>
+                    <p className="text-2xl font-light text-white leading-relaxed tracking-tight animate-story-text-reveal drop-shadow-lg" style={{ animationDelay: '0.2s', fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      {getHeadlineSignal()}
+                    </p>
+                  </div>
+                  {heroMoment.details.note && (
+                    <p className="text-sm text-white/80 font-light tracking-wide drop-shadow-md pl-[52px]">
+                      {heroMoment.details.note}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              // No photo: headline stands alone
+              <div className="px-8 pt-4 animate-story-text-reveal">
+                <div className="flex items-start gap-4">
+                  <div 
+                    className="text-4xl animate-story-breathe flex-shrink-0 mt-1" 
+                    style={{ color: dayTone.color }}
+                  >
+                    {dayTone.emoji}
+                  </div>
+                  <p className="text-2xl font-light text-foreground leading-relaxed tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    {getHeadlineSignal()}
                   </p>
                 </div>
+              </div>
+            )}
 
-                {/* Corner accent */}
-                <div className="absolute top-4 right-4 animate-story-shimmer">
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <span className="text-lg">✨</span>
+            {/* 2. OURA-STYLE BALANCE BARS */}
+            <div className="px-8 space-y-5 animate-story-stats-enter" style={{ animationDelay: '0.4s' }}>
+              {/* Feeds */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🍼</span>
+                    <span className="font-light text-muted-foreground">Feeds</span>
                   </div>
+                  <span className="text-xs font-light text-muted-foreground">{balanceMetrics.feeds.comparison}</span>
+                </div>
+                <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[hsl(var(--pp-terracotta))] to-[hsl(var(--pp-terracotta))]/80 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${balanceMetrics.feeds.fillPercent}%`, animationDelay: '0.5s' }}
+                  />
                 </div>
               </div>
-            ) : null}
 
-            {/* 2. DAY TONE CHIP + SUMMARY + CONFIDENCE INSIGHT */}
-            <div className="px-6 space-y-4 animate-story-text-reveal" style={{ animationDelay: '0.5s' }}>
-              {/* Tone chip */}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground font-light tracking-wider">
-                <span>{dayTone.emoji}</span>
-                <span>{dayTone.label}</span>
-                <span className="text-muted-foreground/30">•</span>
-                <span>Consistent rhythm</span>
+              {/* Sleep */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">😴</span>
+                    <span className="font-light text-muted-foreground">Sleep</span>
+                  </div>
+                  <span className="text-xs font-light text-muted-foreground">{balanceMetrics.sleep.comparison}</span>
+                </div>
+                <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[hsl(var(--pp-lavender))] to-[hsl(var(--pp-lavender))]/80 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${balanceMetrics.sleep.fillPercent}%`, animationDelay: '0.6s' }}
+                  />
+                </div>
               </div>
 
-              {/* Summary line */}
-              <p className="text-xl font-semibold text-foreground leading-relaxed tracking-tight">
-                {getSummaryLine()}
-              </p>
-
-              {/* Confidence insight */}
-              <div className="pt-3 border-t border-border/20">
-                <p className="text-sm text-muted-foreground italic font-light leading-relaxed">
-                  {getConfidenceInsight()}
-                </p>
+              {/* Awake periods */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🌤</span>
+                    <span className="font-light text-muted-foreground">Awake</span>
+                  </div>
+                  <span className="text-xs font-light text-muted-foreground">{balanceMetrics.awake.comparison}</span>
+                </div>
+                <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-[hsl(var(--accent-1))] to-[hsl(var(--accent-1))]/80 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${balanceMetrics.awake.fillPercent}%`, animationDelay: '0.7s' }}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* 3. SUPPORTING STATS - Calm metrics with icons */}
-            <div className="px-6 animate-story-stats-enter" style={{ animationDelay: '0.7s' }}>
-              <div className="flex gap-6 justify-center py-3">
-                <div className="text-center">
-                  <div className="text-lg font-medium text-foreground/80 tabular-nums tracking-tight animate-story-count-up">
-                    🍼 {feedCount}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-medium text-foreground/80 tabular-nums tracking-tight animate-story-count-up" style={{ animationDelay: '0.1s' }}>
-                    😴 {napCount}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-medium text-foreground/80 tabular-nums tracking-tight animate-story-count-up" style={{ animationDelay: '0.2s' }}>
-                    💧 {diaperCount}
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* 4. TODAY'S RHYTHM MOMENTS - Memory tiles with cause/effect */}
+            {/* 3. TODAY'S RHYTHM MOMENTS - Memory tiles */}
             {highlights.length > 0 && (
-              <div className="px-6 space-y-3">
+              <div className="px-8 space-y-4">
                 {highlights.map((activity, index) => {
                   const getActivityEmoji = (type: string) => {
                     switch (type) {
@@ -284,62 +367,55 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                       key={activity.id}
                       className="animate-story-card-enter"
                       style={{
-                        animationDelay: `${0.9 + index * 0.15}s`
+                        animationDelay: `${0.9 + index * 0.1}s`
                       }}
                     >
-                      <Card className="p-4 transition-all duration-300 hover:shadow-md hover:scale-[1.01] bg-gradient-to-br from-muted/40 to-muted/20 border-border/30 rounded-xl">
-                        <div className="flex items-start gap-3">
-                          <div className="text-xl mt-0.5">
+                      <div className="p-5 bg-muted/20 border-l-2 border-muted-foreground/20 hover:border-muted-foreground/40 transition-all duration-300">
+                        <div className="flex items-start gap-4">
+                          <div className="text-2xl mt-0.5 opacity-60">
                             {getActivityEmoji(activity.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-base font-medium text-foreground tracking-tight flex items-center gap-2">
-                              {getActivityLabel(activity)}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-1.5 font-light leading-relaxed">
-                              {getMemoryNote(activity)}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground/50 mt-2.5 uppercase tracking-wider font-light">
+                            <p className="text-sm font-light text-muted-foreground/70 uppercase tracking-wider mb-1.5">
                               {activity.time}
                             </p>
+                            <p className="text-base font-normal text-foreground leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                              {getActivityLabel(activity)}
+                            </p>
+                            {getMemoryNote(activity) && (
+                              <p className="text-sm text-muted-foreground mt-2 font-light leading-relaxed italic">
+                                {getMemoryNote(activity)}
+                              </p>
+                            )}
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     </div>
                   );
                 })}
               </div>
             )}
 
-            {/* 5. CLOSING AFFIRMATION - Grounded sign-off */}
-            <div className="px-6 pt-2 pb-2 animate-story-outro-enter" style={{ animationDelay: `${1.2 + highlights.length * 0.15}s` }}>
-              <div className="relative py-8 px-6 rounded-2xl bg-gradient-to-b from-muted/30 via-muted/20 to-transparent border border-border/10 overflow-hidden">
-                {/* Subtle dusk gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-primary/0 opacity-50" />
-                
-                <p className="relative text-sm text-foreground/90 leading-relaxed text-center font-light tracking-wide">
+            {/* 4. CLOSING AFFIRMATION - Minimal sign-off */}
+            <div className="px-8 pt-6 pb-4 animate-story-outro-enter" style={{ animationDelay: `${1.2 + highlights.length * 0.1}s` }}>
+              <div className="py-8 border-t border-border/10">
+                <p className="text-base text-muted-foreground/80 leading-relaxed text-center font-light tracking-wide italic" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                   {getOutroReflection()}
                 </p>
-                
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <div className="w-6 h-6 rounded-full bg-background border border-border/20 flex items-center justify-center shadow-sm">
-                    <span className="text-xs">💫</span>
-                  </div>
-                </div>
               </div>
             </div>
 
             {/* Empty State */}
-            {!heroMoment && highlights.length === 0 && todayActivities.length === 0 && (
-              <div className="text-center py-12 px-6">
-                <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl opacity-40">📸</span>
+            {todayActivities.length === 0 && (
+              <div className="text-center py-16 px-8">
+                <div className="w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mx-auto mb-6">
+                  <span className="text-3xl opacity-30">🌙</span>
                 </div>
-                <p className="text-base text-muted-foreground font-light">
+                <p className="text-lg text-muted-foreground/70 font-light leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                   No moments captured yet today.
                 </p>
-                <p className="text-sm text-muted-foreground/60 mt-2 font-light">
-                  Start logging to build {babyName ? `${babyName}'s` : "your baby's"} story
+                <p className="text-sm text-muted-foreground/50 mt-3 font-light">
+                  Start logging to see today's rhythm unfold
                 </p>
               </div>
             )}
