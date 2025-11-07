@@ -256,7 +256,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 
                 {/* Headline Signal overlaid on photo */}
                 <div className="absolute bottom-0 left-0 right-0 p-8">
-                  <p className="text-[22px] font-semibold text-white leading-relaxed tracking-tight animate-story-headline-slide drop-shadow-lg" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <p className="text-[22px] font-semibold text-white leading-relaxed tracking-tight animate-story-headline-slide drop-shadow-lg">
                     {getHeadlineSignal()}
                   </p>
                   {heroMoment.details.note && (
@@ -272,7 +272,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 <p className="text-xs font-light text-muted-foreground/50 uppercase tracking-widest">
                   Daily rhythm summary — {todayDate}
                 </p>
-                <p className="text-[22px] font-semibold text-foreground leading-relaxed tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                <p className="text-[22px] font-semibold text-foreground leading-relaxed tracking-tight">
                   {getHeadlineSignal()}
                 </p>
               </div>
@@ -428,7 +428,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                             <p className="text-xs font-light text-muted-foreground/60 uppercase tracking-widest mb-2">
                               {activity.time}
                             </p>
-                            <p className="text-[16px] font-normal text-foreground leading-relaxed" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                            <p className="text-[16px] font-normal text-foreground leading-relaxed">
                               {getActivityLabel(activity)}
                             </p>
                             {getMemoryNote(activity) && (
@@ -453,11 +453,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 
                 {/* Split reflection into two lines for ceremonial pacing */}
                 <div className="relative space-y-2 text-center">
-                  <p className="text-[16px] text-foreground/90 leading-relaxed font-normal tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  <p className="text-[16px] text-foreground/90 leading-relaxed font-normal tracking-wide">
                     {getReflectionLine().split('—')[0].trim()}
                   </p>
                   {getReflectionLine().includes('—') && (
-                    <p className="text-[16px] text-foreground/70 leading-relaxed font-light tracking-wide" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <p className="text-[16px] text-foreground/70 leading-relaxed font-light tracking-wide">
                       {getReflectionLine().split('—')[1]?.trim() || ''}
                     </p>
                   )}
