@@ -467,10 +467,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       {/* Feeding Trends Section */}
       <div className="space-y-6">
         {/* Section Header */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-1 h-6 bg-gradient-feed rounded-full"></div>
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Feeding Trends</h2>
-        </div>
+        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Feeding Trends</h2>
 
         {/* Level 1: Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
@@ -604,10 +601,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       {/* Sleep Trends Section */}
       <div className="space-y-6 mt-8">
         {/* Section Header */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-1 h-6 bg-gradient-nap rounded-full"></div>
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Sleep Trends</h2>
-        </div>
+        <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Sleep Trends</h2>
 
         {/* Level 1: Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
