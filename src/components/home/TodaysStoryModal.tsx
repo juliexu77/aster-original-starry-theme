@@ -214,94 +214,40 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return "Everything unfolded naturally. You're in sync.";
   };
 
-  // Calculate balance metrics
-  const getBalanceMetrics = () => {
-    const feedDiff = feedCount - avgFeedsPerDay;
-    const napDiff = napCount - avgNapsPerDay;
-    const sleepDiff = parseFloat(totalSleepHours) - avgSleepHours;
+  // Simple concrete metrics - no comparisons
+  const lastFeedTime = todayActivities
+    .filter(a => a.type === "feed")
+    .map(a => a.loggedAt ? new Date(a.loggedAt) : null)
+    .filter(Boolean)
+    .sort((a, b) => (b?.getTime() || 0) - (a?.getTime() || 0))[0];
+  
+  const lastFeedDisplay = lastFeedTime 
+    ? lastFeedTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    : null;
 
-    return {
-      feeds: {
-        value: feedCount,
-        fillPercent: Math.min((feedCount / 8) * 100, 100),
-        comparison: feedDiff > 0 ? `+${feedDiff} above usual` : feedDiff < 0 ? `${feedDiff} below usual` : "steady"
-      },
-      sleep: {
-        value: `${totalSleepHours}h`,
-        fillPercent: Math.min((parseFloat(totalSleepHours) / 16) * 100, 100),
-        comparison: sleepDiff > 0 ? `+${sleepDiff.toFixed(1)}h vs typical` : sleepDiff < 0 ? `${sleepDiff.toFixed(1)}h vs typical` : "on track"
-      },
-      awake: {
-        value: napCount,
-        fillPercent: Math.min((napCount / 5) * 100, 100),
-        comparison: napDiff > 0 ? "more active" : napDiff < 0 ? "more rest" : "steady"
-      }
-    };
-  };
-
-  const balanceMetrics = getBalanceMetrics();
-
-  // Generate Stoic-style emotionally human reflection with seasonal/age/fatigue context
-  const getReflectionLine = () => {
-    const feedDiff = feedCount - avgFeedsPerDay;
-    const napDiff = napCount - avgNapsPerDay;
-    const season = getSeason();
+  // Simple reassuring message - goodnight card tone
+  const getReassurance = () => {
     const age = getBabyAge();
-    const isFatigued = hasFatigueIndicators();
     
-    // Fatigue empathy
-    if (isFatigued && napDiff >= 1) {
-      return "Rough night, but they're catching up on rest — you both needed this recovery day.";
+    // Concrete reassurance based on actual data
+    if (parseFloat(totalSleepHours) >= 12) {
+      return "Sleep is solid.";
     }
     
-    if (isFatigued) {
-      return "A challenging night behind you — you showed up anyway. That's the real strength.";
+    if (parseFloat(totalSleepHours) >= 10) {
+      return "Right on track for today.";
     }
     
-    // Seasonal touches
-    if (feedDiff >= 2 && season === "winter") {
-      return "Growing fast even in the quiet of winter — and you're keeping pace beautifully.";
+    if (feedCount >= 6) {
+      return "Well-fed and content.";
     }
     
-    if (season === "spring" && allHighlights.some(a => a.details.feedType === "solid")) {
-      return "First tastes of spring together — new foods, new growth, new season.";
+    if (napCount >= 3 && age < 6) {
+      return "Multiple naps — exactly what they need.";
     }
     
-    if (season === "autumn") {
-      return `First autumn days together — ${babyName || "they're"} changing as fast as the leaves.`;
-    }
-    
-    // Age-based milestones
-    if (age === 4 && napCount >= 3) {
-      return "At 4 months, these nap patterns are exactly right — you're reading their cues perfectly.";
-    }
-    
-    if (age <= 3 && feedCount >= 7) {
-      return "In these early months, frequent feeding is growth — you're giving them everything they need.";
-    }
-    
-    // Original reflections
-    if (feedDiff >= 2) {
-      return `${babyName || "Your baby"} is growing fast — and you're right in sync.`;
-    }
-    
-    if (napDiff <= -1) {
-      return "Today had more wakefulness — exploring the world, taking it all in.";
-    }
-    
-    if (allHighlights.some(a => a.details.feedType === "solid")) {
-      return "New foods, new experiences — witnessing growth unfold naturally.";
-    }
-    
-    if (isRhythmBalanced) {
-      return "A balanced day — just what both of you needed.";
-    }
-    
-    if (todayActivities.length > 12) {
-      return "Full days like this build the foundation — you're doing beautifully.";
-    }
-    
-    return "Steady rhythms, quiet confidence — exactly where you should be.";
+    // General reassurance
+    return "Everything's going okay.";
   };
   
   // Handle share
@@ -431,70 +377,54 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
             )}
 
-            {/* 3. OURA-STYLE BALANCE BARS with elevated cards */}
-            <div className="px-8 space-y-4 animate-story-stats-enter" style={{ animationDelay: '1s' }}>
+            {/* 3. CONCRETE METRICS - Simple and valuable */}
+            <div className="px-8 space-y-3 animate-story-stats-enter" style={{ animationDelay: '1s' }}>
+              {/* Total Sleep */}
+              <div className="p-4 rounded-2xl bg-muted/20 backdrop-blur-sm border border-border/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Moon className="w-5 h-5 text-primary/60" strokeWidth={2} />
+                    <div>
+                      <div className="text-sm text-muted-foreground">Total Sleep</div>
+                      <div className="text-2xl font-semibold">{totalSleepHours}h</div>
+                    </div>
+                  </div>
+                  {parseFloat(totalSleepHours) >= 10 && (
+                    <div className="text-sm text-primary/70">Looking good</div>
+                  )}
+                </div>
+              </div>
+              
               {/* Feeds */}
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Baby className="w-4 h-4 text-[hsl(var(--pp-terracotta))]" strokeWidth={2} />
-                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Feeds</span>
+              <div className="p-4 rounded-2xl bg-muted/20 backdrop-blur-sm border border-border/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Baby className="w-5 h-5 text-primary/60" strokeWidth={2} />
+                    <div>
+                      <div className="text-sm text-muted-foreground">Feeds Today</div>
+                      <div className="text-2xl font-semibold">{feedCount}</div>
+                    </div>
                   </div>
-                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.feeds.comparison}</span>
-                </div>
-                <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 rounded-full animate-story-bar-fill"
-                    style={{ 
-                      width: `${balanceMetrics.feeds.fillPercent}%`,
-                      background: 'linear-gradient(90deg, hsl(var(--pp-terracotta)), hsl(var(--pp-terracotta)) 80%)',
-                      animationDelay: '1.1s'
-                    }}
-                  />
+                  {lastFeedDisplay && (
+                    <div className="text-sm text-muted-foreground">
+                      Last: {lastFeedDisplay}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Sleep */}
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Moon className="w-4 h-4 text-[hsl(var(--pp-lavender))]" strokeWidth={2} />
-                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Sleep</span>
+              
+              {/* Naps */}
+              {napCount > 0 && (
+                <div className="p-4 rounded-2xl bg-muted/20 backdrop-blur-sm border border-border/20">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-primary/60" strokeWidth={2} />
+                    <div>
+                      <div className="text-sm text-muted-foreground">Naps</div>
+                      <div className="text-2xl font-semibold">{napCount}</div>
+                    </div>
                   </div>
-                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.sleep.comparison}</span>
                 </div>
-                <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 rounded-full animate-story-bar-fill"
-                    style={{ 
-                      width: `${balanceMetrics.sleep.fillPercent}%`,
-                      background: 'linear-gradient(90deg, hsl(var(--pp-lavender)), hsl(var(--pp-lavender)) 80%)',
-                      animationDelay: '1.2s'
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Awake periods */}
-              <div className="p-4 rounded-2xl bg-gradient-to-b from-card/50 to-card/30 backdrop-blur-sm border border-border/20 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="w-4 h-4 text-[hsl(var(--accent-1))]" strokeWidth={2} />
-                    <span className="text-[13px] font-semibold text-foreground uppercase tracking-wide">Awake</span>
-                  </div>
-                  <span className="text-xs font-normal text-muted-foreground/70 italic">{balanceMetrics.awake.comparison}</span>
-                </div>
-                <div className="relative h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                  <div 
-                    className="absolute inset-y-0 left-0 rounded-full animate-story-bar-fill"
-                    style={{ 
-                      width: `${balanceMetrics.awake.fillPercent}%`,
-                      background: 'linear-gradient(90deg, hsl(var(--accent-1)), hsl(var(--accent-1)) 80%)',
-                      animationDelay: '1.3s'
-                    }}
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
 
@@ -585,27 +515,15 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
             )}
 
-            {/* 5. STOIC REFLECTION - Ceremonial closing with line breaks */}
-            <div className="px-8 pt-10 pb-6 animate-story-reflection-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }}>
-              <div className="relative py-12 overflow-hidden rounded-2xl">
-                {/* Day fade to night gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/30 to-muted/40 opacity-60 animate-story-dusk-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }} />
-                
-                {/* Split reflection into two lines for ceremonial pacing */}
-                <div className="relative space-y-2 text-center">
-                  <p className="text-[16px] text-foreground/90 leading-relaxed font-normal tracking-wide">
-                    {getReflectionLine().split('—')[0].trim()}
-                  </p>
-                  {getReflectionLine().includes('—') && (
-                    <p className="text-[16px] text-foreground/70 leading-relaxed font-light tracking-wide">
-                      {getReflectionLine().split('—')[1]?.trim() || ''}
-                    </p>
-                  )}
-                  
-                  {/* Small moon icon for bedtime ritual feel */}
-                  <div className="pt-4 flex justify-center">
-                    <Moon className="w-4 h-4 text-muted-foreground/40" strokeWidth={1.5} />
-                  </div>
+            {/* 5. GOODNIGHT CARD - Simple reassurance */}
+            <div className="px-8 pt-6 pb-6 animate-story-reflection-fade" style={{ animationDelay: `${2.0 + highlights.length * 0.2}s` }}>
+              <div className="text-center py-8">
+                <p className="text-lg font-medium text-foreground mb-3">
+                  {getReassurance()}
+                </p>
+                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                  <Moon className="w-4 h-4" />
+                  <p>Rest easy tonight.</p>
                 </div>
               </div>
             </div>
