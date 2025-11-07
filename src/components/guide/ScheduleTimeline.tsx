@@ -378,8 +378,11 @@ export const ScheduleTimeline = ({
                 <Collapsible>
                   <CollapsibleTrigger asChild>
                     <button className="flex items-center gap-1 group">
-                      <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent">
-                        {modelState.text}
+                      <Badge variant={modelState.variant} className="text-xs cursor-pointer hover:bg-accent px-3 py-1.5">
+                        <div className="flex flex-col items-center leading-tight">
+                          <span className="text-sm font-semibold text-muted-foreground">{schedule.accuracyScore}%</span>
+                          <span className="text-[10px] text-muted-foreground/70">accurate</span>
+                        </div>
                       </Badge>
                       {modelState.showTooltip && (
                         <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
