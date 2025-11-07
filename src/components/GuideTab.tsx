@@ -803,8 +803,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return;
     }
     
-    const fetchRhythmInsights = async () => {
-      setRhythmInsightsLoading(true);
+    const fetchRhythmInsights = async (showLoadingState = false) => {
+      if (showLoadingState) {
+        setRhythmInsightsLoading(true);
+      }
       try {
         console.log('🔄 Fetching rhythm insights from edge function...');
         const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
@@ -820,7 +822,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         
         if (error) {
           console.error('❌ Error fetching rhythm insights:', error);
-          setRhythmInsightsLoading(false);
+          if (showLoadingState) {
+            setRhythmInsightsLoading(false);
+          }
           return;
         }
         
@@ -846,7 +850,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       } catch (err) {
         console.error('❌ Failed to fetch rhythm insights:', err);
       } finally {
-        setRhythmInsightsLoading(false);
+        if (showLoadingState) {
+          setRhythmInsightsLoading(false);
+        }
       }
     };
 
@@ -886,69 +892,53 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       return false;
     };
     
-    // Load cached data first if not already loaded
-    if (cached && !rhythmInsights) {
+    // Load cached data IMMEDIATELY if available
+    if (cached) {
       try {
         const parsed = JSON.parse(cached);
         const cachedDate = parsed.generatedDate;
         const napMismatch = hasNapCountMismatch();
         
-        // Check if cache is from today and has no mismatch
-        if (cachedDate === todayDate && !napMismatch) {
-          console.log('📦 Loaded cached rhythm insights from today');
-          setRhythmInsights({
-            heroInsight: parsed.heroInsight,
-            whatToDo: parsed.whatToDo,
-            whatsNext: parsed.whatsNext,
-            prepTip: parsed.prepTip,
-            whyThisMatters: parsed.whyThisMatters,
-            confidenceScore: parsed.confidenceScore
-          });
-          setRhythmInsightsLoading(false);
-          return; // Don't fetch if cache is from today
-        } else {
-          console.log('⚠️ Cache is from a different day or has mismatch, will fetch fresh');
+        // Always show cached data immediately
+        console.log('📦 Loading cached rhythm insights...');
+        setRhythmInsights({
+          heroInsight: parsed.heroInsight,
+          whatToDo: parsed.whatToDo,
+          whatsNext: parsed.whatsNext,
+          prepTip: parsed.prepTip,
+          whyThisMatters: parsed.whyThisMatters,
+          confidenceScore: parsed.confidenceScore
+        });
+        setRhythmInsightsLoading(false);
+        
+        // Fetch fresh data in background if cache is stale or has mismatch
+        if (cachedDate !== todayDate || napMismatch) {
+          console.log('🔄 Cache is stale, fetching fresh data in background...');
           localStorage.removeItem('rhythmInsights');
+          fetchRhythmInsights(false); // Don't show loading state
+        } else {
+          console.log('✅ Using cached insights from today');
         }
+        return;
       } catch (e) {
         console.error('Failed to parse cached rhythm insights:', e);
         localStorage.removeItem('rhythmInsights');
       }
     }
     
-    // Check if we already have insights loaded and they're from today
-    if (rhythmInsights && cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        const cachedDate = parsed.generatedDate;
-        
-        if (cachedDate === todayDate && !hasNapCountMismatch()) {
-          setRhythmInsightsLoading(false);
-          return; // Already have valid data from today
-        }
-      } catch (e) {
-        console.error('Failed to check cached date:', e);
-      }
-    }
-    
-    // Fetch if we don't have cached data from today
-    const shouldFetch = !cached || !rhythmInsights;
-    
-    if (shouldFetch) {
-      console.log('🚀 Fetching daily rhythm insights...');
-      fetchRhythmInsights();
-    } else {
-      console.log('✅ Using cached insights from today, no fetch needed');
-      setRhythmInsightsLoading(false);
-    }
+    // No cache available - show loading state and fetch
+    console.log('🚀 No cache available, fetching rhythm insights...');
+    fetchRhythmInsights(true); // Show loading state only on first load
   }, [hasTier3Data, household, babyAgeInWeeks, enrichedActivities.length, userTimezone]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {
     if (!hasTier2Data || !household) return;
     
-    const fetchAiPrediction = async () => {
-      setAiPredictionLoading(true);
+    const fetchAiPrediction = async (showLoadingState = false) => {
+      if (showLoadingState) {
+        setAiPredictionLoading(true);
+      }
       try {
         console.log('🔄 Fetching AI schedule prediction...');
         
@@ -993,7 +983,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       } catch (err) {
         console.error('❌ Failed to fetch AI prediction:', err);
       } finally {
-        setAiPredictionLoading(false);
+        if (showLoadingState) {
+          setAiPredictionLoading(false);
+        }
       }
     };
 
@@ -1001,41 +993,37 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const lastFetch = localStorage.getItem('aiPredictionLastFetch');
     const cached = localStorage.getItem('aiPrediction');
     
-    // Load cached data first
-    if (cached && !aiPrediction) {
+    // Load cached data IMMEDIATELY if available
+    if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        console.log('📦 Loaded cached AI prediction');
+        console.log('📦 Loading cached AI prediction...');
         setAiPrediction(parsed);
+        setAiPredictionLoading(false);
       } catch (e) {
         console.error('Failed to parse cached AI prediction:', e);
         localStorage.removeItem('aiPrediction');
       }
     }
     
-    // Only fetch new prediction if:
-    // 1. No cached prediction exists, OR
-    // 2. It's past 5am AND we haven't fetched today yet
+    // Determine if we should fetch new data
     let shouldFetch = false;
     const now = new Date();
     const currentHour = now.getHours();
     
-    if (!lastFetch) {
-      // No cached prediction - fetch now
+    if (!lastFetch || !cached) {
+      // No cached prediction - show loading and fetch now
       shouldFetch = true;
+      fetchAiPrediction(true); // Show loading state only on first load
     } else {
       const lastFetchDate = new Date(lastFetch);
       const isNewDay = now.toDateString() !== lastFetchDate.toDateString();
       
-      // Only fetch if it's a new day AND we're past 5am
+      // Fetch in background if it's a new day AND we're past 5am
       if (isNewDay && currentHour >= 5) {
-        shouldFetch = true;
+        console.log('🔄 Fetching fresh AI prediction in background...');
+        fetchAiPrediction(false); // Don't show loading state
       }
-    }
-    
-    if (shouldFetch && hasTier2Data) {
-      console.log('🚀 Fetching fresh AI prediction (5am refresh)...');
-      fetchAiPrediction();
     }
   }, [hasTier2Data, household, activities.length, aiPrediction]);
 
