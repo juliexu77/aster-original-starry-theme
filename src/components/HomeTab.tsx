@@ -47,6 +47,10 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { toast } = useToast();
   const { nightSleepEndHour } = useNightSleepWindow();
   const { household } = useHousehold();
+  
+  // Use household baby_birthday as authoritative source (same as GuideTab)
+  const effectiveBabyBirthday = household?.baby_birthday || babyBirthday;
+  
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showFeedDetails, setShowFeedDetails] = useState(false);
   const [showSleepDetails, setShowSleepDetails] = useState(false);
@@ -65,7 +69,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     nextPrediction, 
     smartSuggestions, 
     todaysPulse 
-  } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), babyBirthday);
+  } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Track visited tabs for progressive disclosure
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => {
@@ -114,8 +118,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
-    if (!babyBirthday) return null;
-    const birthDate = new Date(babyBirthday);
+    if (!effectiveBabyBirthday) return null;
+    const birthDate = new Date(effectiveBabyBirthday);
     const today = new Date();
     const totalMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
                         (today.getMonth() - birthDate.getMonth());
@@ -135,8 +139,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   
   // Calculate baby age in weeks for chat
   const getBabyAgeInWeeks = () => {
-    if (!babyBirthday) return undefined;
-    const birthDate = new Date(babyBirthday);
+    if (!effectiveBabyBirthday) return undefined;
+    const birthDate = new Date(effectiveBabyBirthday);
     const today = new Date();
     const diffTime = Math.abs(today.getTime() - birthDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
