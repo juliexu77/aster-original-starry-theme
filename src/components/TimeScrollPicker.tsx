@@ -235,11 +235,22 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       {label && <Label className="text-sm font-medium">{label}</Label>}
       
       {/* Combined Date and Time Selector */}
-      <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
-        {/* Date - Scrollable */}
-        <div 
-          ref={dateRef}
-          className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
+      <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background relative">
+        {/* Scroll hint text */}
+        <div className="absolute -top-5 left-0 text-[10px] text-muted-foreground">
+          {t('tapOrScroll')}
+        </div>
+        
+        {/* Date - Scrollable with gradient overlays */}
+        <div className="relative">
+          {/* Top fade gradient */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+          {/* Bottom fade gradient */}
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+          
+          <div 
+            ref={dateRef}
+            className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
             if (isProgrammaticDateScroll.current) return;
             if (dateRef.current) {
@@ -259,10 +270,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {dates.map((date, index) => (
               <div
                 key={index}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-all snap-center whitespace-nowrap active:scale-95 ${
                   selectedDateIndex === index 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-foreground font-bold scale-110' 
+                    : 'text-muted-foreground hover:text-foreground hover:scale-105'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
@@ -274,12 +285,18 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
         </div>
+        </div>
 
         <span className="text-muted-foreground text-sm">-</span>
-        {/* Hours - Scrollable */}
-        <div 
-          ref={hourRef}
-          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+        
+        {/* Hours - Scrollable with gradient overlays */}
+        <div className="relative">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+          
+          <div 
+            ref={hourRef}
+            className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
@@ -289,10 +306,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {hours.map((hour, index) => (
               <div
                 key={`hour-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-all snap-center active:scale-95 ${
                   selectedHour === hour 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-foreground font-bold scale-110' 
+                    : 'text-muted-foreground hover:text-foreground hover:scale-105'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
@@ -304,13 +321,18 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
         </div>
+        </div>
 
         <span className="text-muted-foreground text-sm">:</span>
 
-        {/* Minutes - Scrollable */}
-        <div 
-          ref={minuteRef}
-          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+        {/* Minutes - Scrollable with gradient overlays */}
+        <div className="relative">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+          <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+          
+          <div 
+            ref={minuteRef}
+            className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
@@ -320,10 +342,10 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             {minutes.map((minute, index) => (
               <div
                 key={`minute-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-all snap-center active:scale-95 ${
                   selectedMinute === minute 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-foreground font-bold scale-110' 
+                    : 'text-muted-foreground hover:text-foreground hover:scale-105'
                 }`}
                 onClick={() => {
                   setHasUserInteracted(true);
@@ -334,6 +356,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               </div>
             ))}
           </div>
+        </div>
         </div>
 
         {/* AM/PM - Single toggle button */}

@@ -166,6 +166,7 @@ const translations = {
     today: "Today",
     yesterday: "Yesterday",
     tomorrow: "Tomorrow",
+    tapOrScroll: "Tap or scroll",
     
     // Chart and insights
     nextPredictedAction: "Next Predicted Action",
@@ -651,6 +652,7 @@ const translations = {
     today: "今天",
     yesterday: "昨天",
     tomorrow: "明天",
+    tapOrScroll: "点击或滚动",
     
     // Chart and insights
     nextPredictedAction: "下一个预测活动",
