@@ -36,7 +36,9 @@ const getActivityLabel = (activity: Activity): string => {
     case "diaper":
       return `Diaper change (${activity.details.diaperType})`;
     case "nap":
-      if (activity.details.startTime && activity.details.endTime) {
+      if (activity.details.isNightSleep) {
+        return "Went to bed";
+      } else if (activity.details.startTime && activity.details.endTime) {
         return `Napped ${activity.details.startTime} - ${activity.details.endTime}`;
       }
       return "Nap";
@@ -92,6 +94,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
         </DialogHeader>
 
         <div className="space-y-6 pt-2">
+          {/* Warm intro text */}
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Here's a little recap of {babyName ? `${babyName}'s` : "your baby's"} day — the special moments, routines, and everything in between. 
+          </p>
+
           {/* Summary Stats */}
           <div className="flex gap-4 justify-around">
             <div className="text-center">
