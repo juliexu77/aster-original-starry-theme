@@ -241,51 +241,6 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           <Label className="text-base font-semibold">{label || t('time')}</Label>
           
           <div className="flex gap-3 items-center justify-center py-8">
-            {/* Date picker with chevrons */}
-            <div className="flex flex-col items-center">
-              <ChevronUp className="h-4 w-4 text-muted-foreground mb-1" />
-              <div 
-                ref={dateRef}
-                className="h-32 w-20 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-                onScroll={() => {
-                  if (isProgrammaticDateScroll.current) return;
-                  if (dateRef.current) {
-                    const itemHeight = 40;
-                    const scrollTop = dateRef.current.scrollTop;
-                    const index = Math.round(scrollTop / itemHeight);
-                    const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
-                    setHasUserInteracted(true);
-                    setSelectedDateIndex(clampedIndex);
-                  }
-                }}
-                onMouseDown={() => setHasUserInteracted(true)}
-                onTouchStart={() => setHasUserInteracted(true)}
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <div className="flex flex-col">
-                  {dates.map((date, index) => (
-                    <div
-                      key={index}
-                      className={`h-10 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
-                        selectedDateIndex === index 
-                          ? 'text-foreground font-bold' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => {
-                        setHasUserInteracted(true);
-                        setSelectedDateIndex(index);
-                      }}
-                    >
-                      {formatDateLabel(date)}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
-            </div>
-
-            <span className="text-muted-foreground">-</span>
-
             {/* Hour picker with chevrons */}
             <div className="flex flex-col items-center">
               <ChevronUp className="h-4 w-4 text-muted-foreground mb-1" />
@@ -353,21 +308,6 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               </div>
               <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
             </div>
-
-            {/* AM/PM toggle */}
-            <button
-              className="px-3 py-2 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
-              onClick={() => {
-                const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
-                setHasUserInteracted(true);
-                setSelectedPeriod(newPeriod);
-                try { 
-                  localStorage.setItem('lastUsedPeriod', newPeriod); 
-                } catch (e) {}
-              }}
-            >
-              {selectedPeriod}
-            </button>
           </div>
         </div>
       </DialogContent>
