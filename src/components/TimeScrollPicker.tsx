@@ -398,10 +398,13 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               setSelectedDateIndex(clampedIndex);
             }
           }}
-          onMouseDown={() => setHasUserInteracted(true)}
-          onTouchStart={() => setHasUserInteracted(true)}
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.stopPropagation();
+            setHasUserInteracted(true);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setHasUserInteracted(true);
           }}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -432,10 +435,13 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           ref={hourRef}
           className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
-          onMouseDown={() => setHasUserInteracted(true)}
-          onTouchStart={() => setHasUserInteracted(true)}
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.stopPropagation();
+            setHasUserInteracted(true);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setHasUserInteracted(true);
           }}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
@@ -466,10 +472,13 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           ref={minuteRef}
           className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
-          onMouseDown={() => setHasUserInteracted(true)}
-          onTouchStart={() => setHasUserInteracted(true)}
-          onClick={(e) => {
+          onMouseDown={(e) => {
             e.stopPropagation();
+            setHasUserInteracted(true);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            setHasUserInteracted(true);
           }}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
