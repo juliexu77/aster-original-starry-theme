@@ -515,8 +515,21 @@ export const ScheduleTimeline = ({
             // Find matching event for confidence/reasoning
             const matchingEvent = schedule.events.find(e => e.time === activity.time);
             const eventTime = parseTime(activity.time);
-            const isPast = eventTime < currentMinutes;
-            const isCurrent = !isPast && idx === displayActivities.findIndex(a => parseTime(a.time) >= currentMinutes);
+            
+            // Determine if this is the current activity
+            let isCurrent = false;
+            if (activity.type === 'nap-block' && activity.napDuration) {
+              // For naps: check if current time is within nap start and end
+              const { endTime } = calculateEndTimeAndDuration(activity.time, activity.napDuration);
+              const napEndMinutes = parseTime(endTime);
+              isCurrent = currentMinutes >= eventTime && currentMinutes < napEndMinutes;
+            } else {
+              // For wake-up/bedtime: check if within 30 minutes before or after
+              const timeDiff = Math.abs(currentMinutes - eventTime);
+              isCurrent = timeDiff <= 30 && currentMinutes >= eventTime - 30;
+            }
+            
+            const isPast = eventTime < currentMinutes && !isCurrent;
             
             // Confidence styling
             const confidenceOpacity = matchingEvent?.confidence === 'high' ? 'opacity-100' : 
