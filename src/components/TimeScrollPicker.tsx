@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -237,9 +238,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       {/* Combined Date and Time Selector */}
       <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
         {/* Date - Scrollable */}
-        <div 
-          ref={dateRef}
-          className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
+        <div className="relative flex flex-col items-center">
+          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div 
+            ref={dateRef}
+            className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
           onScroll={() => {
             if (isProgrammaticDateScroll.current) return;
             if (dateRef.current) {
@@ -273,13 +276,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               </div>
             ))}
           </div>
+          </div>
+          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
         </div>
 
         <span className="text-muted-foreground text-sm">-</span>
         {/* Hours - Scrollable */}
-        <div 
-          ref={hourRef}
-          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+        <div className="relative flex flex-col items-center">
+          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div 
+            ref={hourRef}
+            className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
@@ -303,14 +310,18 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               </div>
             ))}
           </div>
+          </div>
+          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
         </div>
 
         <span className="text-muted-foreground text-sm">:</span>
 
         {/* Minutes - Scrollable */}
-        <div 
-          ref={minuteRef}
-          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+        <div className="relative flex flex-col items-center">
+          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div 
+            ref={minuteRef}
+            className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
           onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
           onMouseDown={() => setHasUserInteracted(true)}
           onTouchStart={() => setHasUserInteracted(true)}
@@ -334,6 +345,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               </div>
             ))}
           </div>
+          </div>
+          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
         </div>
 
         {/* AM/PM - Single toggle button */}
