@@ -644,9 +644,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     };
   }, [aiPrediction, transitionWindow]);
   
-  // Generate alternate schedule for transitions
-  const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
-  const [manualScheduleOverride, setManualScheduleOverride] = useState(false);
+  // Generate alternate schedule for transitions - persist user's last selection
+  const [showAlternateSchedule, setShowAlternateSchedule] = useState(() => {
+    const saved = localStorage.getItem('guide-schedule-preference');
+    return saved === 'alternate';
+  });
   
   // Calculate today's actual nap count
   const todayActualNapCount = useMemo(() => {
@@ -658,23 +660,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     });
     return todayNaps.length;
   }, [normalizedActivities]);
-  
-  // Auto-set showAlternate based on today's actual naps matching alternate count (only if not manually overridden)
-  useEffect(() => {
-    if (!transitionInfo || !aiPrediction || manualScheduleOverride) return;
-    
-    const alternateNapCount = transitionInfo.napCounts.transitioning;
-    const currentNapCount = aiPrediction.total_naps_today;
-    
-    // If today's actual naps match alternate, show alternate by default
-    if (todayActualNapCount > 0) {
-      if (todayActualNapCount === alternateNapCount && todayActualNapCount !== currentNapCount) {
-        setShowAlternateSchedule(true);
-      } else if (todayActualNapCount === currentNapCount) {
-        setShowAlternateSchedule(false);
-      }
-    }
-  }, [todayActualNapCount, transitionInfo, aiPrediction, manualScheduleOverride]);
   
   const alternateSchedule = useMemo(() => {
     if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
@@ -1459,7 +1444,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     showAlternate={showAlternateSchedule}
                     onToggleAlternate={(show) => {
                       setShowAlternateSchedule(show);
-                      setManualScheduleOverride(true);
+                      localStorage.setItem('guide-schedule-preference', show ? 'alternate' : 'current');
                     }}
                     isAdjusting={isAdjusting}
                     adjustmentContext={adjustmentContext}
