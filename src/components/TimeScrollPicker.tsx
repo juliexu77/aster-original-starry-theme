@@ -3,7 +3,6 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Keyboard } from "lucide-react";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -240,13 +239,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       <DrawerContent className="max-h-[80vh]">
         <DrawerHeader className="flex flex-row items-center justify-between border-b pb-4">
           <DrawerTitle>{label || t('time')}</DrawerTitle>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <Keyboard className="h-4 w-4" />
-            <span className="text-sm">Keypad</span>
-          </Button>
         </DrawerHeader>
         
-        <div className="relative flex gap-0 items-center justify-center py-4 px-6">
+        <div className="relative flex gap-0 items-center justify-center py-6 px-6">
           {/* Date picker */}
           <div className="flex flex-col items-center flex-1 relative">
             <div 
@@ -267,11 +262,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               onTouchStart={() => setHasUserInteracted(true)}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex flex-col py-16">
+              <div className="flex flex-col py-20">
                 {dates.map((date, index) => (
                   <div
                     key={index}
-                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center whitespace-nowrap ${
+                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center whitespace-nowrap ${
                       selectedDateIndex === index 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -299,7 +294,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {hours.map((hour, index) => (
                   <div
                     key={`hour-${index}`}
-                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
                       selectedHour === hour 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -327,7 +322,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {minutes.map((minute, index) => (
                   <div
                     key={`minute-${index}`}
-                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
                       selectedMinute === minute 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -347,11 +342,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex flex-col py-16">
+              <div className="flex flex-col py-20">
                 {periods.map((period, index) => (
                   <div
                     key={`period-${index}`}
-                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
                       selectedPeriod === period 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -374,7 +369,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         </div>
         
         {/* Selection indicator bar - spans across all columns (like Apple Health) */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 pointer-events-none px-6">
+        <div className="absolute left-6 right-6 top-[calc(50%+0.75rem)] -translate-y-1/2 h-10 pointer-events-none">
           <div className="h-full rounded-lg bg-primary/15 border border-primary/20" />
         </div>
 
