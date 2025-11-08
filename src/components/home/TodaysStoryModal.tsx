@@ -53,11 +53,26 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     .filter(a => a.type === "nap" && !a.details.isNightSleep)
     .reduce((sum, a) => {
       if (a.details.startTime && a.details.endTime) {
-        const start = new Date(`2000-01-01 ${a.details.startTime}`);
-        const end = new Date(`2000-01-01 ${a.details.endTime}`);
-        return sum + (end.getTime() - start.getTime()) / (1000 * 60);
+        // Parse time strings more carefully
+        const parseTime = (timeStr: string) => {
+          const [time, period] = timeStr.split(' ');
+          const [hStr, mStr] = time.split(':');
+          let h = parseInt(hStr, 10);
+          const m = parseInt(mStr || '0', 10);
+          if (period === 'PM' && h !== 12) h += 12;
+          if (period === 'AM' && h === 12) h = 0;
+          return h * 60 + m;
+        };
+
+        const startMinutes = parseTime(a.details.startTime);
+        const endMinutes = parseTime(a.details.endTime);
+        const duration = endMinutes >= startMinutes 
+          ? endMinutes - startMinutes 
+          : (24 * 60) - startMinutes + endMinutes; // Handle overnight
+        
+        return sum + duration;
       }
-      return sum + 90;
+      return sum;
     }, 0);
   
   const totalNapHours = Math.floor(totalNapMinutes / 60);
@@ -170,10 +185,15 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   console.log('📖 Story Metrics:', {
     feedCount,
     napCount,
+    totalNapMinutes,
     totalNapTime: `${totalNapHours}h ${totalNapMins}m`,
     longestWakeWindow,
     hadSolidFood,
-    headline
+    headline,
+    napActivities: todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).map(a => ({
+      startTime: a.details.startTime,
+      endTime: a.details.endTime
+    }))
   });
 
   // Get photo caption
