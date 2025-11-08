@@ -8,9 +8,12 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Share2 } from "lucide-react";
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from "date-fns";
 import { useHousehold } from "@/hooks/useHousehold";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
+import { Capacitor } from "@capacitor/core";
 
 interface Activity {
   id: string;
@@ -42,6 +45,7 @@ export function PediatricianReportModal({
   const [includeDiapers, setIncludeDiapers] = useState(true);
   const [observations, setObservations] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [savedFilePath, setSavedFilePath] = useState<string | null>(null);
 
   const getDateRange = () => {
     const now = new Date();
@@ -314,19 +318,47 @@ export function PediatricianReportModal({
 
       if (error) throw error;
 
-      // Download the PDF
-      const blob = new Blob([data], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${babyName.toLowerCase()}-pediatrician-summary-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const fileName = `${babyName.toLowerCase()}-pediatrician-summary-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
 
-      toast.success("Report downloaded successfully");
-      onOpenChange(false);
+      // Convert to base64 for Capacitor
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        try {
+          const base64Data = (reader.result as string).split(',')[1];
+          
+          if (Capacitor.isNativePlatform()) {
+            // Save to device storage
+            const result = await Filesystem.writeFile({
+              path: fileName,
+              data: base64Data,
+              directory: Directory.Documents,
+            });
+            
+            setSavedFilePath(result.uri);
+            toast.success("Report saved to Downloads");
+          } else {
+            // Fallback for web - direct download
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast.success("Report downloaded successfully");
+            onOpenChange(false);
+          }
+        } catch (fileError) {
+          console.error('Error saving file:', fileError);
+          toast.error("Failed to save report");
+        }
+      };
+      
+      reader.readAsDataURL(blob);
     } catch (error) {
       console.error('Error generating report:', error);
       toast.error("Failed to generate report");
@@ -335,8 +367,26 @@ export function PediatricianReportModal({
     }
   };
 
+  const handleShare = async () => {
+    if (!savedFilePath) return;
+    
+    try {
+      await Share.share({
+        title: 'Pediatrician Report',
+        text: `${babyName}'s health summary`,
+        url: savedFilePath,
+      });
+    } catch (error) {
+      console.error('Error sharing file:', error);
+      toast.error("Failed to share report");
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(open) => {
+      onOpenChange(open);
+      if (!open) setSavedFilePath(null);
+    }}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Generate Pediatrician Summary</DialogTitle>
@@ -409,22 +459,36 @@ export function PediatricianReportModal({
         </div>
 
         <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={generateReport} 
-            disabled={isGenerating || (!includeFeeds && !includeSleep && !includeDiapers)}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              'Generate Report'
-            )}
-          </Button>
+          {savedFilePath ? (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Done
+              </Button>
+              <Button onClick={handleShare}>
+                <Share2 className="mr-2 h-4 w-4" />
+                Share Report
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={generateReport} 
+                disabled={isGenerating || (!includeFeeds && !includeSleep && !includeDiapers)}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  'Generate Report'
+                )}
+              </Button>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
