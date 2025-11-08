@@ -433,12 +433,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             </div>
           )}
 
-          {/* Bottom spacer and ending message - appears during exhale */}
-          <div className="relative w-full px-6 pb-24 pt-16">
-            <div className="text-center text-[11px] text-white/40 tracking-[0.15em] animate-story-closure-fade font-light">
-              {getClosureMessage()}
-            </div>
-          </div>
+          {/* Bottom spacer */}
+          <div className="relative w-full h-24" />
           </div>
 
           {/* ACT 3: Closure - Sparkles and bottom text overlays */}
