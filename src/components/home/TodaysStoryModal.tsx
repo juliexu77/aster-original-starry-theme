@@ -412,7 +412,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             </div>
           )}
 
-          {/* ACT 3: Closure - Reassuring message with sparkles rising */}
+          {/* ACT 3: Closure - Sparkles rising and subtle bottom text */}
           {animationPhase === 'act3' && (
             <>
               {/* Dusk gradient overlay */}
@@ -438,17 +438,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 />
               </div>
               
-              {/* Closure message - centered */}
-              <div className="absolute top-1/3 left-0 right-0 flex justify-center px-8 pointer-events-none">
-                <p 
-                  className="text-lg font-light text-foreground/90 dark:text-foreground/80 text-center tracking-wide animate-story-closure-fade"
-                  style={{ animationDelay: '0.5s' }}
-                >
-                  {getClosureMessage()}
-                </p>
-              </div>
-              
-              {/* Hold still for 1s before dismiss */}
+              {/* Subtle bottom text only */}
               <div className="absolute left-0 right-0 flex justify-center pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                 <div 
                   className="text-xs text-muted-foreground/40 uppercase tracking-widest animate-story-closure-fade"
