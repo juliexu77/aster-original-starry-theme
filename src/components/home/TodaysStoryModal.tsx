@@ -48,6 +48,15 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   const solidFeeds = todayActivities.filter(a => a.type === "feed" && a.details.feedType === "solid");
   const hadSolidFood = solidFeeds.length > 0;
   
+  // Get special notes/moments from photos or activities with notes
+  const specialMoments = todayActivities.filter(a => 
+    a.details.note && a.details.note.length > 0 && a.type !== "photo"
+  );
+  const photoNotes = todayActivities.filter(a => 
+    a.type === "photo" && a.details.note && a.details.note.length > 0
+  );
+  const allSpecialNotes = [...specialMoments, ...photoNotes];
+  
   // Calculate total nap time
   const totalNapMinutes = todayActivities
     .filter(a => a.type === "nap" && !a.details.isNightSleep)
@@ -406,6 +415,34 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   </div>
                   <div className="mt-1 text-[14px] font-medium animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
                     {longestWakeWindow}
+                  </div>
+                </div>
+              )}
+
+              {/* Special moments - Food or notes */}
+              {allSpecialNotes.length > 0 && (
+                <div 
+                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                  style={{ animationDelay: longestWakeWindow ? '2.0s' : '1.5s' }}
+                >
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <Sparkles className="w-4 h-4 text-[hsl(var(--pp-coral))]" strokeWidth={1.5} />
+                    <span className="text-[14px] font-medium text-foreground">Special moments</span>
+                  </div>
+                  <div className="space-y-1">
+                    {allSpecialNotes.slice(0, 3).map((activity, idx) => {
+                      const time = activity.loggedAt ? format(new Date(activity.loggedAt), "h:mm a") : "";
+                      return (
+                        <div key={idx} className="text-[13px] text-foreground/80">
+                          <span className="text-muted-foreground/60">{time}:</span> {activity.details.note}
+                        </div>
+                      );
+                    })}
+                    {allSpecialNotes.length > 3 && (
+                      <div className="text-[12px] text-muted-foreground/50 italic">
+                        +{allSpecialNotes.length - 3} more moments
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
