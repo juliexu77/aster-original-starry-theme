@@ -251,16 +251,16 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-y-auto border-0">
-        <div className="relative min-h-full w-full">
-          {/* ACT 1: Arrival - Full-screen hero photo */}
-          <div className="relative w-full h-full">
+        <div className="relative w-full flex flex-col">
+          {/* ACT 1: Arrival - Hero photo section */}
+          <div className="relative w-full min-h-[60vh] flex flex-col">
             {heroMoment?.details.photoUrl ? (
-              <div className="relative w-full h-full">
+              <div className="relative w-full min-h-[60vh] flex-1">
                 {/* Hero photo with blur-in animation */}
                 <img 
                   src={heroMoment.details.photoUrl} 
                   alt="Today's moment" 
-                  className="w-full h-full object-cover animate-story-photo-blur-in"
+                  className="w-full h-full min-h-[60vh] object-cover animate-story-photo-blur-in"
                 />
                 
                 {/* Subtle glow in corners */}
@@ -305,9 +305,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             )}
           </div>
 
-          {/* ACT 2: Reveal - Metric cards at bottom, compact spacing */}
+          {/* ACT 2: Reveal - Metric cards section */}
           {animationPhase !== 'act1' && (
-            <div className="absolute left-0 right-0 px-6 space-y-2.5" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+            <div className="relative w-full px-6 py-6 space-y-2.5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
