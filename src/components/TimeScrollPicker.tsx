@@ -247,8 +247,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
         </DrawerHeader>
         
         {/* Selection indicator overlay */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 pointer-events-none">
-          <div className="h-full mx-4 border-y-2 border-primary/20 bg-primary/5" />
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-14 pointer-events-none px-4">
+          <div className="h-full rounded-xl border-2 border-primary/30 bg-primary/10" />
         </div>
 
         <div className="relative flex gap-1 items-center justify-center py-8 px-4">
