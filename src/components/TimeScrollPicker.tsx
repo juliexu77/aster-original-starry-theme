@@ -148,7 +148,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     baseSectionSize?: number
   ) => {
     if (ref.current) {
-      const itemHeight = 48;
+      const itemHeight = 40;
       const sectionSize = baseSectionSize || (items.length / 3);
       const valueIndex = items.slice(0, sectionSize).indexOf(value);
       if (valueIndex >= 0) {
@@ -170,7 +170,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     
     // Scroll to selected date (programmatic)
     if (dateRef.current) {
-      const itemHeight = 48;
+      const itemHeight = 40;
       isProgrammaticDateScroll.current = true;
       dateRef.current.scrollTop = selectedDateIndex * itemHeight;
       requestAnimationFrame(() => {
@@ -187,7 +187,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   ) => {
     if (programmaticRef?.current) return;
     if (ref.current) {
-      const itemHeight = 48;
+      const itemHeight = 40;
       const scrollTop = ref.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
       const totalItems = items.length;
@@ -246,16 +246,16 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </Button>
         </DrawerHeader>
         
-        <div className="relative flex gap-0 items-center justify-center py-8 px-6">
+        <div className="relative flex gap-0 items-center justify-center py-4 px-6">
           {/* Date picker */}
           <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={dateRef}
-              className="h-60 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
+              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => {
                 if (isProgrammaticDateScroll.current) return;
                 if (dateRef.current) {
-                  const itemHeight = 48;
+                  const itemHeight = 40;
                   const scrollTop = dateRef.current.scrollTop;
                   const index = Math.round(scrollTop / itemHeight);
                   const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
@@ -267,11 +267,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
               onTouchStart={() => setHasUserInteracted(true)}
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex flex-col py-24">
+              <div className="flex flex-col py-16">
                 {dates.map((date, index) => (
                   <div
                     key={index}
-                    className={`h-12 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center whitespace-nowrap ${
+                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center whitespace-nowrap ${
                       selectedDateIndex === index 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -289,7 +289,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={hourRef}
-              className="h-60 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
+              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
               onMouseDown={() => setHasUserInteracted(true)}
               onTouchStart={() => setHasUserInteracted(true)}
@@ -299,7 +299,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {hours.map((hour, index) => (
                   <div
                     key={`hour-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
                       selectedHour === hour 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -317,7 +317,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           <div className="flex flex-col items-center flex-1 relative">
             <div 
               ref={minuteRef}
-              className="h-60 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
+              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
               onMouseDown={() => setHasUserInteracted(true)}
               onTouchStart={() => setHasUserInteracted(true)}
@@ -327,7 +327,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                 {minutes.map((minute, index) => (
                   <div
                     key={`minute-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
                       selectedMinute === minute 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -344,14 +344,14 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           {/* AM/PM picker */}
           <div className="flex flex-col items-center flex-1 relative">
             <div 
-              className="h-60 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
+              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              <div className="flex flex-col py-24">
+              <div className="flex flex-col py-16">
                 {periods.map((period, index) => (
                   <div
                     key={`period-${index}`}
-                    className={`h-12 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
+                    className={`h-10 flex items-center justify-center text-base font-semibold cursor-pointer transition-all duration-150 snap-center ${
                       selectedPeriod === period 
                         ? 'text-foreground' 
                         : 'text-muted-foreground/40'
@@ -373,8 +373,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </div>
         </div>
         
-        {/* Selection indicator bar - spans across all columns */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 pointer-events-none px-6">
+        {/* Selection indicator bar - spans across all columns (like Apple Health) */}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 pointer-events-none px-6">
           <div className="h-full rounded-lg bg-primary/15 border border-primary/20" />
         </div>
 
