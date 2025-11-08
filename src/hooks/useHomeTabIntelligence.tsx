@@ -388,6 +388,13 @@ export const useHomeTabIntelligence = (
       );
     }
 
+    console.log('📊 Today\'s Pulse Debug:', {
+      currentTime: now.toLocaleString(),
+      currentHour: now.getHours(),
+      babyAgeMonths,
+      todayActivitiesCount: todayActivities.length
+    });
+
     // Age-appropriate baselines (feeds per day, naps per day)
     const getExpectedRanges = (ageMonths: number) => {
       if (ageMonths < 1) return { feeds: [8, 12], naps: [4, 6], wakeWindow: [45, 90] };
@@ -455,6 +462,15 @@ export const useHomeTabIntelligence = (
     let feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} so far`;
     let feedHasDeviation = false;
 
+    console.log('🍼 Feed Analysis:', {
+      feedCount,
+      expectedRange: expected.feeds,
+      threshold: expected.feeds[0] - 2,
+      currentHour: now.getHours(),
+      shouldTriggerAlert: feedCount < expected.feeds[0] - 2 && now.getHours() >= 16,
+      avg7DayFeeds: avg7DayFeeds.toFixed(1)
+    });
+
     if (feedCount === 0 && now.getHours() >= 10) {
       feedStatus = 'needs-attention';
       feedDetails = 'No feeds logged yet today';
@@ -463,7 +479,7 @@ export const useHomeTabIntelligence = (
       feedStatus = 'needs-attention';
       feedDetails = `${feedCount} feed${feedCount !== 1 ? 's' : ''} — below expected ${expected.feeds[0]}-${expected.feeds[1]}`;
       feedHasDeviation = true;
-    } else if (feedCount > avg7DayFeeds * 1.4) {
+    } else if (feedCount > avg7DayFeeds * 1.4 && feedCount >= 2) {
       feedStatus = 'unusually-good';
       feedDetails = `${feedCount} feeds today — cluster feeding (avg: ${avg7DayFeeds.toFixed(1)})`;
       feedHasDeviation = true;
