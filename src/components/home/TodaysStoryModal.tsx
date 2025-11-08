@@ -258,8 +258,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 blur-3xl animate-story-glow-corners" />
                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-white/10 blur-3xl animate-story-glow-corners" style={{ animationDelay: '1s' }} />
                 
-                {/* Gradient overlay for readability - warm dusk fade on top 40% */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent via-40% to-black/60" />
+                {/* Gradient overlay for readability - enhanced for text visibility */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent via-35% to-black/70" />
                 
                 {/* Date subtitle (top) */}
                 <div className="absolute top-8 left-6 right-6">
@@ -268,14 +268,14 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                   </p>
                 </div>
                 
-                {/* Headline (bottom) */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 pb-16">
-                  <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type">
+                {/* Headline (bottom) - positioned above cards */}
+                <div className="absolute bottom-[280px] left-0 right-0 px-8">
+                  <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
                     {headline}
                   </h1>
                   
                   {getPhotoCaption() && (
-                    <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up" style={{ animationDelay: '0.7s' }}>
+                    <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
                       {getPhotoCaption()}
                     </p>
                   )}
@@ -296,9 +296,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
             )}
           </div>
 
-          {/* ACT 2: Reveal - Metric cards overlaid on bottom - lowered 80px */}
+          {/* ACT 2: Reveal - Metric cards overlaid on bottom - closer together and lower */}
           {animationPhase !== 'act1' && (
-            <div className="absolute bottom-4 left-0 right-0 px-6 space-y-5">
+            <div className="absolute bottom-4 left-0 right-0 px-6 space-y-3">
               {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-3 border border-border/30 animate-story-card-slide-up"
