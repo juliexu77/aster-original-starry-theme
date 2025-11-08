@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.compute-cohort-stats]
 verify_jwt = false
+
+[functions.delete-household]
+verify_jwt = false

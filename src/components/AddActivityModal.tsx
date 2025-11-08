@@ -446,13 +446,16 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       setTime(activityTime);
     }
 
-    if (activityType === "feed" && feedType === "bottle" && !quantity) {
-      toast({
-        title: "Feed amount required",
-        description: "Please enter the amount for this feeding.",
-        variant: "destructive",
-      });
-      return;
+    if (activityType === "feed" && feedType === "bottle") {
+      const quantityNum = parseFloat(quantity);
+      if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
+        toast({
+          title: "Feed amount required",
+          description: "Please enter a valid amount greater than 0.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     if (activityType === "feed" && feedType === "nursing" && (!minutesLeft && !minutesRight)) {
