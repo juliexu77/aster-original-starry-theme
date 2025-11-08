@@ -156,13 +156,17 @@ export const TimePickerDrawer = ({
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement>,
     items: number[],
-    setter: (val: number) => void
+    setter: (val: number) => void,
+    label: string
   ) => {
     if (!ref.current || isProgrammaticScroll.current) return;
     const scrollTop = ref.current.scrollTop;
     const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
     const index = Math.max(0, Math.min(rawIndex, items.length - 1));
     const value = items[index];
+    
+    console.log(`🎯 ${label} scroll:`, { scrollTop, SPACER, ITEM_HEIGHT, rawIndex, index, value, itemsLength: items.length });
+    
     setter(value);
     triggerHaptic('light');
   };
@@ -203,10 +207,29 @@ export const TimePickerDrawer = ({
   // Apply changes
   const handleApply = () => {
     const timeString = `${stagedHour}:${stagedMinute.toString().padStart(2, '0')}${use24Hour ? '' : ' ' + stagedPeriod}`;
+    const selectedDate = dates[stagedDateIndex];
+    
+    console.log('🎯 APPLY CLICKED:', {
+      stagedHour,
+      stagedMinute,
+      stagedPeriod,
+      stagedDateIndex,
+      timeString,
+      selectedDate: selectedDate.toISOString(),
+      dateLabel: formatDateLabel(selectedDate),
+    });
+    
     setCommittedTime(timeString);
-    setCommittedDate(dates[stagedDateIndex]);
+    setCommittedDate(selectedDate);
+    
+    console.log('📤 CALLING onChange:', timeString);
     onChange(timeString);
-    if (onDateChange) onDateChange(dates[stagedDateIndex]);
+    
+    if (onDateChange) {
+      console.log('📅 CALLING onDateChange:', selectedDate.toISOString());
+      onDateChange(selectedDate);
+    }
+    
     setIsOpen(false);
     triggerHaptic('medium');
   };
@@ -390,6 +413,9 @@ export const TimePickerDrawer = ({
                       const scrollTop = dateRef.current.scrollTop;
                       const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
                       const clamped = Math.max(0, Math.min(index, dates.length - 1));
+                      
+                      console.log('🎯 Date scroll:', { scrollTop, SPACER, ITEM_HEIGHT, index, clamped, date: dates[clamped].toISOString(), datesLength: dates.length });
+                      
                       setStagedDateIndex(clamped);
                       triggerHaptic('light');
                     }}
@@ -418,7 +444,7 @@ export const TimePickerDrawer = ({
                     ref={hourRef}
                     className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    onScroll={() => handleScroll(hourRef, hours, setStagedHour)}
+                    onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour')}
                   >
                     <div className="flex flex-col">
                       <div style={{ height: `${SPACER}px` }} />
@@ -444,7 +470,7 @@ export const TimePickerDrawer = ({
                     ref={minuteRef}
                     className="h-[220px] w-full overflow-y-scroll scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute)}
+                    onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute')}
                   >
                     <div className="flex flex-col">
                       <div style={{ height: `${SPACER}px` }} />
