@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -14,7 +12,6 @@ interface TimeScrollPickerProps {
 
 export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, label }: TimeScrollPickerProps) => {
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
-  const [showExpandedPicker, setShowExpandedPicker] = useState(false);
   
   const getInitialParts = () => {
     if (value) {
@@ -42,14 +39,11 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
 
   // Generate dates array (past 90 days, today, next 3 days)
   const generateDates = () => {
-    const dates: Date[] = [];
+    const dates = [];
     const today = new Date();
-    // Use noon to avoid DST/midnight timezone shifts when adding days
-    today.setHours(12, 0, 0, 0);
     for (let i = -90; i <= 3; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      date.setHours(12, 0, 0, 0);
       dates.push(date);
     }
     return dates;
@@ -61,9 +55,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const index = dates.findIndex(date => 
         date.toDateString() === selectedDate.toDateString()
       );
-      return index >= 0 ? index : 90; // Default to today (index 90)
+      return index >= 0 ? index : 7; // Default to today (index 7)
     }
-    return 90; // Today is at index 90
+    return 7; // Today is at index 7
   });
 
   // Update time picker state when value prop changes (for editing activities)
@@ -100,17 +94,19 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   const dateRef = useRef<HTMLDivElement>(null);
   const isProgrammaticHourScroll = useRef(false);
   const isProgrammaticMinuteScroll = useRef(false);
-  const isProgrammaticPeriodScroll = useRef(false);
   const isProgrammaticDateScroll = useRef(false);
 
-  // Constants for consistent wheel behavior
-  const ITEM_HEIGHT = 40; // must match h-10
-  const VIEWPORT_HEIGHT = 176; // h-44 = 11rem = 176px
-  const SPACER = (VIEWPORT_HEIGHT - ITEM_HEIGHT) / 2; // 68px
-
-  // Simple finite lists with proper snapping
-  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
+  // Create extended arrays for infinite scrolling
+  const hours = [
+    ...Array.from({ length: 12 }, (_, i) => i + 1), // Original 1-12
+    ...Array.from({ length: 12 }, (_, i) => i + 1), // Duplicate for continuity
+    ...Array.from({ length: 12 }, (_, i) => i + 1)  // Another duplicate
+  ];
+  const minutes = [
+    ...Array.from({ length: 60 }, (_, i) => i), // Original 0-59
+    ...Array.from({ length: 60 }, (_, i) => i), // Duplicate for continuity  
+    ...Array.from({ length: 60 }, (_, i) => i)  // Another duplicate
+  ];
   const periods = ["AM", "PM"];
 
   // Call onChange once on mount with initial values
@@ -129,7 +125,6 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const minuteSafe = Math.min(59, Math.max(0, selectedMinute));
       if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
       const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
-      console.log('⏰ Emitting time change:', { selectedHour, selectedMinute: minuteSafe, selectedPeriod, timeString });
       onChange(timeString);
     }
   }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted]);
@@ -137,7 +132,6 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   useEffect(() => {
     // Update selected date when index changes
     if (hasUserInteracted && onDateChange) {
-      console.log('📅 Emitting date change:', { selectedDateIndex, date: dates[selectedDateIndex] });
       onDateChange(dates[selectedDateIndex]);
     }
   }, [selectedDateIndex, dates, onDateChange, hasUserInteracted]);
@@ -147,26 +141,34 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     value: number,
     items: any[],
     programmaticRef?: React.MutableRefObject<boolean>,
+    baseSectionSize?: number
   ) => {
-    if (!ref.current) return;
-    const index = items.indexOf(value);
-    if (index < 0) return;
-    if (programmaticRef) programmaticRef.current = true;
-    ref.current.scrollTop = SPACER + index * ITEM_HEIGHT;
-    requestAnimationFrame(() => {
-      if (programmaticRef) programmaticRef.current = false;
-    });
+    if (ref.current) {
+      const itemHeight = 32;
+      const sectionSize = baseSectionSize || (items.length / 3);
+      const valueIndex = items.slice(0, sectionSize).indexOf(value);
+      if (valueIndex >= 0) {
+        const middleIndex = sectionSize + valueIndex;
+        if (programmaticRef) programmaticRef.current = true;
+        ref.current.scrollTop = middleIndex * itemHeight;
+        // Allow scroll event to fire, then clear programmatic flag
+        requestAnimationFrame(() => {
+          if (programmaticRef) programmaticRef.current = false;
+        });
+      }
+    }
   };
 
   useEffect(() => {
     // Scroll to selected values whenever they change (programmatic)
-    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll);
-    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll);
+    scrollToValue(hourRef, selectedHour, hours, isProgrammaticHourScroll, 12);
+    scrollToValue(minuteRef, selectedMinute, minutes, isProgrammaticMinuteScroll, 60);
     
     // Scroll to selected date (programmatic)
     if (dateRef.current) {
+      const itemHeight = 32;
       isProgrammaticDateScroll.current = true;
-      dateRef.current.scrollTop = SPACER + selectedDateIndex * ITEM_HEIGHT;
+      dateRef.current.scrollTop = selectedDateIndex * itemHeight;
       requestAnimationFrame(() => {
         isProgrammaticDateScroll.current = false;
       });
@@ -180,17 +182,29 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     programmaticRef?: React.MutableRefObject<boolean>
   ) => {
     if (programmaticRef?.current) return;
-    if (!ref.current) return;
-
-    const scrollTop = ref.current.scrollTop;
-    const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
-    const clampedIndex = Math.max(0, Math.min(rawIndex, items.length - 1));
-    const actualValue = items[clampedIndex];
-
-    console.log('📜 Scroll event:', { scrollTop, SPACER, ITEM_HEIGHT, rawIndex, clampedIndex, actualValue, itemsLength: items.length });
-
-    setHasUserInteracted(true);
-    setter(actualValue);
+    if (ref.current) {
+      const itemHeight = 32;
+      const scrollTop = ref.current.scrollTop;
+      const index = Math.round(scrollTop / itemHeight);
+      const totalItems = items.length;
+      const sectionSize = totalItems / 3; // Each section has 12 items
+      
+      // Handle infinite scrolling by wrapping around
+      if (index < sectionSize * 0.5) {
+        // Near top, jump to middle section
+        ref.current.scrollTop = (index + sectionSize) * itemHeight;
+        return;
+      } else if (index >= sectionSize * 2.5) {
+        // Near bottom, jump to middle section
+        ref.current.scrollTop = (index - sectionSize) * itemHeight;
+        return;
+      }
+      
+      const clampedIndex = Math.max(0, Math.min(index, totalItems - 1));
+      const actualValue = items[clampedIndex % sectionSize];
+      setHasUserInteracted(true);
+      setter(actualValue);
+    }
   };
 
   const { t } = useLanguage();
@@ -216,193 +230,130 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     }
   };
 
-  // Render expanded picker drawer with all 4 columns
-  const renderExpandedPicker = () => (
-    <Drawer open={showExpandedPicker} onOpenChange={setShowExpandedPicker}>
-      <DrawerContent className="max-h-[80vh]">
-        <DrawerHeader className="flex flex-row items-center justify-between border-b pb-4">
-          <DrawerTitle>{label || t('time')}</DrawerTitle>
-        </DrawerHeader>
-        
-        <div className="relative flex gap-0 items-center justify-center py-6 px-6">
-          {/* Date picker */}
-          <div className="flex flex-col items-center flex-1 relative">
-            <div 
-              ref={dateRef}
-              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
-              onScroll={() => {
-                if (isProgrammaticDateScroll.current) return;
-                if (dateRef.current) {
-                  const scrollTop = dateRef.current.scrollTop;
-                  const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
-                  const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
-                  console.log('📅 Date scroll:', { scrollTop, SPACER, ITEM_HEIGHT, index, clampedIndex, selectedDate: dates[clampedIndex], datesLength: dates.length });
-                  setHasUserInteracted(true);
-                  setSelectedDateIndex(clampedIndex);
-                }
-              }}
-              onMouseDown={() => setHasUserInteracted(true)}
-              onTouchStart={() => setHasUserInteracted(true)}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex flex-col">
-                <div style={{ height: `${SPACER}px` }} aria-hidden />
-                {dates.map((date, index) => (
-                  <div
-                    key={index}
-                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center whitespace-nowrap ${
-                      selectedDateIndex === index 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                  >
-                    {formatDateLabel(date)}
-                  </div>
-                ))}
-                <div style={{ height: `${SPACER}px` }} aria-hidden />
-              </div>
-            </div>
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background to-100%" />
-          </div>
-
-          {/* Hour picker */}
-          <div className="flex flex-col items-center flex-1 relative">
-            <div 
-              ref={hourRef}
-              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
-              onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
-              onMouseDown={() => setHasUserInteracted(true)}
-              onTouchStart={() => setHasUserInteracted(true)}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex flex-col">
-                {hours.map((hour, index) => (
-                  <div
-                    key={`hour-${index}`}
-                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
-                      selectedHour === hour 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                  >
-                    {hour}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background to-100%" />
-          </div>
-
-          {/* Minute picker */}
-          <div className="flex flex-col items-center flex-1 relative">
-            <div 
-              ref={minuteRef}
-              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
-              onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
-              onMouseDown={() => setHasUserInteracted(true)}
-              onTouchStart={() => setHasUserInteracted(true)}
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex flex-col">
-                {minutes.map((minute, index) => (
-                  <div
-                    key={`minute-${index}`}
-                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
-                      selectedMinute === minute 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                  >
-                    {minute.toString().padStart(2, '0')}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background to-100%" />
-          </div>
-
-          {/* AM/PM picker */}
-          <div className="flex flex-col items-center flex-1 relative">
-            <div 
-              className="h-44 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory relative z-10"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex flex-col py-20">
-                {periods.map((period, index) => (
-                  <div
-                    key={`period-${index}`}
-                    className={`h-10 flex items-center justify-center text-base cursor-pointer transition-all duration-150 snap-center ${
-                      selectedPeriod === period 
-                        ? 'text-foreground' 
-                        : 'text-muted-foreground/40'
-                    }`}
-                    onClick={() => {
-                      setHasUserInteracted(true);
-                      setSelectedPeriod(period as "AM" | "PM");
-                      try { 
-                        localStorage.setItem('lastUsedPeriod', period); 
-                      } catch (e) {}
-                    }}
-                  >
-                    {period}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-transparent via-40% to-background to-100%" />
-          </div>
-        </div>
-        
-        {/* Selection indicator bar - spans across all columns (like Apple Health) */}
-        <div className="absolute left-6 right-6 top-[calc(50%+0.75rem)] -translate-y-1/2 h-10 pointer-events-none">
-          <div className="h-full rounded-lg bg-primary/15 border border-primary/20" />
-        </div>
-
-        <DrawerFooter className="flex flex-row gap-2 border-t pt-4">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => setShowExpandedPicker(false)}
-          >
-            {t('cancel') || 'Cancel'}
-          </Button>
-          <Button 
-            className="flex-1"
-            onClick={() => {
-              console.log('✅ Apply clicked - Current state:', { 
-                selectedHour, 
-                selectedMinute, 
-                selectedPeriod, 
-                selectedDateIndex,
-                selectedDate: dates[selectedDateIndex],
-                hasUserInteracted 
-              });
-              setShowExpandedPicker(false);
-            }}
-          >
-            {t('apply') || 'Apply'}
-          </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
-  );
-
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
       
-      {/* Simple clickable display */}
-      <div 
-        className="flex gap-2 border rounded-lg p-3 items-center justify-between bg-background cursor-pointer hover:border-primary/50 transition-colors"
-        onClick={() => setShowExpandedPicker(true)}
-      >
-        <span className="text-sm font-medium text-foreground">
-          {formatDateLabel(dates[selectedDateIndex])}, {selectedHour}:{selectedMinute.toString().padStart(2, '0')} {selectedPeriod}
-        </span>
-      </div>
+      {/* Combined Date and Time Selector */}
+      <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
+        {/* Date - Scrollable */}
+        <div 
+          ref={dateRef}
+          className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => {
+            if (isProgrammaticDateScroll.current) return;
+            if (dateRef.current) {
+              const itemHeight = 32;
+              const scrollTop = dateRef.current.scrollTop;
+              const index = Math.round(scrollTop / itemHeight);
+              const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
+              setHasUserInteracted(true);
+              setSelectedDateIndex(clampedIndex);
+            }
+          }}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {dates.map((date, index) => (
+              <div
+                key={index}
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                  selectedDateIndex === index 
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedDateIndex(index);
+                }}
+              >
+                {formatDateLabel(date)}
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* Expanded picker modal */}
-      {renderExpandedPicker()}
+        <span className="text-muted-foreground text-sm">-</span>
+        {/* Hours - Scrollable */}
+        <div 
+          ref={hourRef}
+          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {hours.map((hour, index) => (
+              <div
+                key={`hour-${index}`}
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedHour === hour 
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedHour(hour);
+                }}
+              >
+                {hour}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <span className="text-muted-foreground text-sm">:</span>
+
+        {/* Minutes - Scrollable */}
+        <div 
+          ref={minuteRef}
+          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+          onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
+          onMouseDown={() => setHasUserInteracted(true)}
+          onTouchStart={() => setHasUserInteracted(true)}
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex flex-col">
+            {minutes.map((minute, index) => (
+              <div
+                key={`minute-${index}`}
+                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
+                  selectedMinute === minute 
+                    ? 'text-foreground font-bold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  setSelectedMinute(minute);
+                }}
+              >
+                {minute.toString().padStart(2, '0')}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AM/PM - Single toggle button */}
+        <div className="flex">
+          <button
+            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
+            onClick={() => {
+              const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
+              setHasUserInteracted(true);
+              setSelectedPeriod(newPeriod);
+              // Save last used period
+              try { 
+                localStorage.setItem('lastUsedPeriod', newPeriod); 
+              } catch (e) {}
+            }}
+          >
+            {selectedPeriod}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
