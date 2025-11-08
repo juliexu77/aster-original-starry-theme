@@ -298,28 +298,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
           {/* Scrollable content layer - positioned over fixed photo */}
           <div className="relative w-full min-h-full">
-            {/* Top text overlay */}
-            <div className="relative pt-8 px-6">
-              <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
-                {todayDate}
-              </p>
-            </div>
-
-            {/* Headline positioned in safe zone */}
-            <div className="relative px-8 mt-[25vh]">
-              <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
-                {headline}
-              </h1>
-              
-              {getPhotoCaption() && (
-                <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
-                  {getPhotoCaption()}
-                </p>
-              )}
-            </div>
-
-            {/* Spacer to push cards down */}
-            <div className="h-[20vh]" />
+            {/* Spacer to position cards below headline in fixed layer */}
+            <div className="h-[65vh]" />
 
             {/* ACT 2: Reveal - Metric cards section */}
             {animationPhase !== 'act1' && (
