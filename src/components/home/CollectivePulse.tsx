@@ -35,43 +35,22 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours (only sleep activities that start at/after night sleep start time)
+      // Calculate night sleep hours - any nap that starts at/after night sleep start time
       const nightSleepByDate: Record<string, number> = {};
       
-      console.log('🔍 CollectivePulse Debug:', {
-        totalActivities: activities?.length,
-        sleepActivities: activities?.filter(a => a.type === 'sleep').length,
-        nightSleepStartHour,
-        householdId: household.id
-      });
-      
       activities?.forEach(activity => {
-        if (activity.type === 'sleep') {
+        if (activity.type === 'nap') {
           const timestamp = new Date(activity.logged_at);
           const startHour = timestamp.getHours();
-          const details = activity.details as any;
-          const duration = details?.duration || 0;
           
-          console.log('🌙 Sleep activity:', {
-            logged_at: activity.logged_at,
-            startHour,
-            nightSleepStartHour,
-            meetsThreshold: startHour >= nightSleepStartHour,
-            duration
-          });
-          
-          // Only count sleep activities that start at or after the night sleep start time
+          // Count naps that start at or after the night sleep start time as night sleep
           if (startHour >= nightSleepStartHour) {
             const date = format(timestamp, 'yyyy-MM-dd');
+            const details = activity.details as any;
+            const duration = details?.duration || 0;
             nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
           }
         }
-      });
-
-      console.log('📊 Night sleep calculation:', {
-        nightSleepByDate,
-        nightSleepDays: Object.keys(nightSleepByDate).length,
-        totalNightSleep: Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0)
       });
 
       const nightSleepDays = Object.keys(nightSleepByDate).length;
