@@ -309,19 +309,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               <div className="relative w-full px-6 pb-6 space-y-2.5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds - Peach with pulse */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
                 style={{ animationDelay: '0s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
-                    <Baby className="w-4 h-4 text-[hsl(var(--pp-terracotta))]" strokeWidth={1.5} />
+                    <Baby className="w-4 h-4 text-primary" strokeWidth={1.5} />
                     <span className="text-[14px] font-medium text-foreground">Feeds</span>
                   </div>
-                  <span className="text-[14px] font-medium">{feedCount}</span>
+                  <span className="text-[14px] font-medium text-foreground">{feedCount}</span>
                 </div>
                 <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-terracotta))]/60 to-[hsl(var(--pp-coral))]/60 rounded-full animate-story-bar-feed"
+                    className="h-full bg-primary/60 rounded-full animate-story-bar-feed"
                     style={{ 
                       width: `${Math.min(100, (feedCount / avgFeeds) * 100)}%`,
                       animationDelay: '0.1s'
@@ -340,19 +340,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
               {/* Naps - Lavender smooth */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
                 style={{ animationDelay: '0.5s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
-                    <Moon className="w-4 h-4 text-[hsl(var(--pp-lavender))]" strokeWidth={1.5} />
+                    <Moon className="w-4 h-4 text-accent" strokeWidth={1.5} />
                     <span className="text-[14px] font-medium text-foreground">Naps</span>
                   </div>
-                  <span className="text-[14px] font-medium">{napCount}</span>
+                  <span className="text-[14px] font-medium text-foreground">{napCount}</span>
                 </div>
                 <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-lavender))]/60 to-[hsl(264_40%_75%)]/60 rounded-full animate-story-bar-nap"
+                    className="h-full bg-accent/60 rounded-full animate-story-bar-nap"
                     style={{ 
                       width: `${Math.min(100, (napCount / avgNaps) * 100)}%`,
                       animationDelay: '0.6s'
@@ -371,19 +371,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
               {/* Nap time - Mint with glint sweep */}
               <div 
-                className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
                 style={{ animationDelay: '1.0s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
-                    <Clock className="w-4 h-4 text-[hsl(var(--pp-mint))]" strokeWidth={1.5} />
+                    <Clock className="w-4 h-4 text-secondary-foreground" strokeWidth={1.5} />
                     <span className="text-[14px] font-medium text-foreground">Nap time</span>
                   </div>
-                  <span className="text-[14px] font-medium">{totalNapHours}h {totalNapMins}m</span>
+                  <span className="text-[14px] font-medium text-foreground">{totalNapHours}h {totalNapMins}m</span>
                 </div>
                 <div className="h-1 bg-muted/30 rounded-full overflow-hidden relative">
                   <div 
-                    className="h-full bg-gradient-to-r from-[hsl(var(--pp-mint))]/60 to-[hsl(153_45%_65%)]/60 rounded-full animate-story-bar-naptime"
+                    className="h-full bg-secondary/60 rounded-full animate-story-bar-naptime"
                     style={{ 
                       width: `${Math.min(100, (totalNapMinutes / avgNapMinutes) * 100)}%`,
                       animationDelay: '1.1s'
@@ -403,16 +403,16 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Longest wake window - Sand with pulse highlight */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                  className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
                   style={{ animationDelay: '1.5s' }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <Sparkles className="w-4 h-4 text-accent" strokeWidth={1.5} />
+                      <Sparkles className="w-4 h-4 text-muted-foreground" strokeWidth={1.5} />
                       <span className="text-[14px] font-medium text-foreground">Longest wake window</span>
                     </div>
                   </div>
-                  <div className="mt-1 text-[14px] font-medium animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
+                  <div className="mt-1 text-[14px] font-medium text-foreground animate-story-window-pulse" style={{ animationDelay: '1.6s' }}>
                     {longestWakeWindow}
                   </div>
                 </div>
@@ -421,11 +421,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Special moments - Food or notes */}
               {allSpecialNotes.length > 0 && (
                 <div 
-                  className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
+                  className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
                   style={{ animationDelay: longestWakeWindow ? '2.0s' : '1.5s' }}
                 >
                   <div className="flex items-center gap-2.5 mb-1.5">
-                    <Sparkles className="w-4 h-4 text-[hsl(var(--pp-coral))]" strokeWidth={1.5} />
+                    <Sparkles className="w-4 h-4 text-primary" strokeWidth={1.5} />
                     <span className="text-[14px] font-medium text-foreground">Special moments</span>
                   </div>
                   <div className="space-y-1">
