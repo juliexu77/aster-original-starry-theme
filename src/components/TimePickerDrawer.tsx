@@ -630,8 +630,13 @@ export const TimePickerDrawer = ({
           )}
         </div>
 
-        {/* Footer with actions */}
-        <div className="sticky bottom-0 bg-background border-t p-4">
+        {/* Footer with summary and actions */}
+        <div className="sticky bottom-0 bg-background border-t p-4 space-y-3">
+          {/* Staged summary chip */}
+          <div className="text-center py-2 px-4 bg-primary/10 rounded-lg">
+            <span className="text-sm font-medium">{getStagedSummary()}</span>
+          </div>
+
           {/* Action buttons */}
           <div className="flex gap-2">
             <Button
