@@ -8,7 +8,6 @@ import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { GuideTab } from "@/components/GuideTab";
 import { NightDoulaReview } from "@/components/NightDoulaReview";
-import { ReportConfigModal, ReportConfig } from "@/components/ReportConfigModal";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { ExportCSVModal } from "@/components/ExportCSVModal";
 
@@ -364,10 +363,8 @@ const ongoingNap = (() => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedActivityTypes, setSelectedActivityTypes] = useState<string[]>(['feed', 'diaper', 'nap', 'note', 'measure', 'photo']);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [showReportConfig, setShowReportConfig] = useState(false);
+  const [showPediatricianReport, setShowPediatricianReport] = useState(false);
   const [showCSVExport, setShowCSVExport] = useState(false);
-  const [reportConfig, setReportConfig] = useState<ReportConfig | undefined>();
-  const [showReportShare, setShowReportShare] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [recentCollaboratorActivity, setRecentCollaboratorActivity] = useState<{
     userName: string;
@@ -722,7 +719,7 @@ const ongoingNap = (() => {
             <div className="px-4 py-2.5 border-b border-border">
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => setShowReportConfig(true)}
+                  onClick={() => setShowPediatricianReport(true)}
                   className="text-sm text-foreground underline hover:text-primary transition-colors"
                 >
                   Pediatrician Report
@@ -1266,11 +1263,6 @@ return (
           </div>
         </div>
 
-        {showReportShare && (
-          <div className="sticky top-16 z-20 bg-primary/10 text-foreground border-b border-border px-4 py-2 text-sm text-center">
-            Generating report…
-          </div>
-        )}
 
         {activeTab === 'home' && recentCollaboratorActivity && (
           <div className="sticky top-16 z-20 bg-accent/80 text-foreground border-b border-border px-4 py-2 text-sm text-center animate-in slide-in-from-top">
@@ -1451,23 +1443,9 @@ return (
           babyName={babyProfile?.name}
         />
 
-        <ReportConfigModal
-          open={showReportConfig}
-          onOpenChange={setShowReportConfig}
-          babyName={babyProfile?.name}
-          onGenerate={(config) => {
-            setReportConfig(config);
-            setShowReportConfig(false);
-            setShowReportShare(true);
-          }}
-        />
-
         <PediatricianReportModal
-          open={showReportShare}
-          onOpenChange={(open) => {
-            setShowReportShare(open);
-            if (!open) setReportConfig(undefined);
-          }}
+          open={showPediatricianReport}
+          onOpenChange={setShowPediatricianReport}
           activities={activities}
           babyName={babyProfile?.name}
         />
