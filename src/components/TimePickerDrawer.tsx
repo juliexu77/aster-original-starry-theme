@@ -487,9 +487,20 @@ export const TimePickerDrawer = ({
                   </div>
                 )}
 
-                {/* Selection indicator */}
-                <div className="absolute left-4 right-4 top-[calc(50%+1.5rem)] -translate-y-1/2 h-11 pointer-events-none">
-                  <div className="h-full rounded-lg bg-primary/10 border border-primary/20" />
+                {/* Selection indicator - DEBUG MODE */}
+                <div className="absolute left-4 right-4 pointer-events-none" style={{ top: `${24 + (VIEWPORT_HEIGHT / 2)}px`, transform: 'translateY(-50%)', height: `${ITEM_HEIGHT}px` }}>
+                  <div className="h-full rounded-lg bg-primary/20 border-2 border-primary" />
+                  {/* Debug crosshair */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-full h-0.5 bg-red-500" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-full w-0.5 bg-red-500" />
+                  </div>
+                  {/* Debug label */}
+                  <div className="absolute -top-6 left-0 text-xs font-mono text-red-500">
+                    Expected: {stagedDateIndex} | {stagedHour}:{stagedMinute.toString().padStart(2, '0')}
+                  </div>
                 </div>
               </div>
             </>
