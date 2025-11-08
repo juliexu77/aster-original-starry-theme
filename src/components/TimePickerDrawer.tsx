@@ -137,18 +137,18 @@ export const TimePickerDrawer = ({
     if (!isProgrammaticScroll.current) return;
     if (hourRef.current) {
       const index = hours.indexOf(stagedHour);
-      if (index >= 0) hourRef.current.scrollTop = SPACER + index * ITEM_HEIGHT;
+      if (index >= 0) hourRef.current.scrollTop = index * ITEM_HEIGHT;
     }
     if (minuteRef.current) {
       const index = minutes.indexOf(stagedMinute);
-      if (index >= 0) minuteRef.current.scrollTop = SPACER + index * ITEM_HEIGHT;
+      if (index >= 0) minuteRef.current.scrollTop = index * ITEM_HEIGHT;
     }
     if (dateRef.current) {
-      dateRef.current.scrollTop = SPACER + stagedDateIndex * ITEM_HEIGHT;
+      dateRef.current.scrollTop = stagedDateIndex * ITEM_HEIGHT;
     }
     if (periodRef.current && !use24Hour) {
       const pIndex = stagedPeriod === 'AM' ? 0 : 1;
-      periodRef.current.scrollTop = SPACER + pIndex * ITEM_HEIGHT;
+      periodRef.current.scrollTop = pIndex * ITEM_HEIGHT;
     }
   };
 
@@ -174,11 +174,11 @@ export const TimePickerDrawer = ({
     if (!ref.current || isProgrammaticScroll.current) return;
     isAnyWheelScrolling.current = true;
     const scrollTop = ref.current.scrollTop;
-    const rawIndex = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
+    const rawIndex = Math.round(scrollTop / ITEM_HEIGHT);
     const index = Math.max(0, Math.min(rawIndex, items.length - 1));
     const value = items[index];
 
-    console.log(`🎯 ${label} scroll:`, { scrollTop, SPACER, ITEM_HEIGHT, rawIndex, index, value, itemsLength: items.length });
+    console.log(`🎯 ${label} scroll:`, { scrollTop, ITEM_HEIGHT, rawIndex, index, value, itemsLength: items.length });
 
     setter(value);
     triggerHaptic('light');
@@ -188,8 +188,8 @@ export const TimePickerDrawer = ({
     timeoutRef.current = window.setTimeout(() => {
       if (!ref.current) return;
       isProgrammaticScroll.current = true;
-      const snapIndex = Math.max(0, Math.min(Math.round((ref.current.scrollTop - SPACER) / ITEM_HEIGHT), items.length - 1));
-      const targetTop = SPACER + snapIndex * ITEM_HEIGHT;
+      const snapIndex = Math.max(0, Math.min(Math.round(ref.current.scrollTop / ITEM_HEIGHT), items.length - 1));
+      const targetTop = snapIndex * ITEM_HEIGHT;
       ref.current.scrollTo({ top: targetTop, behavior: 'smooth' });
       window.setTimeout(() => {
         isProgrammaticScroll.current = false;
@@ -433,10 +433,10 @@ export const TimePickerDrawer = ({
                       if (!dateRef.current || isProgrammaticScroll.current) return;
                       isAnyWheelScrolling.current = true;
                       const scrollTop = dateRef.current.scrollTop;
-                      const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
+                      const index = Math.round(scrollTop / ITEM_HEIGHT);
                       const clamped = Math.max(0, Math.min(index, dates.length - 1));
                       
-                      console.log('🎯 Date scroll:', { scrollTop, SPACER, ITEM_HEIGHT, index, clamped, date: dates[clamped].toISOString(), datesLength: dates.length });
+                      console.log('🎯 Date scroll:', { scrollTop, ITEM_HEIGHT, index, clamped, date: dates[clamped].toISOString(), datesLength: dates.length });
                       
                       setStagedDateIndex(clamped);
                       triggerHaptic('light');
@@ -446,8 +446,8 @@ export const TimePickerDrawer = ({
                       dateSnapTimeout.current = window.setTimeout(() => {
                         if (!dateRef.current) return;
                         isProgrammaticScroll.current = true;
-                        const snapped = Math.max(0, Math.min(Math.round((dateRef.current.scrollTop - SPACER) / ITEM_HEIGHT), dates.length - 1));
-                        const targetTop = SPACER + snapped * ITEM_HEIGHT;
+                        const snapped = Math.max(0, Math.min(Math.round(dateRef.current.scrollTop / ITEM_HEIGHT), dates.length - 1));
+                        const targetTop = snapped * ITEM_HEIGHT;
                         dateRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
                         window.setTimeout(() => {
                           isProgrammaticScroll.current = false;
@@ -537,8 +537,9 @@ export const TimePickerDrawer = ({
                         if (!periodRef.current || isProgrammaticScroll.current) return;
                         isAnyWheelScrolling.current = true;
                         const scrollTop = periodRef.current.scrollTop;
-                        const index = Math.max(0, Math.min(Math.round((scrollTop - SPACER) / ITEM_HEIGHT), 1));
+                        const index = Math.max(0, Math.min(Math.round(scrollTop / ITEM_HEIGHT), 1));
                         const period = index === 0 ? 'AM' : 'PM';
+                        console.log('🎯 Period scroll:', { scrollTop, ITEM_HEIGHT, index, period });
                         setStagedPeriod(period as 'AM' | 'PM');
                         triggerHaptic('light');
 
@@ -546,8 +547,8 @@ export const TimePickerDrawer = ({
                         periodSnapTimeout.current = window.setTimeout(() => {
                           if (!periodRef.current) return;
                           isProgrammaticScroll.current = true;
-                          const snapped = Math.max(0, Math.min(Math.round((periodRef.current.scrollTop - SPACER) / ITEM_HEIGHT), 1));
-                          const targetTop = SPACER + snapped * ITEM_HEIGHT;
+                          const snapped = Math.max(0, Math.min(Math.round(periodRef.current.scrollTop / ITEM_HEIGHT), 1));
+                          const targetTop = snapped * ITEM_HEIGHT;
                           periodRef.current.scrollTo({ top: targetTop, behavior: 'smooth' });
                           window.setTimeout(() => {
                             isProgrammaticScroll.current = false;
