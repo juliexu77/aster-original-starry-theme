@@ -250,17 +250,17 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-y-auto border-0">
-        <div className="relative w-full flex flex-col">
-          {/* ACT 1: Arrival - Hero photo section */}
-          <div className="relative w-full min-h-[60vh] flex flex-col">
+      <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0">
+        <div className="relative w-full h-full overflow-y-auto">
+          {/* Fixed photo background layer */}
+          <div className="fixed inset-0 w-full h-full pointer-events-none">
             {heroMoment?.details.photoUrl ? (
               <div className="relative w-full min-h-[60vh] flex-1">
                 {/* Hero photo with blur-in animation */}
                 <img 
                   src={heroMoment.details.photoUrl} 
                   alt="Today's moment" 
-                  className="w-full h-full min-h-[60vh] object-cover animate-story-photo-blur-in"
+                  className="w-full h-full object-cover animate-story-photo-blur-in"
                 />
                 
                 {/* Subtle glow in corners */}
@@ -292,22 +292,38 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
             ) : (
               // No photo fallback
-              <div className="relative w-full h-full bg-gradient-to-br from-accent/20 to-accent/5">
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                  <p className="text-xs font-light text-muted-foreground uppercase tracking-[0.2em] mb-4 animate-story-headline-fade-up">
-                    {todayDate}
-                  </p>
-                  <h1 className="text-[28px] leading-[1.3] font-light tracking-tight text-foreground text-center animate-story-headline-fade-up">
-                    {headline}
-                  </h1>
-                </div>
-              </div>
+              <div className="relative w-full h-full bg-gradient-to-br from-accent/20 to-accent/5" />
             )}
           </div>
 
-          {/* ACT 2: Reveal - Metric cards section */}
-          {animationPhase !== 'act1' && (
-            <div className="relative w-full px-6 py-6 space-y-2.5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
+          {/* Scrollable content layer - positioned over fixed photo */}
+          <div className="relative w-full min-h-full">
+            {/* Top text overlay */}
+            <div className="relative pt-8 px-6">
+              <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
+                {todayDate}
+              </p>
+            </div>
+
+            {/* Headline positioned in safe zone */}
+            <div className="relative px-8 mt-[25vh]">
+              <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
+                {headline}
+              </h1>
+              
+              {getPhotoCaption() && (
+                <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
+                  {getPhotoCaption()}
+                </p>
+              )}
+            </div>
+
+            {/* Spacer to push cards down */}
+            <div className="h-[20vh]" />
+
+            {/* ACT 2: Reveal - Metric cards section */}
+            {animationPhase !== 'act1' && (
+              <div className="relative w-full px-6 pb-6 space-y-2.5" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-[8px] bg-background/95 dark:bg-background/95 rounded-[14px] p-2.5 border border-border/30 animate-story-card-slide-up"
@@ -448,27 +464,28 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               )}
             </div>
           )}
+          </div>
 
-          {/* ACT 3: Closure - Sparkles rising and subtle bottom text */}
+          {/* ACT 3: Closure - Sparkles and bottom text overlays */}
           {animationPhase === 'act3' && (
-            <>
+            <div className="fixed inset-0 pointer-events-none">
               {/* Dusk gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/10 animate-story-dusk-overlay pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-primary/10 animate-story-dusk-overlay" />
               
               {/* Multiple sparkles rising effect */}
-              <div className="absolute top-1/4 left-1/4 pointer-events-none">
+              <div className="absolute top-1/4 left-1/4">
                 <Sparkles 
                   className="w-5 h-5 text-primary/30 animate-story-sparkle-rise" 
                   style={{ animationDelay: '0.5s' }}
                 />
               </div>
-              <div className="absolute top-1/3 right-1/3 pointer-events-none">
+              <div className="absolute top-1/3 right-1/3">
                 <Sparkles 
                   className="w-4 h-4 text-primary/25 animate-story-sparkle-rise" 
                   style={{ animationDelay: '0.7s' }}
                 />
               </div>
-              <div className="absolute top-1/2 left-1/3 pointer-events-none">
+              <div className="absolute top-1/2 left-1/3">
                 <Sparkles 
                   className="w-6 h-6 text-primary/35 animate-story-sparkle-rise" 
                   style={{ animationDelay: '0.9s' }}
@@ -476,15 +493,15 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               </div>
               
               {/* Subtle bottom text only */}
-              <div className="absolute left-0 right-0 flex justify-center pointer-events-none" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
+              <div className="absolute left-0 right-0 flex justify-center" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
                 <div 
-                  className="text-xs text-muted-foreground/40 uppercase tracking-widest animate-story-closure-fade"
+                  className="text-xs text-white/40 uppercase tracking-widest animate-story-closure-fade"
                   style={{ animationDelay: '1s' }}
                 >
                   Goodnight · rhythm saved
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </DialogContent>
