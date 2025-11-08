@@ -60,24 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data: collaboratorData } = await supabase
         .from('collaborators')
         .select('household_id, role')
-        .eq('user_id', userId)
-        .limit(1);
+        .eq('user_id', userId);
 
       if (collaboratorData && collaboratorData.length > 0) {
-        // User already has a household
-        console.log('User already has a household, role:', collaboratorData[0].role);
+        // User already has a household - don't create a new one
+        console.log('User already has household(s), not creating new one');
         return;
       }
 
-      // Double-check they're not a parent elsewhere using the security definer function
-      const { data: isParent } = await supabase.rpc('user_is_parent_in_household', {
-        _user_id: userId
-      });
-
-      if (isParent) {
-        console.log('User is already a parent in another household');
-        return;
-      }
+      // Only create household if user has NO households
+      console.log('Creating default household for new user');
 
       // Create default household
       const newHouseholdId = crypto.randomUUID();

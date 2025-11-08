@@ -20,6 +20,9 @@ interface Collaborator {
   role: string;
   invited_by: string;
   created_at: string;
+  full_name?: string | null;
+  email?: string | null;
+  last_sign_in_at?: string | null;
   profiles?: {
     full_name: string | null;
     user_id: string;
@@ -235,8 +238,8 @@ export const useHousehold = () => {
 
       console.log('Fetching collaborators for household:', targetHouseholdId);
 
-      // Use the secure function to get collaborators with profile names
-      const { data, error } = await supabase.rpc('get_collaborators_with_profiles', {
+      // Use the secure function to get collaborators with email and last sign-in
+      const { data, error } = await supabase.rpc('get_collaborator_details', {
         _household_id: targetHouseholdId
       });
 
@@ -245,23 +248,8 @@ export const useHousehold = () => {
         return;
       }
 
-      console.log('Collaborators with profiles:', data);
-
-      // Transform the data to match our interface
-      const collaborators = data?.map((collaborator: any) => ({
-        id: collaborator.id,
-        household_id: collaborator.household_id,
-        user_id: collaborator.user_id,
-        role: collaborator.role,
-        invited_by: collaborator.invited_by,
-        created_at: collaborator.created_at,
-        profiles: collaborator.full_name ? {
-          full_name: collaborator.full_name,
-          user_id: collaborator.user_id
-        } : null
-      })) || [];
-
-      setCollaborators(collaborators);
+      console.log('Collaborators with details:', data);
+      setCollaborators(data || []);
     } catch (error) {
       console.error('Error in fetchCollaborators:', error);
     }

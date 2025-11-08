@@ -490,6 +490,20 @@ export type Database = {
         Args: { timestamp_tz: string; user_timezone: string }
         Returns: string
       }
+      get_collaborator_details: {
+        Args: { _household_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          household_id: string
+          id: string
+          invited_by: string
+          last_sign_in_at: string
+          role: string
+          user_id: string
+        }[]
+      }
       get_collaborators_with_profiles: {
         Args: { _household_id: string }
         Returns: {

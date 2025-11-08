@@ -6,7 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useHousehold } from "@/hooks/useHousehold";
+import { UserPlus, Trash2, Mail, Send } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDistanceToNow } from "date-fns";
 
 interface Collaborator {
   id: string;
@@ -15,14 +20,14 @@ interface Collaborator {
   role: string;
   invited_by: string;
   created_at: string;
+  full_name?: string | null;
+  email?: string | null;
+  last_sign_in_at?: string | null;
   profiles?: {
     full_name: string | null;
     user_id: string;
   } | null;
 }
-import { UserPlus, Trash2, Mail, Send } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
 
 interface CaregiverManagementProps {
   onClose: () => void;
@@ -34,6 +39,7 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
   const [isActive, setIsActive] = useState(true);
   const [emailInvite, setEmailInvite] = useState("");
   const [isInviting, setIsInviting] = useState(false);
+  const [selectedCollaborator, setSelectedCollaborator] = useState<Collaborator | null>(null);
   const { toast } = useToast();
 
   console.log('CaregiverManagement - household:', household);
@@ -211,9 +217,13 @@ const handleAddCaregiver = async () => {
               </div>
             ) : (
               collaborators.map((collaborator) => {
-                const userName = collaborator.profiles?.full_name || `User ${collaborator.user_id.slice(0, 8)}`;
+                const userName = collaborator.full_name || collaborator.profiles?.full_name || `User ${collaborator.user_id.slice(0, 8)}`;
                 return (
-                  <div key={collaborator.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div 
+                    key={collaborator.id} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors"
+                    onClick={() => setSelectedCollaborator(collaborator)}
+                  >
                     <div className="flex items-center space-x-3">
                       <Avatar className="w-10 h-10">
                         <AvatarFallback className="bg-muted text-sm">
@@ -225,13 +235,16 @@ const handleAddCaregiver = async () => {
                           {userName}
                         </p>
                         <p className="text-xs text-muted-foreground truncate">
-                          {collaborator.role}
+                          {collaborator.email || collaborator.role}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => handleRoleClick(collaborator.id, collaborator.role)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRoleClick(collaborator.id, collaborator.role);
+                        }}
                         className="transition-colors hover:opacity-80"
                       >
                         <Badge variant="secondary" className={`${getRoleColor(collaborator.role)} cursor-pointer`}>
@@ -242,7 +255,10 @@ const handleAddCaregiver = async () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeCollaborator(collaborator.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeCollaborator(collaborator.id);
+                          }}
                         >
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
@@ -322,6 +338,57 @@ const handleAddCaregiver = async () => {
           </div>
         </div>
       </div>
+
+      {/* Collaborator Details Dialog */}
+      <Dialog open={!!selectedCollaborator} onOpenChange={(open) => !open && setSelectedCollaborator(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Collaborator Details</DialogTitle>
+          </DialogHeader>
+          {selectedCollaborator && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarFallback className="text-lg">
+                    {getInitials(selectedCollaborator.full_name || selectedCollaborator.profiles?.full_name || "User")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-lg">
+                    {selectedCollaborator.full_name || selectedCollaborator.profiles?.full_name || "User"}
+                  </h3>
+                  <Badge className={getRoleColor(selectedCollaborator.role)}>
+                    {selectedCollaborator.role}
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="space-y-3 pt-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-sm font-medium">{selectedCollaborator.email || "Not available"}</p>
+                </div>
+                
+                {selectedCollaborator.last_sign_in_at && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Last signed in</p>
+                    <p className="text-sm font-medium">
+                      {formatDistanceToNow(new Date(selectedCollaborator.last_sign_in_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                )}
+                
+                <div>
+                  <p className="text-sm text-muted-foreground">Joined</p>
+                  <p className="text-sm font-medium">
+                    {formatDistanceToNow(new Date(selectedCollaborator.created_at), { addSuffix: true })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
