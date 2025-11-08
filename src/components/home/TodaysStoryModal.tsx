@@ -89,13 +89,16 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   // Calculate longest wake window
   const napsWithTimes = todayActivities
-    .filter(a => a.type === "nap" && a.details.startTime && a.details.endTime)
+    .filter(a => a.type === "nap" && !a.details.isNightSleep && a.details.startTime && a.details.endTime)
     .map(a => ({
       start: a.details.startTime,
       end: a.details.endTime,
-      loggedAt: a.loggedAt
+      loggedAt: a.loggedAt,
+      isNightSleep: a.details.isNightSleep
     }))
     .sort((a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime());
+  
+  console.log('📖 Naps with times for wake window:', napsWithTimes);
 
   let longestWakeWindow = "";
   if (napsWithTimes.length >= 2) {
@@ -201,7 +204,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     headline,
     napActivities: todayActivities.filter(a => a.type === "nap" && !a.details.isNightSleep).map(a => ({
       startTime: a.details.startTime,
-      endTime: a.details.endTime
+      endTime: a.details.endTime,
+      isNightSleep: a.details.isNightSleep,
+      loggedAt: a.loggedAt
     }))
   });
 
