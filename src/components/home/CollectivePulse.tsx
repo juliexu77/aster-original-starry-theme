@@ -1,5 +1,6 @@
 import { Globe, TrendingUp, TrendingDown } from "lucide-react";
 import { useCollectivePulse } from "@/hooks/useCollectivePulse";
+import { format } from "date-fns";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -26,9 +27,28 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
     );
   }
 
-  // Don't show card if no data at all
+  // Show message when data not yet computed
   if (!cohortStats) {
-    return null;
+    return (
+      <div className="border border-border rounded-xl overflow-hidden bg-accent/20">
+        <div className="p-4 border-b border-border">
+          <div className="flex items-center gap-2 mb-1">
+            <Globe className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Collective Pulse
+            </h3>
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">
+            {babyBirthday ? format(new Date(babyBirthday), 'MMMM yyyy') + ' Babies' : 'Coming Soon'}
+          </p>
+        </div>
+        <div className="p-4">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            We're gathering insights from families with babies your age. Check back soon for cohort statistics.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Format naps as range
