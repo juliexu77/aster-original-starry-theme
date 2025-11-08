@@ -646,6 +646,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Generate alternate schedule for transitions
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
+  const [manualScheduleOverride, setManualScheduleOverride] = useState(false);
   
   // Calculate today's actual nap count
   const todayActualNapCount = useMemo(() => {
@@ -658,9 +659,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return todayNaps.length;
   }, [normalizedActivities]);
   
-  // Auto-set showAlternate based on today's actual naps matching alternate count
+  // Auto-set showAlternate based on today's actual naps matching alternate count (only if not manually overridden)
   useEffect(() => {
-    if (!transitionInfo || !aiPrediction) return;
+    if (!transitionInfo || !aiPrediction || manualScheduleOverride) return;
     
     const alternateNapCount = transitionInfo.napCounts.transitioning;
     const currentNapCount = aiPrediction.total_naps_today;
@@ -673,7 +674,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         setShowAlternateSchedule(false);
       }
     }
-  }, [todayActualNapCount, transitionInfo, aiPrediction]);
+  }, [todayActualNapCount, transitionInfo, aiPrediction, manualScheduleOverride]);
   
   const alternateSchedule = useMemo(() => {
     if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
@@ -1456,7 +1457,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                     isTransitioning={transitionInfo?.isTransitioning}
                     transitionNapCounts={transitionInfo?.napCounts}
                     showAlternate={showAlternateSchedule}
-                    onToggleAlternate={setShowAlternateSchedule}
+                    onToggleAlternate={(show) => {
+                      setShowAlternateSchedule(show);
+                      setManualScheduleOverride(true);
+                    }}
                     isAdjusting={isAdjusting}
                     adjustmentContext={adjustmentContext}
                     transitionWindow={transitionWindow}
