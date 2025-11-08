@@ -241,8 +241,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0">
-        <div className="relative h-full w-full overflow-hidden">
+      <DialogContent className="max-w-lg h-[90vh] p-0 gap-0 bg-background overflow-y-auto border-0">
+        <div className="relative min-h-full w-full">
           {/* ACT 1: Arrival - Full-screen hero photo */}
           <div className="relative w-full h-full">
             {heroMoment?.details.photoUrl ? (
