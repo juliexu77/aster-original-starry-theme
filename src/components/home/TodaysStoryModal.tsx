@@ -269,6 +269,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
                 
                 {/* Gradient overlay for readability - enhanced for text visibility */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent via-35% to-black/70" />
+                
+                {/* Date subtitle (fixed on photo) */}
+                <div className="absolute top-8 left-6 right-6">
+                  <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
+                    {todayDate}
+                  </p>
+                </div>
               </div>
             ) : (
               // No photo fallback
@@ -278,24 +285,14 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
 
           {/* Scrollable content layer - positioned over fixed photo */}
           <div className="relative w-full min-h-full">
-            {/* Top spacer */}
-            <div className="h-8" />
-            
-            {/* Date subtitle */}
-            <div className="relative px-6">
-              <p className="text-xs font-light text-white/70 uppercase tracking-[0.2em] animate-story-headline-fade-up drop-shadow-lg">
-                {todayDate}
-              </p>
-            </div>
-
             {/* Headline positioned in safe zone */}
-            <div className="relative px-8 mt-[25vh]">
+            <div className="relative px-8 pt-[30vh]">
               <h1 className="text-[22px] leading-[1.3] font-light tracking-[0.01em] text-white animate-story-headline-type drop-shadow-lg">
                 {headline}
               </h1>
               
               {getPhotoCaption() && (
-                <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
+                <p className="text-sm text-white/60 mt-3 font-light tracking-wide animate-story-headline-fade-up drop-shadow-lg" style={{ animationDelay: '1.2s' }}>
                   {getPhotoCaption()}
                 </p>
               )}
@@ -310,7 +307,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Feeds - Peach with pulse */}
               <div 
                 className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
-                style={{ animationDelay: '0s' }}
+                style={{ animationDelay: '0.3s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
@@ -341,7 +338,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Naps - Lavender smooth */}
               <div 
                 className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
-                style={{ animationDelay: '0.5s' }}
+                style={{ animationDelay: '0.7s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
@@ -372,7 +369,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {/* Nap time - Mint with glint sweep */}
               <div 
                 className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
-                style={{ animationDelay: '1.0s' }}
+                style={{ animationDelay: '1.1s' }}
               >
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2.5">
@@ -422,7 +419,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
               {allSpecialNotes.length > 0 && (
                 <div 
                   className="backdrop-blur-md bg-background/70 rounded-[14px] p-2.5 border border-border/20 animate-story-card-slide-up"
-                  style={{ animationDelay: longestWakeWindow ? '2.0s' : '1.5s' }}
+                  style={{ animationDelay: longestWakeWindow ? '1.9s' : '1.5s' }}
                 >
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <Sparkles className="w-4 h-4 text-primary" strokeWidth={1.5} />
