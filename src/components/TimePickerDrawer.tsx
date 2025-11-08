@@ -292,15 +292,17 @@ export const TimePickerDrawer = ({
     triggerHaptic('light');
   };
 
-  // Handle touch drag
+  // Handle touch drag - only from header area, not picker columns
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Only allow drag-to-close when scrolled to top
-    if (drawerRef.current) {
-      const scrollTop = drawerRef.current.scrollTop;
-      if (scrollTop === 0) {
-        startY.current = e.touches[0].clientY;
-        currentY.current = startY.current;
-      }
+    const target = e.target as HTMLElement;
+    // Don't enable drag if touching inside a scroll picker
+    if (target.closest('.picker-scroll-area')) {
+      return;
+    }
+    // Only enable drag from top 100px of drawer (header area)
+    if (drawerRef.current && e.touches[0].clientY - drawerRef.current.getBoundingClientRect().top < 100) {
+      startY.current = e.touches[0].clientY;
+      currentY.current = startY.current;
     }
   };
 
@@ -447,7 +449,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={dateRef}
-                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide picker-scroll-area"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => {
                       if (!dateRef.current || isProgrammaticScroll.current) return;
@@ -496,7 +498,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={hourRef}
-                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide picker-scroll-area"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(hourRef, hours, setStagedHour, 'Hour', hourSnapTimeout)}
                   >
@@ -522,7 +524,7 @@ export const TimePickerDrawer = ({
                 <div className="flex flex-col items-center flex-1 relative">
                   <div
                     ref={minuteRef}
-                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide"
+                    className="h-[240px] w-full overflow-y-scroll scrollbar-hide picker-scroll-area"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
                     onScroll={() => handleScroll(minuteRef, minutes, setStagedMinute, 'Minute', minuteSnapTimeout)}
                   >
