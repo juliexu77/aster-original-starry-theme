@@ -13,7 +13,7 @@ interface CollectivePulseProps {
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
-  const { isNightTime } = useNightSleepWindow();
+  const { isNightTime, nightSleepStartHour } = useNightSleepWindow();
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
@@ -35,19 +35,21 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours (only sleep activities during night window)
+      // Calculate night sleep hours (only sleep activities that start at/after night sleep start time)
       const nightSleepByDate: Record<string, number> = {};
       
       activities?.forEach(activity => {
-        const timestamp = new Date(activity.logged_at);
-        const isNight = isNightTime(timestamp);
-        
-        // Only count sleep type activities that occur during night hours
-        if (activity.type === 'sleep' && isNight) {
-          const date = format(timestamp, 'yyyy-MM-dd');
-          const details = activity.details as any;
-          const duration = details?.duration || 0;
-          nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+        if (activity.type === 'sleep') {
+          const timestamp = new Date(activity.logged_at);
+          const startHour = timestamp.getHours();
+          
+          // Only count sleep activities that start at or after the night sleep start time
+          if (startHour >= nightSleepStartHour) {
+            const date = format(timestamp, 'yyyy-MM-dd');
+            const details = activity.details as any;
+            const duration = details?.duration || 0;
+            nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+          }
         }
       });
 
