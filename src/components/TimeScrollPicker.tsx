@@ -129,6 +129,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       const minuteSafe = Math.min(59, Math.max(0, selectedMinute));
       if (minuteSafe !== selectedMinute) setSelectedMinute(minuteSafe);
       const timeString = `${selectedHour}:${minuteSafe.toString().padStart(2, '0')} ${selectedPeriod}`;
+      console.log('⏰ Emitting time change:', { selectedHour, selectedMinute: minuteSafe, selectedPeriod, timeString });
       onChange(timeString);
     }
   }, [selectedHour, selectedMinute, selectedPeriod, onChange, hasUserInteracted]);
@@ -136,6 +137,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   useEffect(() => {
     // Update selected date when index changes
     if (hasUserInteracted && onDateChange) {
+      console.log('📅 Emitting date change:', { selectedDateIndex, date: dates[selectedDateIndex] });
       onDateChange(dates[selectedDateIndex]);
     }
   }, [selectedDateIndex, dates, onDateChange, hasUserInteracted]);
@@ -185,6 +187,8 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     const clampedIndex = Math.max(0, Math.min(rawIndex, items.length - 1));
     const actualValue = items[clampedIndex];
 
+    console.log('📜 Scroll event:', { scrollTop, SPACER, ITEM_HEIGHT, rawIndex, clampedIndex, actualValue, itemsLength: items.length });
+
     setHasUserInteracted(true);
     setter(actualValue);
   };
@@ -232,6 +236,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
                   const scrollTop = dateRef.current.scrollTop;
                   const index = Math.round((scrollTop - SPACER) / ITEM_HEIGHT);
                   const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
+                  console.log('📅 Date scroll:', { scrollTop, SPACER, ITEM_HEIGHT, index, clampedIndex, selectedDate: dates[clampedIndex], datesLength: dates.length });
                   setHasUserInteracted(true);
                   setSelectedDateIndex(clampedIndex);
                 }
@@ -363,7 +368,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
           </Button>
           <Button 
             className="flex-1"
-            onClick={() => setShowExpandedPicker(false)}
+            onClick={() => {
+              console.log('✅ Apply clicked - Current state:', { 
+                selectedHour, 
+                selectedMinute, 
+                selectedPeriod, 
+                selectedDateIndex,
+                selectedDate: dates[selectedDateIndex],
+                hasUserInteracted 
+              });
+              setShowExpandedPicker(false);
+            }}
           >
             {t('apply') || 'Apply'}
           </Button>
