@@ -4,7 +4,6 @@ import { format, subDays, startOfDay } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
-import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -13,11 +12,10 @@ interface CollectivePulseProps {
 export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
   const { data: cohortStats, isLoading } = useCollectivePulse(babyBirthday);
   const { household } = useHousehold();
-  const { nightSleepStartHour, nightSleepStartMinute } = useNightSleepWindow();
 
   // Fetch baby's recent activities for comparison
   const { data: babyMetrics } = useQuery({
-    queryKey: ['baby-metrics', household?.id, nightSleepStartHour, nightSleepStartMinute],
+    queryKey: ['baby-metrics', household?.id],
     queryFn: async () => {
       if (!household?.id) return null;
 
@@ -35,37 +33,28 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours (sleep activities that start after night sleep start time)
-      const nightSleepActivities = activities?.filter(activity => {
-        if (activity.type !== 'sleep') return false;
-        
-        const timestamp = new Date(activity.logged_at);
-        const activityHour = timestamp.getHours();
-        const activityMinute = timestamp.getMinutes();
-        const activityTotalMinutes = activityHour * 60 + activityMinute;
-        const nightStartTotalMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
-        
-        // Check if activity starts after night sleep start time
-        return activityTotalMinutes >= nightStartTotalMinutes;
-      }) || [];
-
-      const totalNightSleepHours = nightSleepActivities.reduce((sum, activity) => {
+      // Calculate night sleep hours (type 'sleep' = overnight sleep)
+      const sleepActivities = activities?.filter(a => a.type === 'sleep') || [];
+      const nightSleepByDate: Record<string, number> = {};
+      
+      sleepActivities.forEach(activity => {
+        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
         const details = activity.details as any;
-        return sum + (details?.duration || 0);
-      }, 0);
+        const duration = details?.duration || 0;
+        nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
+      });
 
-      const avgNightSleep = nightSleepActivities.length > 0 
-        ? totalNightSleepHours / nightSleepActivities.length 
-        : null;
+      const nightSleepDays = Object.keys(nightSleepByDate).length;
+      const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
+      const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
 
-      // Calculate naps per day (nap type activities)
+      // Calculate naps per day (type 'nap' = daytime naps)
+      const napActivities = activities?.filter(a => a.type === 'nap') || [];
       const napsByDate: Record<string, number> = {};
       
-      activities?.forEach(activity => {
-        if (activity.type === 'nap') {
-          const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
-          napsByDate[date] = (napsByDate[date] || 0) + 1;
-        }
+      napActivities.forEach(activity => {
+        const date = format(new Date(activity.logged_at), 'yyyy-MM-dd');
+        napsByDate[date] = (napsByDate[date] || 0) + 1;
       });
 
       const napDays = Object.keys(napsByDate).length;
