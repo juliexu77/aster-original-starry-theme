@@ -545,10 +545,13 @@ export const TimePickerDrawer = ({
                   </div>
                 )}
 
-                {/* Selection indicator - DEBUG MODE */}
+                {/* Selection indicator */}
                  <div
                    className="pointer-events-none absolute inset-x-0"
-                   style={{ top: `${24 + (VIEWPORT_HEIGHT / 2)}px`, transform: 'translateY(-50%)', height: `${ITEM_HEIGHT}px` }}
+                   style={{ 
+                     top: `calc(24px + ${VIEWPORT_HEIGHT / 2}px - ${ITEM_HEIGHT / 2}px)`,
+                     height: `${ITEM_HEIGHT}px` 
+                   }}
                  >
                    <div className="mx-4 h-full rounded-lg border-2 border-primary bg-primary/10" />
                  </div>
