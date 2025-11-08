@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Keyboard } from "lucide-react";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -147,7 +148,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     baseSectionSize?: number
   ) => {
     if (ref.current) {
-      const itemHeight = 32;
+      const itemHeight = 48;
       const sectionSize = baseSectionSize || (items.length / 3);
       const valueIndex = items.slice(0, sectionSize).indexOf(value);
       if (valueIndex >= 0) {
@@ -169,7 +170,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     
     // Scroll to selected date (programmatic)
     if (dateRef.current) {
-      const itemHeight = 32;
+      const itemHeight = 48;
       isProgrammaticDateScroll.current = true;
       dateRef.current.scrollTop = selectedDateIndex * itemHeight;
       requestAnimationFrame(() => {
@@ -186,7 +187,7 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
   ) => {
     if (programmaticRef?.current) return;
     if (ref.current) {
-      const itemHeight = 32;
+      const itemHeight = 48;
       const scrollTop = ref.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
       const totalItems = items.length;
@@ -233,233 +234,172 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     }
   };
 
-  // Render expanded picker modal with clear scroll indicators
+  // Render expanded picker drawer with all 4 columns
   const renderExpandedPicker = () => (
-    <Dialog open={showExpandedPicker} onOpenChange={setShowExpandedPicker}>
-      <DialogContent className="max-w-sm">
-        <div className="space-y-4">
-          <Label className="text-base font-semibold">{label || t('time')}</Label>
-          
-          <div className="flex gap-3 items-center justify-center py-8">
-            {/* Hour picker with chevrons */}
-            <div className="flex flex-col items-center">
-              <ChevronUp className="h-4 w-4 text-muted-foreground mb-1" />
-              <div 
-                ref={hourRef}
-                className="h-32 w-14 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-                onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
-                onMouseDown={() => setHasUserInteracted(true)}
-                onTouchStart={() => setHasUserInteracted(true)}
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <div className="flex flex-col">
-                  {hours.map((hour, index) => (
-                    <div
-                      key={`hour-${index}`}
-                      className={`h-10 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
-                        selectedHour === hour 
-                          ? 'text-foreground font-bold' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => {
-                        setHasUserInteracted(true);
-                        setSelectedHour(hour);
-                      }}
-                    >
-                      {hour}
-                    </div>
-                  ))}
-                </div>
+    <Drawer open={showExpandedPicker} onOpenChange={setShowExpandedPicker}>
+      <DrawerContent className="max-h-[80vh]">
+        <DrawerHeader className="flex flex-row items-center justify-between border-b pb-4">
+          <DrawerTitle>{label || t('time')}</DrawerTitle>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <Keyboard className="h-4 w-4" />
+            <span className="text-sm">Keypad</span>
+          </Button>
+        </DrawerHeader>
+        
+        <div className="flex gap-2 items-center justify-center py-8 px-4">
+          {/* Date picker */}
+          <div className="flex flex-col items-center flex-1">
+            <div 
+              ref={dateRef}
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              onScroll={() => {
+                if (isProgrammaticDateScroll.current) return;
+                if (dateRef.current) {
+                  const itemHeight = 48;
+                  const scrollTop = dateRef.current.scrollTop;
+                  const index = Math.round(scrollTop / itemHeight);
+                  const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
+                  setHasUserInteracted(true);
+                  setSelectedDateIndex(clampedIndex);
+                }
+              }}
+              onMouseDown={() => setHasUserInteracted(true)}
+              onTouchStart={() => setHasUserInteracted(true)}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex flex-col">
+                {dates.map((date, index) => (
+                  <div
+                    key={index}
+                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
+                      selectedDateIndex === index 
+                        ? 'text-foreground font-bold' 
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {formatDateLabel(date)}
+                  </div>
+                ))}
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
             </div>
+          </div>
 
-            <span className="text-muted-foreground">:</span>
-
-            {/* Minute picker with chevrons */}
-            <div className="flex flex-col items-center">
-              <ChevronUp className="h-4 w-4 text-muted-foreground mb-1" />
-              <div 
-                ref={minuteRef}
-                className="h-32 w-14 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-                onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
-                onMouseDown={() => setHasUserInteracted(true)}
-                onTouchStart={() => setHasUserInteracted(true)}
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
-                <div className="flex flex-col">
-                  {minutes.map((minute, index) => (
-                    <div
-                      key={`minute-${index}`}
-                      className={`h-10 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
-                        selectedMinute === minute 
-                          ? 'text-foreground font-bold' 
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      onClick={() => {
-                        setHasUserInteracted(true);
-                        setSelectedMinute(minute);
-                      }}
-                    >
-                      {minute.toString().padStart(2, '0')}
-                    </div>
-                  ))}
-                </div>
+          {/* Hour picker */}
+          <div className="flex flex-col items-center flex-1">
+            <div 
+              ref={hourRef}
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
+              onMouseDown={() => setHasUserInteracted(true)}
+              onTouchStart={() => setHasUserInteracted(true)}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex flex-col">
+                {hours.map((hour, index) => (
+                  <div
+                    key={`hour-${index}`}
+                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                      selectedHour === hour 
+                        ? 'text-foreground font-bold' 
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {hour}
+                  </div>
+                ))}
               </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground mt-1" />
             </div>
+          </div>
 
+          {/* Minute picker */}
+          <div className="flex flex-col items-center flex-1">
+            <div 
+              ref={minuteRef}
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
+              onMouseDown={() => setHasUserInteracted(true)}
+              onTouchStart={() => setHasUserInteracted(true)}
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex flex-col">
+                {minutes.map((minute, index) => (
+                  <div
+                    key={`minute-${index}`}
+                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                      selectedMinute === minute 
+                        ? 'text-foreground font-bold' 
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {minute.toString().padStart(2, '0')}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* AM/PM picker */}
+          <div className="flex flex-col items-center flex-1">
+            <div 
+              className="h-48 w-full overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <div className="flex flex-col">
+                {periods.map((period, index) => (
+                  <div
+                    key={`period-${index}`}
+                    className={`h-12 flex items-center justify-center text-base font-medium cursor-pointer transition-colors snap-center ${
+                      selectedPeriod === period 
+                        ? 'text-foreground font-bold' 
+                        : 'text-muted-foreground'
+                    }`}
+                    onClick={() => {
+                      setHasUserInteracted(true);
+                      setSelectedPeriod(period as "AM" | "PM");
+                      try { 
+                        localStorage.setItem('lastUsedPeriod', period); 
+                      } catch (e) {}
+                    }}
+                  >
+                    {period}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+
+        <DrawerFooter className="flex flex-row gap-2 border-t pt-4">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => setShowExpandedPicker(false)}
+          >
+            {t('cancel') || 'Cancel'}
+          </Button>
+          <Button 
+            className="flex-1"
+            onClick={() => setShowExpandedPicker(false)}
+          >
+            {t('apply') || 'Apply'}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
       
-      {/* Compact inline picker - clickable to open expanded view */}
+      {/* Simple clickable display */}
       <div 
-        className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background cursor-pointer hover:border-primary/50 transition-colors"
+        className="flex gap-2 border rounded-lg p-3 items-center justify-between bg-background cursor-pointer hover:border-primary/50 transition-colors"
         onClick={() => setShowExpandedPicker(true)}
       >
-        {/* Date - Compact display */}
-        <div 
-          ref={dateRef}
-          className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => {
-            if (isProgrammaticDateScroll.current) return;
-            if (dateRef.current) {
-              const itemHeight = 32;
-              const scrollTop = dateRef.current.scrollTop;
-              const index = Math.round(scrollTop / itemHeight);
-              const clampedIndex = Math.max(0, Math.min(index, dates.length - 1));
-              setHasUserInteracted(true);
-              setSelectedDateIndex(clampedIndex);
-            }
-          }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <div className="flex flex-col">
-            {dates.map((date, index) => (
-              <div
-                key={index}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center whitespace-nowrap ${
-                  selectedDateIndex === index 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => {
-                  setHasUserInteracted(true);
-                  setSelectedDateIndex(index);
-                }}
-              >
-                {formatDateLabel(date)}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <span className="text-muted-foreground text-sm">-</span>
-        
-        {/* Hours - Scrollable */}
-        <div 
-          ref={hourRef}
-          className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => handleScroll(hourRef, hours, setSelectedHour, isProgrammaticHourScroll)}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <div className="flex flex-col">
-            {hours.map((hour, index) => (
-              <div
-                key={`hour-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
-                  selectedHour === hour 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => {
-                  setHasUserInteracted(true);
-                  setSelectedHour(hour);
-                }}
-              >
-                {hour}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <span className="text-muted-foreground text-sm">:</span>
-
-        {/* Minutes - Scrollable */}
-        <div 
-          ref={minuteRef}
-          className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
-          onScroll={() => handleScroll(minuteRef, minutes, setSelectedMinute, isProgrammaticMinuteScroll)}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            setHasUserInteracted(true);
-          }}
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          <div className="flex flex-col">
-            {minutes.map((minute, index) => (
-              <div
-                key={`minute-${index}`}
-                className={`h-8 flex items-center justify-center text-sm font-medium cursor-pointer transition-colors snap-center ${
-                  selectedMinute === minute 
-                    ? 'text-foreground font-bold' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-                onClick={() => {
-                  setHasUserInteracted(true);
-                  setSelectedMinute(minute);
-                }}
-              >
-                {minute.toString().padStart(2, '0')}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* AM/PM - Single toggle button */}
-        <div className="flex">
-          <button
-            className="px-2 py-1 rounded text-sm font-medium cursor-pointer transition-colors text-foreground font-bold bg-muted hover:bg-muted/80 border border-muted-foreground/30"
-            onClick={(e) => {
-              e.stopPropagation();
-              const newPeriod = selectedPeriod === "AM" ? "PM" : "AM";
-              setHasUserInteracted(true);
-              setSelectedPeriod(newPeriod);
-              try { 
-                localStorage.setItem('lastUsedPeriod', newPeriod); 
-              } catch (e) {}
-            }}
-          >
-            {selectedPeriod}
-          </button>
-        </div>
+        <span className="text-sm font-medium text-foreground">
+          {formatDateLabel(dates[selectedDateIndex])}, {selectedHour}:{selectedMinute.toString().padStart(2, '0')} {selectedPeriod}
+        </span>
       </div>
 
       {/* Expanded picker modal */}
