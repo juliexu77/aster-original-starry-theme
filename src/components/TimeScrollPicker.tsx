@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface TimeScrollPickerProps {
   value?: string;
@@ -231,6 +230,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
     }
   };
 
+  // Helper to get adjacent values
+  const getPrevValue = (currentIndex: number, array: any[]) => {
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : array.length - 1;
+    return array[prevIndex];
+  };
+  
+  const getNextValue = (currentIndex: number, array: any[]) => {
+    const nextIndex = currentIndex < array.length - 1 ? currentIndex + 1 : 0;
+    return array[nextIndex];
+  };
+
   return (
     <div className="space-y-2">
       {label && <Label className="text-sm font-medium">{label}</Label>}
@@ -239,7 +249,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
       <div className="flex gap-1 border rounded-lg p-2 items-center justify-center bg-background">
         {/* Date - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+            {selectedDateIndex > 0 ? formatDateLabel(dates[selectedDateIndex - 1]) : ''}
+          </div>
           <div 
             ref={dateRef}
             className="h-8 w-16 overflow-y-scroll overflow-x-hidden scrollbar-hide snap-y snap-mandatory"
@@ -277,13 +289,17 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+            {selectedDateIndex < dates.length - 1 ? formatDateLabel(dates[selectedDateIndex + 1]) : ''}
+          </div>
         </div>
 
         <span className="text-muted-foreground text-sm">-</span>
         {/* Hours - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+            {selectedHour === 1 ? 12 : selectedHour - 1}
+          </div>
           <div 
             ref={hourRef}
             className="h-8 w-10 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
@@ -311,14 +327,18 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+            {selectedHour === 12 ? 1 : selectedHour + 1}
+          </div>
         </div>
 
         <span className="text-muted-foreground text-sm">:</span>
 
         {/* Minutes - Scrollable */}
         <div className="relative flex flex-col items-center">
-          <ChevronUp className="w-3 h-3 text-muted-foreground/50 absolute -top-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -top-3 z-10 pointer-events-none">
+            {(selectedMinute === 0 ? 59 : selectedMinute - 1).toString().padStart(2, '0')}
+          </div>
           <div 
             ref={minuteRef}
             className="h-8 w-12 overflow-y-scroll scrollbar-hide snap-y snap-mandatory"
@@ -346,7 +366,9 @@ export const TimeScrollPicker = ({ value, selectedDate, onChange, onDateChange, 
             ))}
           </div>
           </div>
-          <ChevronDown className="w-3 h-3 text-muted-foreground/50 absolute -bottom-1 z-10 pointer-events-none" />
+          <div className="text-[10px] text-muted-foreground/30 absolute -bottom-3 z-10 pointer-events-none">
+            {(selectedMinute === 59 ? 0 : selectedMinute + 1).toString().padStart(2, '0')}
+          </div>
         </div>
 
         {/* AM/PM - Single toggle button */}
