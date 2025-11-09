@@ -285,6 +285,16 @@ export const useHomeTabIntelligence = (
     if (intent === 'START_WIND_DOWN' && timing?.nextNapWindowStart) {
       const napTime = new Date(timing.nextNapWindowStart);
       const minutesUntil = Math.max(0, differenceInMinutes(napTime, now));
+      
+      // Don't show nap as "now" if baby is feeding or just woke up (needs minimum 30 min awake)
+      if (currentActivity?.type === 'feeding' || 
+          (currentActivity?.type === 'awake' && currentActivity.duration < 30)) {
+        // If nap would be shown as "now", skip it entirely
+        if (minutesUntil <= 0) {
+          return null;
+        }
+      }
+      
       const hoursUntil = Math.floor(minutesUntil / 60);
       const minsRemaining = minutesUntil % 60;
       
