@@ -48,16 +48,13 @@ const Onboarding = () => {
           {/* Welcome Message */}
           <div className="space-y-6">
             <h1 className="text-3xl md:text-4xl font-sans font-semibold text-foreground tracking-tight leading-tight">
-              Intelligence meets Intuition
+              Intelligence meets intuition
             </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto font-medium">
-              Your AI parenting companion
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md mx-auto">
+              BabyRhythm starts guiding you from the moment you log your first nap, feed, or diaper — using patterns to offer gentle, data-backed predictions that grow smarter every day.
             </p>
             <p className="text-sm text-muted-foreground/80 max-w-sm mx-auto">
-              Log naps, feeds, and diapers. I'll learn from your entries and start predicting wake windows once I have enough data.
-            </p>
-            <p className="text-xs text-muted-foreground/70 italic max-w-sm mx-auto">
-              Predictions begin after a few days of logs — but I can chat and guide you right away.
+              Built to adapt to your baby's rhythm — so you feel calm, informed, and in sync.
             </p>
           </div>
 
@@ -69,7 +66,7 @@ const Onboarding = () => {
               className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-              <span className="relative">Let's start your rhythm</span>
+              <span className="relative">Start your rhythm</span>
             </Button>
           </div>
         </div>
