@@ -26,7 +26,7 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 25 30% 76%; /* #d4bfb0 - warm taupe background */
+    --bg: 25 19% 86%; /* #E3DAD3 - warm beige background */
     --surface: 25 28% 87%; /* warm peachy card surface */
     --surface-muted: 25 26% 85%; /* slightly deeper peachy tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
@@ -34,14 +34,14 @@
     --divider: 28 28% 75%; /* subtle border matching background */
     
     /* Card ombré progression (light mode: warm tan → deep brown) - more contrast */
-    --card-ombre-1: 30 32% 90%; /* Lightest tan - more contrast */
-    --card-ombre-1-dark: 30 30% 84%; /* Darker end of card 1 gradient */
-    --card-ombre-2: 28 30% 87%; /* Medium tan - more contrast */
-    --card-ombre-2-dark: 28 28% 81%; /* Darker end of card 2 gradient */
-    --card-ombre-3: 25 28% 84%; /* Deeper tan - more contrast */
-    --card-ombre-3-dark: 25 26% 78%; /* Darker end of card 3 gradient */
-    --card-ombre-4: 22 26% 81%; /* Deep brown-tan - more contrast */
-    --card-ombre-4-dark: 22 32% 70%; /* Darker start for top card - richer */
+    --card-ombre-1: 28 30% 87%; /* Warm peachy tan for suggested actions */
+    --card-ombre-1-dark: 28 28% 81%; /* Darker peachy tan gradient end */
+    --card-ombre-2: 25 28% 84%; /* Medium tan */
+    --card-ombre-2-dark: 25 26% 78%; /* Darker tan gradient end */
+    --card-ombre-3: 22 26% 81%; /* Deeper tan for today's pulse */
+    --card-ombre-3-dark: 22 24% 75%; /* Darker tan gradient end */
+    --card-ombre-4: 320 25% 88%; /* Soft plum for right now card */
+    --card-ombre-4-dark: 320 20% 82%; /* Darker plum gradient end */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
