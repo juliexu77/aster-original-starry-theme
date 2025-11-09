@@ -117,11 +117,11 @@
     --text-muted: 0 0% 62%; /* #9E9E9E */
     --divider: 0 0% 20%; /* #333333 */
     
-    /* Card ombré progression (dark mode: lighter as you scroll) */
-    --card-ombre-1: 0 0% 9%; /* Hero card - slightly darker than bg */
-    --card-ombre-2: 0 0% 11%; /* Action card - lighter */
-    --card-ombre-3: 0 0% 13%; /* Data card - lightest */
-    --card-ombre-4: 0 0% 14%; /* Fourth card */
+    /* Card ombré progression (dark mode: all same lighter black) */
+    --card-ombre-1: 0 0% 10%; /* Consistent lighter black for all cards */
+    --card-ombre-2: 0 0% 10%; /* Same as card 1 */
+    --card-ombre-3: 0 0% 10%; /* Same as card 1 */
+    --card-ombre-4: 0 0% 10%; /* Same as card 1 */
     --accent-1: var(--pp-mint); /* feeding */
     --accent-2: var(--pp-lavender); /* sleep/insights */
     --chart-feed: 164 82% 68%; /* #36E2AE - brighter mint */
