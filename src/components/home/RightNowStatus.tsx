@@ -50,7 +50,7 @@ export const RightNowStatus = ({
   return (
     <div className="p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20 mb-4 shadow-sm">
       {/* Current Status */}
-      <div className="mb-4">
+      <div className="mb-5">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
             Right Now
@@ -96,7 +96,7 @@ export const RightNowStatus = ({
       )}
 
       {/* Proactive Action Buttons */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-2">
         {(currentActivity.type === 'napping' || currentActivity.type === 'sleeping') && (
           <>
             <Button
