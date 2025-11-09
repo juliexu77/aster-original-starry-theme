@@ -86,7 +86,7 @@ export const SmartQuickActions = ({
               variant="outline"
               size="sm"
               onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-              className="w-full"
+              className="w-full text-sm border-0"
             >
               <span className="mr-2">+</span>
               Log Sleep
@@ -95,7 +95,7 @@ export const SmartQuickActions = ({
               variant="outline"
               size="sm"
               onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-              className="w-full"
+              className="w-full text-sm border-0"
             >
               <span className="mr-2">+</span>
               Log Feed

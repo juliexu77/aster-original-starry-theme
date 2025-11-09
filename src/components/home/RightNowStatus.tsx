@@ -120,7 +120,7 @@ export const RightNowStatus = ({
                 variant="outline"
                 size="sm"
                 onClick={onWokeEarly}
-                className="flex-1 text-xs"
+                className="flex-1 text-sm border-0"
               >
                 {currentActivity.isPastAnticipatedWake ? 'Mark as awake' : 'Woke up early'}
               </Button>
@@ -128,7 +128,7 @@ export const RightNowStatus = ({
                 variant="outline"
                 size="sm"
                 onClick={onStillAsleep}
-                className="flex-1 text-xs"
+                className="flex-1 text-sm border-0"
               >
                 Still asleep
               </Button>
