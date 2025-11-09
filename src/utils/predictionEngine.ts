@@ -801,24 +801,30 @@ export class BabyCarePredictionEngine {
     tAwakeNow: number | null,
     lastNapDuration: number | null
   ): 'FEED_NOW' | 'START_WIND_DOWN' | 'INDEPENDENT_TIME' {
+    // CRITICAL: Never suggest nap if baby hasn't been awake for at least 60 minutes
+    const minCooldownAfterWake = 60;
+    
     // If t_since_last_feed > feed_interval_max => choose FEED
     if (tSinceLastFeed && tSinceLastFeed > this.adaptiveParams.feed_interval_max) {
       return 'FEED_NOW';
     }
     
     // Else if t_awake_now > wake_window_max => choose NAP
-    if (tAwakeNow && tAwakeNow > this.adaptiveParams.wake_window_max) {
+    // BUT only if we've passed the minimum cooldown
+    if (tAwakeNow && tAwakeNow > this.adaptiveParams.wake_window_max && tAwakeNow >= minCooldownAfterWake) {
       return 'START_WIND_DOWN';
     }
     
-    // Short nap recovery logic
+    // Short nap recovery logic - also enforce cooldown
     if (lastNapDuration && lastNapDuration <= this.adaptiveParams.nap_floor_short && 
-        tAwakeNow && tAwakeNow >= 0.75 * this.adaptiveParams.wake_window_max) {
+        tAwakeNow && tAwakeNow >= 0.75 * this.adaptiveParams.wake_window_max && 
+        tAwakeNow >= minCooldownAfterWake) {
       return 'START_WIND_DOWN';
     }
     
     // When both are approaching thresholds, favor the one closer to its limit
-    if (tSinceLastFeed && tAwakeNow) {
+    // But don't suggest nap if below cooldown threshold
+    if (tSinceLastFeed && tAwakeNow && tAwakeNow >= minCooldownAfterWake) {
       const feedProgress = tSinceLastFeed / this.adaptiveParams.feed_interval_max;
       const napProgress = tAwakeNow / this.adaptiveParams.wake_window_max;
       
@@ -828,6 +834,12 @@ export class BabyCarePredictionEngine {
       
       // Otherwise choose whichever is further along
       return feedProgress > napProgress ? 'FEED_NOW' : 'START_WIND_DOWN';
+    }
+    
+    // If we're below cooldown and have feed data, suggest feeding
+    if (tSinceLastFeed && tAwakeNow && tAwakeNow < minCooldownAfterWake) {
+      const feedProgress = tSinceLastFeed / this.adaptiveParams.feed_interval_max;
+      if (feedProgress > 0.5) return 'FEED_NOW';
     }
     
     return 'INDEPENDENT_TIME';
@@ -961,29 +973,52 @@ export class BabyCarePredictionEngine {
       // Don't suggest nap immediately after waking - minimum 60min cooldown
       const minCooldownAfterWake = 60;
       
-      // Use position-specific wake window if available
-      let targetWakeWindow = this.adaptiveParams.wake_window_max;
+      console.log('🔍 Calculating nap window:', {
+        awakeMinutes: rationale.t_awake_now_min,
+        minCooldown: minCooldownAfterWake,
+        belowCooldown: rationale.t_awake_now_min < minCooldownAfterWake
+      });
       
-      if (this.adaptiveParams.wakeWindowsByPosition && this.adaptiveParams.wakeWindowsByPosition.size > 0) {
-        const currentPosition = this.getCurrentWakeWindowPosition(now);
-        const positionData = this.adaptiveParams.wakeWindowsByPosition.get(currentPosition);
-        
-        if (positionData && positionData.count >= 3) {
-          targetWakeWindow = positionData.median;
-        }
-      }
-      
-      const napWindowMinutes = targetWakeWindow - rationale.t_awake_now_min;
-      
-      // If we haven't reached minimum cooldown, set nap window to cooldown time
+      // ALWAYS enforce minimum cooldown - never predict nap sooner than this
       if (rationale.t_awake_now_min < minCooldownAfterWake) {
         const remainingCooldown = minCooldownAfterWake - rationale.t_awake_now_min;
         timing.nextNapWindowStart = new Date(now.getTime() + remainingCooldown * 60000);
-      } else if (napWindowMinutes > 0) {
-        timing.nextNapWindowStart = new Date(now.getTime() + napWindowMinutes * 60000);
+        console.log('✅ Applied cooldown:', {
+          remainingCooldown,
+          nextNapAt: timing.nextNapWindowStart.toLocaleTimeString()
+        });
       } else {
-        // Baby has been awake longer than target - nap is overdue
-        timing.nextNapWindowStart = now;
+        // Use position-specific wake window if available
+        let targetWakeWindow = this.adaptiveParams.wake_window_max;
+        
+        if (this.adaptiveParams.wakeWindowsByPosition && this.adaptiveParams.wakeWindowsByPosition.size > 0) {
+          const currentPosition = this.getCurrentWakeWindowPosition(now);
+          const positionData = this.adaptiveParams.wakeWindowsByPosition.get(currentPosition);
+          
+          if (positionData && positionData.count >= 3) {
+            targetWakeWindow = positionData.median;
+            console.log('📍 Using position-specific wake window:', {
+              position: currentPosition,
+              targetMinutes: targetWakeWindow,
+              samples: positionData.count
+            });
+          }
+        }
+        
+        const napWindowMinutes = targetWakeWindow - rationale.t_awake_now_min;
+        
+        if (napWindowMinutes > 0) {
+          timing.nextNapWindowStart = new Date(now.getTime() + napWindowMinutes * 60000);
+          console.log('✅ Calculated nap window:', {
+            targetWakeWindow,
+            napWindowMinutes,
+            nextNapAt: timing.nextNapWindowStart.toLocaleTimeString()
+          });
+        } else {
+          // Baby has been awake longer than target - nap is overdue
+          timing.nextNapWindowStart = now;
+          console.log('⚠️ Nap overdue - baby awake longer than target');
+        }
       }
     }
 
