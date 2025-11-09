@@ -123,7 +123,12 @@ Valid icon examples: "Carrot", "Apple", "Moon", "Baby", "Milk", "Sun", "Heart", 
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content?.trim() || "";
+    let content = data.choices?.[0]?.message?.content?.trim() || "";
+
+    // Strip markdown code blocks if present (```json ... ``` or ``` ... ```)
+    if (content.startsWith('```')) {
+      content = content.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+    }
 
     try {
       const parsed = JSON.parse(content);
