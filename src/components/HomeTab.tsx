@@ -1420,7 +1420,6 @@ const lastDiaper = displayActivities
         />
 
         {/* Zone 2: Smart Quick Actions */}
-        <div className="px-4">
           <SmartQuickActions
             suggestions={smartSuggestions}
             onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
@@ -1442,7 +1441,6 @@ const lastDiaper = displayActivities
               />
             }
           />
-        </div>
 
         {/* Zone 3: Today's Pulse (at the bottom) */}
         {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
