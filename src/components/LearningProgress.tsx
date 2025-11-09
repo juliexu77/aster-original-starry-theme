@@ -17,6 +17,16 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
   const naps = activities.filter(a => a.type === 'nap');
   const feeds = activities.filter(a => a.type === 'feed');
   
+  // Determine first activity type
+  const sortedActivities = [...activities].sort((a, b) => 
+    new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime()
+  );
+  const firstActivity = sortedActivities[0];
+  
+  // If first activity was a feed, need 1 nap to show schedule
+  // If first activity was a nap, schedule shows immediately
+  const needsNapForSchedule = firstActivity?.type === 'feed' && naps.length === 0;
+  
   const napsNeeded = Math.max(0, 4 - naps.length);
   const feedsNeeded = Math.max(0, 4 - feeds.length);
   const totalLogged = naps.length + feeds.length;
@@ -42,6 +52,26 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
         <span className="text-xs font-medium text-primary">
           Active Rhythm — Learning from {totalLogged} logs
         </span>
+      </div>
+    );
+  }
+
+  // Special message if first activity was feed and no nap yet
+  if (needsNapForSchedule) {
+    return (
+      <div className="space-y-2 px-4 py-3 rounded-xl bg-accent/20 border border-border/40 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-foreground">
+            Getting Started
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {totalLogged} log{totalLogged !== 1 ? 's' : ''}
+          </span>
+        </div>
+        
+        <p className="text-xs text-muted-foreground">
+          Log a nap to see {name}'s predicted schedule
+        </p>
       </div>
     );
   }
@@ -72,10 +102,10 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
       
       <p className="text-xs text-muted-foreground">
         {napsNeeded > 0 && feedsNeeded > 0 
-          ? `Need ${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} and ${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for predictions`
+          ? `${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} and ${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for advanced predictions`
           : napsNeeded > 0
-          ? `Need ${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} for predictions`
-          : `Need ${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for predictions`
+          ? `${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} for advanced predictions`
+          : `${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for advanced predictions`
         }
       </p>
       

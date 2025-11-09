@@ -366,46 +366,12 @@ export const ScheduleTimeline = ({
         </div>
       )}
       
-      {/* Header with accuracy and confidence */}
+      {/* Header */}
       <div className="mb-3">
         <div className="flex items-center justify-between mb-1">
           <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
             {babyName}&apos;s Predicted Schedule
           </h3>
-          <div className="flex items-center gap-2">
-            {modelState && (
-              <div className="relative">
-                <Collapsible>
-                  <CollapsibleTrigger asChild>
-                    <button className="flex items-center gap-1 group">
-                      <div className="w-8 h-8 flex items-center justify-center border border-border/30 bg-transparent rounded cursor-pointer hover:border-primary/50 transition-colors">
-                        <span className="text-[10px] font-semibold text-muted-foreground">{schedule.accuracyScore}%</span>
-                      </div>
-                      {modelState.showTooltip && (
-                        <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-all group-data-[state=open]:rotate-180" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                  {modelState.showTooltip && (
-                    <CollapsibleContent className="absolute right-0 top-full mt-2 z-10 w-72 p-3 bg-card border border-border rounded-lg shadow-lg text-xs text-muted-foreground space-y-2">
-                      <p className="font-medium text-foreground">How this works:</p>
-                      <p>
-                        This schedule is generated once per day at 5am based on your baby&apos;s recent patterns. It stays fixed throughout the day so you can plan ahead.
-                      </p>
-                      <p>
-                        We track accuracy by comparing predicted times vs. when you actually log activities. Predictions within ±30 minutes count as accurate.
-                      </p>
-                      {schedule.accuracyScore !== undefined && schedule.accuracyScore < 80 && (
-                        <p className="text-primary font-medium">
-                          The model is learning {babyName}&apos;s unique patterns. Accuracy improves with consistent logging!
-                        </p>
-                      )}
-                    </CollapsibleContent>
-                  )}
-                </Collapsible>
-              </div>
-            )}
-          </div>
         </div>
         <p className="text-xs text-muted-foreground">
           Based on {(() => {

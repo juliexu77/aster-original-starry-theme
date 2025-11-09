@@ -408,17 +408,20 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Memoized adaptive schedule using prediction engine
   const adaptiveSchedule = useMemo(() => {
-    // Require Tier 3 data for adaptive schedule (same as Home tab predictions)
-    if (!hasTier3Data || !household?.baby_birthday) {
-      console.log('🚫 Insufficient data for adaptive schedule:', { 
-        hasTier3Data, 
+    // Show schedule with Tier 1 data (1+ activity) but require at least 1 nap
+    const hasAnyNap = activities.filter(a => a.type === 'nap').length >= 1;
+    
+    if (!hasTier1Data || !hasAnyNap || !household?.baby_birthday) {
+      console.log('🚫 Insufficient data for schedule:', { 
+        hasTier1Data, 
+        hasAnyNap,
         hasBirthday: !!household?.baby_birthday 
       });
       return null;
     }
     
     try {
-      console.log('🔄 Generating adaptive schedule with prediction engine');
+      console.log('🔄 Generating schedule with available data');
       
       // Convert enriched activities to the format expected by prediction engine
       const activitiesForEngine = enrichedActivities.map(a => ({
@@ -437,16 +440,16 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const schedule = generateAdaptiveSchedule(
         activitiesForEngine, 
         household.baby_birthday, 
-        aiPrediction,
+        hasTier3Data ? aiPrediction : null, // Only use AI prediction if we have enough data
         activities.length // Pass total activities count for "basedOn" text
       );
-      console.log('✅ Adaptive schedule generated:', schedule);
+      console.log('✅ Schedule generated:', schedule);
       return schedule;
     } catch (error) {
-      console.error('❌ Failed to generate adaptive schedule:', error);
+      console.error('❌ Failed to generate schedule:', error);
       return null;
     }
-  }, [enrichedActivities, household?.baby_birthday, hasTier3Data, userTimezone, aiPrediction]);
+  }, [enrichedActivities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length]);
 
   // Use adaptive schedule directly
   const displaySchedule = adaptiveSchedule;
