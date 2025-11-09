@@ -82,7 +82,7 @@ export const SmartQuickActions = ({
     return (
       <>
         <div className="mb-4">
-          <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
             Quick Actions
           </h3>
           <div className="grid grid-cols-2 gap-2">
@@ -137,7 +137,7 @@ export const SmartQuickActions = ({
   return (
     <>
       <div className="mb-4">
-        <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
           Suggested Actions
         </h3>
         <div className="space-y-2">

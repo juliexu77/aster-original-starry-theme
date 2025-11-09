@@ -52,7 +52,7 @@ export const RightNowStatus = ({
       {/* Current Status */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
             Right Now
           </h3>
         </div>
@@ -77,7 +77,7 @@ export const RightNowStatus = ({
       {nextPrediction && (
         <div className="mb-3 p-3 bg-background/60 rounded-lg border border-border/40">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+            <p className="text-xs font-bold text-foreground uppercase tracking-wider">
               What's Next
             </p>
             {nextPrediction.confidence && (
