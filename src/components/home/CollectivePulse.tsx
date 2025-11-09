@@ -138,7 +138,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       <div className="px-4 py-5 space-y-3">
         {/* Micro Stats */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card rounded-lg p-3 border border-border">
+          <div className="bg-card rounded-lg p-3">
             <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
             <div className="flex items-baseline gap-2">
               <div className="text-2xl font-semibold text-foreground tracking-tight">
@@ -152,7 +152,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               </div>
             )}
           </div>
-          <div className="bg-card rounded-lg p-3 border border-border">
+          <div className="bg-card rounded-lg p-3">
             <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Naps/Day</div>
             <div className="flex items-baseline gap-2">
               <div className="text-2xl font-semibold text-foreground tracking-tight">
