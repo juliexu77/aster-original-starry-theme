@@ -99,7 +99,7 @@ export const DailyStoryCircles = ({
   if (stories.length === 0) return null;
 
   return (
-    <div className="w-full -mx-4 py-4 pb-6 bg-transparent">
+    <div className="w-full -mx-4 py-2 pb-3 bg-transparent">
       <div className="flex items-center justify-center gap-3 px-6 py-2">
         {stories.map((story, index) => {
           const storyDate = parseISO(story.date);
