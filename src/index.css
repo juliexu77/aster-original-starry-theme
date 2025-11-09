@@ -31,7 +31,7 @@
     --surface-muted: 25 26% 85%; /* slightly deeper peachy tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
-    --divider: 25 20% 83%; /* warm peachy divider */
+    --divider: 28 28% 75%; /* subtle border matching background */
     
     /* Card ombré progression (light mode: warm tan → deep brown) */
     --card-ombre-1: 30 25% 88%; /* Lightest tan */
