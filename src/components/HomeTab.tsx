@@ -11,6 +11,7 @@ import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 import { Activity } from "@/components/ActivityCard";
 import { NextActivityPrediction } from "@/components/NextActivityPrediction";
 import { RightNowStatus } from "@/components/home/RightNowStatus";
+import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { LearningProgress } from "@/components/LearningProgress";
@@ -1362,7 +1363,7 @@ const lastDiaper = displayActivities
           totalLogs={activities.length}
         />
 
-        {/* Zone 1: Right Now Status with Actions */}
+        {/* Zone 1: Right Now Status */}
         <RightNowStatus
           currentActivity={currentActivity}
           nextPrediction={nextPrediction}
@@ -1412,7 +1413,13 @@ const lastDiaper = displayActivities
           babyAge={babyAge ? babyAge.months * 4 + Math.floor(babyAge.weeks) : undefined}
           activities={activities}
           suggestions={smartSuggestions}
+        />
+
+        {/* Zone 2: Smart Quick Actions */}
+        <SmartQuickActions
+          suggestions={smartSuggestions}
           onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
+          activities={activities}
           chatComponent={
             <ParentingChat
               activities={activities.map(a => ({
