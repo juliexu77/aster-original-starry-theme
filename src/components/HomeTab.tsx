@@ -1302,14 +1302,9 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="pt-6 space-y-3">
+      <div className="pt-3 space-y-3">
 
-        {/* Greeting */}
-        <h2 className="text-lg font-semibold text-foreground px-4">
-          {getGreetingLine()}
-        </h2>
-
-        {/* Daily Story Circles */}
+        {/* Daily Story Circles - right under Home header */}
         <DailyStoryCircles
           activities={activities}
           babyName={babyName}
@@ -1320,39 +1315,10 @@ const lastDiaper = displayActivities
           }}
         />
 
-        {/* Today's Story - appears at 5pm */}
-        {(() => {
-          const currentHour = currentTime.getHours();
-          const isAfter5PM = currentHour >= 17;
-          
-          // Check if night sleep has ended
-          const lastNightSleep = activities
-            .filter(a => a.type === "nap" && a.details?.isNightSleep)
-            .sort((a, b) => {
-              const aTime = new Date(a.loggedAt || a.time).getTime();
-              const bTime = new Date(b.loggedAt || b.time).getTime();
-              return bTime - aTime;
-            })[0];
-
-          let nightSleepEnded = false;
-          if (lastNightSleep && lastNightSleep.details?.endTime) {
-            const today = new Date();
-            const sleepDate = new Date(lastNightSleep.loggedAt || lastNightSleep.time);
-            const isSleepToday = sleepDate.toDateString() === today.toDateString();
-            
-            if (isSleepToday && currentHour >= nightSleepEndHour) {
-              nightSleepEnded = true;
-            }
-          }
-
-          const showStory = isAfter5PM && !nightSleepEnded;
-
-          return showStory ? (
-            <div className="px-4">
-              <TodaysStory onClick={() => setShowTodaysStory(true)} />
-            </div>
-          ) : null;
-        })()}
+        {/* Greeting */}
+        <h2 className="text-lg font-semibold text-foreground px-4">
+          {getGreetingLine()}
+        </h2>
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
