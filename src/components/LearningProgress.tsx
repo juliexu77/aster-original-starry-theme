@@ -27,13 +27,11 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
   // If first activity was a nap, schedule shows immediately
   const needsNapForSchedule = firstActivity?.type === 'feed' && naps.length === 0;
   
-  const napsNeeded = Math.max(0, 4 - naps.length);
-  const feedsNeeded = Math.max(0, 4 - feeds.length);
-  const totalLogged = naps.length + feeds.length;
-  const targetLogs = 8; // 4 naps + 4 feeds
+  const totalLogged = activities.length;
+  const targetLogs = 5; // First milestone
   const progress = Math.min(100, (totalLogged / targetLogs) * 100);
   
-  const isUnlocked = naps.length >= 4 && feeds.length >= 4;
+  const isUnlocked = totalLogged >= 5;
   const name = babyName?.split(' ')[0] || 'Baby';
 
   // Trigger unlock animation
@@ -50,7 +48,7 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
       <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-top-2 duration-500">
         <Sparkles className="h-4 w-4 text-primary animate-pulse" />
         <span className="text-xs font-medium text-primary">
-          Active Rhythm — Learning from {totalLogged} logs
+          Pattern Tracking Active — {totalLogged} logs
         </span>
       </div>
     );
@@ -80,7 +78,7 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
     <div className="space-y-2 px-4 py-3 rounded-xl bg-card/50 border border-border/40 animate-in fade-in slide-in-from-top-2 duration-300">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-foreground">
-          Early Days — Learning {name}'s rhythm
+          Building {name}'s pattern
         </span>
         <span className="text-xs text-muted-foreground">
           {totalLogged} of {targetLogs} logs
@@ -101,12 +99,7 @@ export const LearningProgress = ({ activities, babyName, onRhythmUnlocked }: Lea
       </div>
       
       <p className="text-xs text-muted-foreground">
-        {napsNeeded > 0 && feedsNeeded > 0 
-          ? `${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} and ${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for advanced predictions`
-          : napsNeeded > 0
-          ? `${napsNeeded} more nap${napsNeeded > 1 ? 's' : ''} for advanced predictions`
-          : `${feedsNeeded} more feed${feedsNeeded > 1 ? 's' : ''} for advanced predictions`
-        }
+        {targetLogs - totalLogged} more log{targetLogs - totalLogged !== 1 ? 's' : ''} to unlock pattern tracking
       </p>
       
       <style>{`
