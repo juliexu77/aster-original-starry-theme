@@ -163,7 +163,7 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
 
   if (dayActivities.length === 0) {
     return (
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card rounded-xl p-4 shadow-card border border-border">
         <div className="flex justify-end mb-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -193,9 +193,9 @@ stats.totalNapDuration = Math.round((totalNapMinutes / 60) * 10) / 10;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="flex justify-end mb-6">
+    <div className="space-y-4">
+      <div className="bg-card rounded-xl p-4 shadow-card border border-border">
+        <div className="flex justify-end mb-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">

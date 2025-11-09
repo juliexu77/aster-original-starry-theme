@@ -98,7 +98,7 @@ export const SleepChart = ({ activities }: SleepChartProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Sleep Chart */}
       <div ref={sleepChartRef} className="bg-card/50 backdrop-blur rounded-xl p-6 shadow-card border border-border transition-all hover:shadow-lg">
         <div className="mb-4">

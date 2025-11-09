@@ -688,7 +688,7 @@ const ongoingNap = (() => {
         />;
       case "trends":
         return (
-          <div className="px-4 py-2.5 space-y-6">
+          <div className="px-4 py-2.5 space-y-4">
             <TrendChart activities={activities} />
             <SleepChart activities={activities} />
           </div>

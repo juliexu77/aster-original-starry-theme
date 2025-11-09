@@ -1376,7 +1376,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
           {/* Main Content */}
           <ScrollArea className="flex-1">
-        <div ref={scrollRef} className="px-4 pt-4 space-y-6">
+        <div ref={scrollRef} className="px-4 pt-4 space-y-4">
           {/* Hero Insight Card - Only for Tier 3 */}
           {!needsBirthdaySetup && hasTier3Data && (
             <>

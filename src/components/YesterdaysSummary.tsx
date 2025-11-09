@@ -113,7 +113,7 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
 
   if (yesterdayActivities.length === 0) {
     return (
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
+      <div className="bg-card rounded-xl p-4 shadow-card border border-border">
         <div className="text-center py-8">
           <p className="text-muted-foreground">No data available for yesterday</p>
         </div>
@@ -122,9 +122,9 @@ export const YesterdaysSummary = ({ activities }: YesterdaysSummaryProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-card rounded-xl p-6 shadow-card border border-border">
-        <div className="grid grid-cols-2 gap-4 mb-6">
+    <div className="space-y-4">
+      <div className="bg-card rounded-xl p-4 shadow-card border border-border">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <StatCard 
             icon={Baby}
             label="Feeds"

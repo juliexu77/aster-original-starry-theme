@@ -447,7 +447,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
   const avgNapLine = (napSummary.avgDuration / maxNapValue) * 100;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Context Bar - Sticky Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 -mx-4 px-4 py-3 mb-6">
         <div className="flex items-center justify-between max-w-3xl mx-auto">
@@ -483,7 +483,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       </div>
 
       {/* Feeding Trends Section */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Section Header */}
         <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Feeding Trends</h2>
 
@@ -617,7 +617,7 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       </div>
 
       {/* Sleep Trends Section */}
-      <div className="space-y-6 mt-8">
+      <div className="space-y-4 mt-8">
         {/* Section Header */}
         <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Sleep Trends</h2>
 

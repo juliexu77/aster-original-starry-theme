@@ -1221,7 +1221,7 @@ const lastDiaper = displayActivities
 
           {/* Educational Content for New Users */}
           {showEducationalContent && (
-            <div className="space-y-6 pt-4 border-t border-border/40">
+            <div className="space-y-4 pt-4 border-t border-border/40">
               {/* Trends Tab Info */}
               <div className="space-y-2">
                 <div className="flex items-start gap-3">
