@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { format, subDays, isToday, parseISO } from "date-fns";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Image, PenLine, Plus } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 
 interface CachedStory {
@@ -138,6 +138,19 @@ export const DailyStoryCircles = ({
     );
   }
 
+  // Generate a unique gradient per day based on date
+  const getDayGradient = (dateStr: string) => {
+    const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const gradients = [
+      'from-[hsl(340,35%,75%)] to-[hsl(30,25%,82%)]', // mauve → sand
+      'from-[hsl(350,45%,78%)] to-[hsl(35,30%,85%)]', // rose → cream
+      'from-[hsl(280,30%,75%)] to-[hsl(320,35%,80%)]', // lavender → blush
+      'from-[hsl(25,40%,78%)] to-[hsl(45,35%,85%)]',  // peach → vanilla
+      'from-[hsl(200,25%,78%)] to-[hsl(220,20%,85%)]', // powder blue → mist
+    ];
+    return gradients[hash % gradients.length];
+  };
+
   // Only show circles if we have at least one story
   if (stories.length === 0) return null;
 
@@ -149,51 +162,98 @@ export const DailyStoryCircles = ({
           const isTodayStory = isToday(storyDate);
           const isStoryReady = isTodayStory && isAfter5PM;
           
+          // Check content types
+          const hasPhoto = story.activities.some(a => a.type === 'photo' || a.details?.photoUrl);
+          const hasNote = story.activities.some(a => a.details?.note);
+          const isEmpty = story.activities.length === 0;
+          
+          // Get the first photo for background
+          const firstPhoto = story.activities.find(a => a.details?.photoUrl)?.details?.photoUrl;
+          
           return (
             <button
               key={story.date}
               onClick={() => onSelectDay(story.date, story.activities)}
               className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
-              {/* Pulse effect for ready stories */}
-              {isStoryReady && (
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur opacity-75 animate-pulse"></div>
+              {/* Enhanced glow for Today with gradient ring pulse */}
+              {isTodayStory && (
+                <div 
+                  className="absolute -inset-[3px] rounded-full blur-sm opacity-60 animate-pulse"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                    animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }}
+                />
               )}
               
-              {/* Circle container */}
-              <div className={`relative w-16 h-16 rounded-full overflow-hidden ${
-                isTodayStory 
-                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' 
-                  : ''
-              } ${isStoryReady ? 'animate-story-breathe' : ''}`}>
-                {/* Gradient background based on activity level */}
-                <div className={`w-full h-full ${
-                  story.feedCount + story.napCount >= 10
-                    ? 'bg-gradient-to-br from-primary/30 to-accent/30'
-                    : story.feedCount + story.napCount >= 6
-                      ? 'bg-gradient-to-br from-primary/20 to-accent/20'
-                      : 'bg-gradient-to-br from-primary/10 to-accent/10'
-                }`}>
-                  {/* Date label */}
-                  <div className="w-full h-full flex flex-col items-center justify-center">
-                    <Sparkles className={`w-4 h-4 mb-1 ${
-                      isStoryReady
-                        ? 'text-primary animate-story-shimmer' 
-                        : isTodayStory 
-                          ? 'text-primary' 
-                          : 'text-primary/60'
-                    }`} />
-                    <span className="text-[10px] font-medium text-foreground/70">
-                      {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
-                    </span>
-                  </div>
+              {/* Circle container with shadow depth */}
+              <div 
+                className={`relative w-16 h-16 rounded-full overflow-hidden ${
+                  isTodayStory 
+                    ? 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background' 
+                    : ''
+                }`}
+                style={{
+                  boxShadow: isTodayStory 
+                    ? '0 4px 12px -2px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.06)'
+                    : '0 2px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05)'
+                }}
+              >
+                {/* Photo background or unique gradient */}
+                {hasPhoto && firstPhoto ? (
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${firstPhoto})`,
+                      filter: 'blur(8px) brightness(1.1)',
+                      opacity: 0.15,
+                      transform: 'scale(1.2)'
+                    }}
+                  />
+                ) : null}
+                
+                {/* Gradient background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)} opacity-${hasPhoto ? '70' : '100'}`} />
+                
+                {/* Soft overlay */}
+                <div className="absolute inset-0 bg-background/5" />
+                
+                {/* Date label */}
+                <div className="relative w-full h-full flex flex-col items-center justify-center">
+                  <Sparkles className={`w-4 h-4 mb-1 ${
+                    isStoryReady
+                      ? 'text-primary animate-story-shimmer' 
+                      : isTodayStory 
+                        ? 'text-primary' 
+                        : 'text-primary/60'
+                  }`} />
+                  <span className="text-[10px] font-medium text-foreground/70">
+                    {isTodayStory ? 'Today' : format(storyDate, 'MMM d')}
+                  </span>
                 </div>
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                
+                {/* Micro-icon overlay bottom-right */}
+                {(hasPhoto || hasNote || isEmpty) && (
+                  <div 
+                    className="absolute bottom-0.5 right-0.5 w-5 h-5 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center"
+                    style={{
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)'
+                    }}
+                  >
+                    {hasPhoto ? (
+                      <Image className="w-3 h-3 text-primary" />
+                    ) : hasNote ? (
+                      <PenLine className="w-3 h-3 text-muted-foreground" />
+                    ) : isEmpty ? (
+                      <Plus className="w-3 h-3 text-muted-foreground/60" />
+                    ) : null}
+                  </div>
+                )}
               </div>
-
-              {/* "Today" label - removed since it's now in the circle */}
             </button>
           );
         })}
