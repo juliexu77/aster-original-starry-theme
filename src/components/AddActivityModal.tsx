@@ -679,7 +679,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   className={`h-12 flex-col gap-1 ${
                     activityType === type 
                       ? 'bg-primary text-primary-foreground' 
-                      : 'hover:bg-muted'
+                      : 'hover:bg-muted border-0'
                   }`}
                   onClick={() => setActivityType(type as any)}
                 >
@@ -707,7 +707,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         className={`h-10 flex-col gap-1 text-xs ${
                           feedType === type 
                             ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-muted'
+                            : 'hover:bg-muted border-0'
                         }`}
                         onClick={() => setFeedType(type as any)}
                       >
@@ -736,7 +736,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         <Button
                           type="button"
                           variant="outline"
-                          className="w-full h-12 text-left"
+                          className="w-full h-12 text-left border-0"
                           onClick={() => setShowKeypad(true)}
                         >
                           <span className="text-foreground">
@@ -833,7 +833,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                         className={`h-12 ${
                           diaperType === type 
                             ? 'bg-primary text-primary-foreground' 
-                            : 'hover:bg-muted'
+                            : 'hover:bg-muted border-0'
                         }`}
                         onClick={() => setDiaperType(type as any)}
                       >
@@ -853,7 +853,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       className={`h-8 px-4 ${
                         hasLeak 
                           ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted'
+                          : 'hover:bg-muted border-0'
                       }`}
                       onClick={() => setHasLeak(!hasLeak)}
                     >
@@ -869,7 +869,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                       className={`h-8 px-4 ${
                         hasCream 
                           ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-muted'
+                          : 'hover:bg-muted border-0'
                       }`}
                       onClick={() => setHasCream(!hasCream)}
                     >
@@ -979,7 +979,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                             setPhoto(null);
                             setPhotoUrl(null);
                           }}
-                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm"
+                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm border-0"
                         >
                           {t('remove')}
                         </Button>
@@ -1141,7 +1141,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                             setPhoto(null);
                             setPhotoUrl(null);
                           }}
-                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm"
+                          className="absolute top-2 right-2 h-8 bg-background/80 backdrop-blur-sm border-0"
                         >
                           Remove
                         </Button>
@@ -1220,7 +1220,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   type="button"
                   variant="outline" 
                   onClick={() => onClose ? onClose() : setInternalOpen(false)} 
-                  className="flex-1 h-12"
+                  className="flex-1 h-12 border-0"
                 >
                   Cancel
                 </Button>
