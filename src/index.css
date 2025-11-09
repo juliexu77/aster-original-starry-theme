@@ -41,7 +41,7 @@
     --card-ombre-3: 25 28% 84%; /* Deeper tan - more contrast */
     --card-ombre-3-dark: 25 26% 78%; /* Darker end of card 3 gradient */
     --card-ombre-4: 22 26% 81%; /* Deep brown-tan - more contrast */
-    --card-ombre-4-dark: 22 24% 75%; /* Darker end of card 4 gradient */
+    --card-ombre-4-dark: 22 32% 70%; /* Darker start for top card - richer */
     
     /* Light mode color overrides - fall latte palette */
     --pp-blackberry: 320 61% 30%; /* #7A1E5C - blackberry (buttons/interactive) */
