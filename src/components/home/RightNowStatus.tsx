@@ -51,7 +51,7 @@ export const RightNowStatus = ({
     .slice(0, 3);
   if (!currentActivity) {
     return (
-      <div className="mx-2 mb-6 rounded-xl bg-background shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-border/20 overflow-hidden">
+      <div className="mx-2 mb-6 rounded-xl bg-[#FBF7F5] shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-border/20 overflow-hidden">
         <div className="px-4 py-5">
           <div className="text-center py-8">
             <p className="text-sm text-muted-foreground">No recent activity detected</p>
@@ -64,7 +64,7 @@ export const RightNowStatus = ({
 
   return (
     <>
-      <div className="mx-2 mb-6 rounded-xl bg-background shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-border/20 overflow-hidden">
+      <div className="mx-2 mb-6 rounded-xl bg-[#FBF7F5] shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-border/20 overflow-hidden">
         <div className="px-4 py-5">
           {/* Current Status */}
           <div className="mb-3">

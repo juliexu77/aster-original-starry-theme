@@ -76,41 +76,43 @@ export const SmartQuickActions = ({
 
   return (
     <>
-      <div className="mb-6 px-2">
-        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-            className="w-full"
-          >
-            <span className="mr-2">+</span>
-            Log Sleep
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-            className="w-full"
-          >
-            <span className="mr-2">+</span>
-            Log Feed
-          </Button>
+      <div className="mx-2 mb-6 rounded-xl bg-[#F6EDEA] shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden">
+        <div className="px-4 py-5">
+          <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
+              className="w-full"
+            >
+              <span className="mr-2">+</span>
+              Log Sleep
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
+              className="w-full"
+            >
+              <span className="mr-2">+</span>
+              Log Feed
+            </Button>
+          </div>
+          
+          {chatComponent && (
+            <button
+              onClick={() => setIsChatOpen(true)}
+              className="w-full mt-3 text-center group"
+            >
+              <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+                Ask Me Anything →
+              </span>
+            </button>
+          )}
         </div>
-        
-        {chatComponent && (
-          <button
-            onClick={() => setIsChatOpen(true)}
-            className="w-full mt-3 text-center group"
-          >
-            <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
-              Ask Me Anything →
-            </span>
-          </button>
-        )}
       </div>
       
       {chatComponent && (
