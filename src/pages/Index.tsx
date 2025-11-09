@@ -917,7 +917,7 @@ const ongoingNap = (() => {
                             <div key={dateKey}>
                               <div className="space-y-2">
                                 {/* Date Header with Filter */}
-                                <div className="flex items-center justify-between border-b border-border pb-1 mb-2">
+                                <div className="flex items-center justify-between border-b border-transparent pb-1 mb-2">
                                   <h3 className="text-base font-sans font-medium text-foreground dark:font-bold">
                                     {displayDate}
                                   </h3>
