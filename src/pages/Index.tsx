@@ -25,7 +25,7 @@ import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Settings, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
+import { Calendar, User, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -1187,36 +1187,8 @@ return (
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
         <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
-            <div className="flex items-center gap-3">
-              {babyProfile?.name && (
-                <>
-                  <span className="text-muted-foreground">·</span>
-                  <p className="text-sm font-medium text-[#374151] dark:text-[#9BA3AA]">
-                    {babyProfile.name} · {babyProfile.birthday ? (() => {
-                      const birthDate = new Date(babyProfile.birthday);
-                      const today = new Date();
-                      
-                      // Calculate months, checking if the day of the month has passed
-                      let ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
-                      
-                      // If the current day of the month is before the birth day, subtract 1 month
-                      if (today.getDate() < birthDate.getDate()) {
-                        ageInMonths = Math.max(0, ageInMonths - 1);
-                      }
-                      
-                      // Calculate weeks from the last full month boundary
-                      const lastMonthDate = new Date(birthDate);
-                      lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
-                      const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
-                      const weeks = Math.floor(daysSinceLastMonth / 7);
-                      
-                      return ageInMonths === 0 ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
-                    })() : 'age unknown'}
-                  </p>
-                </>
-              )}
-            </div>
-              <div className="flex items-center gap-2">
+            {/* Left side - Undo button (only shown when available) */}
+            <div className="flex items-center gap-2 w-20">
               {canUndo && (
                 <Button 
                   variant="ghost" 
@@ -1242,6 +1214,21 @@ return (
                   <Undo2 className="h-5 w-5" />
                 </Button>
               )}
+            </div>
+            
+            {/* Center - Tab name */}
+            <div className="flex-1 flex justify-center">
+              <h1 className="text-lg font-semibold text-foreground">
+                {activeTab === 'home' && t('home')}
+                {activeTab === 'helper' && t('guide')}
+                {activeTab === 'trends' && t('trends')}
+                {activeTab === 'insights' && t('log')}
+                {activeTab === 'settings' && t('settings')}
+              </h1>
+            </div>
+            
+            {/* Right side - User/Settings button */}
+            <div className="flex items-center gap-2 w-20 justify-end">
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -1257,7 +1244,7 @@ return (
                 }}
                 className="p-2"
               >
-                <Settings className="h-5 w-5" />
+                <User className="h-5 w-5" />
               </Button>
             </div>
           </div>

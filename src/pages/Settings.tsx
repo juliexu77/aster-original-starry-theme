@@ -143,18 +143,24 @@ export const Settings = () => {
     
     const birthDate = new Date(household.baby_birthday);
     const today = new Date();
-    const diffTime = today.getTime() - birthDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 30) {
-      return `${diffDays} ${t('daysOld')}`;
-    } else if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30);
-      return `${months} ${months === 1 ? t('monthOld') : t('monthsOld')}`;
-    } else {
-      const years = Math.floor(diffDays / 365);
-      return `${years} ${years === 1 ? t('yearOld') : t('yearsOld')}`;
+    // Calculate months, checking if the day of the month has passed
+    let ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth());
+    
+    // If the current day of the month is before the birth day, subtract 1 month
+    if (today.getDate() < birthDate.getDate()) {
+      ageInMonths = Math.max(0, ageInMonths - 1);
     }
+    
+    // Calculate weeks from the last full month boundary
+    const lastMonthDate = new Date(birthDate);
+    lastMonthDate.setMonth(birthDate.getMonth() + ageInMonths);
+    const daysSinceLastMonth = Math.floor((today.getTime() - lastMonthDate.getTime()) / (1000 * 60 * 60 * 24));
+    const weeks = Math.floor(daysSinceLastMonth / 7);
+    
+    return ageInMonths === 0 
+      ? `${weeks} ${weeks === 1 ? 'week' : 'weeks'}` 
+      : `${ageInMonths} ${ageInMonths === 1 ? 'month' : 'months'}${weeks > 0 ? ` ${weeks}w` : ''}`;
   };
 
   const handleReminderToggle = () => {
