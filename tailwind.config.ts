@@ -52,6 +52,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        "card-ombre": {
+          "1": "hsl(var(--card-ombre-1))",
+          "2": "hsl(var(--card-ombre-2))",
+          "3": "hsl(var(--card-ombre-3))",
+        },
         feed: "hsl(var(--feed-color))",
         diaper: "hsl(var(--diaper-color))",
         nap: "hsl(var(--nap-color))",
