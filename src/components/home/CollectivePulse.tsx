@@ -144,7 +144,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Avg Night Sleep</div>
             <div className="flex items-baseline gap-2">
               <div className="text-2xl font-semibold text-foreground tracking-tight">
-                {cohortStats.night_sleep_hours?.toFixed(1) || '—'}<span className="text-base text-muted-foreground font-normal">h</span>
+                {cohortStats.night_sleep_hours?.toFixed(1) || '—'} <span className="text-base text-muted-foreground font-normal">h</span>
               </div>
               {renderChange(cohortStats.night_sleep_change)}
             </div>
