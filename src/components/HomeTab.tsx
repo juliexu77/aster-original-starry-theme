@@ -1149,7 +1149,7 @@ const lastDiaper = displayActivities
   if (activities.length === 0) {
     return (
       <div className="min-h-screen pb-24 px-4 pt-6 animate-fade-in">
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-3">
           {/* Welcome Message */}
           <div className="space-y-3">
             <h2 className="text-xl font-semibold text-foreground">
@@ -1299,7 +1299,7 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="pt-6 space-y-6">
+      <div className="pt-6 space-y-3">
 
         {/* Greeting */}
         <h2 className="text-lg font-semibold text-foreground px-4">
