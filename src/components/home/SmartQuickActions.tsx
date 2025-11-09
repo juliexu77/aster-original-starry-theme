@@ -76,7 +76,7 @@ export const SmartQuickActions = ({
 
   return (
     <>
-      <div className="mb-6 px-4">
+      <div className="mb-6 px-2">
         <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
           Quick Actions
         </h3>
