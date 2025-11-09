@@ -1302,9 +1302,9 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="pt-3 space-y-3">
+      <div className="pt-3 space-y-2">
 
-        {/* Daily Story Circles - right under Home header */}
+        {/* Daily Story Circles - full width container */}
         <DailyStoryCircles
           activities={activities}
           babyName={babyName}
@@ -1316,7 +1316,7 @@ const lastDiaper = displayActivities
         />
 
         {/* Greeting */}
-        <h2 className="text-lg font-semibold text-foreground px-4">
+        <h2 className="text-lg font-semibold text-foreground px-4 pt-2">
           {getGreetingLine()}
         </h2>
 
