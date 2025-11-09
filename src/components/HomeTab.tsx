@@ -25,6 +25,8 @@ import { useHousehold } from "@/hooks/useHousehold";
 import { TodaysStory } from "@/components/home/TodaysStory";
 import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
+import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
+import { SchedulePreview } from "@/components/home/SchedulePreview";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -68,6 +70,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showTodaysStory, setShowTodaysStory] = useState(false);
   const [selectedStoryDate, setSelectedStoryDate] = useState<string | null>(null);
   const [selectedStoryActivities, setSelectedStoryActivities] = useState<Activity[]>([]);
+  const [showFirstActivityCelebration, setShowFirstActivityCelebration] = useState(false);
+  const [firstActivityType, setFirstActivityType] = useState<'feed' | 'nap' | 'diaper'>('feed');
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
   
   // New home tab intelligence hook
@@ -122,6 +126,30 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const napsCount = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length;
   const feedsCount = activities.filter(a => a.type === 'feed').length;
   const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
+
+  // P1: Track first activity celebration
+  useEffect(() => {
+    const hasShownCelebration = localStorage.getItem('first_activity_celebrated') === 'true';
+    if (!hasShownCelebration && activities.length === 1) {
+      const firstActivity = activities[0];
+      setFirstActivityType(firstActivity.type as 'feed' | 'nap' | 'diaper');
+      setShowFirstActivityCelebration(true);
+      localStorage.setItem('first_activity_celebrated', 'true');
+    }
+  }, [activities.length]);
+
+  // P4: Pulse Guide tab after first nap
+  useEffect(() => {
+    if (napsCount === 1) {
+      const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+      if (guideTab && !guideTab.classList.contains('animate-pulse')) {
+        guideTab.classList.add('animate-pulse');
+        setTimeout(() => {
+          guideTab.classList.remove('animate-pulse');
+        }, 3000);
+      }
+    }
+  }, [napsCount]);
 
   // Calculate baby's age in months and weeks
   const getBabyAge = () => {
@@ -1159,38 +1187,50 @@ const lastDiaper = displayActivities
               Hi {userName || 'there'} 👋
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Let's discover {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm together.
+              Let's discover {babyName ? `${babyName}'s` : 'your baby\'s'} unique rhythm together. Every activity you log helps me understand what they need next.
             </p>
           </div>
 
-          {/* Tone Chip removed in favor of inline messaging */}
-
-          {/* Empty State Card with Ghost Predictions */}
+          {/* P3: Improved Empty State Card */}
           <Card className="p-6 bg-card/50 border border-border/40">
             <div className="space-y-5">
-              <h3 className="text-base font-semibold text-foreground">
-                As you log, I'll start building {babyName ? `${babyName}'s` : 'your baby\'s'} rhythm
-              </h3>
-              
+              <div className="space-y-2">
+                <h3 className="text-base font-semibold text-foreground">
+                  Start tracking to unlock predictions
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  With just one activity logged, you'll see your first prediction appear. By your 8th log, you'll unlock personalized insights.
+                </p>
+              </div>
               
               <div className="space-y-3 pt-2">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Preview of what's coming:
+                  What you'll discover:
                 </p>
                 
-                {/* Ghost Cards */}
-                <div className="space-y-2.5 opacity-40 pointer-events-none">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
-                    <Moon className="h-5 w-5 text-muted-foreground" />
+                {/* Preview Cards */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                    <Moon className="h-5 w-5 text-primary flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Next nap likely around 2:45 PM</p>
+                      <p className="text-sm text-foreground font-medium">Nap predictions</p>
+                      <p className="text-xs text-muted-foreground">Know when sleep windows open</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/20">
-                    <Baby className="h-5 w-5 text-muted-foreground" />
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
+                    <Baby className="h-5 w-5 text-accent-foreground flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="text-sm text-muted-foreground">Feed around 3 oz expected</p>
+                      <p className="text-sm text-foreground font-medium">Feed timing</p>
+                      <p className="text-xs text-muted-foreground">Anticipate hunger windows</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/20">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground font-medium">Daily rhythm</p>
+                      <p className="text-xs text-muted-foreground">See patterns emerge over time</p>
                     </div>
                   </div>
                 </div>
@@ -1203,21 +1243,9 @@ const lastDiaper = displayActivities
                   className="w-full"
                   size="lg"
                 >
-                  Log your first activity
+                  <Plus className="w-4 h-4 mr-2" />
+                  Log first activity
                 </Button>
-              </div>
-              
-              {/* Secondary CTA */}
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    const helperTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                    helperTab?.click();
-                  }}
-                  className="text-sm text-primary hover:underline font-medium"
-                >
-                  Ask me anything →
-                </button>
               </div>
             </div>
           </Card>
@@ -1351,6 +1379,27 @@ const lastDiaper = displayActivities
           babyName={babyName}
           totalLogs={activities.length}
         />
+
+        {/* P1: First Activity Celebration */}
+        <FirstActivityCelebration
+          open={showFirstActivityCelebration}
+          onClose={() => setShowFirstActivityCelebration(false)}
+          babyName={babyName}
+          activityType={firstActivityType}
+        />
+
+        {/* P0: Schedule Preview after first nap */}
+        {napsCount === 1 && !visitedTabs.has('guide') && (
+          <div className="px-4 animate-in fade-in slide-in-from-top-2 duration-500">
+            <SchedulePreview 
+              babyName={babyName}
+              onViewFullSchedule={() => {
+                const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                guideTab?.click();
+              }}
+            />
+          </div>
+        )}
 
         {/* Zone 1: Right Now Status */}
         <RightNowStatus

@@ -28,7 +28,7 @@ export function usePredictionEngine(activities: Activity[]) {
       return null;
     }
 
-    // Check minimum data requirements for reliable predictions
+    // Check minimum data requirements for predictions
     const naps = activities.filter(a => a.type === 'nap');
     const feeds = activities.filter(a => a.type === 'feed');
     
@@ -40,12 +40,18 @@ export function usePredictionEngine(activities: Activity[]) {
       feedSample: feeds[0]
     });
     
-    // Need at least 4 naps and 4 feeds for reliable predictions
-    if (naps.length < 4 || feeds.length < 4) {
+    // P2: Relaxed requirements
+    // - Show age-based nap predictions after 1 nap (but not feed predictions until 4+ feeds)
+    // - Show "Still learning" badge until 4+4
+    const hasMinNaps = naps.length >= 1;
+    const hasMinFeeds = feeds.length >= 4;
+    const isFullyPersonalized = naps.length >= 4 && feeds.length >= 4;
+    
+    if (!hasMinNaps) {
       console.log('🚫 Insufficient data for predictions:', { 
         naps: naps.length, 
         feeds: feeds.length,
-        required: { naps: 4, feeds: 4 }
+        required: { naps: 1, feeds: 0 }
       });
       return null;
     }
@@ -57,22 +63,39 @@ export function usePredictionEngine(activities: Activity[]) {
     );
 
     const result = engine.getNextAction();
+    
+    // Add learning state to result
+    const enrichedResult = {
+      ...result,
+      isStillLearning: !isFullyPersonalized,
+      canPredictFeeds: hasMinFeeds,
+      canPredictNaps: hasMinNaps
+    };
+    
     console.log('🔮 Prediction result:', {
-      intent: result.intent,
-      confidence: result.confidence,
-      rationale: result.rationale,
-      timing: result.timing,
-      reasons: result.reasons
+      intent: enrichedResult.intent,
+      confidence: enrichedResult.confidence,
+      isStillLearning: enrichedResult.isStillLearning,
+      canPredictFeeds: enrichedResult.canPredictFeeds,
+      canPredictNaps: enrichedResult.canPredictNaps,
+      rationale: enrichedResult.rationale,
+      timing: enrichedResult.timing,
+      reasons: enrichedResult.reasons
     });
-    return result;
+    return enrichedResult;
   }, [activities, household?.baby_birthday]);
 
   // Helper to translate intent to user-friendly copy
-  const getIntentCopy = (result: NextActionResult | null, babyName?: string): string => {
+  const getIntentCopy = (result: any | null, babyName?: string): string => {
     if (!result) return "Keep logging activities to build your baby's rhythm";
 
     const name = babyName?.split(' ')[0] || 'Baby';
-    const { intent, confidence, timing } = result;
+    const { intent, confidence, timing, canPredictFeeds } = result;
+    
+    // Don't predict feeds if we don't have enough feed data
+    if (intent === 'FEED_SOON' && !canPredictFeeds) {
+      return `Watch for hunger cues — still learning ${name}'s feeding patterns`;
+    }
 
     // High confidence - declarative
     if (confidence === 'high') {

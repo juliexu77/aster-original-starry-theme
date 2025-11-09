@@ -63,9 +63,13 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     const naps = activities.filter(a => a.type === 'nap');
     const feeds = activities.filter(a => a.type === 'feed');
     
-    if (activities.length === 0 || naps.length < 4 || feeds.length < 4) {
+    // P2: Relaxed requirements - show nap predictions after 1 nap, but not feeds until 4+ feeds
+    if (activities.length === 0 || naps.length < 1) {
       return null;
     }
+    
+    const isStillLearning = naps.length < 4 || feeds.length < 4;
+    const canPredictFeeds = feeds.length >= 4;
     
     const engine = new BabyCarePredictionEngine(activities, household?.baby_birthday || undefined);
     const prediction = engine.getNextAction();
@@ -90,7 +94,20 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
     let details: any;
 
     // Map new actions to old types
-    if (prediction.intent === "FEED_SOON") {
+    // Don't show feed predictions if we don't have enough feed data
+    if (prediction.intent === "FEED_SOON" && !canPredictFeeds) {
+      type = "nap";
+      // Fall back to nap window prediction
+      if (prediction.timing.nextNapWindowStart) {
+        const napTime = prediction.timing.nextNapWindowStart;
+        const hours = napTime.getHours();
+        const minutes = napTime.getMinutes();
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+        anticipatedTime = `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+      }
+      reason = `Watch for sleepy cues — still learning feeding patterns`;
+    } else if (prediction.intent === "FEED_SOON") {
       type = "feed";
       // Use actual predicted feed time if available
       if (prediction.timing.nextFeedAt) {
@@ -165,7 +182,15 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
       calculation: `${prediction.intent} with ${prediction.confidence} confidence`
     };
 
-    return { type, anticipatedTime, confidence: prediction.confidence, reason, details };
+    return { 
+      type, 
+      anticipatedTime, 
+      confidence: prediction.confidence, 
+      reason, 
+      details,
+      isStillLearning,
+      canPredictFeeds
+    };
   };
 
   const prediction = predictNextActivity();
@@ -349,7 +374,14 @@ export const NextActivityPrediction = ({ activities, ongoingNap, onMarkWakeUp, b
   return (
     <div className="next-action-card bg-card rounded-lg border border-border p-4 relative z-10">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-medium text-base text-foreground">What's Next</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-base text-foreground">What's Next</h3>
+          {prediction.isStillLearning && (
+            <span className="text-[10px] px-2 py-0.5 bg-accent/40 text-accent-foreground rounded-full border border-accent/60">
+              Still learning
+            </span>
+          )}
+        </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="p-1 hover:bg-muted rounded"
