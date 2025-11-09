@@ -99,8 +99,8 @@ export const DailyStoryCircles = ({
   if (stories.length === 0) return null;
 
   return (
-    <div className="px-4 py-2 pb-4">
-      <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide px-2">
+    <div className="px-4 py-4 pb-6">
+      <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide px-2 py-2">
         {stories.map((story, index) => {
           const storyDate = parseISO(story.date);
           const isTodayStory = isToday(storyDate);
