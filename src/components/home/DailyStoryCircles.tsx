@@ -208,7 +208,7 @@ export const DailyStoryCircles = ({
                 )}
                 
                 {/* Semi-transparent ombré overlay on all circles */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-accent/20" />
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/15 to-accent/30" />
                 
                 {/* Date label */}
                 <div className="relative w-full h-full flex items-center justify-center">
