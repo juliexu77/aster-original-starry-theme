@@ -1299,10 +1299,10 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="px-4 pt-6 space-y-4">
+      <div className="pt-6 space-y-4">
 
         {/* Greeting */}
-        <h2 className="text-lg font-semibold text-foreground">
+        <h2 className="text-lg font-semibold text-foreground px-4">
           {getGreetingLine()}
         </h2>
 
@@ -1334,7 +1334,9 @@ const lastDiaper = displayActivities
           const showStory = isAfter5PM && !nightSleepEnded;
 
           return showStory ? (
-            <TodaysStory onClick={() => setShowTodaysStory(true)} />
+            <div className="px-4">
+              <TodaysStory onClick={() => setShowTodaysStory(true)} />
+            </div>
           ) : null;
         })()}
 
@@ -1348,11 +1350,13 @@ const lastDiaper = displayActivities
 
         {/* Learning Progress Chip */}
         {!isRhythmUnlocked && activities.length > 0 && (
-          <LearningProgress 
-            activities={activities}
-            babyName={babyName}
-            onRhythmUnlocked={() => setShowRhythmUnlocked(true)}
-          />
+          <div className="px-4">
+            <LearningProgress 
+              activities={activities}
+              babyName={babyName}
+              onRhythmUnlocked={() => setShowRhythmUnlocked(true)}
+            />
+          </div>
         )}
 
         {/* Rhythm Unlocked Modal */}
@@ -1416,46 +1420,52 @@ const lastDiaper = displayActivities
         />
 
         {/* Zone 2: Smart Quick Actions */}
-        <SmartQuickActions
-          suggestions={smartSuggestions}
-          onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
-          activities={activities}
-          chatComponent={
-            <ParentingChat
-              activities={activities.map(a => ({
-                id: a.id,
-                type: a.type,
-                logged_at: a.loggedAt || "",
-                details: a.details
-              }))}
-              babyName={babyName}
-              babyAgeInWeeks={babyAgeInWeeks}
-              babySex={household?.baby_sex || undefined}
-              userName={userName}
-              predictionIntent={prediction?.intent}
-              predictionConfidence={prediction?.confidence}
-            />
-          }
-        />
+        <div className="px-4">
+          <SmartQuickActions
+            suggestions={smartSuggestions}
+            onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
+            activities={activities}
+            chatComponent={
+              <ParentingChat
+                activities={activities.map(a => ({
+                  id: a.id,
+                  type: a.type,
+                  logged_at: a.loggedAt || "",
+                  details: a.details
+                }))}
+                babyName={babyName}
+                babyAgeInWeeks={babyAgeInWeeks}
+                babySex={household?.baby_sex || undefined}
+                userName={userName}
+                predictionIntent={prediction?.intent}
+                predictionConfidence={prediction?.confidence}
+              />
+            }
+          />
+        </div>
 
         {/* Zone 3: Today's Pulse (at the bottom) */}
         {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-          <TodaysPulse
-            deviations={todaysPulse.deviations}
-            biggestDeviation={todaysPulse.biggestDeviation}
-            onAdjustSchedule={() => {
-              // Navigate to Rhythm tab
-              const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-              rhythmTab?.click();
-            }}
-            babyName={babyName || 'Baby'}
-            babyAge={babyAgeInWeeks}
-            activities={activities}
-          />
+          <div className="px-4">
+            <TodaysPulse
+              deviations={todaysPulse.deviations}
+              biggestDeviation={todaysPulse.biggestDeviation}
+              onAdjustSchedule={() => {
+                // Navigate to Rhythm tab
+                const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
+                rhythmTab?.click();
+              }}
+              babyName={babyName || 'Baby'}
+              babyAge={babyAgeInWeeks}
+              activities={activities}
+            />
+          </div>
         )}
 
         {/* Zone 4: Collective Pulse */}
-        <CollectivePulse babyBirthday={effectiveBabyBirthday} />
+        <div className="px-4">
+          <CollectivePulse babyBirthday={effectiveBabyBirthday} />
+        </div>
 
       </div>
     </div>
