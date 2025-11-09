@@ -193,7 +193,7 @@ export const DailyStoryCircles = ({
                   isTodayStory 
                     ? 'ring-[3px] ring-primary/50 ring-offset-2 ring-offset-background' 
                     : ''
-                }`}
+                } mb-4`}
                 style={{
                   boxShadow: isTodayStory 
                     ? '0 4px 12px -2px rgba(0, 0, 0, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.06)'
@@ -232,7 +232,7 @@ export const DailyStoryCircles = ({
                 {/* Content icon on bottom-center of outline (Oura style) */}
                 {(hasPhoto || hasNote || isEmpty) && (
                   <div 
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-7 h-7 rounded-full bg-background border-2 border-border/50 flex items-center justify-center"
+                    className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-background border-2 border-border/50 flex items-center justify-center"
                     style={{
                       boxShadow: '0 2px 6px rgba(0, 0, 0, 0.12)'
                     }}
