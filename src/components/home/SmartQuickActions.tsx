@@ -34,10 +34,6 @@ export const SmartQuickActions = ({
   chatComponent
 }: SmartQuickActionsProps) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  
-  const topSuggestions = suggestions
-    .sort((a, b) => b.priority - a.priority)
-    .slice(0, 3);
 
   // Find the last feed and last nap for prefilling
   const lastFeed = activities
@@ -78,123 +74,43 @@ export const SmartQuickActions = ({
     }
   } : undefined;
 
-  if (topSuggestions.length === 0) {
-    return (
-      <>
-        <div className="mb-4">
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-              className="w-full"
-            >
-              <span className="mr-2">+</span>
-              Log Sleep
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-              className="w-full"
-            >
-              <span className="mr-2">+</span>
-              Log Feed
-            </Button>
-          </div>
-          
-          {chatComponent && (
-            <button
-              onClick={() => setIsChatOpen(true)}
-              className="w-full mt-3 text-center group"
-            >
-              <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
-                Ask Me Anything →
-              </span>
-            </button>
-          )}
-        </div>
-        
-        {chatComponent && (
-          <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
-            <DialogContent className="max-w-2xl h-[600px] flex flex-col p-0">
-              <DialogHeader className="p-4 pb-3 border-b">
-                <DialogTitle>AI Parenting Assistant</DialogTitle>
-              </DialogHeader>
-              <div className="flex-1 overflow-hidden">
-                {chatComponent}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </>
-    );
-  }
-
   return (
     <>
       <div className="mb-4">
         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">
-          Suggested Actions
+          Quick Actions
         </h3>
-        <div className="space-y-2">
-          {topSuggestions.map((suggestion) => (
-            <button
-              key={suggestion.id}
-              onClick={suggestion.onClick}
-              className="w-full p-2.5 bg-accent/30 hover:bg-accent/50 rounded-lg border border-border transition-colors text-left"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  {suggestion.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground mb-0.5">
-                    {suggestion.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {suggestion.subtitle}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
-          
-          <div className="grid grid-cols-2 gap-2 mt-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenAddActivity?.('nap', prefillNap)}
-              className="w-full"
-            >
-              <span className="mr-2">+</span>
-              Log Sleep
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
-              className="w-full"
-            >
-              <span className="mr-2">+</span>
-              Log Feed
-            </Button>
-          </div>
-          
-          {chatComponent && (
-            <button
-              onClick={() => setIsChatOpen(true)}
-              className="w-full mt-3 text-center group"
-            >
-              <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
-                Ask Me Anything →
-              </span>
-            </button>
-          )}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenAddActivity?.('nap', prefillNap)}
+            className="w-full"
+          >
+            <span className="mr-2">+</span>
+            Log Sleep
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenAddActivity?.('feed', prefillFeed)}
+            className="w-full"
+          >
+            <span className="mr-2">+</span>
+            Log Feed
+          </Button>
         </div>
+        
+        {chatComponent && (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            className="w-full mt-3 text-center group"
+          >
+            <span className="text-sm text-primary font-medium underline decoration-2 underline-offset-4 inline-flex items-center gap-1 group-hover:opacity-80 transition-opacity">
+              Ask Me Anything →
+            </span>
+          </button>
+        )}
       </div>
       
       {chatComponent && (
