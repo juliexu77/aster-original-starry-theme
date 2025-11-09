@@ -26,9 +26,9 @@
     --s-7: 32px;
     
     /* Light Mode - "Fall Latte" */
-    --bg: 25 30% 94%; /* #F3EDE7 - light tan background */
-    --surface: 25 28% 92%; /* warm tan card surface */
-    --surface-muted: 25 26% 90%; /* slightly deeper tan */
+    --bg: 28 38% 93%; /* warmer peachy tan background */
+    --surface: 28 35% 91%; /* warm peachy card surface */
+    --surface-muted: 28 32% 89%; /* slightly deeper peachy tan */
     --text: 0 0% 13%; /* #212121 - dark charcoal text */
     --text-muted: 0 0% 45%; /* neutral grey mid-tone */
     --divider: 25 22% 86%; /* warm tan divider */
