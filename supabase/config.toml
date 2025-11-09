@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.delete-household]
 verify_jwt = false
+
+[functions.generate-story-headline]
+verify_jwt = true

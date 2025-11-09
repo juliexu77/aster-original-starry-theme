@@ -3,6 +3,7 @@ import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
 import { Baby, Moon, Clock, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ interface TodaysStoryModalProps {
 
 export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: TodaysStoryModalProps) {
   const [animationPhase, setAnimationPhase] = useState<'act1' | 'act2' | 'act3'>('act1');
+  const [aiHeadline, setAiHeadline] = useState<string | null>(null);
+  const [isLoadingHeadline, setIsLoadingHeadline] = useState(false);
   
   // Filter today's activities
   const today = new Date();
@@ -219,7 +222,55 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName }: Toda
     return `Steady breath. Gentle rhythm. Today flowed.`;
   };
 
-  const headline = getHeadline();
+  const fallbackHeadline = getHeadline();
+
+  // Generate AI headline when modal opens
+  useEffect(() => {
+    if (!isOpen || isLoadingHeadline || aiHeadline) return;
+
+    const generateAIHeadline = async () => {
+      setIsLoadingHeadline(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-story-headline', {
+          body: {
+            feedCount,
+            napCount,
+            totalNapMinutes,
+            hadSolidFood,
+            solidFoodNote: hadSolidFood ? solidFeeds[0]?.details.note : null,
+            longestWakeWindow,
+            specialMoments: allSpecialNotes.slice(0, 3).map(a => a.details.note),
+            babyName
+          }
+        });
+
+        if (error) {
+          console.error('Error generating AI headline:', error);
+          return;
+        }
+
+        if (data?.headline) {
+          setAiHeadline(data.headline);
+        }
+      } catch (err) {
+        console.error('Failed to generate AI headline:', err);
+      } finally {
+        setIsLoadingHeadline(false);
+      }
+    };
+
+    generateAIHeadline();
+  }, [isOpen, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindow, babyName]);
+
+  // Reset AI headline when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setAiHeadline(null);
+      setIsLoadingHeadline(false);
+    }
+  }, [isOpen]);
+
+  const headline = aiHeadline || fallbackHeadline;
 
   console.log('📖 Story Metrics:', {
     feedCount,
