@@ -138,15 +138,15 @@ export const DailyStoryCircles = ({
     );
   }
 
-  // Generate a brownish taupe gradient per day
+  // Generate a warm brown gradient per day
   const getDayGradient = (dateStr: string) => {
     const hash = dateStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const gradients = [
-      'from-[hsl(30,20%,70%)] to-[hsl(25,18%,65%)]',   // warm taupe
-      'from-[hsl(35,18%,68%)] to-[hsl(28,16%,62%)]',   // sandy taupe
-      'from-[hsl(25,22%,72%)] to-[hsl(30,20%,66%)]',   // soft brown
-      'from-[hsl(32,16%,70%)] to-[hsl(28,18%,64%)]',   // neutral taupe
-      'from-[hsl(28,20%,68%)] to-[hsl(32,18%,62%)]',   // earth taupe
+      'from-[hsl(25,35%,55%)] to-[hsl(30,30%,45%)]',   // rich warm brown
+      'from-[hsl(28,32%,58%)] to-[hsl(32,28%,48%)]',   // golden brown
+      'from-[hsl(22,38%,52%)] to-[hsl(28,32%,42%)]',   // deep warm brown
+      'from-[hsl(30,30%,56%)] to-[hsl(35,28%,46%)]',   // amber brown
+      'from-[hsl(26,36%,54%)] to-[hsl(30,32%,44%)]',   // caramel brown
     ];
     return gradients[hash % gradients.length];
   };
@@ -200,22 +200,18 @@ export const DailyStoryCircles = ({
                     : '0 2px 8px -2px rgba(0, 0, 0, 0.1), inset 0 1px 3px rgba(0, 0, 0, 0.05)'
                 }}
               >
-                {/* Photo background with blur */}
+                {/* Photo thumbnail blur fills circle OR warm brown gradient */}
                 {hasPhoto && firstPhoto ? (
                   <div 
                     className="absolute inset-0 bg-cover bg-center"
                     style={{
                       backgroundImage: `url(${firstPhoto})`,
-                      filter: 'blur(12px) brightness(0.9)',
-                      opacity: 0.4,
-                      transform: 'scale(1.3)'
+                      filter: 'blur(16px) brightness(0.85)',
+                      transform: 'scale(1.1)'
                     }}
                   />
                 ) : (
-                  <>
-                    {/* Brownish taupe gradient background */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
-                  </>
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getDayGradient(story.date)}`} />
                 )}
                 
                 {/* Soft overlay */}
