@@ -1300,44 +1300,42 @@ const lastDiaper = displayActivities
     <div className="pb-24">
       <div className="px-4 pt-6 space-y-2.5">
 
-        {/* Greeting & Today's Story */}
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-foreground">
-            {getGreetingLine()}
-          </h2>
+        {/* Greeting */}
+        <h2 className="text-xl font-semibold text-foreground">
+          {getGreetingLine()}
+        </h2>
 
-          {/* Today's Story - appears at 5pm */}
-          {(() => {
-            const currentHour = currentTime.getHours();
-            const isAfter5PM = currentHour >= 17;
+        {/* Today's Story - appears at 5pm */}
+        {(() => {
+          const currentHour = currentTime.getHours();
+          const isAfter5PM = currentHour >= 17;
+          
+          // Check if night sleep has ended
+          const lastNightSleep = activities
+            .filter(a => a.type === "nap" && a.details?.isNightSleep)
+            .sort((a, b) => {
+              const aTime = new Date(a.loggedAt || a.time).getTime();
+              const bTime = new Date(b.loggedAt || b.time).getTime();
+              return bTime - aTime;
+            })[0];
+
+          let nightSleepEnded = false;
+          if (lastNightSleep && lastNightSleep.details?.endTime) {
+            const today = new Date();
+            const sleepDate = new Date(lastNightSleep.loggedAt || lastNightSleep.time);
+            const isSleepToday = sleepDate.toDateString() === today.toDateString();
             
-            // Check if night sleep has ended
-            const lastNightSleep = activities
-              .filter(a => a.type === "nap" && a.details?.isNightSleep)
-              .sort((a, b) => {
-                const aTime = new Date(a.loggedAt || a.time).getTime();
-                const bTime = new Date(b.loggedAt || b.time).getTime();
-                return bTime - aTime;
-              })[0];
-
-            let nightSleepEnded = false;
-            if (lastNightSleep && lastNightSleep.details?.endTime) {
-              const today = new Date();
-              const sleepDate = new Date(lastNightSleep.loggedAt || lastNightSleep.time);
-              const isSleepToday = sleepDate.toDateString() === today.toDateString();
-              
-              if (isSleepToday && currentHour >= nightSleepEndHour) {
-                nightSleepEnded = true;
-              }
+            if (isSleepToday && currentHour >= nightSleepEndHour) {
+              nightSleepEnded = true;
             }
+          }
 
-            const showStory = isAfter5PM && !nightSleepEnded;
+          const showStory = isAfter5PM && !nightSleepEnded;
 
-            return showStory ? (
-              <TodaysStory onClick={() => setShowTodaysStory(true)} />
-            ) : null;
-          })()}
-        </div>
+          return showStory ? (
+            <TodaysStory onClick={() => setShowTodaysStory(true)} />
+          ) : null;
+        })()}
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
