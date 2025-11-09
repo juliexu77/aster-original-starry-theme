@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { isDaytimeNap, isNightSleep, calculateDuration } from "@/utils/napClassification";
 
 interface CollectivePulseProps {
   babyBirthday?: string;
@@ -35,52 +36,17 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
         return null;
       }
 
-      // Calculate night sleep hours - any nap that starts at/after night sleep start time
+      // Calculate night sleep hours - any nap that qualifies as night sleep
       const nightSleepByDate: Record<string, number> = {};
       
       activities?.forEach(activity => {
-        if (activity.type === 'nap') {
+        if (activity.type === 'nap' && isNightSleep(activity, nightSleepStartHour, nightSleepEndHour)) {
           const timestamp = new Date(activity.logged_at);
-          let startHour = timestamp.getHours();
+          const date = format(timestamp, 'yyyy-MM-dd');
           
-          // Use details.startTime if available for more accurate night sleep detection
           const details = activity.details as any;
-          if (details?.startTime) {
-            const match = details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-            if (match) {
-              let hours = parseInt(match[1]);
-              const period = match[3].toUpperCase();
-              if (period === 'PM' && hours !== 12) hours += 12;
-              if (period === 'AM' && hours === 12) hours = 0;
-              startHour = hours;
-            }
-          }
-          
-          // Count naps that start at or after the night sleep start time as night sleep
-          if (startHour >= nightSleepStartHour && details?.startTime && details?.endTime) {
-            const date = format(timestamp, 'yyyy-MM-dd');
-            
-            // Calculate duration from startTime and endTime
-            const parseTime = (timeStr: string) => {
-              const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-              if (!match) return 0;
-              let hours = parseInt(match[1]);
-              const minutes = parseInt(match[2]);
-              const period = match[3].toUpperCase();
-              if (period === 'PM' && hours !== 12) hours += 12;
-              if (period === 'AM' && hours === 12) hours = 0;
-              return hours * 60 + minutes;
-            };
-            
-            const startMinutes = parseTime(details.startTime);
-            const endMinutes = parseTime(details.endTime);
-            
-            // Handle overnight sleep (end time < start time means crossed midnight)
-            const durationMinutes = endMinutes < startMinutes 
-              ? (24 * 60 - startMinutes) + endMinutes
-              : endMinutes - startMinutes;
-            
-            const durationHours = durationMinutes / 60;
+          if (details?.startTime && details?.endTime) {
+            const durationHours = calculateDuration(details.startTime, details.endTime);
             nightSleepByDate[date] = (nightSleepByDate[date] || 0) + durationHours;
           }
         }
@@ -90,34 +56,14 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       const totalNightSleep = Object.values(nightSleepByDate).reduce((sum, hours) => sum + hours, 0);
       const avgNightSleep = nightSleepDays > 0 ? totalNightSleep / nightSleepDays : null;
 
-      // Calculate naps per day (nap type activities outside night window)
+      // Calculate naps per day (daytime naps only, excluding night sleep)
       const napsByDate: Record<string, number> = {};
       
       activities?.forEach(activity => {
-        if (activity.type === 'nap') {
+        if (activity.type === 'nap' && isDaytimeNap(activity, nightSleepStartHour, nightSleepEndHour)) {
           const timestamp = new Date(activity.logged_at);
-          let startHour = timestamp.getHours();
-          
-          // Use details.startTime if available for more accurate day/night determination
-          const details = activity.details as any;
-          if (details?.startTime) {
-            const match = details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-            if (match) {
-              let hours = parseInt(match[1]);
-              const period = match[3].toUpperCase();
-              if (period === 'PM' && hours !== 12) hours += 12;
-              if (period === 'AM' && hours === 12) hours = 0;
-              startHour = hours;
-            }
-          }
-          
-          // Count naps that occur outside night hours (before nightSleepStartHour and after nightSleepEndHour)
-          const isDayNap = startHour < nightSleepStartHour && startHour >= nightSleepEndHour;
-          
-          if (isDayNap) {
-            const date = format(timestamp, 'yyyy-MM-dd');
-            napsByDate[date] = (napsByDate[date] || 0) + 1;
-          }
+          const date = format(timestamp, 'yyyy-MM-dd');
+          napsByDate[date] = (napsByDate[date] || 0) + 1;
         }
       });
 

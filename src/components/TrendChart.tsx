@@ -9,6 +9,7 @@ import { shareElement, getWeekCaption } from "@/utils/share/chartShare";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
+import { isDaytimeNap } from "@/utils/napClassification";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -194,23 +195,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
       const dayActivities = getActivitiesByDate(activities, date);
       const dayNaps = dayActivities.filter(a => a.type === "nap");
       
-      // Helper to check if nap is daytime (starts between 7 AM - 7 PM)
-      const isDaytimeNap = (nap: Activity) => {
-        if (!nap.details.startTime) return false;
-        const timeMatch = nap.details.startTime.match(/(\d+):(\d+)\s*(AM|PM)/i);
-        if (!timeMatch) return false;
-        
-        let hours = parseInt(timeMatch[1]);
-        const period = timeMatch[3].toUpperCase();
-        
-        if (period === 'PM' && hours !== 12) hours += 12;
-        if (period === 'AM' && hours === 12) hours = 0;
-        
-        return hours >= 7 && hours < 19; // 7 AM to 7 PM
-      };
-      
-      // Filter for daytime naps only
-      const daytimeNaps = dayNaps.filter(isDaytimeNap);
+      // Use shared utility to check if nap is daytime
+      // This ensures consistency with CollectivePulse and other components
+      const daytimeNaps = dayNaps.filter(nap => isDaytimeNap(nap, 19, 7));
       
       let totalHours = 0;
       dayNaps.forEach(nap => {
