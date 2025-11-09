@@ -76,14 +76,11 @@ export const RightNowStatus = ({
               {currentActivity.type === 'feeding' && <Milk className="w-5 h-5 text-primary" />}
               {currentActivity.type === 'awake' && <Sun className="w-5 h-5 text-primary" />}
             </div>
-            <div>
-              <p className="text-base font-semibold text-foreground">
-                {currentActivity.statusText}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Started: {currentActivity.startTime}
-              </p>
-            </div>
+          <div>
+            <p className="text-base font-semibold text-foreground">
+              {currentActivity.statusText}
+            </p>
+          </div>
           </div>
         </div>
 
