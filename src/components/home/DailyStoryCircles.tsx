@@ -169,18 +169,28 @@ export const DailyStoryCircles = ({
               onClick={() => onSelectDay(story.date, story.activities)}
               className="group relative flex-shrink-0 transition-all duration-300 hover:scale-105"
             >
-              {/* Enhanced bold ring for Today (Instagram stories style) with shimmer/pulse */}
+              {/* Enhanced bold ring for Today with prominent shimmer/glow */}
               {isTodayStory && (
                 <>
+                  {/* Outer glow */}
                   <div 
-                    className="absolute -inset-[4px] rounded-full animate-pulse"
+                    className="absolute -inset-[6px] rounded-full opacity-60 animate-pulse"
                     style={{
                       background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                      filter: 'blur(4px)',
                       animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     }}
                   />
+                  {/* Bold gradient ring */}
                   <div 
-                    className="absolute -inset-[2px] rounded-full bg-background"
+                    className="absolute -inset-[4px] rounded-full animate-story-shimmer"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(336, 41%, 55%) 0%, hsl(24, 46%, 74%) 100%)',
+                    }}
+                  />
+                  {/* Inner white ring */}
+                  <div 
+                    className="absolute -inset-[1.5px] rounded-full bg-background"
                   />
                 </>
               )}
@@ -200,7 +210,7 @@ export const DailyStoryCircles = ({
                     className="absolute inset-0 bg-cover bg-center opacity-40"
                     style={{
                       backgroundImage: `url(${firstPhoto})`,
-                      filter: 'blur(8px) brightness(0.85)',
+                      filter: 'blur(4px) brightness(0.85)',
                       transform: 'scale(1.1)'
                     }}
                   />
