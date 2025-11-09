@@ -24,6 +24,7 @@ import { getTodayActivities, getYesterdayActivities } from "@/utils/activityDate
 import { useHousehold } from "@/hooks/useHousehold";
 import { TodaysStory } from "@/components/home/TodaysStory";
 import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
+import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time
@@ -65,6 +66,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const [showDailyInsight, setShowDailyInsight] = useState(false);
   const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
   const [showTodaysStory, setShowTodaysStory] = useState(false);
+  const [selectedStoryDate, setSelectedStoryDate] = useState<string | null>(null);
+  const [selectedStoryActivities, setSelectedStoryActivities] = useState<Activity[]>([]);
   const { prediction, getIntentCopy, getProgressText } = usePredictionEngine(activities);
   
   // New home tab intelligence hook
@@ -1306,6 +1309,17 @@ const lastDiaper = displayActivities
           {getGreetingLine()}
         </h2>
 
+        {/* Daily Story Circles */}
+        <DailyStoryCircles
+          activities={activities}
+          babyName={babyName}
+          onSelectDay={(date, dayActivities) => {
+            setSelectedStoryDate(date);
+            setSelectedStoryActivities(dayActivities);
+            setShowTodaysStory(true);
+          }}
+        />
+
         {/* Today's Story - appears at 5pm */}
         {(() => {
           const currentHour = currentTime.getHours();
@@ -1343,8 +1357,12 @@ const lastDiaper = displayActivities
         {/* Today's Story Modal */}
         <TodaysStoryModal
           isOpen={showTodaysStory}
-          onClose={() => setShowTodaysStory(false)}
-          activities={activities}
+          onClose={() => {
+            setShowTodaysStory(false);
+            setSelectedStoryDate(null);
+            setSelectedStoryActivities([]);
+          }}
+          activities={selectedStoryDate ? selectedStoryActivities : activities}
           babyName={babyName}
         />
 
