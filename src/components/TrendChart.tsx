@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { getActivitiesByDate } from "@/utils/activityDateFilters";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
+import { calculateNapStatistics } from "@/utils/napStatistics";
 
 interface TrendChartProps {
   activities: Activity[];
@@ -335,16 +336,43 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
     avgFeedsPerDay: prevWeekFeedData.reduce((sum, d) => sum + d.feedCount, 0) / prevWeekFeedData.filter(d => d.feedCount > 0).length || 0,
   };
   
+  
+  // Get date range for current and previous week
+  const today = new Date();
+  const currentWeekStart = new Date(today);
+  currentWeekStart.setDate(currentWeekStart.getDate() - 6 - daysOffset);
+  const currentWeekEnd = new Date(today);
+  currentWeekEnd.setDate(currentWeekEnd.getDate() - daysOffset);
+  
+  const prevWeekStart = new Date(currentWeekStart);
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const prevWeekEnd = new Date(currentWeekStart);
+  
+  // Get activities for current and previous week
+  const currentWeekActivities = activities.filter(a => {
+    const activityDate = new Date(a.loggedAt || '');
+    return activityDate >= currentWeekStart && activityDate <= currentWeekEnd;
+  });
+  
+  const prevWeekActivities = activities.filter(a => {
+    const activityDate = new Date(a.loggedAt || '');
+    return activityDate >= prevWeekStart && activityDate < prevWeekEnd;
+  });
+  
+  // Use shared utility for consistent nap statistics
+  const currentWeekStats = calculateNapStatistics(currentWeekActivities, nightSleepStartHour, nightSleepEndHour);
+  const prevWeekStats = calculateNapStatistics(prevWeekActivities, nightSleepStartHour, nightSleepEndHour);
+  
   const napSummary = {
     avgDuration: Math.max(0, napDataForSummary.reduce((sum, d) => sum + d.value, 0) / napDataForSummary.filter(d => d.value > 0).length || 0),
-    totalNaps: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0),
-    avgNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.napCount, 0) / napDataForSummary.filter(d => d.napCount > 0).length || 0,
-    avgDaytimeNapsPerDay: napDataForSummary.reduce((sum, d) => sum + d.daytimeNapCount, 0) / napDataForSummary.filter(d => d.daytimeNapCount > 0).length || 0,
+    totalNaps: currentWeekStats.totalNaps,
+    avgNapsPerDay: currentWeekStats.avgNapsPerDay,
+    avgDaytimeNapsPerDay: currentWeekStats.avgDaytimeNapsPerDay,
   };
   
   const prevNapSummary = {
     avgDuration: prevWeekNapData.reduce((sum, d) => sum + d.value, 0) / prevWeekNapData.filter(d => d.value > 0).length || 0,
-    avgNapsPerDay: prevWeekNapData.reduce((sum, d) => sum + d.napCount, 0) / prevWeekNapData.filter(d => d.napCount > 0).length || 0,
+    avgNapsPerDay: prevWeekStats.avgNapsPerDay,
   };
   
   // Calculate percentage changes
