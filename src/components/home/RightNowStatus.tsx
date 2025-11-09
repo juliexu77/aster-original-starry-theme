@@ -55,11 +55,6 @@ export const RightNowStatus = ({
           <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
             Right Now
           </h3>
-          {nextPrediction?.confidence && (
-            <Badge variant="secondary" className="text-xs">
-              {nextPrediction.confidence} confidence
-            </Badge>
-          )}
         </div>
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -81,6 +76,16 @@ export const RightNowStatus = ({
       {/* Next Prediction */}
       {nextPrediction && (
         <div className="mb-4 p-3 bg-background/60 rounded-lg border border-border/40">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              What's Next
+            </p>
+            {nextPrediction.confidence && (
+              <Badge variant="secondary" className="text-xs">
+                {nextPrediction.confidence} confidence
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center justify-between mb-1">
             <p className="text-sm font-medium text-foreground">
               {nextPrediction.activity}
