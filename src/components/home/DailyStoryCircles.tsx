@@ -77,29 +77,36 @@ export const DailyStoryCircles = ({
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
 
-    // Generate stories for the last 5 days - always backfill
+    // Always show 5 days (today and 4 prior days) - even if empty
     const newStories: CachedStory[] = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 4; i >= 0; i--) { // Count backwards from 4 days ago to today
       const targetDate = subDays(today, i);
       const dateStr = format(targetDate, 'yyyy-MM-dd');
 
-      // Always generate fresh story for each day
+      // Generate story for each day, or create empty placeholder
       const story = generateStoryForDate(targetDate);
       if (story) {
         newStories.push(story);
+      } else {
+        // Create empty story placeholder for days without activities
+        newStories.push({
+          date: dateStr,
+          headline: "",
+          feedCount: 0,
+          napCount: 0,
+          activities: []
+        });
       }
     }
 
-    setStories(newStories.reverse()); // Reverse so most recent is on the right
+    setStories(newStories); // Already in correct order (oldest to newest)
 
-    // Always save to cache
-    if (newStories.length > 0) {
-      localStorage.setItem(cacheKey, JSON.stringify(newStories));
-    }
+    // Save to cache (including empty placeholders)
+    localStorage.setItem(cacheKey, JSON.stringify(newStories));
   }, [activities]);
 
-  // Empty state for new users
-  if (activities.length === 0) {
+  // Empty state for completely new users (no stories at all)
+  if (stories.length === 0) {
     return (
       <div className="w-full -mx-4 py-2 pb-3 bg-transparent">
         <div className="flex items-center justify-center px-4 py-4">
@@ -143,9 +150,6 @@ export const DailyStoryCircles = ({
     // Using colors from card-ombre-3 variants for consistency
     return 'from-card-ombre-3-dark to-card-ombre-3';
   };
-
-  // Only show circles if we have at least one story
-  if (stories.length === 0) return null;
 
   return (
     <div className="w-full py-2 pb-3 bg-transparent">
