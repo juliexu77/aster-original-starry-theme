@@ -1299,7 +1299,7 @@ const lastDiaper = displayActivities
 
   return (
     <div className="pb-24">
-      <div className="px-4 pt-3 space-y-4">
+      <div className="px-4 pt-6 space-y-3">
 
         {/* Greeting & Today's Story */}
         <div className="flex items-center justify-between gap-3">
