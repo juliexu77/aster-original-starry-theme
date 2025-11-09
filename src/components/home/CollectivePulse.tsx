@@ -41,12 +41,24 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       activities?.forEach(activity => {
         if (activity.type === 'nap') {
           const timestamp = new Date(activity.logged_at);
-          const startHour = timestamp.getHours();
+          let startHour = timestamp.getHours();
+          
+          // Use details.startTime if available for more accurate night sleep detection
+          const details = activity.details as any;
+          if (details?.startTime) {
+            const match = details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+            if (match) {
+              let hours = parseInt(match[1]);
+              const period = match[3].toUpperCase();
+              if (period === 'PM' && hours !== 12) hours += 12;
+              if (period === 'AM' && hours === 12) hours = 0;
+              startHour = hours;
+            }
+          }
           
           // Count naps that start at or after the night sleep start time as night sleep
           if (startHour >= nightSleepStartHour) {
             const date = format(timestamp, 'yyyy-MM-dd');
-            const details = activity.details as any;
             const duration = details?.duration || 0;
             nightSleepByDate[date] = (nightSleepByDate[date] || 0) + duration;
           }
