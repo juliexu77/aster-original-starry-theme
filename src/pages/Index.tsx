@@ -25,7 +25,7 @@ import { useActivityUndo } from "@/hooks/useActivityUndo";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { getTodayActivities } from "@/utils/activityDateFilters";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, User, Undo2, Filter, Share, Sprout, X, Sun } from "lucide-react";
+import { Calendar, User, Undo2, Filter, Share, Sprout, X, Sun, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu, 
@@ -1187,38 +1187,26 @@ return (
       <div className="min-h-screen bg-background pb-16 overflow-x-hidden w-full">
         <div className={`sticky top-0 z-30 bg-background border-b border-[#E5E7EB] dark:border-[#1F2937] h-16 flex items-center scroll-fade ${isScrolled ? 'scrolled' : ''}`}>
           <div className="flex items-center justify-between w-full px-4">
-            {/* Left side - Undo button (only shown when available) */}
+            {/* Left side - Notification bell */}
             <div className="flex items-center gap-2 w-20">
-              {canUndo && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={async () => {
-                    const success = await undo();
-                    if (success) {
-                      toast({
-                        title: "Undone",
-                        description: `${undoCount - 1} action${undoCount - 1 !== 1 ? 's' : ''} remaining`,
-                      });
-                      refetchActivities();
-                    } else {
-                      toast({
-                        title: "Error",
-                        description: "Could not undo action",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                  className="p-2"
-                >
-                  <Undo2 className="h-5 w-5" />
-                </Button>
-              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  toast({
+                    title: t("Coming Soon"),
+                    description: t("Notifications will be available soon"),
+                  });
+                }}
+                className="p-2"
+              >
+                <Bell className="h-5 w-5" />
+              </Button>
             </div>
             
             {/* Center - Tab name */}
             <div className="flex-1 flex justify-center">
-              <h1 className="text-lg font-semibold text-foreground">
+              <h1 className="text-base font-medium text-foreground">
                 {activeTab === 'home' && t('home')}
                 {activeTab === 'helper' && t('guide')}
                 {activeTab === 'trends' && t('trends')}
