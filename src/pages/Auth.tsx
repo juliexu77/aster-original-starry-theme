@@ -213,22 +213,6 @@ const Auth = () => {
                   >
                     {isLoading ? t('settingUp') : t('createAccount')}
                   </Button>
-                  
-                  {/* Microcopy */}
-                  <p className="text-center text-xs text-muted-foreground mt-4">
-                    Already have an account?{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const tabsList = document.querySelector('[role="tablist"]');
-                        const signinTab = tabsList?.querySelector('[value="signin"]') as HTMLElement;
-                        signinTab?.click();
-                      }}
-                      className="text-primary hover:underline"
-                    >
-                      Sign in
-                    </button>
-                  </p>
                 </form>
               </TabsContent>
 
@@ -290,6 +274,22 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+        
+        {/* Microcopy below card */}
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          Already have an account?{' '}
+          <button
+            type="button"
+            onClick={() => {
+              const tabsList = document.querySelector('[role="tablist"]');
+              const signinTab = tabsList?.querySelector('[value="signin"]') as HTMLElement;
+              signinTab?.click();
+            }}
+            className="text-primary hover:underline"
+          >
+            Sign in
+          </button>
+        </p>
       </div>
     </div>
   );
