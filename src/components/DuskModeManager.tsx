@@ -17,8 +17,8 @@ export function DuskModeManager() {
       const lastManualChange = localStorage.getItem('theme-manual-override');
       const now = Date.now();
       
-      // If there was a manual change less than 1 hour ago, don't auto-switch
-      if (lastManualChange && now - parseInt(lastManualChange) < 3600000) {
+      // If there was a manual change less than 12 hours ago, don't auto-switch
+      if (lastManualChange && now - parseInt(lastManualChange) < 43200000) {
         return;
       }
 
