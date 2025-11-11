@@ -325,8 +325,8 @@
       radial-gradient(ellipse 140% 160% at 50% 60%, 
         transparent 0%, 
         transparent 40%, 
-        rgba(115,85,100,0.08) 50%,
-        rgba(115,85,100,0.08) 70%, 
+        rgba(100,95,98,0.08) 50%,
+        rgba(100,95,98,0.08) 70%, 
         transparent 100%
       ),
       /* Base gradient: deep indigo tones for depth */
