@@ -433,8 +433,8 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           {/* Solid background layer */}
           <div className="absolute inset-0 bg-background" />
           
-          {/* Photo layer on top (decorative) */}
-          <div className="absolute inset-0 w-full h-[35vh] pointer-events-none">
+          {/* Photo layer on top (full screen) */}
+          <div className="fixed inset-0 w-full h-full pointer-events-none">
             {heroMoment?.details.photoUrl ? (
               <div className="relative w-full h-full">
                 {/* Hero photo with blur-in animation */}
@@ -469,13 +469,13 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
             )}
           </div>
 
-          {/* Scrollable content layer */}
+          {/* Scrollable content layer - positioned over fixed photo */}
           <div className={cn(
             "relative w-full min-h-full transition-opacity duration-250 ease-in-out",
             navigationDirection ? "opacity-0" : "opacity-100"
           )}>
             {/* Headline positioned in safe zone - whispered typography */}
-            <div className="relative px-8 pt-[20vh]">
+            <div className="relative px-8 pt-[30vh]">
               <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-foreground/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
                 {headline}
               </h1>
