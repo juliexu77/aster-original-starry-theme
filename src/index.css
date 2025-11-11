@@ -345,6 +345,7 @@
   .dusk .card,
   .dusk .liquid-glass {
     background: rgba(0, 0, 0, 0.25) !important;
+    background-image: none !important;
     backdrop-filter: blur(40px) saturate(110%);
     border: 1.5px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
