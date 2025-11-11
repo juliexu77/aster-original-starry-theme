@@ -404,6 +404,11 @@
     filter: brightness(1.05);
   }
 
+  /* Dusk - Auth page icon */
+  .dusk .auth-icon {
+    color: hsl(0 0% 70%) !important;
+  }
+
   /* Dusk mode - Primary buttons */
   .dusk .bg-primary,
   .dusk button.bg-primary {
