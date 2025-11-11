@@ -486,7 +486,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               <div className="relative w-full px-6 pb-6 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.92] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -512,7 +512,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Naps */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.92] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -538,7 +538,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Nap time */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.92] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '2s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -565,7 +565,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Longest wake window */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-[12px] bg-background/[0.92] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: '2.5s' }}
                 >
                   <div className="flex items-center justify-between">
@@ -583,7 +583,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Special moments */}
               {allSpecialNotes.length > 0 && (
                 <div 
-                  className="backdrop-blur-[12px] bg-background/[0.92] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: longestWakeWindow ? '3s' : '2.5s' }}
                 >
                   <div className="flex items-center gap-2 mb-2">
