@@ -126,19 +126,19 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="relative inline-flex items-center justify-center">
+            <div className="relative inline-flex items-center justify-center overflow-visible p-8">
               {/* Moon glow effect - only visible in dusk mode */}
-              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60px] h-[60px] pointer-events-none">
+              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] pointer-events-none">
                 <div 
                   className="w-full h-full rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, rgba(155, 138, 148, 0.4) 20%, rgba(155, 138, 148, 0.2) 45%, transparent 70%)',
-                    opacity: 0.22,
+                    background: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(155, 138, 148, 0.3) 15%, rgba(155, 138, 148, 0.15) 40%, transparent 65%)',
+                    opacity: 0.3,
                     mixBlendMode: 'soft-light'
                   }}
                 />
               </div>
-              <Sprout className="w-6 h-6 text-primary relative z-10" />
+              <Sprout className="w-6 h-6 dusk:text-muted-foreground text-primary relative z-10" />
             </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
