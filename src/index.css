@@ -387,6 +387,9 @@
     border-color: rgba(255, 255, 255, 0.25);
   }
 
+  /* Dusk - Sprout icon grey override */
+  .dusk .sprout-icon { color: hsl(0 0% 70%) !important; }
+
   /* Dusk - Google auth button */
   .dusk .google-auth-btn {
     background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;

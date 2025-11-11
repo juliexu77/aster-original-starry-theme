@@ -133,7 +133,7 @@ const Auth = () => {
                 <div 
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(155, 138, 148, 0.15) 0%, transparent 50%)',
+                    background: 'radial-gradient(circle, rgba(170, 185, 205, 0.12) 0%, transparent 50%)',
                     mixBlendMode: 'soft-light',
                     filter: 'blur(20px)'
                   }}
@@ -142,13 +142,13 @@ const Auth = () => {
                 <div 
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80px] h-[80px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(155, 138, 148, 0.40) 0%, rgba(155, 138, 148, 0.20) 50%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(200, 210, 225, 0.35) 0%, rgba(190, 200, 215, 0.18) 50%, transparent 70%)',
                     mixBlendMode: 'overlay',
                     filter: 'blur(4px)'
                   }}
                 />
               </div>
-              <Sprout className="w-6 h-6 text-primary relative z-10 dusk:!text-[hsl(0,0%,70%)] dusk:opacity-90" strokeWidth={2} />
+              <Sprout className="sprout-icon text-primary relative z-10" strokeWidth={2} />
             </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
