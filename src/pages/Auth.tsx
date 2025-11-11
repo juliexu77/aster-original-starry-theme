@@ -116,7 +116,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Language Toggle */}
         <div className="flex justify-end mb-6">
@@ -165,7 +165,7 @@ const Auth = () => {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
+                      <span className="bg-card px-2 text-muted-foreground">
                         {t('orContinueWith')}
                       </span>
                     </div>
@@ -222,7 +222,7 @@ const Auth = () => {
                       <span className="w-full border-t" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
+                      <span className="bg-card px-2 text-muted-foreground">
                         {t('orContinueWith')}
                       </span>
                     </div>
