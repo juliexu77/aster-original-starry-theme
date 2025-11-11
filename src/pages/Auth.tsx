@@ -126,11 +126,11 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="relative">
+            <div className="relative inline-flex items-center justify-center">
               {/* Moon glow effect - only visible in dusk mode */}
-              <div className="absolute inset-0 dusk:block hidden">
+              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] pointer-events-none">
                 <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] rounded-full"
+                  className="w-full h-full rounded-full"
                   style={{
                     background: 'radial-gradient(circle, rgba(155, 138, 148, 0.4) 0%, transparent 70%)',
                     opacity: 0.2
