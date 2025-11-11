@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { checkDSTTransition } from "@/utils/dstDetection";
 
 interface ScheduleEvent {
@@ -66,6 +66,21 @@ export const ScheduleTimeline = ({
 }: ScheduleTimelineProps) => {
   const [expandedEvents, setExpandedEvents] = useState<Set<string>>(new Set());
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
+  const [animateWakeTime, setAnimateWakeTime] = useState(false);
+  const previousWakeTimeRef = useRef<string | null>(null);
+  
+  // Track wake time changes and trigger animation
+  useEffect(() => {
+    const wakeEvent = schedule.events.find(e => e.type === 'wake');
+    if (wakeEvent?.time) {
+      if (previousWakeTimeRef.current && previousWakeTimeRef.current !== wakeEvent.time) {
+        // Wake time changed - trigger animation
+        setAnimateWakeTime(true);
+        setTimeout(() => setAnimateWakeTime(false), 2000); // Animation lasts 2 seconds
+      }
+      previousWakeTimeRef.current = wakeEvent.time;
+    }
+  }, [schedule.events]);
   
   // Check for DST transition
   const dstInfo = useMemo(() => {
@@ -520,13 +535,19 @@ export const ScheduleTimeline = ({
                       className="w-full flex items-start gap-3 group hover:scale-[1.02] transition-transform"
                     >
                       <div className="flex flex-col items-center">
-                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm`}>
-                          <Sun className="w-4 h-4 text-amber-600" />
+                        <div className={`w-9 h-9 rounded-full ${isPast ? 'bg-amber-500/20 border-2 border-amber-500/40' : 'bg-amber-500/10 border-2 border-amber-500/30'} flex items-center justify-center flex-shrink-0 relative z-10 shadow-sm transition-all duration-500 ${
+                          animateWakeTime ? 'animate-pulse scale-110 border-amber-500/70 shadow-lg shadow-amber-500/30' : ''
+                        }`}>
+                          <Sun className={`w-4 h-4 text-amber-600 transition-all duration-500 ${
+                            animateWakeTime ? 'scale-125' : ''
+                          }`} />
                         </div>
                       </div>
                       <div className="flex-1 pb-1 text-left">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-foreground">
+                          <span className={`text-sm font-semibold text-foreground transition-all duration-500 ${
+                            animateWakeTime ? 'scale-110 text-amber-600' : ''
+                          }`}>
                             {formatTime(activity.time)}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
