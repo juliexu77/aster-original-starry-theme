@@ -126,8 +126,8 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6 relative">
-            {/* Circular glow behind icon */}
-            <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/25 to-accent/25 rounded-full blur-xl opacity-50"></div>
+            {/* Circular glow behind icon - brighter */}
+            <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75"></div>
             <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
