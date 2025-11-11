@@ -125,33 +125,31 @@ const Auth = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div className="relative inline-flex items-center justify-center overflow-visible p-8">
-              {/* Sprout glow - floating within the air */}
-              <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-                {/* Outer glow: wide atmospheric presence */}
-                <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, #B8AAA0 0%, transparent 50%)',
-                    mixBlendMode: 'soft-light',
-                    filter: 'blur(120px)',
-                    opacity: 0.1
-                  }}
-                />
-                {/* Inner glow: concentrated core */}
-                <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80px] h-[80px] rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, #B8AAA0 0%, transparent 60%)',
-                    mixBlendMode: 'soft-light',
-                    filter: 'blur(40px)',
-                    opacity: 0.25
-                  }}
-                />
-              </div>
-              <Sprout className="sprout-icon w-6 h-6 text-primary relative z-10" strokeWidth={2} />
+          <div className="flex items-center justify-center mb-4 relative" style={{ minHeight: '120px' }}>
+            {/* Sprout glow - floating within the air */}
+            <div className="hidden dusk:block absolute inset-0 flex items-center justify-center pointer-events-none">
+              {/* Outer glow: wide atmospheric presence */}
+              <div 
+                className="absolute w-[240px] h-[240px] rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, #B8AAA0 0%, transparent 50%)',
+                  mixBlendMode: 'soft-light',
+                  filter: 'blur(120px)',
+                  opacity: 0.1
+                }}
+              />
+              {/* Inner glow: concentrated core */}
+              <div 
+                className="absolute w-[80px] h-[80px] rounded-full"
+                style={{
+                  background: 'radial-gradient(circle, #B8AAA0 0%, transparent 60%)',
+                  mixBlendMode: 'soft-light',
+                  filter: 'blur(40px)',
+                  opacity: 0.25
+                }}
+              />
             </div>
+            <Sprout className="sprout-icon w-6 h-6 text-primary relative z-10" strokeWidth={2} />
           </div>
           <h1 className="text-2xl md:text-3xl font-sans font-medium text-foreground mb-2 tracking-tight leading-tight">
             Step into the rhythm.
