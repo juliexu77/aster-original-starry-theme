@@ -281,10 +281,10 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const handleNavigate = (direction: 'prev' | 'next') => {
     if (!availableDates || !onNavigate || !allActivities) return;
 
-    // Trigger animation
+    // Trigger crossfade animation
     setNavigationDirection(direction);
 
-    // Wait for animation to complete before navigating
+    // Wait for fade out (250ms) before navigating
     setTimeout(() => {
       if (direction === 'prev') {
         if (isOldestDate) {
@@ -313,8 +313,9 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
           onNavigate(nextDate, dayActivities);
         }
       }
-      setNavigationDirection(null);
-    }, 300);
+      // Reset direction after content updates
+      setTimeout(() => setNavigationDirection(null), 50);
+    }, 250);
   };
 
   // Swipe detection
@@ -422,24 +423,29 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
         
         <div 
           className={cn(
-            "relative w-full h-full overflow-y-auto transition-all duration-300",
-            navigationDirection === 'prev' && "animate-story-page-flip-left",
-            navigationDirection === 'next' && "animate-story-page-flip-right"
+            "relative w-full h-full overflow-y-auto"
           )}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
           onClick={handleTapZone}
         >
-          {/* Fixed photo background layer */}
-          <div className="fixed inset-0 w-full h-full pointer-events-none">
+          {/* Solid background layer */}
+          <div className="absolute inset-0 bg-background" />
+          
+          {/* Photo layer on top (decorative) */}
+          <div className="absolute inset-0 w-full h-[50vh] pointer-events-none">
             {heroMoment?.details.photoUrl ? (
               <div className="relative w-full h-full">
                 {/* Hero photo with blur-in animation */}
                 <img 
+                  key={targetDate || 'today'}
                   src={heroMoment.details.photoUrl} 
                   alt="Today's moment" 
-                  className="w-full h-full object-cover animate-story-photo-blur-in"
+                  className={cn(
+                    "w-full h-full object-cover transition-opacity duration-300",
+                    navigationDirection ? "opacity-0" : "opacity-100 animate-story-photo-blur-in"
+                  )}
                 />
                 
                 {/* Subtle glow in corners */}
@@ -448,7 +454,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
                 
                 {/* Warm gradient overlay - amber to mauve */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#FFE9D4]/40 via-transparent via-40% to-[#E9E3FF]/40" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-35% to-black/50" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent via-35% to-background" />
                 
                 {/* Date subtitle (fixed on photo) - enhanced visibility */}
                 <div className="absolute top-8 left-6 right-6">
@@ -463,8 +469,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
             )}
           </div>
 
-          {/* Scrollable content layer - positioned over fixed photo */}
-          <div className="relative w-full min-h-full">
+          {/* Scrollable content layer */}
+          <div className={cn(
+            "relative w-full min-h-full transition-opacity duration-250 ease-in-out",
+            navigationDirection ? "opacity-0" : "opacity-100"
+          )}>
             {/* Headline positioned in safe zone - whispered typography */}
             <div className="relative px-8 pt-[30vh]">
               <h1 className="text-[24px] leading-[1.4] font-light tracking-[0.04em] text-white/80 animate-story-headline-type drop-shadow-2xl" style={{ fontFamily: 'var(--font-ui-light)' }}>
@@ -486,7 +495,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               <div className="relative w-full px-6 pb-6 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
               {/* Feeds */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -512,7 +521,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Naps */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '1.5s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -538,7 +547,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
               {/* Nap time */}
               <div 
-                className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                 style={{ animationDelay: '2s' }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -565,7 +574,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Longest wake window */}
               {longestWakeWindow && (
                 <div 
-                  className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: '2.5s' }}
                 >
                   <div className="flex items-center justify-between">
@@ -583,7 +592,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
               {/* Special moments */}
               {allSpecialNotes.length > 0 && (
                 <div 
-                  className="backdrop-blur-[12px] bg-background/[0.50] rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
+                  className="backdrop-blur-md bg-card/95 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
                   style={{ animationDelay: longestWakeWindow ? '3s' : '2.5s' }}
                 >
                   <div className="flex items-center gap-2 mb-2">
