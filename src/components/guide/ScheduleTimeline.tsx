@@ -69,12 +69,15 @@ export const ScheduleTimeline = ({
   const [animateWakeTime, setAnimateWakeTime] = useState(false);
   const previousWakeTimeRef = useRef<string | null>(null);
   
-  // Track wake time changes and trigger animation
+  // Track wake time changes and trigger animation (only for morning wake)
   useEffect(() => {
     const wakeEvent = schedule.events.find(e => e.type === 'wake');
     if (wakeEvent?.time) {
-      if (previousWakeTimeRef.current && previousWakeTimeRef.current !== wakeEvent.time) {
-        // Wake time changed - trigger animation
+      // Check if this is a morning wake event (reasoning indicates it's actual logged time)
+      const isMorningWake = wakeEvent.reasoning?.includes('Actual logged wake time');
+      
+      if (isMorningWake && previousWakeTimeRef.current && previousWakeTimeRef.current !== wakeEvent.time) {
+        // Morning wake time changed - trigger animation
         setAnimateWakeTime(true);
         setTimeout(() => setAnimateWakeTime(false), 2000); // Animation lasts 2 seconds
       }
@@ -104,8 +107,8 @@ export const ScheduleTimeline = ({
     return hours * 60 + minutes;
   };
   
-  // Format time - round all times to nearest 10 minutes (12-hour display)
-  const formatTime = (timeStr: string): string => {
+  // Format time - round all times to nearest 10 minutes EXCEPT wake times (12-hour display)
+  const formatTime = (timeStr: string, eventType?: string): string => {
     const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
     if (!match) return timeStr;
     
@@ -113,7 +116,20 @@ export const ScheduleTimeline = ({
     const minutes = parseInt(match[2]);
     const period = match[3].toUpperCase();
     
-    // Round to nearest 10 minutes for all times
+    // For wake events, DO NOT round - show exact logged time
+    if (eventType === 'wake') {
+      // Normalize hours into 12-hour format for display
+      let normalized24h = hours;
+      if (period === 'AM') {
+        if (hours === 12) normalized24h = 0; // 12:xx AM => 00:xx
+      } else { // PM
+        if (hours !== 12) normalized24h = hours + 12; // 1-11 PM => 13-23
+      }
+      const displayHour = normalized24h === 0 ? 12 : (normalized24h > 12 ? normalized24h - 12 : normalized24h);
+      return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }
+    
+    // For all other times, round to nearest 10 minutes
     const roundedMinutes = Math.round(minutes / 10) * 10;
     if (roundedMinutes === 60) {
       hours += 1;
@@ -548,7 +564,7 @@ export const ScheduleTimeline = ({
                           <span className={`text-sm font-semibold text-foreground transition-all duration-500 ${
                             animateWakeTime ? 'scale-110 text-amber-600' : ''
                           }`}>
-                            {formatTime(activity.time)}
+                            {formatTime(activity.time, 'wake')}
                           </span>
                           <span className="text-xs font-medium text-muted-foreground">
                             Wake up
