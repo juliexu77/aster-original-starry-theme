@@ -126,26 +126,24 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4 relative" style={{ minHeight: '120px' }}>
-            {/* Sprout glow - floating within the air */}
-            <div className="hidden dusk:block absolute inset-0 flex items-center justify-center pointer-events-none">
+            {/* Sprout glow - backlit by horizon light, shifted down */}
+            <div className="hidden dusk:block absolute inset-0 flex items-center justify-center pointer-events-none" style={{ transform: 'translateY(8px)' }}>
               {/* Outer glow: wide atmospheric presence */}
               <div 
-                className="absolute w-[240px] h-[240px] rounded-full"
+                className="absolute w-[220px] h-[220px] rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, #B8AAA0 0%, transparent 50%)',
+                  background: 'radial-gradient(circle, rgba(155,145,135,0.1) 0%, transparent 50%)',
                   mixBlendMode: 'soft-light',
-                  filter: 'blur(120px)',
-                  opacity: 0.1
+                  filter: 'blur(110px)'
                 }}
               />
               {/* Inner glow: concentrated core */}
               <div 
-                className="absolute w-[80px] h-[80px] rounded-full"
+                className="absolute w-[70px] h-[70px] rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, #B8AAA0 0%, transparent 60%)',
+                  background: 'radial-gradient(circle, rgba(155,145,135,0.3) 0%, rgba(155,145,135,0.15) 50%, transparent 70%)',
                   mixBlendMode: 'soft-light',
-                  filter: 'blur(40px)',
-                  opacity: 0.25
+                  filter: 'blur(35px)'
                 }}
               />
             </div>
