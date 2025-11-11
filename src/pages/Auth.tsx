@@ -127,24 +127,24 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div className="relative inline-flex items-center justify-center overflow-visible p-8">
-              {/* Sprout aura - two-layer moon glow (inner + outer) */}
+              {/* Sprout aura - minimal atmospheric glow */}
               <div className="hidden dusk:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0">
-                {/* Outer glow: wide diffuse halo - suspended in air */}
+                {/* Outer glow: barely visible atmospheric presence */}
                 <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[220px] rounded-full"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(170,156,150,0.12) 0%, transparent 50%)',
+                    background: 'radial-gradient(circle, rgba(150,140,135,0.10) 0%, transparent 50%)',
                     mixBlendMode: 'soft-light',
-                    filter: 'blur(110px)'
+                    filter: 'blur(90px)'
                   }}
                 />
-                {/* Inner glow: concentrated core */}
+                {/* Inner glow: subtle concentrated core */}
                 <div 
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70px] h-[70px] rounded-full"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60px] h-[60px] rounded-full"
                   style={{
-                    background: 'radial-gradient(circle, rgba(170,156,150,0.4) 0%, rgba(170,156,150,0.2) 50%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(150,140,135,0.3) 0%, rgba(150,140,135,0.15) 50%, transparent 70%)',
                     mixBlendMode: 'soft-light',
-                    filter: 'blur(35px)'
+                    filter: 'blur(30px)'
                   }}
                 />
               </div>
