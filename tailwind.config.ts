@@ -67,6 +67,10 @@ export default {
         nap: "hsl(var(--nap-color))",
         note: "hsl(var(--note-color))",
         chat: "hsl(var(--chat-color))",
+        cta: {
+          "gradient-start": "hsl(var(--cta-gradient-start))",
+          "gradient-end": "hsl(var(--cta-gradient-end))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -308,6 +312,14 @@ export default {
           "100%": {
             opacity: "1"
           }
+        },
+        "cta-pulse": {
+          "0%, 100%": {
+            opacity: "1"
+          },
+          "50%": {
+            opacity: "0.9"
+          }
         }
       },
       animation: {
@@ -335,6 +347,7 @@ export default {
         "story-sparkle-rise": "story-sparkle-rise 1s ease-out forwards",
         "story-closure-fade": "story-closure-fade 1s ease-out forwards",
         "story-dusk-overlay": "story-dusk-overlay 1s ease-out forwards",
+        "cta-pulse": "cta-pulse 1.5s ease-in-out infinite",
       },
     },
   },

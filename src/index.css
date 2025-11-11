@@ -82,6 +82,11 @@
     --ring: var(--pp-mint);
     --radius: 16px;
     
+    /* Primary CTA gradient */
+    --cta-gradient-start: 315 20% 70%;
+    --cta-gradient-end: 315 20% 57%;
+    --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
+    
     /* Activity colors - varied palette */
     --feed-color: var(--pp-terracotta); /* terracotta for feeds */
     --diaper-color: var(--pp-grey); /* grey for diapers */
@@ -159,6 +164,11 @@
     --input: var(--surface-muted);
     --ring: var(--pp-mint);
     --radius: 8px;
+    
+    /* Primary CTA gradient */
+    --cta-gradient-start: 315 20% 70%;
+    --cta-gradient-end: 315 20% 57%;
+    --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
     
     /* Activity colors */
     --feed-color: var(--pp-mint);
@@ -247,6 +257,11 @@
     --input: var(--surface-muted);
     --ring: var(--accent-1);
     --radius: 16px;
+    
+    /* Primary CTA gradient */
+    --cta-gradient-start: 315 20% 70%;
+    --cta-gradient-end: 315 20% 57%;
+    --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
     
     /* Activity colors - muted for dusk */
     --feed-color: 320 13% 58%;
@@ -1113,6 +1128,15 @@
     100% {
       transform: perspective(1000px) rotateY(15deg);
       opacity: 0;
+    }
+  }
+
+  @keyframes cta-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.9;
     }
   }
 

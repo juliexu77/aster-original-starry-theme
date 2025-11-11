@@ -62,11 +62,11 @@ const Onboarding = () => {
           <div className="pt-6">
             <Button
               onClick={handleGetStarted}
-              size="default"
-              className="w-full text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
+              variant="cta"
+              className="w-full rounded-full py-[14px] px-8 text-base"
+              style={{ boxShadow: 'var(--cta-shadow)' }}
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></span>
-              <span className="relative">Begin your rhythm</span>
+              Begin your rhythm
             </Button>
           </div>
         </div>
