@@ -24,7 +24,7 @@ const leftTabs = [
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/60 backdrop-blur-lg border-t border-border/50 z-50">
-      <div className="max-w-md mx-auto px-4 py-2.5">
+      <div className="max-w-md mx-auto px-4 py-4 pb-6">
         <div className="grid grid-cols-5 gap-2 items-center justify-items-center">
           {/* Left tabs */}
           {leftTabs.map((tab) => {
@@ -44,11 +44,11 @@ const leftTabs = [
                 }`}
               >
                 <Icon 
-                  className="w-5.5 h-5.5" 
+                  className="w-6 h-6" 
                   fill={isActive && tab.id === 'home' ? 'currentColor' : 'none'}
                   strokeWidth={isActive && tab.id === 'home' ? 0 : 2}
                 />
-                <span className="text-[11px] font-medium">{tab.label}</span>
+                <span className="text-xs font-medium">{tab.label}</span>
               </button>
             );
           })}
@@ -58,11 +58,11 @@ const leftTabs = [
             <button
               ref={addButtonRef}
               onClick={onAddActivity}
-              className="w-11 h-11 bg-primary rounded-full 
+              className="w-14 h-14 bg-primary rounded-full 
                        flex items-center justify-center shadow-lg
                        hover:scale-105 transition-transform duration-200"
             >
-              <Plus className="w-[18px] h-[18px] text-primary-foreground" />
+              <Plus className="w-6 h-6 text-primary-foreground" />
             </button>
           </div>
 
@@ -83,8 +83,8 @@ const leftTabs = [
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="w-5.5 h-5.5" />
-                <span className="text-[11px] font-medium">{tab.label}</span>
+                <Icon className="w-6 h-6" />
+                <span className="text-xs font-medium">{tab.label}</span>
               </button>
             );
           })}
