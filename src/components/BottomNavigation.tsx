@@ -24,7 +24,7 @@ const leftTabs = [
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background/60 backdrop-blur-lg border-t border-border/50 z-50">
-      <div className="max-w-md mx-auto px-4 py-2 pb-5">
+      <div className="max-w-md mx-auto px-4 py-1.5 pb-4">
         <div className="grid grid-cols-5 gap-2 items-center justify-items-center">
           {/* Left tabs */}
           {leftTabs.map((tab) => {
