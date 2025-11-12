@@ -1056,18 +1056,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   useEffect(() => {
     if (!currentTone) return;
     
-    // First pattern detected
+    // First pattern detected - milestone tracking only (no notification)
     if (toneFrequencies.tones.length >= 1 && !patternMilestones.has('first_pattern')) {
       const newMilestones = new Set(patternMilestones);
       newMilestones.add('first_pattern');
       setPatternMilestones(newMilestones);
       localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
-      
-      toast({
-        title: "🌟 First Pattern Detected!",
-        description: `${babyName} is showing a "${currentTone.text}" pattern today`,
-        duration: 5000,
-      });
     }
     
     // 3-day consistency streak
