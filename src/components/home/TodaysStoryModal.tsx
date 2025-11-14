@@ -227,9 +227,38 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   const fallbackHeadline = getHeadline();
 
-  // Generate AI headline when modal opens
+  // Generate AI headline when modal opens - with date-based caching
   useEffect(() => {
-    if (!isOpen || isLoadingHeadline || aiHeadline) return;
+    if (!isOpen) return;
+
+    const dateKey = format(dayStart, 'yyyy-MM-dd');
+    const cacheKey = `babyrhythm_story_headline_${dateKey}`;
+
+    // Try to load from cache first
+    const loadCachedHeadline = () => {
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed.headline && parsed.timestamp) {
+            // Use cached headline if it was generated for this date
+            setAiHeadline(parsed.headline);
+            return true;
+          }
+        }
+      } catch (err) {
+        console.error('Error loading cached headline:', err);
+      }
+      return false;
+    };
+
+    // If we have a cached headline, use it
+    if (loadCachedHeadline()) {
+      return;
+    }
+
+    // Otherwise generate new headline if not already loading
+    if (isLoadingHeadline || aiHeadline) return;
 
     const generateAIHeadline = async () => {
       setIsLoadingHeadline(true);
@@ -254,6 +283,16 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
         if (data?.headline) {
           setAiHeadline(data.headline);
+          // Cache the headline with date
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({
+              headline: data.headline,
+              timestamp: new Date().toISOString(),
+              date: dateKey
+            }));
+          } catch (err) {
+            console.error('Error caching headline:', err);
+          }
         }
       } catch (err) {
         console.error('Failed to generate AI headline:', err);
@@ -263,15 +302,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     };
 
     generateAIHeadline();
-  }, [isOpen, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindow, babyName]);
+  }, [isOpen, targetDate, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindow, babyName]);
 
-  // Reset AI headline when modal closes
+  // Reset AI headline state when navigating to a different date
   useEffect(() => {
     if (!isOpen) {
       setAiHeadline(null);
       setIsLoadingHeadline(false);
+    } else {
+      // When opening or changing dates, reset state to trigger reload
+      setAiHeadline(null);
+      setIsLoadingHeadline(false);
     }
-  }, [isOpen]);
+  }, [isOpen, targetDate]);
 
   // Navigation handlers
   const currentDate = targetDate || format(new Date(), 'yyyy-MM-dd');
