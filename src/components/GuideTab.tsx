@@ -596,17 +596,59 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [enrichedActivities.length, hasTier3Data]); // Trigger when activities array length changes
   
   // Recalculate schedule function - for manual midday adjustments
-  const handleRecalculateSchedule = () => {
+  const handleRecalculateSchedule = async () => {
     console.log('🔄 Manually recalculating schedule for midday adjustment...');
     
     // Trigger adjustment animation
     setIsAdjusting(true);
     setAdjustmentContext("Adjusting today's rhythm…");
     
+    // Clear cached prediction
     localStorage.removeItem('aiPrediction');
     localStorage.removeItem('aiPredictionLastFetch');
     setAiPrediction(null);
     setAiPredictionLoading(true);
+    
+    try {
+      // Immediately fetch fresh prediction with current data
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayActivities = normalizedActivities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate >= today;
+      });
+      
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      const recentActivities = normalizedActivities.filter(a => {
+        const activityDate = new Date(a.logged_at);
+        return activityDate >= fourteenDaysAgo;
+      });
+      
+      const { data, error } = await supabase.functions.invoke('predict-daily-schedule', {
+        body: { 
+          recentActivities,
+          todayActivities,
+          babyBirthday: household?.baby_birthday,
+          householdId: household?.id,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          aiPrediction: null // Force fresh prediction
+        }
+      });
+      
+      if (error) {
+        console.error('❌ Error fetching AI prediction:', error);
+      } else if (data) {
+        console.log('✅ Fresh AI prediction received:', data);
+        setAiPrediction(data);
+        localStorage.setItem('aiPrediction', JSON.stringify(data));
+        localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
+      }
+    } catch (err) {
+      console.error('❌ Failed to fetch AI prediction:', err);
+    } finally {
+      setAiPredictionLoading(false);
+    }
     
     // Clear adjustment animation after 1.8 seconds
     setTimeout(() => {
