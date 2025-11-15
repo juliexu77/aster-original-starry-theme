@@ -503,6 +503,8 @@ const ongoingNap = (() => {
 
 
   const addActivity = async (type: string, details: any = {}, activityDate?: Date, activityTime?: string) => {
+    console.log('🚀 addActivity called with:', { type, activityDate, activityTime, details });
+    
     // Use localStorage mode when no user
     if (!user) {
       console.log('💾 Saving to localStorage (no user)');
@@ -537,9 +539,12 @@ const ongoingNap = (() => {
       let minute: number;
       let dateToUse: Date;
       
+      console.log('🕐 Parsing time:', { activityDate, activityTime, hasActivityDate: !!activityDate, hasActivityTime: !!activityTime });
+      
       if (activityDate && activityTime) {
         // Parse the time string (e.g., "7:00 AM")
         const timeMatch = activityTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        console.log('🔍 Time match result:', { activityTime, timeMatch });
         if (timeMatch) {
           let hours = parseInt(timeMatch[1], 10);
           const minutes = parseInt(timeMatch[2], 10);
@@ -577,7 +582,8 @@ const ongoingNap = (() => {
         timeLocal,
         timezone,
         offsetMinutes,
-        type
+        type,
+        computedFrom: { hour24, minute, dateToUse: dateToUse.toISOString() }
       });
 
       // Call server function to create activity with proper UTC conversion
