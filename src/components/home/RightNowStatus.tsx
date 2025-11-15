@@ -111,38 +111,42 @@ export const RightNowStatus = ({
         {/* Missed Activity Prompt - In Right Now section */}
         {missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity && (
           <div className="mt-3 pt-3 border-t border-border/30">
-            <MissedActivityPrompt
-              suggestion={missedActivitySuggestion}
-              onAccept={onAcceptMissedActivity}
-              onDismiss={onDismissMissedActivity}
-            />
+            <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+              <MissedActivityPrompt
+                suggestion={missedActivitySuggestion}
+                onAccept={onAcceptMissedActivity}
+                onDismiss={onDismissMissedActivity}
+              />
+            </div>
           </div>
         )}
 
         {/* What's Next - Moved above Suggested Actions */}
         {nextPrediction && (
           <div className="mt-3 pt-3 border-t border-border/30">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                What's Next
-              </p>
-              {nextPrediction.confidence && (
-                <Badge variant="secondary" className="text-xs">
-                  {nextPrediction.confidence} confidence
-                </Badge>
-              )}
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-2">
+              What's Next
+            </h3>
+            <div className="p-3 bg-muted/20 rounded-lg border border-border/30">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-foreground">
+                  {nextPrediction.activity}
+                </p>
+                {nextPrediction.confidence && (
+                  <Badge variant="secondary" className="text-xs">
+                    {nextPrediction.confidence} confidence
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  Expected: {nextPrediction.timeRange}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono">
+                  {nextPrediction.countdown}
+                </p>
+              </div>
             </div>
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-medium text-foreground">
-                {nextPrediction.activity}
-              </p>
-              <p className="text-xs text-muted-foreground font-mono">
-                {nextPrediction.countdown}
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Expected: {nextPrediction.timeRange}
-            </p>
           </div>
         )}
 
