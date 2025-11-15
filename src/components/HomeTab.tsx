@@ -128,12 +128,12 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   
   // Show educational content until user has logged at least one feed AND one sleep, OR 5+ total activities
   const hasFeed = activities.some(a => a.type === 'feed');
-  const hasSleep = activities.some(a => a.type === 'nap' && !a.details?.isNightSleep);
+  const hasSleep = activities.some(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
   const hasMinimumLogs = (hasFeed && hasSleep) || activities.length >= 5;
   const showEducationalContent = !hasMinimumLogs;
 
   // Check if rhythm is unlocked
-  const napsCount = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length;
+  const napsCount = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
   const feedsCount = activities.filter(a => a.type === 'feed').length;
   const isRhythmUnlocked = napsCount >= 4 && feedsCount >= 4;
 
@@ -415,9 +415,9 @@ const lastDiaper = displayActivities
           ? t('restingDeeply')
           : t('settlingIn');
       
-      const isNightSleep = ongoingNap.details?.isNightSleep;
-      const sleepVerb = isNightSleep ? 'sleeping' : 'napping';
-      const sleepingSince = isNightSleep ? 'has been sleeping since' : 'has been napping since';
+      const isNightSleepFlag = isNightSleep(ongoingNap, nightSleepStartHour, nightSleepEndHour);
+      const sleepVerb = isNightSleepFlag ? 'sleeping' : 'napping';
+      const sleepingSince = isNightSleepFlag ? 'has been sleeping since' : 'has been napping since';
       
       return {
         main: `${babyName || t('baby')} ${sleepingSince} ${startTime}`,
@@ -499,7 +499,7 @@ const lastDiaper = displayActivities
     
     // Check cumulative activity counts (all time, not just today)
     const totalFeeds = activities.filter(a => a.type === 'feed').length;
-    const totalNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep).length;
+    const totalNaps = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
     
     // Early state message - insufficient cumulative data (but past first 24 hours)
     if (totalFeeds < 4 || totalNaps < 4) {
@@ -508,12 +508,12 @@ const lastDiaper = displayActivities
     
     // Calculate 7-day rolling averages (simplified for now)
     const recentFeeds = activities.filter(a => a.type === 'feed').length / 7;
-    const recentNaps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime).length / 7;
+    const recentNaps = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.endTime).length / 7;
     
     // Sleep insights
     if (summary.napCount > 0 && expectedNaps) {
       const napDurations = displayActivities
-        .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime)
+        .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.endTime)
         .map(nap => {
           const parseTime = (timeStr: string) => {
             const [time, period] = timeStr.split(' ');
@@ -545,7 +545,7 @@ const lastDiaper = displayActivities
       
       // 3. Earlier wake trend (would need historical data, simplified)
       const firstNap = displayActivities
-        .filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details?.startTime)
+        .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.startTime)
         .sort((a, b) => getComparableTime(a) - getComparableTime(b))[0];
       
       if (firstNap) {
@@ -694,9 +694,9 @@ const lastDiaper = displayActivities
       const napHours = Math.floor(napDuration / 60);
       const napMins = napDuration % 60;
       
-      const isNightSleep = ongoingNap.details?.isNightSleep;
-      const sleepType = isNightSleep ? 'sleeping' : 'napping';
-      const sleepNoun = isNightSleep ? 'sleep' : 'nap';
+      const isNightSleepFlag = isNightSleep(ongoingNap, nightSleepStartHour, nightSleepEndHour);
+      const sleepType = isNightSleepFlag ? 'sleeping' : 'napping';
+      const sleepNoun = isNightSleepFlag ? 'sleep' : 'nap';
       
       return `${babyName} is currently ${sleepType} and has been asleep for ${napHours > 0 ? `${napHours}h ` : ''}${napMins}m. ${babyName} has had ${summary.napCount} ${sleepNoun}${summary.napCount !== 1 ? 's' : ''} today, and babies at ${babyAgeMonths || 0} months typically need ${getExpectedNaps(babyAgeMonths)?.typical || '3-4'} naps per day. Let them rest and they'll wake when ready.`;
     } else if (prediction.intent === 'START_WIND_DOWN') {
@@ -1433,10 +1433,11 @@ const lastDiaper = displayActivities
           nextPrediction={nextPrediction}
           onWokeEarly={onEndNap}
           onStillAsleep={() => {
-            const sleepType = ongoingNap?.details?.isNightSleep ? 'sleeping' : 'napping';
+            const isNightSleepFlag = ongoingNap ? isNightSleep(ongoingNap, nightSleepStartHour, nightSleepEndHour) : false;
+            const sleepType = isNightSleepFlag ? 'sleeping' : 'napping';
             toast({
               title: `Still ${sleepType}`,
-              description: `${ongoingNap?.details?.isNightSleep ? 'Sleep' : 'Nap'} timer continues`,
+              description: `${isNightSleepFlag ? 'Sleep' : 'Nap'} timer continues`,
             });
           }}
           onStartNap={() => {
@@ -1444,7 +1445,6 @@ const lastDiaper = displayActivities
             const now = new Date();
             addActivity?.('nap', {
               startTime: now.toTimeString().slice(0, 5),
-              isNightSleep: false,
             }, now, now.toTimeString().slice(0, 5));
             toast({
               title: "Nap started",
