@@ -93,15 +93,31 @@ function getRecentActivities(activities: Activity[], days: number): Activity[] {
   });
 }
 
-// Check if activity was already logged today
+// Check if activity was already logged today (based on ACTIVITY time, not when logged)
 function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: string): boolean {
   const todayStart = startOfDay(new Date());
   
   return activities.some(a => {
     if (a.type !== type) return false;
     
-    const activityDate = parseISO(a.loggedAt);
-    if (activityDate < todayStart) return false;
+    // CRITICAL: Check if the ACTIVITY happened today, not when it was logged
+    // Use date_local if available, otherwise convert logged_at to local
+    let activityLocalDate: Date;
+    
+    const dateLocal = (a.details as any)?.date_local;
+    if (dateLocal) {
+      // Parse date_local (format: "2025-11-14")
+      activityLocalDate = parseISO(dateLocal);
+    } else {
+      // Fallback: convert UTC to local
+      activityLocalDate = parseISO(a.loggedAt);
+    }
+    
+    // Check if activity date is today
+    const activityDateOnly = startOfDay(activityLocalDate);
+    const todayOnly = startOfDay(new Date());
+    
+    if (activityDateOnly.getTime() !== todayOnly.getTime()) return false;
     
     // Check subtype
     if (subType === 'bedtime') {
@@ -114,8 +130,10 @@ function wasLoggedToday(activities: Activity[], type: 'nap' | 'feed', subType?: 
       // Check if this is the first nap of the day
       const dayNaps = activities.filter(n => {
         if (n.type !== 'nap') return false;
-        const napDate = parseISO(n.loggedAt);
-        return napDate >= todayStart && napDate < activityDate;
+        const napDateLocal = (n.details as any)?.date_local;
+        const napDate = napDateLocal ? parseISO(napDateLocal) : parseISO(n.loggedAt);
+        const napDateOnly = startOfDay(napDate);
+        return napDateOnly.getTime() === todayOnly.getTime() && napDate < activityLocalDate;
       });
       return dayNaps.length === 0 && a.type === 'nap';
     }
@@ -144,14 +162,24 @@ function analyzePattern(
     });
   }
   
-  // For first-nap, get only the first nap of each day
+  // For first-nap, get only the first nap of each day (using activity date, not logged date)
   if (subType === 'first-nap') {
     const napsByDay = new Map<string, Activity>();
     relevantActivities.forEach(a => {
-      const dayKey = format(parseISO(a.loggedAt), 'yyyy-MM-dd');
+      // Use date_local if available for grouping by day
+      const dateLocal = (a.details as any)?.date_local;
+      const dayKey = dateLocal ? dateLocal : format(parseISO(a.loggedAt), 'yyyy-MM-dd');
+      
       const existing = napsByDay.get(dayKey);
-      if (!existing || parseISO(a.loggedAt) < parseISO(existing.loggedAt)) {
+      if (!existing) {
         napsByDay.set(dayKey, a);
+      } else {
+        // Keep the earlier activity based on startTime
+        const existingMins = timeToMinutes(existing);
+        const currentMins = timeToMinutes(a);
+        if (currentMins < existingMins) {
+          napsByDay.set(dayKey, a);
+        }
       }
     });
     relevantActivities = Array.from(napsByDay.values());
