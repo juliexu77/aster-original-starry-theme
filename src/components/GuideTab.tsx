@@ -26,7 +26,7 @@ import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
 import { clearAppCache } from "@/utils/clearAppCache";
-import { isNightSleep } from "@/utils/napClassification";
+import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 
 
 interface Activity {
@@ -217,37 +217,19 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   const babyAgeInWeeks = household?.baby_birthday ? 
     Math.floor((Date.now() - new Date(household.baby_birthday).getTime()) / (1000 * 60 * 60 * 24 * 7)) : 0;
   
-  // Get night sleep window detection (needed for enriching activities)
+  // Get night sleep window detection
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
-  
-  // Enrich activities with isNightSleep flag FIRST (needed by both rhythm insights and schedule predictor)
-  const enrichedActivities = useMemo(() => {
-    return activities.map(activity => {
-      if (activity.type !== 'nap') return activity;
-      
-      // Use proper napClassification utility with user settings
-      const isNight = isNightSleep(activity, nightSleepStartHour, nightSleepEndHour);
-      
-      return {
-        ...activity,
-        details: {
-          ...activity.details,
-          isNightSleep: isNight
-        }
-      };
-    });
-  }, [activities, nightSleepStartHour, nightSleepEndHour]);
 
-  // Normalize enriched activities for schedule predictor
+  // Normalize activities for schedule predictor
   const normalizedActivities = useMemo(() => {
-    return enrichedActivities.map(a => ({
+    return activities.map(a => ({
       id: a.id,
       type: a.type,
       timestamp: a.logged_at,
       logged_at: a.logged_at,
       details: a.details ?? {}
     }));
-  }, [enrichedActivities]);
+  }, [activities]);
   
   // Calculate tone frequencies for the last 7 days (safe even without household)
   const toneFrequencies = (() => {
@@ -367,7 +349,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Tiered data requirements
   // Filter out night sleep - only count daytime naps
-  const allSleepActivities = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
+  const allSleepActivities = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
   const daytimeNaps = allSleepActivities;
   
   const feeds = activities.filter(a => a.type === 'feed');
@@ -417,8 +399,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     try {
       console.log('🔄 Generating schedule with available data');
       
-      // Convert enriched activities to the format expected by prediction engine
-      const activitiesForEngine = enrichedActivities.map(a => ({
+      // Convert activities to the format expected by prediction engine
+      const activitiesForEngine = activities.map(a => ({
         id: a.id,
         type: a.type as any,
         time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
@@ -443,7 +425,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.error('❌ Failed to generate schedule:', error);
       return null;
     }
-  }, [enrichedActivities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length]);
+  }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length]);
 
   // Use adaptive schedule directly
   const displaySchedule = adaptiveSchedule;
@@ -488,12 +470,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     todayStart.setHours(0, 0, 0, 0);
     
     // Check if there's a wake-up logged today
-    const todayWakeActivity = enrichedActivities.find(a => {
+    const todayWakeActivity = activities.find(a => {
       const actDate = new Date(a.logged_at);
       if (actDate < todayStart) return false;
       
       // Detect morning wake from night sleep end
-      if (a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep) {
+      if (a.type === 'nap' && a.details?.endTime && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) {
         const timeMatch = a.details.endTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
         if (timeMatch) {
           let hour = parseInt(timeMatch[1]);
@@ -516,7 +498,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         sessionStorage.setItem(`schedule-recalc-${todayStart.toDateString()}`, 'true');
       }
     }
-  }, [enrichedActivities, hasTier3Data]);
+  }, [activities, hasTier3Data, nightSleepStartHour, nightSleepEndHour]);
   
   // Listen for activity logs and trigger context-aware adjustments
   useEffect(() => {
@@ -524,7 +506,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       if (!hasTier3Data) return;
       
       // Get the most recent activity
-      const recentActivity = enrichedActivities[0];
+      const recentActivity = activities[0];
       if (!recentActivity) return;
       
       // Check if this activity was just logged (within last 5 seconds)
@@ -555,7 +537,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             setAdjustmentContext("Short nap detected — adjusting afternoon nap window.");
           } else if (endHour >= 16) { // After 4 PM
             setAdjustmentContext("Late nap means bedtime might shift a bit later tonight.");
-          } else if (recentActivity.details?.isNightSleep) {
+          } else if (isNightSleep(recentActivity, nightSleepStartHour, nightSleepEndHour)) {
             if (endHour >= 4 && endHour < 7) {
               setAdjustmentContext("Early wake — adjusting nap times for the day.");
             } else if (endHour >= 8) {
@@ -584,10 +566,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     };
     
     // Only trigger on activities change when we have tier 3 data
-    if (enrichedActivities.length > 0 && hasTier3Data) {
+    if (activities.length > 0 && hasTier3Data) {
       handleActivityLogged();
     }
-  }, [enrichedActivities.length, hasTier3Data]); // Trigger when activities array length changes
+  }, [activities.length, hasTier3Data, nightSleepStartHour, nightSleepEndHour]); // Trigger when activities array length changes
   
   // Recalculate schedule function - for manual midday adjustments
   const handleRecalculateSchedule = async () => {
@@ -727,7 +709,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         reasoning: `Alternative ${alternateNapCount}-nap schedule`
       };
       
-      const activitiesForEngine = enrichedActivities.map(a => ({
+      const activitiesForEngine = activities.map(a => ({
         id: a.id,
         type: a.type as any,
         time: a.details?.displayTime || new Date(a.logged_at).toLocaleTimeString('en-US', {
@@ -747,7 +729,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.error('Failed to generate alternate schedule:', error);
       return null;
     }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, enrichedActivities, userTimezone, showAlternateSchedule]);
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone, showAlternateSchedule]);
   
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
@@ -836,7 +818,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         console.log('🔄 Fetching rhythm insights from edge function...');
         const { data, error } = await supabase.functions.invoke('generate-rhythm-insights', {
           body: { 
-            activities: enrichedActivities.slice(-300), // Send enriched activities with isNightSleep flags
+            activities: activities.slice(-300), // Send last 300 activities
             babyName: household.baby_name,
             babyAge: babyAgeInWeeks,
             babyBirthday: household.baby_birthday,
@@ -954,7 +936,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     // No cache available - show loading state and fetch
     console.log('🚀 No cache available, fetching rhythm insights...');
     fetchRhythmInsights(true); // Show loading state only on first load
-  }, [hasTier3Data, household, babyAgeInWeeks, enrichedActivities.length, userTimezone]);
+  }, [hasTier3Data, household, babyAgeInWeeks, activities.length, userTimezone]);
 
   // Fetch AI-enhanced schedule prediction (only for Tier 2+)
   useEffect(() => {

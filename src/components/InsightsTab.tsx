@@ -7,6 +7,8 @@ import { useActivityPercentile } from "@/hooks/useActivityPercentile";
 import { useGuideSections } from "@/hooks/useGuideSections";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { isDaytimeNap } from "@/utils/napClassification";
 
 interface InsightsTabProps {
   activities: Activity[];
@@ -17,6 +19,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { t } = useLanguage();
   const { insights } = usePatternAnalysis(activities);
   const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -40,7 +43,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   
   // Calculate actual sleep metrics from activities (daytime naps only)
   const calculateSleepMetrics = () => {
-    const naps = activities.filter(a => a.type === 'nap' && !a.details?.isNightSleep && a.details.startTime && a.details.endTime);
+    const naps = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details.startTime && a.details.endTime);
     
     // Helper to parse time to minutes
     const parseTimeToMinutes = (timeStr: string) => {

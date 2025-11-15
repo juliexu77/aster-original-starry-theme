@@ -28,6 +28,7 @@ import { TodaysStoryModal } from "@/components/home/TodaysStoryModal";
 import { DailyStoryCircles } from "@/components/home/DailyStoryCircles";
 import { FirstActivityCelebration } from "@/components/FirstActivityCelebration";
 import { SchedulePreview } from "@/components/home/SchedulePreview";
+import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 // Convert UTC timestamp string to local Date object
 const parseUTCToLocal = (ts: string): Date => {
   // The database returns UTC timestamps - convert to local time

@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Heart, Moon } from "lucide-react";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
 
 interface Activity {
   id: string;
@@ -166,6 +168,7 @@ const LANGUAGE_BANK = {
 
 export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps) => {
   const { household } = useHousehold();
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [showReview, setShowReview] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [reviewGenerated, setReviewGenerated] = useState(false);
@@ -267,8 +270,8 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     });
 
     const feeds = activities_filtered.filter(a => a.type === 'feed');
-    const naps = activities_filtered.filter(a => a.type === 'nap' && !a.details?.isNightSleep);
-    const bedtimeNap = activities_filtered.find(a => a.type === 'nap' && a.details?.isNightSleep);
+    const naps = activities_filtered.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour));
+    const bedtimeNap = activities_filtered.find(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour));
     const notes = activities_filtered.filter(a => a.type === 'note');
     const diapers = activities_filtered.filter(a => a.type === 'diaper');
 
@@ -384,7 +387,7 @@ export const NightDoulaReview = ({ activities, babyName }: NightDoulaReviewProps
     // Naps
     if (todayStats.naps > 0) {
       const napDurations = activities
-        .filter(a => a.type === 'nap' && !a.details?.isNightSleep && 
+        .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && 
                 new Date(a.logged_at).toDateString() === today.toDateString())
         .map(n => {
           if (n.details?.startTime && n.details?.endTime) {
