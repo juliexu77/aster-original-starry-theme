@@ -381,6 +381,34 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return Intl.DateTimeFormat().resolvedOptions().timeZone;
   }, []);
 
+  // Track today's key events for schedule regeneration triggers
+  const todayKeyEvents = useMemo(() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    const todayActivities = activities.filter(a => {
+      const actDate = new Date(a.logged_at);
+      return actDate >= todayStart;
+    });
+    
+    // Find wake time (night sleep with end time)
+    const wakeActivity = todayActivities.find(a => 
+      a.type === 'nap' && a.details?.endTime && a.details?.isNightSleep
+    );
+    
+    // Find first nap
+    const firstNap = todayActivities.find(a => 
+      a.type === 'nap' && !a.details?.isNightSleep
+    );
+    
+    return {
+      hasWake: !!wakeActivity,
+      wakeTime: wakeActivity?.details?.endTime,
+      hasFirstNap: !!firstNap,
+      firstNapTime: firstNap?.details?.startTime
+    };
+  }, [activities]);
+
   // Memoized adaptive schedule using prediction engine
   const adaptiveSchedule = useMemo(() => {
     // Show schedule with Tier 1 data (1+ activity) but require at least 1 nap
@@ -396,7 +424,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
     
     try {
-      console.log('🔄 Generating schedule with available data');
+      console.log('🔄 Generating schedule with available data', todayKeyEvents);
       
       // Convert activities to the format expected by prediction engine
       const activitiesForEngine = activities.map(a => ({
@@ -424,7 +452,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       console.error('❌ Failed to generate schedule:', error);
       return null;
     }
-  }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length]);
+  }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length, todayKeyEvents]);
 
   // Use adaptive schedule directly
   const displaySchedule = adaptiveSchedule;
@@ -1048,7 +1076,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
 
   // Adaptive schedule is now generated via useMemo, no need for separate effect
 
-  // 🏆 Celebrate pattern milestones
+  // Track pattern milestones (no toasts for streaks - early journey celebrations only)
   useEffect(() => {
     if (!currentTone) return;
     
@@ -1060,34 +1088,21 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
     }
     
-    // 3-day consistency streak
+    // Track streaks silently (no toasts)
     if (toneFrequencies.currentStreak >= 3 && !patternMilestones.has('streak_3')) {
       const newMilestones = new Set(patternMilestones);
       newMilestones.add('streak_3');
       setPatternMilestones(newMilestones);
       localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
-      
-      toast({
-        title: "🔥 3-Day Streak!",
-        description: `${babyName} has shown consistent "${toneFrequencies.streakTone}" patterns`,
-        duration: 5000,
-      });
     }
     
-    // Week-long consistency (7 days)
     if (toneFrequencies.currentStreak >= 7 && !patternMilestones.has('streak_7')) {
       const newMilestones = new Set(patternMilestones);
       newMilestones.add('streak_7');
       setPatternMilestones(newMilestones);
       localStorage.setItem('patternMilestones', JSON.stringify([...newMilestones]));
-      
-      toast({
-        title: "🏆 Week-Long Consistency!",
-        description: `Amazing! ${babyName} has maintained a steady rhythm for 7 days`,
-        duration: 6000,
-      });
     }
-  }, [currentTone, toneFrequencies.currentStreak, toneFrequencies.streakTone, toneFrequencies.tones.length, babyName, toast, patternMilestones]);
+  }, [currentTone, toneFrequencies.currentStreak, toneFrequencies.tones.length, patternMilestones]);
 
 
   // Load initial insight
