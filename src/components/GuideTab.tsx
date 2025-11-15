@@ -677,7 +677,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     today.setHours(0, 0, 0, 0);
     const todayNaps = normalizedActivities.filter(a => {
       const actDate = new Date(a.logged_at);
-      return actDate >= today && a.type === 'nap' && !a.details?.isNightSleep && a.details?.endTime;
+      return actDate >= today && a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) && a.details?.endTime;
     });
     return todayNaps.length;
   }, [normalizedActivities]);
