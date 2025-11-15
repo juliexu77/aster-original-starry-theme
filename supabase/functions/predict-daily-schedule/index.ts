@@ -240,32 +240,29 @@ ${patternSummary}
 Last 7 days nap counts: ${napCountsLine}
 Range: ${minNapCount}–${maxNapCount} naps
 
-Today so far (${currentTime}):
-- ${todayNaps} nap${todayNaps !== 1 ? 's' : ''} logged
-- ${todayFeeds} feed${todayFeeds !== 1 ? 's' : ''} logged
-${lastNap ? `- Last nap: ${lastNapDuration} min` : ''}
-${isEarlyMorning ? '\nNote: It is still early in the day - more naps are expected later.' : ''}
-
 CRITICAL PREDICTION RULES:
-1. Predict the MOST COMMON nap count from the last 7 days as today's expected total
-2. Only predict a different count if there's a CLEAR sustained transition (3+ consecutive days of new pattern)
-3. If 6 out of 7 days show 3 naps, predict 3 naps (not 2)
-4. Do NOT predict developmental "should be" patterns - predict what the DATA shows
+1. BASE YOUR PREDICTION ONLY ON THE LAST 7 DAYS PATTERN ABOVE - ignore today's progress
+2. Predict the MOST COMMON nap count from the last 7 days as today's expected total
+3. Only predict a different count if there's a CLEAR sustained transition (3+ consecutive days of new pattern)
+4. If 6 out of 7 days show 3 naps, predict 3 naps (not 2)
+5. Do NOT predict developmental "should be" patterns - predict what the DATA shows
+6. DO NOT use today's currently logged naps to determine the total - use historical pattern only
 
-Your task: Analyze ONLY the high-level pattern. Do NOT calculate times, wake windows, or bedtimes.
+Your task: Analyze ONLY the high-level pattern from the 7-day history. Do NOT calculate times, wake windows, or bedtimes.
 
 Answer these questions:
-1. What is the expected TOTAL nap count for today? (not remaining—TOTAL including already logged)
+1. What is the expected TOTAL nap count for today based on the 7-day pattern? (This should be the most common nap count from the last 7 days, NOT today's current count)
 2. Is the baby transitioning between nap schedules? (e.g., moving from 3→2 naps)
 3. What's your confidence level (high/medium/low) in this prediction?
-4. Brief reasoning (1-2 sentences about the pattern you see)
+4. Brief reasoning (1-2 sentences about the pattern you see in the 7-day history)
 
 Rules:
 - Only analyze DAYTIME naps (6am-8pm). Night sleep tracked separately.
 - Do NOT infer transitions from 4→3 naps unless you see 4+ nap days in the data.
 - If naps vary 2-3, call it "stabilizing between 2-3" not "transitioning from 4."
 - Do NOT calculate specific times—that's handled by the schedule generator.
-- ALWAYS predict the most common nap count unless there's sustained evidence of change.
+- ALWAYS predict the most common nap count from the 7-day pattern unless there's sustained evidence of change.
+- IGNORE today's currently logged nap count - only use the 7-day historical pattern.
 `;
 
     console.log('Calling Lovable AI for schedule prediction...');
@@ -299,7 +296,7 @@ Rules:
                 properties: {
                   total_naps_today: {
                     type: 'number',
-                    description: 'Total expected daytime naps for the full day (including already logged)'
+                    description: 'Total expected daytime naps for the full day based on 7-day historical pattern (NOT today\'s current count)'
                   },
                   confidence: {
                     type: 'string',
@@ -312,7 +309,7 @@ Rules:
                   },
                   transition_note: {
                     type: 'string',
-                    description: `If transitioning, write ONE warm, encouraging sentence (max 12 words) about the PATTERN TRANSITION (e.g., from 3→2 naps), NOT about today's current nap count. ${isEarlyMorning ? 'Since it is early in the day, focus only on the multi-day pattern change, not today\'s progress.' : ''} Use baby name. Examples: "Caleb is beautifully moving toward 2 naps—this is perfect" or "Emma is naturally consolidating to 2 naps, right on track"`
+                    description: `If transitioning, write ONE warm, encouraging sentence (max 12 words) about the PATTERN TRANSITION based on the 7-day trend (e.g., from 3→2 naps). Use baby name. Examples: "Caleb is beautifully moving toward 2 naps—this is perfect" or "Emma is naturally consolidating to 2 naps, right on track"`
                   },
                   reasoning: {
                     type: 'string',
