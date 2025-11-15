@@ -20,19 +20,16 @@ export const HeroInsightCard = ({ insight, confidence, loading }: HeroInsightCar
     );
   }
 
-  // Extract first sentence only
-  const firstSentence = insight.split(/[.!?]/).filter(s => s.trim())[0] + '.';
-
   return (
     <div className="mx-2 mb-6 p-5 bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 rounded-xl shadow-sm">
       <div className="flex items-center gap-2 mb-3">
         <Sparkles className="w-5 h-5 text-primary" />
         <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-          Today's Insight
+          Today's Rhythm
         </h3>
       </div>
       <p className="text-base text-foreground leading-relaxed">
-        {firstSentence}
+        {insight}
       </p>
     </div>
   );

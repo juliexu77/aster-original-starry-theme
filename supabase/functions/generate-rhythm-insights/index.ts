@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
       console.log('⏰ Too early to generate insights - showing forward-looking content instead');
       return new Response(
         JSON.stringify({
-          heroInsight: `🌅 Good morning! Based on recent patterns, ${babyName} typically has ${napsPerDayThisWeek} naps today. First nap usually around ${aiPrediction?.predicted_bedtime ? 'mid-morning' : '9-10am'}.`,
+          heroInsight: `Based on recent patterns, expect ${napsPerDayThisWeek} naps today — first nap window typically opens mid-morning.`,
           confidenceScore: 'Looking ahead',
           whyThisMatters: `Right now is about following ${babyName}'s natural rhythm. Watch for sleepy cues like eye rubbing, yawning, or fussiness as morning wake time builds.`,
           prepTip: `Start winding down 15 minutes before the first nap. Dim lights, quiet play, and consistent pre-nap routine help ${babyName} transition smoothly to sleep.`,
@@ -362,32 +362,42 @@ DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPe
 
     // CALL 1: Generate Hero Insight
     const predictedNapsToday = aiPrediction?.total_naps_today || napsPerDayThisWeek;
-    const heroPrompt = `You are a warm, encouraging baby sleep expert. Based on the data below, write ONE warm, encouraging observation about this baby's sleep progress.
+    const heroPrompt = `You are a professional sleep coach. Write a concise daily briefing like Oura or WHOOP. 
 
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
 TODAY'S PATTERN: ${predictedNapsToday} naps predicted for the full day (${actualNapsToday} logged so far)
 Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week
 Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
-Bedtime: ${aiPrediction?.predicted_bedtime || 'consistency varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : ''}
+Bedtime: ${aiPrediction?.predicted_bedtime || 'varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : '(variable)'}
 ${transitionInfo || ''}
 
-CRITICAL INSTRUCTIONS:
-- Focus on the FULL-DAY pattern (${predictedNapsToday} naps), NOT the partial count (${actualNapsToday} so far)
-- Describe ${babyName}'s overall rhythm and developmental progress
-${transitionInfo ? '- You MUST acknowledge the pattern/transition stated above' : ''}
-- Do NOT contradict the nap count information above
-- ALWAYS use "${babyName}" by name - NEVER say "Your baby", "the baby", "baby", or "your little one"
+STRUCTURE (1-2 sentences max, ~25 words total):
+1. Macro vibe (smooth/choppy/early shift/late shift/overtired risk)
+2. Actionable guidance (what to adjust today)
+3. Why (based on recent pattern)
 
-RULES:
-- Start with a relevant emoji (🎉, 💪, 🌟, ✨, 🌙, 🌿, etc.)
-- Write 1-2 short sentences (under 40 words total)
-- Be specific to the data provided
-- Sound warm and supportive
-- Do NOT use markdown formatting
+CRITICAL RULES:
+- NO emojis
+- NO greetings or sign-offs
+- NO baby name - just refer to "rhythm" or "day" 
+- Focus on TODAY'S full-day pattern (${predictedNapsToday} naps)
+- Sound like a professional sleep coach, not a cheerleader
+${transitionInfo ? '- Acknowledge the transition' : ''}
+- Be specific and actionable
 
-Examples:
-"🌿 ${babyName}'s settling into a ${predictedNapsToday}-nap rhythm—those longer wake windows show great progress!"
-"🎉 What a star! ${babyName}'s consistent ${predictedNapsToday}-nap pattern is building healthy sleep habits!"
+GOOD EXAMPLES:
+"Today should be a smooth ${predictedNapsToday}-nap day — wake windows have been steady and naps are trending longer."
+"Naps may run short today — last night was fragmented. Try keeping the first wake window slightly shorter."
+"Rhythm is running earlier today — expect naps to fall ~20 min ahead of usual."
+"Watch for overtiredness in late afternoon — nap 2 has been shorter this week."
+"Signs point to ${predictedNapsToday} → ${predictedNapsToday - 1} nap readiness — morning wake window is lengthening."
+
+BAD EXAMPLES:
+"🌟 Great job! Baby is doing amazing!"
+"Your little one is settling into a rhythm!"
+"Keep up the good work with Baby's sleep!"
+
+Write the daily briefing now:
 "💪 ${babyName} is transitioning beautifully to ${predictedNapsToday} naps—longer wake windows are right on track!"`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -399,7 +409,7 @@ Examples:
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: 'You are a warm, encouraging baby sleep expert who writes short, supportive observations.' },
+          { role: 'system', content: 'You are a professional sleep coach who writes concise daily briefings. No emojis. No greetings. Sound like Oura or WHOOP.' },
           { role: 'user', content: heroPrompt }
         ],
       }),
