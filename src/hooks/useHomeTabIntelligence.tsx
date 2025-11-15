@@ -294,6 +294,12 @@ export const useHomeTabIntelligence = (
         return null;
       }
       
+      // Don't show "now" if baby just woke up - enforce minimum cooldown
+      if (currentActivity?.type === 'awake' && currentActivity.duration < 45) {
+        // Baby just woke up (less than 45 min awake), don't show immediate nap
+        return null;
+      }
+      
       const napTime = new Date(timing.nextNapWindowStart);
       const minutesUntil = Math.max(0, differenceInMinutes(napTime, now));
       const hoursUntil = Math.floor(minutesUntil / 60);
@@ -301,7 +307,8 @@ export const useHomeTabIntelligence = (
       
       let countdown: string;
       if (minutesUntil <= 0) {
-        countdown = 'now';
+        // If nap is "overdue" but baby just woke, show "soon" instead of "now"
+        countdown = 'soon';
       } else if (minutesUntil < 60) {
         countdown = `in ${minutesUntil} min`;
       } else {
