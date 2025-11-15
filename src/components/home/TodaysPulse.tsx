@@ -97,6 +97,7 @@ export const TodaysPulse = ({
 
   const hasDeviations = deviations.some(d => d.hasDeviation);
   const needsAttention = deviations.some(d => d.status === 'needs-attention');
+  const allNormalPace = deviations.every(d => d.status === 'normal');
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -119,6 +120,11 @@ export const TodaysPulse = ({
               {hasDeviations && !needsAttention && (
                 <Badge variant="default" className="text-[10px] px-2 py-0">
                   Update
+                </Badge>
+              )}
+              {allNormalPace && (
+                <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                  Normal pace
                 </Badge>
               )}
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
