@@ -27,7 +27,7 @@ function validateInput(data: any): ValidationError[] {
   }
 
   if (!data.time_local || typeof data.time_local !== 'string') {
-    errors.push({ field: 'time_local', message: 'time_local is required (HH:MM in 24h format)' });
+    errors.push({ field: 'time_local', message: 'time_local is required (HH:MM in 24h format) - represents when the ACTIVITY occurred, not when logged' });
   }
 
   if (!data.offset_minutes || typeof data.offset_minutes !== 'number') {
@@ -49,11 +49,15 @@ function validateInput(data: any): ValidationError[] {
  * SERVER-SIDE TIMEZONE CONVERSION
  * Single source of truth: interpret local date/time in IANA timezone to get UTC
  * 
+ * CRITICAL: date_local and time_local represent when the ACTIVITY occurred,
+ * NOT when it was logged. For naps started from a timer, this is the start time.
+ * For feeds, this is when the feed occurred.
+ * 
  * Since Deno edge functions don't have full IANA timezone database access without heavy dependencies,
  * we accept offset_minutes from client but validate and use it server-side.
  * 
  * This function:
- * 1. Takes local date/time + offset
+ * 1. Takes local date/time + offset for when ACTIVITY occurred
  * 2. Computes UTC by applying the offset
  * 3. Returns UTC ISO string
  */
