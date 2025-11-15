@@ -362,42 +362,51 @@ DO NOT make up different numbers. DO NOT say "4 naps" if the data shows ${napsPe
 
     // CALL 1: Generate Hero Insight
     const predictedNapsToday = aiPrediction?.total_naps_today || napsPerDayThisWeek;
-    const heroPrompt = `You are a professional sleep coach. Write a concise daily briefing like Oura or WHOOP. 
+    const heroPrompt = `You are a professional sleep coach analyzing daily patterns. Write a concise daily briefing for parents.
 
+CRITICAL CONTEXT YOU MUST USE:
 Baby: ${babyName}, ${ageInMonths ? `${ageInMonths} months old` : 'age unknown'}
-TODAY'S PATTERN: ${predictedNapsToday} naps predicted for the full day (${actualNapsToday} logged so far)
-Recent pattern: ${napsPerDayThisWeek} naps/day this week, ${napsPerDayLastWeek} naps/day last week
-Last 7 days nap range: ${minNapCount}–${maxNapCount} naps per day
-Bedtime: ${aiPrediction?.predicted_bedtime || 'varies'} ${bedtimeVariation < 15 ? '(very consistent)' : bedtimeVariation < 30 ? '(fairly consistent)' : '(variable)'}
+TODAY'S PREDICTED PATTERN: ${predictedNapsToday} naps (${actualNapsToday} completed so far)
+THIS WEEK: ${napsPerDayThisWeek} naps/day average
+LAST WEEK: ${napsPerDayLastWeek} naps/day average
+LAST 7 DAYS RANGE: ${minNapCount}–${maxNapCount} naps per day
+BEDTIME CONSISTENCY: ${bedtimeVariation < 15 ? 'very consistent' : bedtimeVariation < 30 ? 'fairly consistent' : 'variable'} (${Math.round(bedtimeVariation)} min variance)
 ${transitionInfo || ''}
 
-STRUCTURE (1-2 sentences max, ~25 words total):
-1. Macro vibe (smooth/choppy/early shift/late shift/overtired risk)
-2. Actionable guidance (what to adjust today)
-3. Why (based on recent pattern)
+MANDATORY 3-PART STRUCTURE (1-2 sentences, ~30 words total):
+1. VIBE: State the macro pattern (smooth/choppy/early shift/late shift/overtired risk)
+2. ACTION: Give ONE specific adjustment or thing to watch
+3. WHY: Explain based on ACTUAL recent data (last night, this week, past 3 days)
 
 CRITICAL RULES:
-- NO emojis
-- NO greetings or sign-offs
-- NO baby name - just refer to "rhythm" or "day" 
-- Focus on TODAY'S full-day pattern (${predictedNapsToday} naps)
-- Sound like a professional sleep coach, not a cheerleader
-${transitionInfo ? '- Acknowledge the transition' : ''}
-- Be specific and actionable
+- NO emojis, NO greetings
+- NO generic statements like "day ahead with naps complete"
+- MUST reference actual recent patterns (last night quality, this week trends, wake time shifts)
+- MUST be specific to THIS baby's data
+- Sound like Oura/WHOOP daily briefings - professional, data-driven, actionable
 
-GOOD EXAMPLES:
+GOOD EXAMPLES (use these as templates):
 "Today should be a smooth ${predictedNapsToday}-nap day — wake windows have been steady and naps are trending longer."
 "Naps may run short today — last night was fragmented. Try keeping the first wake window slightly shorter."
-"Rhythm is running earlier today — expect naps to fall ~20 min ahead of usual."
 "Watch for overtiredness in late afternoon — nap 2 has been shorter this week."
-"Signs point to ${predictedNapsToday} → ${predictedNapsToday - 1} nap readiness — morning wake window is lengthening."
+"Bedtime may drift later — wake windows have been stretching the past three days."
+"Rhythm is running earlier today — expect naps to fall ~20 min ahead of usual."
+${transitionInfo ? `"Signs point to ${predictedNapsToday} → ${predictedNapsToday - 1} nap readiness — morning wake window is lengthening."` : ''}
 
-BAD EXAMPLES:
-"🌟 Great job! Baby is doing amazing!"
-"Your little one is settling into a rhythm!"
-"Keep up the good work with Baby's sleep!"
+BAD EXAMPLES (never write like this):
+"Choppy day ahead with two naps complete."
+"${babyName} is doing great today!"
+"You're doing an amazing job!"
+"Pattern looks good."
 
-Write the daily briefing now:
+SPECIFIC SCENARIOS TO HANDLE:
+- If bedtime variance is high: "Bedtime may be unpredictable — it's varied by ${Math.round(bedtimeVariation)} min this week"
+- If nap count changed week-over-week: "${napsPerDayThisWeek === napsPerDayLastWeek ? 'Consistent rhythm' : 'Shifting from ' + napsPerDayLastWeek + ' to ' + napsPerDayThisWeek + ' naps'}"
+- If in transition: Must acknowledge the transition explicitly
+- If early in day (${actualNapsToday} naps logged): Focus on what to watch/expect
+- If late in day: Focus on bedtime preparation
+
+Write the daily briefing NOW using the EXACT data above:
 "💪 ${babyName} is transitioning beautifully to ${predictedNapsToday} naps—longer wake windows are right on track!"`;
 
     const heroResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
