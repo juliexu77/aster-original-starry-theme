@@ -222,7 +222,7 @@ function analyzePattern(
       })
       .filter(t => t >= 0);
     
-    if (times.length < 5) return null;
+    if (times.length < 3) return null;  // Lowered from 5 to 3 for earlier detection
     
     const medianTime = median(times);
     const stdDev = standardDeviation(times);
@@ -238,7 +238,7 @@ function analyzePattern(
     };
   }
   
-  if (relevantActivities.length < 5) return null; // Need at least 5 occurrences
+  if (relevantActivities.length < 3) return null; // Lowered from 5 to 3 for earlier detection
   
   const times = relevantActivities.map(a => timeToMinutes(a));
   const medianTime = median(times);
