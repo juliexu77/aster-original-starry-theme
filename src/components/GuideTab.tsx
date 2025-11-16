@@ -685,13 +685,22 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const ageBasedWindow = transitionWindow !== null;
     
     if (!aiTransition && !ageBasedWindow) return null;
-    
-    // During transition, show BOTH schedules as equally valid possibilities
-    // Don't presume which one baby will follow today
-    
-    if (aiTransition) {
-      const currentCount = aiPrediction!.total_naps_today;
-      const transitioningCount = currentCount > 1 ? currentCount - 1 : 1;
+
+    // Prefer age-based guardrails; never show 2→1 before 12 months
+    if (ageBasedWindow) {
+      return {
+        isTransitioning: true,
+        napCounts: {
+          current: transitionWindow!.from,
+          transitioning: transitionWindow!.to
+        }
+      };
+    }
+
+    // Fallback: AI-only transition
+    if (aiPrediction) {
+      const currentCount = Math.max(1, aiPrediction.total_naps_today);
+      const transitioningCount = Math.max(1, currentCount - 1);
       
       return {
         isTransitioning: true,
@@ -701,15 +710,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         }
       };
     }
-    
-    // Age-based anticipatory window
-    return {
-      isTransitioning: true,
-      napCounts: {
-        current: transitionWindow!.from,
-        transitioning: transitionWindow!.to
-      }
-    };
+
+    return null;
   }, [aiPrediction, transitionWindow]);
   
   // Generate alternate schedule for transitions - DON'T persist preference during transition
