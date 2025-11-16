@@ -1217,7 +1217,7 @@ const lastDiaper = displayActivities
                   Start tracking to unlock predictions
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  With just one activity logged, you'll see your first prediction appear. By your 8th log, you'll unlock personalized insights.
+                  With just one activity logged, you'll see your first prediction appear.
                 </p>
               </div>
               
