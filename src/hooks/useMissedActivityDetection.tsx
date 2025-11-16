@@ -400,8 +400,23 @@ export function useMissedActivityDetection(
           });
           
           if (currentMinutes > expectedWakeMinutes + 60) {
+            // Check localStorage for dismissals before returning
+            const dismissalKey = `missed-${householdId || 'household'}-nap-morning-wake-${format(currentTime, 'yyyy-MM-dd')}`;
+            const isDismissed = localStorage.getItem(dismissalKey) === 'true';
+            console.log('  Morning wake dismissal check:', { dismissalKey, isDismissed });
+            
+            if (isDismissed) {
+              console.log('  ❌ Morning wake was dismissed today, skipping');
+              continue;
+            }
+            
             const suggestedTime = minutesToTime(expectedWakeMinutes);
-            console.log('✅ RETURNING OVERDUE MORNING WAKE SUGGESTION');
+            console.log('✅ RETURNING OVERDUE MORNING WAKE SUGGESTION:', {
+              expectedWakeMinutes,
+              suggestedTime,
+              currentMinutes,
+              minutesOverdue: currentMinutes - expectedWakeMinutes - 60
+            });
             return {
               activityType: 'nap',
               subType: 'morning-wake',
