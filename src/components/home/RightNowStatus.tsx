@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Moon, Milk, Sun } from "lucide-react";
-import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
-import { MissedActivitySuggestion } from "@/hooks/useMissedActivityDetection";
 
 interface RightNowStatusProps {
   currentActivity: {
@@ -35,9 +33,6 @@ interface RightNowStatusProps {
     onClick: () => void;
   }>;
   onAddFeed?: () => void;
-  missedActivitySuggestion?: MissedActivitySuggestion | null;
-  onAcceptMissedActivity?: () => Promise<void>;
-  onDismissMissedActivity?: () => void;
   nightSleepStartHour: number;
   nightSleepEndHour: number;
 }
@@ -54,9 +49,6 @@ export const RightNowStatus = ({
   activities,
   suggestions = [],
   onAddFeed,
-  missedActivitySuggestion,
-  onAcceptMissedActivity,
-  onDismissMissedActivity,
   nightSleepStartHour,
   nightSleepEndHour
 }: RightNowStatusProps) => {
@@ -126,17 +118,6 @@ export const RightNowStatus = ({
                 </p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Missed Activity (from detection) inside Right Now card */}
-        {missedActivitySuggestion && onAcceptMissedActivity && onDismissMissedActivity && (
-          <div className="mt-3">
-            <MissedActivityPrompt 
-              suggestion={missedActivitySuggestion}
-              onAccept={onAcceptMissedActivity}
-              onDismiss={onDismissMissedActivity}
-            />
           </div>
         )}
 
