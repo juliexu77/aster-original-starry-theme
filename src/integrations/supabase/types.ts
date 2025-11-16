@@ -436,7 +436,9 @@ export type Database = {
           full_name: string | null
           id: string
           night_sleep_end_hour: number | null
+          night_sleep_end_minute: number | null
           night_sleep_start_hour: number | null
+          night_sleep_start_minute: number | null
           photo_url: string | null
           updated_at: string
           user_id: string
@@ -451,7 +453,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           night_sleep_end_hour?: number | null
+          night_sleep_end_minute?: number | null
           night_sleep_start_hour?: number | null
+          night_sleep_start_minute?: number | null
           photo_url?: string | null
           updated_at?: string
           user_id: string
@@ -466,7 +470,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           night_sleep_end_hour?: number | null
+          night_sleep_end_minute?: number | null
           night_sleep_start_hour?: number | null
+          night_sleep_start_minute?: number | null
           photo_url?: string | null
           updated_at?: string
           user_id?: string
