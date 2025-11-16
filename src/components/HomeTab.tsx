@@ -60,14 +60,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const effectiveBabyBirthday = household?.baby_birthday || babyBirthday;
   
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [showFeedDetails, setShowFeedDetails] = useState(false);
-  const [showSleepDetails, setShowSleepDetails] = useState(false);
-  const [showGrowthDetails, setShowGrowthDetails] = useState(false);
-  const [showToneInsight, setShowToneInsight] = useState(false);
-  const [showPredictionInsight, setShowPredictionInsight] = useState(false);
-  const [showFeedStatusInsight, setShowFeedStatusInsight] = useState(false);
-  const [showSleepStatusInsight, setShowSleepStatusInsight] = useState(false);
-  const [showDailyInsight, setShowDailyInsight] = useState(false);
   const [showRhythmUnlocked, setShowRhythmUnlocked] = useState(false);
   const [showTodaysStory, setShowTodaysStory] = useState(false);
   const [selectedStoryDate, setSelectedStoryDate] = useState<string | null>(null);
@@ -224,30 +216,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const displayActivities = todayActivities.length > 0 ? todayActivities : yesterdayActivities;
   const showingYesterday = todayActivities.length === 0 && yesterdayActivities.length > 0;
   
-  // Debug: detailed activity breakdown
-  if (typeof window !== 'undefined') {
-    console.groupCollapsed('HomeTab - Today vs Yesterday filter');
-    console.log('All activities count:', activities.length);
-    console.log('Today count:', todayActivities.length);
-    console.log('Yesterday count:', yesterdayActivities.length);
-    console.log('Showing yesterday fallback?', showingYesterday);
-    console.log('Today\'s dates:', todayActivities.map(a => ({ 
-      id: a.id?.slice(0,8), 
-      type: a.type, 
-      loggedAt: a.loggedAt,
-      parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
-    })));
-    if (showingYesterday) {
-      console.log('Yesterday\'s dates:', yesterdayActivities.map(a => ({ 
-        id: a.id?.slice(0,8), 
-        type: a.type, 
-        loggedAt: a.loggedAt,
-        parsed: parseUTCToLocal(a.loggedAt!).toLocaleString()
-      })));
-    }
-    console.groupEnd();
-  }
-  
   // Helper: parse a UI time string like "7:05 AM" (handles "7:05 AM - 8:15 AM")
   const parseUI12hToMinutes = (timeStr?: string | null): number | null => {
     if (!timeStr) return null;
@@ -280,28 +248,8 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     return base.getTime();
   };
   
-  // Precompute sorted activities for timeline and debug
+  // Precompute sorted activities for timeline
   const sortedActivities = [...displayActivities].sort((a, b) => getComparableTime(a) - getComparableTime(b));
-  if (typeof window !== 'undefined') {
-    try {
-      console.groupCollapsed('HomeTab timeline order');
-      sortedActivities.forEach((a, idx) => {
-        const cmp = getComparableTime(a);
-        console.log(`#${idx + 1}`, {
-          id: a.id,
-          type: a.type,
-          time: a.time,
-          startTime: a.details?.startTime,
-          endTime: a.details?.endTime,
-          displayTime: a.details?.displayTime,
-          loggedAt: a.loggedAt,
-          comparableLocal: new Date(cmp).toLocaleString(),
-          comparableMs: cmp,
-        });
-      });
-      console.groupEnd();
-    } catch {}
-  }
   
   // Use the ongoingNap passed from parent (Index.tsx) for consistency
   const ongoingNap = passedOngoingNap;
@@ -361,26 +309,6 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
 const feedsToday = displayActivities.filter(a => a.type === 'feed');
 const lastFeed = feedsToday
   .sort((a, b) => getComparableTime(b) - getComparableTime(a))[0];
-
-// Debug last feed selection
-if (typeof window !== 'undefined') {
-  console.log('🍼 Last Feed Debug:', {
-    totalFeeds: feedsToday.length,
-    allFeeds: feedsToday.map(f => ({
-      id: f.id?.slice(0, 8),
-      time: f.time,
-      loggedAt: f.loggedAt,
-      parsedUTC: parseUTCToLocal(f.loggedAt!).toLocaleString(),
-      utcMs: parseUTCToLocal(f.loggedAt!).getTime()
-    })),
-    selected: lastFeed ? {
-      id: lastFeed.id?.slice(0, 8),
-      time: lastFeed.time,
-      loggedAt: lastFeed.loggedAt,
-      parsedUTC: parseUTCToLocal(lastFeed.loggedAt!).toLocaleString()
-    } : 'none'
-  });
-}
 
 // Get last diaper - using actual activity time
 const lastDiaper = displayActivities
@@ -1151,38 +1079,9 @@ const lastDiaper = displayActivities
 
   // Use unified prediction engine
   const nextAction = prediction ? getIntentCopy(prediction, babyName) : null;
-  if (typeof window !== 'undefined') {
-    const feedSamples = activities
-      .filter(a => a.type === 'feed')
-      .slice(0, 5)
-      .map(a => ({
-        id: a.id,
-        time: a.time,
-        loggedAt: a.loggedAt
-      }));
-
-    console.info('HomeTab - Prediction snapshot', {
-      hasPrediction: !!prediction,
-      intent: prediction?.intent,
-      confidence: prediction?.confidence,
-      rationale: prediction?.rationale,
-      timing: prediction?.timing ? {
-        nextFeedAt: prediction?.timing?.nextFeedAt,
-        nextNapWindowStart: prediction?.timing?.nextNapWindowStart,
-        nextWakeAt: prediction?.timing?.nextWakeAt,
-        expectedFeedVolume: prediction?.timing?.expectedFeedVolume
-      } : null,
-      reasons: prediction?.reasons,
-      dayProgress: prediction?.dayProgress,
-      feedSamples
-    });
-  }
 
   const summary = getDailySummary();
   const latestMeasurement = getLatestMeasurement();
-  if (typeof window !== 'undefined') {
-    console.info('HomeTab - measurement count', { showingYesterday, measureCount: summary.measureCount, latestMeasurement });
-  }
   const awakeTime = getAwakeTime();
   const sleepStatus = getSleepStatus();
   const sentiment = getDailySentiment();
