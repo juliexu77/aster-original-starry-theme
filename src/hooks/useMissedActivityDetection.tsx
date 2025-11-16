@@ -297,10 +297,13 @@ export function useMissedActivityDetection(
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
     
-    console.log('🔍 Missed Activity Detection:', {
+    console.log('🔍 MISSED ACTIVITY DETECTION START:', {
       currentTime: currentTime.toLocaleTimeString(),
       currentMinutes,
-      activities: activities.length
+      totalActivities: activities.length,
+      nightSleepStartHour,
+      nightSleepEndHour,
+      babyName
     });
     
     // Define patterns to monitor in priority order (using user's night sleep settings)
@@ -336,21 +339,52 @@ export function useMissedActivityDetection(
     for (const patternConfig of patternsToCheck) {
       // Special handling for morning-wake: Check if there's an ongoing night sleep
       if (patternConfig.subType === 'morning-wake') {
+        console.log('  🌅 Checking morning-wake...');
+        
         // Check for ongoing night sleep from yesterday or today (since night sleep spans dates)
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         
-        const ongoingNightSleep = activities.find(a => 
-          a.type === 'nap' && 
-          isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
-          !a.details?.endTime &&
-          (isActivityOnDate(a, new Date()) || isActivityOnDate(a, yesterday))
-        );
+        console.log('  Looking for ongoing night sleep...', {
+          todayDate: new Date().toDateString(),
+          yesterdayDate: yesterday.toDateString(),
+          nightSleepWindow: `${nightSleepStartHour}:00 - ${nightSleepEndHour}:00`
+        });
+        
+        const ongoingNightSleep = activities.find(a => {
+          const isNap = a.type === 'nap';
+          const isNight = isNightSleep(a, nightSleepStartHour, nightSleepEndHour);
+          const noEndTime = !a.details?.endTime;
+          const onToday = isActivityOnDate(a, new Date());
+          const onYesterday = isActivityOnDate(a, yesterday);
+          
+          console.log('    Activity check:', {
+            id: a.id?.slice(0, 8),
+            type: a.type,
+            loggedAt: a.loggedAt,
+            isNap,
+            isNight,
+            noEndTime,
+            onToday,
+            onYesterday,
+            passes: isNap && isNight && noEndTime && (onToday || onYesterday)
+          });
+          
+          return isNap && isNight && noEndTime && (onToday || onYesterday);
+        });
+        
+        console.log('  Ongoing night sleep found:', !!ongoingNightSleep, ongoingNightSleep?.id?.slice(0, 8));
         
         // If there's ongoing night sleep, check if wake-up is overdue
         if (ongoingNightSleep) {
           const sleepStartMinutes = timeToMinutes(ongoingNightSleep);
           let expectedWakeMinutes = nightSleepEndHour * 60 + 30; // Default: 30 min after night end (e.g., 7:30 AM)
+          
+          console.log('  Sleep details:', {
+            sleepStartMinutes,
+            defaultExpectedWake: expectedWakeMinutes,
+            currentMinutes
+          });
           
           // Use historical pattern if available
           const pattern = analyzePattern(
@@ -365,12 +399,23 @@ export function useMissedActivityDetection(
           
           if (pattern && pattern.occurrenceCount >= 3) {
             expectedWakeMinutes = pattern.medianTime;
+            console.log('  Using historical wake pattern:', expectedWakeMinutes, `(${minutesToTime(expectedWakeMinutes)})`);
           }
           
           // If current time is > 1 hour past expected wake, suggest logging it
+          const minutesPastExpected = currentMinutes - expectedWakeMinutes;
+          console.log('  Wake timing check:', {
+            expectedWakeMinutes,
+            expectedWakeTime: minutesToTime(expectedWakeMinutes),
+            currentMinutes,
+            minutesPastExpected,
+            threshold: 60,
+            shouldTrigger: currentMinutes > expectedWakeMinutes + 60
+          });
+          
           if (currentMinutes > expectedWakeMinutes + 60) {
             const suggestedTime = minutesToTime(expectedWakeMinutes);
-            console.log('✅ Overdue morning wake detected');
+            console.log('✅ RETURNING OVERDUE MORNING WAKE SUGGESTION');
             return {
               activityType: 'nap',
               subType: 'morning-wake',
@@ -382,8 +427,10 @@ export function useMissedActivityDetection(
           }
           
           // Not overdue yet, skip
-          console.log(`  Morning wake not overdue yet (expected: ${expectedWakeMinutes}, current: ${currentMinutes})`);
+          console.log(`  ❌ Morning wake not overdue yet (expected: ${expectedWakeMinutes}, current: ${currentMinutes})`);
           continue;
+        } else {
+          console.log('  ❌ No ongoing night sleep found, skipping morning-wake check');
         }
       }
       
@@ -443,7 +490,7 @@ export function useMissedActivityDetection(
       return suggestion;
     }
     
-    console.log('❌ No suggestion found');
+    console.log('No suggestion found - end of detection');
     return null;
   }, [activities, babyName, nightSleepStartHour, nightSleepEndHour]);
 }
