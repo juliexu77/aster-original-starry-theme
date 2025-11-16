@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Activity } from "@/components/ActivityCard";
 import { differenceInMinutes, parseISO, startOfDay, format } from "date-fns";
 import { isNightSleep, isDaytimeNap, parseTimeToHour } from "@/utils/napClassification";
-import { isActivityOnDate } from "@/utils/activityDate";
+import { isActivityOnDate, getActivityEventDateString } from "@/utils/activityDate";
 
 export interface MissedActivitySuggestion {
   activityType: 'nap' | 'feed';
@@ -95,7 +95,7 @@ function getRecentActivities(activities: Activity[], days: number): Activity[] {
   });
 }
 
-// Check if activity was already logged today (based on ACTIVITY time, not when logged)
+// Check if activity was already logged today (based on ACTIVITY's event date, not when logged)
 function wasLoggedToday(
   activities: Activity[], 
   type: 'nap' | 'feed', 
@@ -103,28 +103,14 @@ function wasLoggedToday(
   nightSleepStartHour: number = 19,
   nightSleepEndHour: number = 7
 ): boolean {
-  const todayStart = startOfDay(new Date());
+  const today = new Date();
   
   return activities.some(a => {
     if (a.type !== type) return false;
     
-    // CRITICAL: Check if the ACTIVITY happened today, not when it was logged
-    // Use date_local if available, otherwise convert logged_at to local
-    let activityLocalDate: Date;
-    
-    const dateLocal = (a.details as any)?.date_local;
-    if (dateLocal) {
-      // Parse date_local (format: "2025-11-14")
-      activityLocalDate = parseISO(dateLocal);
-    } else {
-      activityLocalDate = parseISO(a.loggedAt);
-    }
-    
-    // Check if activity date is today
-    const activityDateOnly = startOfDay(activityLocalDate);
-    const todayOnly = startOfDay(new Date());
-    
-    if (activityDateOnly.getTime() !== todayOnly.getTime()) return false;
+    // CRITICAL: Check if the ACTIVITY's event date is today (not when it was logged)
+    // Use the activityDate utility which prioritizes date_local, then offset-adjusted logged_at
+    if (!isActivityOnDate(a, today)) return false;
     
     // Check subtype using existing napClassification utilities
     if (subType === 'bedtime') {
@@ -135,7 +121,7 @@ function wasLoggedToday(
              isNightSleep(a, nightSleepStartHour, nightSleepEndHour) && 
              !!a.details?.endTime;
     } else if (subType === 'first-nap') {
-      // Check if this is a daytime nap logged today
+      // Check if this is a daytime nap
       return isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
     }
     
@@ -183,9 +169,8 @@ function analyzePattern(
     
     const napsByDay = new Map<string, Activity>();
     relevantActivities.forEach(a => {
-      // Use date_local if available for grouping by day
-      const dateLocal = (a.details as any)?.date_local;
-      const dayKey = dateLocal ? dateLocal : format(parseISO(a.loggedAt), 'yyyy-MM-dd');
+      // Use getActivityEventDateString for consistent date grouping
+      const dayKey = getActivityEventDateString(a);
       
       const existing = napsByDay.get(dayKey);
       if (!existing) {
