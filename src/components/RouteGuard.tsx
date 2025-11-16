@@ -11,16 +11,17 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const publicRoutes = ['/auth', '/login', '/invite', '/onboarding'];
-    const isPublicRoute = publicRoutes.some(route => 
-      location.pathname === route || location.pathname.startsWith(route + '/')
-    );
+    // TEMPORARILY DISABLED FOR DEBUGGING
+    // const publicRoutes = ['/auth', '/login', '/invite', '/onboarding'];
+    // const isPublicRoute = publicRoutes.some(route => 
+    //   location.pathname === route || location.pathname.startsWith(route + '/')
+    // );
 
-    // Redirect unauthenticated users to onboarding
-    if (!user && !isPublicRoute) {
-      navigate("/onboarding", { replace: true });
-      return;
-    }
+    // // Redirect unauthenticated users to onboarding
+    // if (!user && !isPublicRoute) {
+    //   navigate("/onboarding", { replace: true });
+    //   return;
+    // }
 
     // Redirect authenticated users away from auth/login pages only (allow onboarding subpages for setup)
     if (user && (location.pathname === "/auth" || location.pathname === "/login")) {
