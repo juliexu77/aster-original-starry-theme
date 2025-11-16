@@ -487,13 +487,10 @@ export const useHomeTabIntelligence = (
       sleepStatus = 'needs-attention';
       sleepDetails = 'No naps logged yet today';
       sleepHasDeviation = true;
-    } else if (napCount < expected.naps[0] - 1 && now.getHours() >= 16) {
-      sleepStatus = 'needs-attention';
-      sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} — below expected ${expected.naps[0]}-${expected.naps[1]}`;
-      sleepHasDeviation = true;
     } else if (napCount > avg7DayNaps * 1.3 && napCount > 2) {
-      sleepStatus = 'unusually-good';
-      sleepDetails = `${napCount} naps today — more than usual (avg: ${avg7DayNaps.toFixed(1)})`;
+      // More naps than recent average — surface neutrally (not “better”)
+      sleepStatus = 'normal';
+      sleepDetails = `${napCount} naps — more than your recent average (${avg7DayNaps.toFixed(1)})`;
       sleepHasDeviation = true;
     } else if (napCount >= expected.naps[0] && napCount <= expected.naps[1]) {
       sleepDetails = `${napCount} nap${napCount !== 1 ? 's' : ''} — right on track`;
