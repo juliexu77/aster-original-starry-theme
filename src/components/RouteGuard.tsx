@@ -13,10 +13,20 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
     
     if (loading) return;
 
+    const publicPaths = ["/auth", "/login", "/invite"];
+    const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path));
+
     // Redirect authenticated users away from auth/login pages
-    if (user && (location.pathname === "/auth" || location.pathname === "/login")) {
+    if (user && isPublicPath) {
       console.log('🔄 Redirecting authenticated user from', location.pathname, 'to /');
       navigate("/", { replace: true });
+      return;
+    }
+
+    // Redirect unauthenticated users to auth page
+    if (!user && !isPublicPath) {
+      console.log('🔒 Redirecting unauthenticated user to /auth');
+      navigate("/auth", { replace: true });
       return;
     }
   }, [user, loading, location.pathname, navigate]);
