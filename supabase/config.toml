@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.clear-schedule-cache]
 verify_jwt = false
+
+[functions.clear-todays-schedule-caches]
+verify_jwt = false
