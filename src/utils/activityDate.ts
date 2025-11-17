@@ -5,6 +5,7 @@
 
 interface Activity {
   loggedAt?: string;
+  logged_at?: string; // Support both formats
   details?: {
     date_local?: string;
     offset_minutes?: number;
@@ -26,8 +27,9 @@ export const getActivityEventDate = (activity: Activity): Date => {
   }
   
   // Second priority: use logged_at adjusted for timezone offset
-  if (activity.loggedAt) {
-    const loggedDate = new Date(activity.loggedAt);
+  const loggedAt = activity.loggedAt || activity.logged_at;
+  if (loggedAt) {
+    const loggedDate = new Date(loggedAt);
     
     // If we have an offset, adjust the date
     if (activity.details?.offset_minutes) {
