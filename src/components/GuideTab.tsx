@@ -488,7 +488,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Auto-recalculate schedule when morning wake is logged
   useEffect(() => {
-    if (!hasTier3Data) return;
+    if (!hasTier3Data || !household) return;
     
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
@@ -515,7 +515,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             if (loggedDate < todayStart) {
               return true; // Night sleep from yesterday ending this morning
             }
-            // If logged today and ended this morning, that's also today's wake
+            // Also check if logged today with morning end
             if (actDate >= todayStart) {
               return true;
             }
@@ -532,9 +532,20 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         localStorage.removeItem('aiPrediction');
         localStorage.removeItem('aiPredictionLastFetch');
         sessionStorage.setItem(`schedule-recalc-${todayStart.toDateString()}`, 'true');
+        
+        // Clear database cache as well
+        supabase.functions.invoke('clear-schedule-cache', {
+          body: { householdId: household.id }
+        }).then(({ error }) => {
+          if (error) {
+            console.error('Failed to clear schedule cache:', error);
+          } else {
+            console.log('✅ Schedule cache cleared after morning wake');
+          }
+        });
       }
     }
-  }, [activities, hasTier3Data, nightSleepStartHour, nightSleepEndHour]);
+  }, [activities, hasTier3Data, household, nightSleepStartHour, nightSleepEndHour]);
   
   // Listen for activity logs and trigger context-aware adjustments
   useEffect(() => {
