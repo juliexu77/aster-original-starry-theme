@@ -1338,7 +1338,7 @@ const lastDiaper = displayActivities
             suggestion: missedActivitySuggestion
           });
           return missedActivitySuggestion ? (
-            <div className="px-4 mb-4">
+            <div className="px-4">
               <MissedActivityPrompt
                 suggestion={missedActivitySuggestion}
                 onAccept={async () => {
