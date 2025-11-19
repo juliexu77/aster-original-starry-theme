@@ -13,7 +13,7 @@ import { RightNowStatus } from "@/components/home/RightNowStatus";
 import { SmartQuickActions } from "@/components/home/SmartQuickActions";
 import { useMissedActivityDetection } from "@/hooks/useMissedActivityDetection";
 import { MissedActivityPrompt } from "@/components/MissedActivityPrompt";
-import { TodaysPulse } from "@/components/home/TodaysPulse";
+
 import { LearningProgress } from "@/components/LearningProgress";
 import { RhythmUnlockedModal } from "@/components/RhythmUnlockedModal";
 import { ParentingChat } from "@/components/ParentingChat";
@@ -71,8 +71,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { 
     currentActivity, 
     nextPrediction, 
-    smartSuggestions, 
-    todaysPulse 
+    smartSuggestions
   } = useHomeTabIntelligence(activities, passedOngoingNap, babyName, (type) => onAddActivity(type), effectiveBabyBirthday);
 
   // Missed activity detection
@@ -1469,21 +1468,6 @@ const lastDiaper = displayActivities
             }
           />
 
-        {/* Zone 3: Today's Pulse (at the bottom) */}
-        {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
-          <TodaysPulse
-            deviations={todaysPulse.deviations}
-            biggestDeviation={todaysPulse.biggestDeviation}
-            onAdjustSchedule={() => {
-              // Navigate to Rhythm tab
-              const rhythmTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-              rhythmTab?.click();
-            }}
-            babyName={babyName || 'Baby'}
-            babyAge={babyAgeInWeeks}
-            activities={activities}
-          />
-        )}
 
       </div>
     </div>
