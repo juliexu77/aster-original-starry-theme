@@ -886,11 +886,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
             generatedDate: todayDate // Add date stamp to cached data
           };
           
+          // Combine whatToDo with prepTip
+          const combinedWhatToDo = [
+            ...(data.whatToDo || []),
+            ...(data.prepTip ? [data.prepTip] : [])
+          ];
+          
           setRhythmInsights({
             heroInsight: data.heroInsight,
-            whatToDo: data.whatToDo,
+            whatToDo: combinedWhatToDo,
             whatsNext: data.whatsNext,
-            prepTip: data.prepTip,
+            prepTip: undefined, // Don't use prepTip separately anymore
             whyThisMatters: data.whyThisMatters,
             confidenceScore: data.confidenceScore
           });
@@ -949,11 +955,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         const napMismatch = hasNapCountMismatch();
         
         // Always show cached data immediately
+        // Combine whatToDo with prepTip if prepTip exists
+        const combinedWhatToDo = [
+          ...(parsed.whatToDo || []),
+          ...(parsed.prepTip ? [parsed.prepTip] : [])
+        ];
+        
         setRhythmInsights({
           heroInsight: parsed.heroInsight,
-          whatToDo: parsed.whatToDo,
+          whatToDo: combinedWhatToDo,
           whatsNext: parsed.whatsNext,
-          prepTip: parsed.prepTip,
+          prepTip: undefined, // Don't use prepTip separately anymore
           whyThisMatters: parsed.whyThisMatters,
           confidenceScore: parsed.confidenceScore
         });
@@ -1487,7 +1499,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 <UnifiedInsightCard
                   whatToDo={hasTier3Data ? rhythmInsights?.whatToDo : undefined}
                   whatsNext={hasTier3Data ? rhythmInsights?.whatsNext : undefined}
-                  prepTip={hasTier3Data ? rhythmInsights?.prepTip : undefined}
+                  prepTip={undefined}
                   whyThisMatters={hasTier3Data ? rhythmInsights?.heroInsight : undefined}
                   babyName={babyName}
                   loading={hasTier3Data && (rhythmInsightsLoading || !rhythmInsights)}
