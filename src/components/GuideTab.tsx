@@ -464,7 +464,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         activities.length, // Pass total activities count for "basedOn" text
         false, // forceShowAllNaps
         nightSleepStartHour,
-        nightSleepEndHour
+        nightSleepEndHour,
+        userTimezone // Pass user's timezone for accurate date filtering
       );
       return schedule;
     } catch (error) {
@@ -812,7 +813,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         undefined, // totalActivitiesCount
         true, // forceShowAllNaps - user explicitly selected this nap count
         nightSleepStartHour,
-        nightSleepEndHour
+        nightSleepEndHour,
+        userTimezone // Pass user's timezone for accurate date filtering
       );
       return result;
     } catch (error) {
