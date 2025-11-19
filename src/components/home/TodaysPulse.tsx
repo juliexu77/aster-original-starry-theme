@@ -38,7 +38,8 @@ export const TodaysPulse = ({
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(true); // Open by default
+  const [meaningOpen, setMeaningOpen] = useState(false); // Collapsed by default
 
   // Fetch AI explanation for biggest deviation
   useEffect(() => {
@@ -100,40 +101,47 @@ export const TodaysPulse = ({
   const allNormalPace = deviations.every(d => d.status === 'normal');
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-        {/* Header */}
-        <CollapsibleTrigger className="w-full px-4 py-5 hover:bg-muted/20 transition-colors">
+    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+      {/* Header with status badge */}
+      <div className="px-4 py-5 border-b border-border/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Today's Pulse
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {needsAttention && (
+              <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
+                Review
+              </Badge>
+            )}
+            {hasDeviations && !needsAttention && (
+              <Badge variant="default" className="text-[10px] px-2 py-0">
+                Update
+              </Badge>
+            )}
+            {allNormalPace && (
+              <Badge variant="secondary" className="text-[10px] px-2 py-0">
+                Normal pace
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Details - Open by default */}
+      <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors border-b border-border/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                Today's Pulse
-              </h3>
-            </div>
-            <div className="flex items-center gap-2">
-              {needsAttention && (
-                <Badge variant="destructive" className="text-[10px] px-2 py-0 animate-pulse">
-                  Review
-                </Badge>
-              )}
-              {hasDeviations && !needsAttention && (
-                <Badge variant="default" className="text-[10px] px-2 py-0">
-                  Update
-                </Badge>
-              )}
-              {allNormalPace && (
-                <Badge variant="secondary" className="text-[10px] px-2 py-0">
-                  Normal pace
-                </Badge>
-              )}
-              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-            </div>
+            <span className="text-xs font-medium text-foreground">Details</span>
+            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
           </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="px-4 pb-5 space-y-3 border-t border-border/30 pt-5">
+          <div className="px-4 pb-4 pt-3 space-y-3">
             {/* Categories */}
             {deviations.map((deviation, index) => (
               <div key={index} className="space-y-2">
@@ -160,38 +168,45 @@ export const TodaysPulse = ({
                 variant="outline"
                 size="sm"
                 onClick={onAdjustSchedule}
-                className="w-full text-xs"
+                className="w-full text-xs mt-2"
               >
                 View today's rhythm
               </Button>
             )}
-
-            {/* What This Means Section */}
-            {biggestDeviation && (
-              <div className="pt-3 border-t border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Lightbulb className="w-4 h-4 text-amber-600" />
-                  <h4 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                    What This Means
-                  </h4>
-                </div>
-                
-                {explanationLoading ? (
-                  <div className="space-y-2 animate-pulse">
-                    <div className="h-3 w-full bg-muted rounded"></div>
-                    <div className="h-3 w-5/6 bg-muted rounded"></div>
-                    <div className="h-3 w-4/6 bg-muted rounded"></div>
-                  </div>
-                ) : explanation ? (
-                  <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                    {explanation}
-                  </div>
-                ) : null}
-              </div>
-            )}
           </div>
         </CollapsibleContent>
-      </div>
-    </Collapsible>
+      </Collapsible>
+
+      {/* What This Means Section - Collapsed by default */}
+      {biggestDeviation && (
+        <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
+          <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors border-t border-border/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-4 h-4 text-amber-600" />
+                <span className="text-xs font-medium text-foreground">What This Means</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${meaningOpen ? 'rotate-180' : ''}`} />
+            </div>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <div className="px-4 pb-5 pt-3">
+              {explanationLoading ? (
+                <div className="space-y-2 animate-pulse">
+                  <div className="h-3 w-full bg-muted rounded"></div>
+                  <div className="h-3 w-5/6 bg-muted rounded"></div>
+                  <div className="h-3 w-4/6 bg-muted rounded"></div>
+                </div>
+              ) : explanation ? (
+                <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {explanation}
+                </div>
+              ) : null}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
   );
 };

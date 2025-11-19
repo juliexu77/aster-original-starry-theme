@@ -1454,21 +1454,27 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               
               {displaySchedule && (
                 <>
-                  <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
-                    <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium">Predicted Schedule</span>
+                  <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+                    {/* Header */}
+                    <div className="px-4 py-5 border-b border-border/30">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                          Today's Rhythm
+                        </h3>
+                      </div>
+                    </div>
+
+                    <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
+                      <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-foreground">Predicted Schedule</span>
+                          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        <ChevronDown className={`w-4 h-4 transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <ScheduleTimeline
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="px-4 pb-5 pt-3">
+                          <ScheduleTimeline
                         schedule={activeDisplaySchedule} 
                         babyName={babyName}
                         onRecalculate={handleRecalculateSchedule}
@@ -1483,9 +1489,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                         adjustmentContext={adjustmentContext}
                         transitionWindow={transitionWindow}
                         todayActualNapCount={todayActualNapCount}
-                      />
-                    </CollapsibleContent>
-                  </Collapsible>
+                          />
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
                 </>
               )}
               
