@@ -9,6 +9,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { usePatternAnalysis } from "@/hooks/usePatternAnalysis";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
+import { calculateWeeklyMetrics, getMetricSparklineData } from "@/utils/weeklyMetrics";
+import { MetricSparkline } from "./insights/MetricSparkline";
 
 interface InsightsTabProps {
   activities: Activity[];
@@ -20,6 +22,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { insights } = usePatternAnalysis(activities);
   const { guideSections, loading: guideSectionsLoading } = useGuideSections(activities.length);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  
+  // Calculate weekly metrics for sparklines
+  const weeklyMetrics = calculateWeeklyMetrics(activities, nightSleepStartHour, nightSleepEndHour, 6);
   
   // Show loading state while household data is being fetched
   if (householdLoading || !household) {
@@ -213,12 +218,12 @@ return (
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/30">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
-            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Data Pulse</h3>
+            <h3 className="text-xs font-medium text-foreground uppercase tracking-wider">Weekly Trends</h3>
           </div>
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Change vs Last 5 Days</span>
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last 6 Weeks</span>
         </div>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           {guideSections.data_pulse.metrics.length > 0 ? (
             guideSections.data_pulse.metrics.map((metric, idx) => {
               const getMetricIcon = () => {
@@ -235,19 +240,29 @@ return (
                 if (metric.change.includes('-')) return <TrendingDown className="w-3 h-3 text-red-500" />;
                 return <Minus className="w-3 h-3 text-muted-foreground" />;
               };
+
+              // Get sparkline data for this metric
+              const sparklineData = getMetricSparklineData(weeklyMetrics, metric.name);
               
               return (
-                <div key={idx} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {getMetricIcon()}
-                    <span className="text-sm text-foreground">{metric.name}</span>
+                <div key={idx} className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {getMetricIcon()}
+                      <span className="text-sm text-foreground">{metric.name}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {getTrendIcon()}
+                      <span className="text-sm font-medium text-foreground">
+                        {metric.change}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {getTrendIcon()}
-                    <span className="text-sm font-medium text-foreground">
-                      {metric.change}
-                    </span>
-                  </div>
+                  {sparklineData.length > 0 && (
+                    <div className="w-full h-6">
+                      <MetricSparkline data={sparklineData} />
+                    </div>
+                  )}
                 </div>
               );
             })

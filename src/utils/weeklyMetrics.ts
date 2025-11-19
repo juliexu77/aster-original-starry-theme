@@ -1,0 +1,142 @@
+import { startOfWeek, endOfWeek, subWeeks, isWithinInterval, parseISO } from "date-fns";
+import { isDaytimeNap } from "./napClassification";
+import { Activity } from "@/components/ActivityCard";
+
+interface WeeklyMetrics {
+  weekLabel: string;
+  totalSleepMinutes: number;
+  napCount: number;
+  feedVolume: number;
+  wakeWindowAvg: number;
+}
+
+export const calculateWeeklyMetrics = (
+  activities: Activity[],
+  nightSleepStartHour: number,
+  nightSleepEndHour: number,
+  numberOfWeeks: number = 6
+): WeeklyMetrics[] => {
+  const now = new Date();
+  const weeks: WeeklyMetrics[] = [];
+
+  // Helper to parse time to minutes
+  const parseTimeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [time, period] = timeStr.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
+    let totalMinutes = (hours % 12) * 60 + minutes;
+    if (period === 'PM' && hours !== 12) totalMinutes += 12 * 60;
+    if (period === 'AM' && hours === 12) totalMinutes = minutes;
+    return totalMinutes;
+  };
+
+  // Calculate metrics for each of the last N weeks
+  for (let i = 0; i < numberOfWeeks; i++) {
+    const weekStart = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 }); // Monday
+    const weekEnd = endOfWeek(subWeeks(now, i), { weekStartsOn: 1 }); // Sunday
+    
+    const weekActivities = activities.filter(a => {
+      const dateStr = a.loggedAt || a.time;
+      const activityDate = parseISO(dateStr);
+      return isWithinInterval(activityDate, { start: weekStart, end: weekEnd });
+    });
+
+    // Calculate total sleep (daytime naps only)
+    const naps = weekActivities.filter(a => 
+      a.type === 'nap' && 
+      isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) &&
+      a.details?.startTime && 
+      a.details?.endTime
+    );
+
+    let totalSleepMinutes = 0;
+    naps.forEach(nap => {
+      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
+      const endMinutes = parseTimeToMinutes(nap.details.endTime!);
+      let duration = endMinutes - startMinutes;
+      if (duration < 0) duration += 24 * 60;
+      totalSleepMinutes += duration;
+    });
+
+    // Count naps
+    const napCount = naps.length;
+
+    // Calculate feed volume
+    const feeds = weekActivities.filter(a => a.type === 'feed');
+    let feedVolume = 0;
+    feeds.forEach(feed => {
+      const amount = parseFloat(feed.details?.quantity || '0');
+      const unit = feed.details?.unit || 'ml';
+      // Convert to ml if needed
+      if (unit === 'oz') {
+        feedVolume += amount * 29.5735; // oz to ml
+      } else {
+        feedVolume += amount;
+      }
+    });
+
+    // Calculate average wake windows
+    const dateMap = new Map<string, Activity[]>();
+    naps.forEach(nap => {
+      const dateStr = nap.loggedAt || nap.time;
+      const dateKey = new Date(dateStr).toDateString();
+      if (!dateMap.has(dateKey)) {
+        dateMap.set(dateKey, []);
+      }
+      dateMap.get(dateKey)!.push(nap);
+    });
+
+    const wakeWindows: number[] = [];
+    dateMap.forEach(dayNaps => {
+      const sorted = [...dayNaps].sort((a, b) => 
+        parseTimeToMinutes(a.details.startTime!) - parseTimeToMinutes(b.details.startTime!)
+      );
+      
+      for (let j = 1; j < sorted.length; j++) {
+        const prevEnd = parseTimeToMinutes(sorted[j - 1].details.endTime!);
+        const currentStart = parseTimeToMinutes(sorted[j].details.startTime!);
+        let wakeWindow = currentStart - prevEnd;
+        if (wakeWindow < 0) wakeWindow += 24 * 60;
+        if (wakeWindow > 0 && wakeWindow < 600) { // Ignore wake windows > 10 hours
+          wakeWindows.push(wakeWindow);
+        }
+      }
+    });
+
+    const wakeWindowAvg = wakeWindows.length > 0 
+      ? wakeWindows.reduce((sum, w) => sum + w, 0) / wakeWindows.length 
+      : 0;
+
+    weeks.push({
+      weekLabel: i === 0 ? 'This week' : `${i}w ago`,
+      totalSleepMinutes,
+      napCount,
+      feedVolume,
+      wakeWindowAvg
+    });
+  }
+
+  // Reverse to show oldest to newest (left to right in chart)
+  return weeks.reverse();
+};
+
+export const getMetricSparklineData = (
+  weeklyMetrics: WeeklyMetrics[],
+  metricName: string
+): number[] => {
+  switch (metricName) {
+    case 'Total sleep':
+      // Convert to hours
+      return weeklyMetrics.map(w => Math.round(w.totalSleepMinutes / 60 * 10) / 10);
+    case 'Naps':
+      return weeklyMetrics.map(w => w.napCount);
+    case 'Feed volume':
+      // Convert to oz
+      return weeklyMetrics.map(w => Math.round(w.feedVolume / 29.5735));
+    case 'Wake average':
+      // Convert to hours
+      return weeklyMetrics.map(w => Math.round(w.wakeWindowAvg / 60 * 10) / 10);
+    default:
+      return [];
+  }
+};
