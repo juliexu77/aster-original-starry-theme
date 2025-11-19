@@ -59,20 +59,20 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
 
   return (
     <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-5 border-b border-border/30">
-        <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-              This Week&apos;s Rhythm
-            </h3>
-            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </div>
-        </CollapsibleTrigger>
-      </div>
-
-      {/* Nap Barcode Visualization */}
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        {/* Header */}
+        <div className="px-4 py-5 border-b border-border/30">
+          <CollapsibleTrigger className="w-full" onClick={() => setIsOpen(!isOpen)}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                This Week&apos;s Rhythm
+              </h3>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+          </CollapsibleTrigger>
+        </div>
+
+        {/* Nap Barcode Visualization */}
         <CollapsibleContent>
           <div className="px-4 pb-5 pt-4 space-y-3">
             {weekData.map((day) => {
