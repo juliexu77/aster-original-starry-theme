@@ -23,6 +23,7 @@ import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
+import { WeeklyRhythm } from "@/components/guide/WeeklyRhythm";
 import { TodaysPulse } from "@/components/home/TodaysPulse";
 import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 
@@ -1438,49 +1439,47 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                 />
               )}
               
+              {/* This Week's Rhythm - Nap Barcode Visualization */}
+              {activities.length > 0 && (
+                <WeeklyRhythm 
+                  activities={activities}
+                  babyName={babyName}
+                />
+              )}
+              
+              {/* Predicted Schedule Card */}
               {displaySchedule && (
-                <>
-                  <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
-                    {/* Header */}
-                    <div className="px-4 py-5 border-b border-border/30">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-primary" />
+                <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+                  <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
+                    <CollapsibleTrigger className="w-full px-4 py-5 border-b border-border/30 hover:bg-muted/20 transition-colors">
+                      <div className="flex items-center justify-between">
                         <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                          Today's Rhythm
+                          {babyName}&apos;s Predicted Schedule
                         </h3>
+                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
                       </div>
-                    </div>
-
-                    <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
-                      <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-foreground">Predicted Schedule</span>
-                          <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="px-4 pb-5 pt-3">
-                          <ScheduleTimeline
-                        schedule={activeDisplaySchedule} 
-                        babyName={babyName}
-                        onRecalculate={handleRecalculateSchedule}
-                        isTransitioning={transitionInfo?.isTransitioning}
-                        transitionNapCounts={transitionInfo?.napCounts}
-                        showAlternate={showAlternateSchedule}
-                        onToggleAlternate={(show) => {
-                          setShowAlternateSchedule(show);
-                          // Don't persist during transition - let it reset naturally
-                        }}
-                        isAdjusting={isAdjusting}
-                        adjustmentContext={adjustmentContext}
-                        transitionWindow={transitionWindow}
-                        todayActualNapCount={todayActualNapCount}
-                          />
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                </>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="px-4 pb-5 pt-3">
+                        <ScheduleTimeline
+                          schedule={activeDisplaySchedule} 
+                          babyName={babyName}
+                          onRecalculate={handleRecalculateSchedule}
+                          isTransitioning={transitionInfo?.isTransitioning}
+                          transitionNapCounts={transitionInfo?.napCounts}
+                          showAlternate={showAlternateSchedule}
+                          onToggleAlternate={(show) => {
+                            setShowAlternateSchedule(show);
+                          }}
+                          isAdjusting={isAdjusting}
+                          adjustmentContext={adjustmentContext}
+                          transitionWindow={transitionWindow}
+                          todayActualNapCount={todayActualNapCount}
+                        />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
               )}
               
               {/* AI-Generated Guidance - Personalized to your data */}
