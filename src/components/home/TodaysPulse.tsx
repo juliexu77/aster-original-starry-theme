@@ -114,20 +114,18 @@ export const TodaysPulse = ({
     <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-5 border-b border-border/30">
-        <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-          Today's Pulse
-        </h3>
-      </div>
-
-      {/* Main Details - Open by default */}
-      <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors border-b border-border/30">
+        <CollapsibleTrigger className="w-full" onClick={() => setDetailsOpen(!detailsOpen)}>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-foreground">Details</span>
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
+              Today's Pulse
+            </h3>
             <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
           </div>
         </CollapsibleTrigger>
+      </div>
 
+      {/* Main Details */}
+      <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
         <CollapsibleContent>
           <div className="px-4 pb-4 pt-3 space-y-3">
             {/* Categories */}
