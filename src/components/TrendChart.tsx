@@ -621,9 +621,9 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
         {/* Section Header */}
         <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">Sleep Trends</h2>
 
-        {/* Level 1: Summary Cards */}
+        {/* Sleep Summary Cards */}
         <div className="grid grid-cols-2 gap-4">
-          {/* Average Duration Card */}
+          {/* Total Sleep */}
           <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
@@ -650,13 +650,13 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
             </div>
           </div>
 
-          {/* Naps Per Day Card */}
+          {/* Nap Length Change */}
           <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 rounded-xl bg-gradient-nap/10 flex items-center justify-center">
                 <Moon className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Naps Per Day</h3>
+              <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Nap Length</h3>
             </div>
             <div className="space-y-1">
               <div className="text-2xl font-semibold text-foreground tracking-tight">
@@ -676,63 +676,17 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           </div>
         </div>
 
-        {/* Level 2: Duration Chart */}
-        <div ref={napChartRef} className="bg-card/30 backdrop-blur rounded-2xl p-6 border border-border/50 transition-all hover:shadow-lg">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-medium text-foreground">
-              Duration (hours)
-            </h3>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover-scale" onClick={() => onShare(napChartRef, 'Sleep Trends')}>
-              <Share className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        
-          <div className="relative">
-            {/* Average line */}
-            {napSummary.avgDuration > 0 && (
-              <div 
-                className="absolute left-0 right-0 border-t-2 border-dashed border-muted-foreground/30 z-10"
-                style={{ bottom: `${avgNapLine}%` }}
-              >
-                <span className="absolute -left-1 -top-3 text-xs text-muted-foreground/60 font-medium">Avg</span>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-7 gap-3 h-44">
-            {napData.map((day, index) => (
-              <div key={index} className="flex flex-col items-center gap-2.5 relative">
-                <div className="flex-1 flex flex-col justify-end w-full">
-                  {day.value === 0 ? (
-                    <div className="w-full h-1 bg-muted/20 rounded-full" />
-                  ) : (
-                    <button
-                      className="bg-gradient-feed rounded-xl w-full relative hover:opacity-90 transition-all cursor-pointer border-none p-0 animate-scale-in group"
-                      style={{ height: `${(day.value / maxNapValue) * 100}%`, minHeight: '40px' }}
-                      onClick={() => setSelectedDetail(selectedDetail === `nap-${index}` ? null : `nap-${index}`)}
-                    >
-                      <span className="absolute inset-x-0 top-2 text-[10px] text-white/95 font-medium">
-                        {day.value}h
-                      </span>
-                    </button>
-                  )}
-                </div>
-                <div className="text-xs text-muted-foreground/70 font-medium">
-                  {day.date}
-                </div>
-                {selectedDetail === `nap-${index}` && (
-                  <div className="fixed z-50 bg-popover border border-border rounded-xl p-3 shadow-lg pointer-events-none"
-                       style={{
-                         left: '50%',
-                         top: '50%',
-                         transform: 'translate(-50%, -50%)'
-                       }}>
-                    <p className="text-sm font-medium">{day.detail}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+        {/* Week-over-week Insights */}
+        <div className="bg-card/30 backdrop-blur rounded-2xl p-5 border border-border/50">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-primary/10 flex items-center justify-center">
+              <ActivityIcon className="w-4 h-4 text-primary" />
             </div>
+            <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Week Insights</h3>
           </div>
+          <p className="text-sm text-foreground/90 leading-relaxed">
+            {getSleepInterpretation()}
+          </p>
         </div>
       </div>
     </div>
