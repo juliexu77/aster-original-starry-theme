@@ -311,6 +311,25 @@ export function useMissedActivityDetection(
     const currentTime = new Date();
     const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
     
+    // Check if any activity was just accepted (within last 2 minutes)
+    // This prevents prompts from reappearing immediately after logging
+    const checkRecentAcceptance = (type: string, subType?: string) => {
+      const acceptKey = `accepted-${householdId || 'household'}-${type}-${subType || 'default'}-${format(currentTime, 'yyyy-MM-dd-HH:mm')}`;
+      const prevMinuteKey = `accepted-${householdId || 'household'}-${type}-${subType || 'default'}-${format(new Date(currentTime.getTime() - 60000), 'yyyy-MM-dd-HH:mm')}`;
+      const acceptedNow = localStorage.getItem(acceptKey);
+      const acceptedPrevMin = localStorage.getItem(prevMinuteKey);
+      
+      if (acceptedNow || acceptedPrevMin) {
+        const timestamp = parseInt(acceptedNow || acceptedPrevMin || '0');
+        const minutesSinceAccept = (Date.now() - timestamp) / 1000 / 60;
+        if (minutesSinceAccept < 2) {
+          console.log(`  ❌ Activity just accepted ${minutesSinceAccept.toFixed(1)} minutes ago, skipping prompt`);
+          return true;
+        }
+      }
+      return false;
+    };
+    
     console.log('🔍 MISSED ACTIVITY DETECTION START:', {
       currentTime: currentTime.toLocaleTimeString(),
       currentMinutes,
@@ -440,6 +459,11 @@ export function useMissedActivityDetection(
               continue;
             }
             
+            // Check for recent acceptance before showing
+            if (checkRecentAcceptance('nap', 'morning-wake')) {
+              continue;
+            }
+            
             const suggestedTime = minutesToTime(expectedWakeMinutes);
             console.log('✅ RETURNING OVERDUE MORNING WAKE SUGGESTION:', {
               expectedWakeMinutes,
@@ -538,6 +562,12 @@ export function useMissedActivityDetection(
       }
       
       // Found a valid suggestion!
+      // Check for recent acceptance before showing
+      if (checkRecentAcceptance(pattern.type, pattern.subType)) {
+        console.log(`  ❌ ${pattern.type} ${pattern.subType || 'default'} was just accepted, skipping`);
+        continue;
+      }
+      
       const suggestion = {
         activityType: pattern.type,
         subType: pattern.subType,
