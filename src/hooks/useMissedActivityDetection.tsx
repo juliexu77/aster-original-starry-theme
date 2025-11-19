@@ -158,12 +158,41 @@ function wasLoggedToday(
       return endKey === todayKey;
     }
     
+    if (subType === 'bedtime') {
+      // Check if this is a night sleep
+      if (!isNightSleep(a, nightSleepStartHour, nightSleepEndHour)) return false;
+      
+      // Check if bedtime started today
+      if (isActivityOnDate(a, today)) return true;
+      
+      // Also check if bedtime started yesterday and is ongoing (hasn't ended yet)
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (isActivityOnDate(a, yesterday)) {
+        // If no end time, it's still ongoing
+        if (!a.details?.endTime) return true;
+        
+        // If has end time, check if it extends into today
+        const startStr = a.details?.startTime;
+        const endStr = a.details?.endTime;
+        if (!startStr || !endStr) return false;
+        
+        const startMins = parseToMinutes(startStr);
+        const endMins = parseToMinutes(endStr);
+        if (startMins == null || endMins == null) return false;
+        
+        // If end time < start time, sleep crosses midnight into today
+        return endMins < startMins;
+      }
+      
+      return false;
+    }
+    
     // For other subtypes, compare using the ACTIVITY's event (start) date
     if (!isActivityOnDate(a, today)) return false;
     
-    if (subType === 'bedtime') {
-      return isNightSleep(a, nightSleepStartHour, nightSleepEndHour);
-    } else if (subType === 'first-nap') {
+    if (subType === 'first-nap') {
       return isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour);
     }
     
