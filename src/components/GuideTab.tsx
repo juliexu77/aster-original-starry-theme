@@ -25,6 +25,8 @@ import { HeroInsightCard } from "@/components/guide/HeroInsightCard";
 import { WhyThisMattersCard } from "@/components/guide/WhyThisMattersCard";
 import { TodayAtGlance } from "@/components/guide/TodayAtGlance";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
+import { TodaysPulse } from "@/components/home/TodaysPulse";
+import { useHomeTabIntelligence } from "@/hooks/useHomeTabIntelligence";
 
 import { isNightSleep, isDaytimeNap } from "@/utils/napClassification";
 
@@ -207,6 +209,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     const stored = localStorage.getItem('patternMilestones');
     return stored ? new Set(JSON.parse(stored)) : new Set();
   });
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   // ===== DERIVED VALUES (safe to calculate even if household is null) =====
   const babyName = household?.baby_name || 'Baby';
@@ -215,6 +218,24 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Get night sleep window detection
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+
+  // Get today's pulse data for deviations
+  // Map activities to include time property for useHomeTabIntelligence
+  const mappedActivities = useMemo(() => 
+    activities.map(a => ({
+      ...a,
+      time: new Date(a.logged_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    })),
+    [activities]
+  );
+  
+  const { todaysPulse } = useHomeTabIntelligence(
+    mappedActivities as any,
+    null,
+    babyName,
+    undefined,
+    household?.baby_birthday
+  );
 
   // Normalize activities for schedule predictor
   const normalizedActivities = useMemo(() => {
@@ -1420,22 +1441,50 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
               
               {displaySchedule && (
                 <>
-                  <ScheduleTimeline
-                    schedule={activeDisplaySchedule} 
-                    babyName={babyName}
-                    onRecalculate={handleRecalculateSchedule}
-                    isTransitioning={transitionInfo?.isTransitioning}
-                    transitionNapCounts={transitionInfo?.napCounts}
-                    showAlternate={showAlternateSchedule}
-                    onToggleAlternate={(show) => {
-                      setShowAlternateSchedule(show);
-                      // Don't persist during transition - let it reset naturally
-                    }}
-                    isAdjusting={isAdjusting}
-                    adjustmentContext={adjustmentContext}
-                    transitionWindow={transitionWindow}
-                    todayActualNapCount={todayActualNapCount}
-                  />
+                  <Collapsible open={scheduleOpen} onOpenChange={setScheduleOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium">Predicted Schedule</span>
+                        </div>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <ScheduleTimeline
+                        schedule={activeDisplaySchedule} 
+                        babyName={babyName}
+                        onRecalculate={handleRecalculateSchedule}
+                        isTransitioning={transitionInfo?.isTransitioning}
+                        transitionNapCounts={transitionInfo?.napCounts}
+                        showAlternate={showAlternateSchedule}
+                        onToggleAlternate={(show) => {
+                          setShowAlternateSchedule(show);
+                          // Don't persist during transition - let it reset naturally
+                        }}
+                        isAdjusting={isAdjusting}
+                        adjustmentContext={adjustmentContext}
+                        transitionWindow={transitionWindow}
+                        todayActualNapCount={todayActualNapCount}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Today's Pulse - Below Schedule */}
+                  {todaysPulse && todaysPulse.deviations && todaysPulse.deviations.length > 0 && (
+                    <TodaysPulse
+                      deviations={todaysPulse.deviations}
+                      biggestDeviation={todaysPulse.biggestDeviation}
+                      onAdjustSchedule={() => setScheduleOpen(true)}
+                      babyName={babyName}
+                      babyAge={babyAgeInWeeks}
+                      activities={activities}
+                    />
+                  )}
                 </>
               )}
               
