@@ -1342,6 +1342,10 @@ const lastDiaper = displayActivities
                 onAccept={async () => {
                   const { activityType, subType, suggestedTime } = missedActivitySuggestion;
                   
+                  // Store acceptance timestamp to prevent re-showing immediately
+                  const acceptKey = `accepted-${household?.id || 'household'}-${activityType}-${subType || 'default'}-${format(new Date(), 'yyyy-MM-dd-HH:mm')}`;
+                  localStorage.setItem(acceptKey, Date.now().toString());
+                  
                   if (subType === 'morning-wake') {
                     // For morning wake, end the ongoing night sleep with the suggested time
                     if (ongoingNap && addActivity) {
