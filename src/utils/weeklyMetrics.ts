@@ -64,21 +64,36 @@ export const calculateWeeklyMetrics = (
       totalSleepMinutes += duration;
     });
     
-    // Calculate average per day (only complete days)
-    const completeDays = Math.max(1, Math.floor((now.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24)));
-    const actualDays = Math.min(completeDays, 7);
-    totalSleepMinutes = totalSleepMinutes / actualDays;
+    // Count unique days with sleep data
+    const daysWithSleep = new Set(
+      allSleep.map(sleep => {
+        const dateStr = sleep.loggedAt || sleep.time;
+        return new Date(dateStr).toDateString();
+      })
+    ).size;
+    
+    // Calculate average per day (only days with sleep data)
+    totalSleepMinutes = daysWithSleep > 0 ? totalSleepMinutes / daysWithSleep : 0;
 
-    // Count daytime naps per day
+    // Count daytime naps per day (only days with nap data)
     const naps = weekActivities.filter(a => 
       a.type === 'nap' && 
       isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) &&
       a.details?.startTime && 
       a.details?.endTime
     );
-    const napCount = naps.length / actualDays;
+    
+    // Count unique days with naps
+    const daysWithNaps = new Set(
+      naps.map(nap => {
+        const dateStr = nap.loggedAt || nap.time;
+        return new Date(dateStr).toDateString();
+      })
+    ).size;
+    
+    const napCount = daysWithNaps > 0 ? naps.length / daysWithNaps : 0;
 
-    // Calculate feed volume per day
+    // Calculate feed volume per day (only days with feed data)
     const feeds = weekActivities.filter(a => a.type === 'feed');
     let feedVolume = 0;
     feeds.forEach(feed => {
@@ -91,7 +106,16 @@ export const calculateWeeklyMetrics = (
         feedVolume += amount;
       }
     });
-    feedVolume = feedVolume / actualDays;
+    
+    // Count unique days with feeds
+    const daysWithFeeds = new Set(
+      feeds.map(feed => {
+        const dateStr = feed.loggedAt || feed.time;
+        return new Date(dateStr).toDateString();
+      })
+    ).size;
+    
+    feedVolume = daysWithFeeds > 0 ? feedVolume / daysWithFeeds : 0;
 
     // Calculate average wake windows (time between daytime naps)
     const dateMap = new Map<string, Activity[]>();
