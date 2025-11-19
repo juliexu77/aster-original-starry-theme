@@ -466,15 +466,15 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Last 6 Weeks</span>
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {weeklyMetrics.length > 0 ? (
             <>
               {/* Total Sleep */}
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-medium text-foreground">Total Sleep</span>
+              <div className="bg-card rounded-xl p-3 border border-border/30">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Total Sleep</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-foreground">
+                    <span className="text-lg font-semibold text-foreground">
                       {(weeklyMetrics[weeklyMetrics.length - 1].totalSleepMinutes / 60).toFixed(1)}h
                     </span>
                     {weeklyMetrics.length > 1 && (
@@ -484,18 +484,18 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="w-full h-6">
-                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Total sleep')} />
+                  <div className="w-full h-8">
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Total sleep')} />
+                  </div>
                 </div>
               </div>
 
               {/* Naps */}
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-medium text-foreground">Naps</span>
+              <div className="bg-card rounded-xl p-3 border border-border/30">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Naps</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-foreground">
+                    <span className="text-lg font-semibold text-foreground">
                       {weeklyMetrics[weeklyMetrics.length - 1].napCount.toFixed(1)}
                     </span>
                     {weeklyMetrics.length > 1 && (
@@ -505,18 +505,18 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="w-full h-6">
-                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
+                  <div className="w-full h-8">
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Naps')} />
+                  </div>
                 </div>
               </div>
 
               {/* Feed Volume */}
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-medium text-foreground">Feed Volume</span>
+              <div className="bg-card rounded-xl p-3 border border-border/30">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Feed Volume</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-foreground">
+                    <span className="text-lg font-semibold text-foreground">
                       {Math.round(weeklyMetrics[weeklyMetrics.length - 1].feedVolume * 0.033814)}oz
                     </span>
                     {weeklyMetrics.length > 1 && (
@@ -526,30 +526,30 @@ export const TrendChart = ({ activities = [] }: TrendChartProps) => {
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="w-full h-6">
-                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Feed volume')} />
+                  <div className="w-full h-8">
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Feed volume')} />
+                  </div>
                 </div>
               </div>
 
-              {/* Wake Average */}
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-medium text-foreground">Wake Average</span>
+              {/* Wake Windows */}
+              <div className="bg-card rounded-xl p-3 border border-border/30">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">Wake Windows</span>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-base font-semibold text-foreground">
-                      {Math.floor(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg / 60)}h {weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg % 60}m
+                    <span className="text-lg font-semibold text-foreground">
+                      {Math.floor(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg / 60)}h {Math.round(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg % 60)}m
                     </span>
                     {weeklyMetrics.length > 1 && (
                       <span className="text-xs text-muted-foreground">
                         {weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg > weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg ? '↑' : '↓'}
-                        {Math.abs(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg - weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg)}m
+                        {Math.round(Math.abs(weeklyMetrics[weeklyMetrics.length - 1].wakeWindowAvg - weeklyMetrics[weeklyMetrics.length - 2].wakeWindowAvg))}m
                       </span>
                     )}
                   </div>
-                </div>
-                <div className="w-full h-6">
-                  <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
+                  <div className="w-full h-8">
+                    <MetricSparkline data={getMetricSparklineData(weeklyMetrics, 'Wake average')} />
+                  </div>
                 </div>
               </div>
             </>

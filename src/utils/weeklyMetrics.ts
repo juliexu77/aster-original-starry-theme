@@ -41,27 +41,36 @@ export const calculateWeeklyMetrics = (
       return isWithinInterval(activityDate, { start: weekStart, end: weekEnd });
     });
 
-    // Calculate total sleep (daytime naps only)
+    // Calculate total sleep (both day and night) per day
+    const allSleep = weekActivities.filter(a => 
+      a.type === 'nap' && 
+      a.details?.startTime && 
+      a.details?.endTime
+    );
+
+    let totalSleepMinutes = 0;
+    allSleep.forEach(sleep => {
+      const startMinutes = parseTimeToMinutes(sleep.details.startTime!);
+      const endMinutes = parseTimeToMinutes(sleep.details.endTime!);
+      let duration = endMinutes - startMinutes;
+      if (duration < 0) duration += 24 * 60;
+      totalSleepMinutes += duration;
+    });
+    
+    // Calculate average per day
+    const daysInWeek = 7;
+    totalSleepMinutes = totalSleepMinutes / daysInWeek;
+
+    // Count daytime naps per day
     const naps = weekActivities.filter(a => 
       a.type === 'nap' && 
       isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour) &&
       a.details?.startTime && 
       a.details?.endTime
     );
+    const napCount = naps.length / daysInWeek;
 
-    let totalSleepMinutes = 0;
-    naps.forEach(nap => {
-      const startMinutes = parseTimeToMinutes(nap.details.startTime!);
-      const endMinutes = parseTimeToMinutes(nap.details.endTime!);
-      let duration = endMinutes - startMinutes;
-      if (duration < 0) duration += 24 * 60;
-      totalSleepMinutes += duration;
-    });
-
-    // Count naps
-    const napCount = naps.length;
-
-    // Calculate feed volume
+    // Calculate feed volume per day
     const feeds = weekActivities.filter(a => a.type === 'feed');
     let feedVolume = 0;
     feeds.forEach(feed => {
@@ -74,8 +83,9 @@ export const calculateWeeklyMetrics = (
         feedVolume += amount;
       }
     });
+    feedVolume = feedVolume / daysInWeek;
 
-    // Calculate average wake windows
+    // Calculate average wake windows (time between daytime naps)
     const dateMap = new Map<string, Activity[]>();
     naps.forEach(nap => {
       const dateStr = nap.loggedAt || nap.time;
@@ -116,8 +126,7 @@ export const calculateWeeklyMetrics = (
     });
   }
 
-  // Reverse to show oldest to newest (left to right in chart)
-  return weeks.reverse();
+  return weeks.reverse(); // Oldest to newest
 };
 
 export const getMetricSparklineData = (
