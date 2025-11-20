@@ -144,8 +144,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
         unit: 'h',
         change: calcChange(oneMonth.avgNightSleep, threeMonths.avgNightSleep),
         threeMonthAvg: threeMonths.avgNightSleep.toFixed(1),
-        sparklineData: oneMonth.sparkline,
-        color: 'hsl(var(--primary))'
+        sparklineData: oneMonth.sparkline
       },
       {
         label: 'Day Naps',
@@ -158,8 +157,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           getActivitiesByDate(activities, subDays(yesterday, 13 - i))
             .filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length 
           : 0
-        ),
-        color: 'hsl(221, 83%, 53%)'
+        )
       },
       {
         label: 'Feed Volume',
@@ -181,8 +179,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             }
           });
           return total;
-        }),
-        color: 'hsl(142, 76%, 36%)'
+        })
       },
       {
         label: 'Wake Windows',
@@ -206,8 +203,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
           }
           
           return windows.length > 0 ? windows.reduce((a, b) => a + b, 0) / windows.length / 60 : 0;
-        }),
-        color: 'hsl(25, 95%, 53%)'
+        })
       }
     ];
   }, [activities, nightSleepStartHour, nightSleepEndHour]);
@@ -317,48 +313,48 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       <div className="space-y-4">
         <TimelineChart
           title="Night Sleep"
-          icon={<Moon className="w-4 h-4 text-primary" />}
+          icon={<Moon className="w-4 h-4 text-foreground/70" />}
           activities={activities}
           timeRange={timeRange}
           dataExtractor={extractNightSleep}
           unit="h"
-          color="hsl(var(--primary))"
+          color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(0)}h`}
           tooltipFormatter={(v) => v.toFixed(1)}
         />
 
         <TimelineChart
           title="Day Naps"
-          icon={<Sun className="w-4 h-4 text-[hsl(221,83%,53%)]" />}
+          icon={<Sun className="w-4 h-4 text-foreground/70" />}
           activities={activities}
           timeRange={timeRange}
           dataExtractor={extractDayNaps}
           unit=" naps"
-          color="hsl(221, 83%, 53%)"
+          color="hsl(var(--secondary))"
           yAxisFormatter={(v) => v.toFixed(0)}
           tooltipFormatter={(v) => v.toFixed(0)}
         />
 
         <TimelineChart
           title="Feed Volume"
-          icon={<Milk className="w-4 h-4 text-[hsl(142,76%,36%)]" />}
+          icon={<Milk className="w-4 h-4 text-foreground/70" />}
           activities={activities}
           timeRange={timeRange}
           dataExtractor={extractFeedVolume}
           unit="oz"
-          color="hsl(142, 76%, 36%)"
+          color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(0)}oz`}
           tooltipFormatter={(v) => v.toFixed(0)}
         />
 
         <TimelineChart
           title="Wake Windows"
-          icon={<Clock className="w-4 h-4 text-[hsl(25,95%,53%)]" />}
+          icon={<Clock className="w-4 h-4 text-foreground/70" />}
           activities={activities}
           timeRange={timeRange}
           dataExtractor={extractWakeWindows}
           unit="h"
-          color="hsl(25, 95%, 53%)"
+          color="hsl(var(--secondary))"
           yAxisFormatter={(v) => `${v.toFixed(1)}h`}
           tooltipFormatter={(v) => v.toFixed(1)}
         />
