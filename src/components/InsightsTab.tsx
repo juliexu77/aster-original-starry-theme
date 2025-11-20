@@ -22,18 +22,6 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('6weeks');
-  
-  // Show loading state while household data is being fetched
-  if (householdLoading || !household) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading trends...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Helper to parse time to minutes
   const parseTimeToMinutes = (timeStr: string) => {
@@ -281,6 +269,18 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
     
     return windows.length > 0 ? windows.reduce((a, b) => a + b, 0) / windows.length / 60 : 0;
   };
+
+  // Show loading state while household data is being fetched
+  if (householdLoading || !household) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading trends...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 pb-6">
