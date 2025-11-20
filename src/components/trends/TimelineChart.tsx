@@ -209,24 +209,22 @@ export const TimelineChart = ({
                   fill="hsl(var(--primary))"
                   opacity={0.15}
                 />
-                {/* Top line */}
-                <path
-                  d={cohortRangePath.topPath}
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="1.5"
-                  opacity="0.4"
-                  strokeDasharray="4 2"
-                />
-                {/* Bottom line */}
-                <path
-                  d={smoothCurve(cohortRangePath.bottomPoints)}
-                  fill="none"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth="1.5"
-                  opacity="0.4"
-                  strokeDasharray="4 2"
-                />
+              {/* Top line */}
+              <path
+                d={cohortRangePath.topPath}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1.5"
+                opacity="0.5"
+              />
+              {/* Bottom line */}
+              <path
+                d={smoothCurve(cohortRangePath.bottomPoints)}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="1.5"
+                opacity="0.5"
+              />
               </>
             )}
 
