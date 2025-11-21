@@ -38,32 +38,32 @@ export const DailyStoryCircles = ({
     <div className="px-4 pb-2">
       <button 
         onClick={() => onSelectDay(todayStr, todayActivities)}
-        className="group relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card hover:bg-card/80 transition-all duration-300 border border-border/50 overflow-hidden"
+        className="group relative w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-card/50 hover:bg-card/60 transition-all duration-300 border border-primary/20 overflow-hidden backdrop-blur-sm"
       >
-        {/* Shimmer effect around the card */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-story-shimmer-slow pointer-events-none" />
+        {/* Subtle shimmer border effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-50" style={{ backgroundSize: '200% 100%' }} />
         
-        {/* Icon - photo if available from today, otherwise sparkles */}
+        {/* Icon - photo if available from today, otherwise ambient gradient */}
         {hasPhotoFromToday ? (
-          <Avatar className="relative w-10 h-10 border-2 border-border/30 shadow-sm">
+          <Avatar className="relative w-11 h-11 border border-primary/30 shadow-sm z-10">
             <AvatarImage src={activityWithPhoto.details.photoUrl} alt="Today's moment" className="object-cover" />
             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20">
               <Sparkles className="w-5 h-5 text-primary" />
             </AvatarFallback>
           </Avatar>
         ) : (
-          <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-primary animate-story-shimmer" />
+          <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 flex items-center justify-center z-10">
+            <Sparkles className="w-5 h-5 text-primary/70" />
           </div>
         )}
         
         {/* Text */}
-        <span className="relative flex-1 text-left text-base font-medium text-foreground">
+        <span className="relative flex-1 text-left text-base font-medium text-foreground z-10">
           Today's Story
         </span>
         
         {/* Chevron */}
-        <ChevronRight className="relative w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+        <ChevronRight className="relative w-5 h-5 text-muted-foreground group-hover:translate-x-0.5 transition-transform z-10" />
       </button>
     </div>
   );
