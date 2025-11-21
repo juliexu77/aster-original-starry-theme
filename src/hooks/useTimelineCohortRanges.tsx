@@ -57,16 +57,25 @@ const getBaselineRange = (ageInWeeks: number, metricType: string) => {
     // Get feeding guidance from expert sources
     const guidance = getFeedingGuidanceForAge(ageInWeeks);
     
-    // Parse the amount range (e.g., "4-6 oz (120-180ml)")
-    const match = guidance.amount.match(/(\d+)-(\d+)\s*oz/);
-    if (match) {
-      const min = parseInt(match[1]);
-      const max = parseInt(match[2]);
+    // Parse the amount per feed (e.g., "4-6 oz (120-180ml)")
+    const amountMatch = guidance.amount.match(/(\d+)-(\d+)\s*oz/);
+    // Parse the number of feeds per day (e.g., "5-7 feeds")
+    const feedsMatch = guidance.dailyTotal.match(/(\d+)-(\d+)\s*feeds/);
+    
+    if (amountMatch && feedsMatch) {
+      const minOzPerFeed = parseInt(amountMatch[1]);
+      const maxOzPerFeed = parseInt(amountMatch[2]);
+      const minFeedsPerDay = parseInt(feedsMatch[1]);
+      const maxFeedsPerDay = parseInt(feedsMatch[2]);
+      
+      // Calculate daily totals
+      const min = minOzPerFeed * minFeedsPerDay;
+      const max = maxOzPerFeed * maxFeedsPerDay;
       return { min, max };
     }
     
     // Fallback if parsing fails
-    return { min: 4, max: 8 };
+    return { min: 20, max: 40 };
   }
   
   return null;
