@@ -183,6 +183,14 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     const napDiff = napCount - avgNaps;
     const napTimeDiff = totalNapMinutes - avgNapMinutes;
 
+    // Special notes/moments take priority
+    if (allSpecialNotes.length > 0) {
+      const firstNote = allSpecialNotes[0].details.note;
+      // Extract key words for poetic headline
+      const noteWords = firstNote.split(' ').slice(0, 4).join(' ');
+      return `${noteWords}${firstNote.length > 20 ? '...' : ''}. A day to remember.`;
+    }
+
     // Solid food milestone
     if (hadSolidFood) {
       const solidMeal = solidFeeds[0];
