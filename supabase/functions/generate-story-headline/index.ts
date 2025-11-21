@@ -43,7 +43,18 @@ serve(async (req) => {
     const totalNapHours = Math.floor(totalNapMinutes / 60);
     const totalNapMins = Math.round(totalNapMinutes % 60);
     
-    let context = `Today, ${babyName || 'baby'} had:\n`;
+    let context = '';
+    
+    // Prioritize special moments/notes at the top
+    if (specialMoments && specialMoments.length > 0) {
+      context += `Special moments from today:\n`;
+      specialMoments.forEach((note, i) => {
+        context += `${i + 1}. ${note}\n`;
+      });
+      context += `\n`;
+    }
+    
+    context += `Daily summary for ${babyName || 'baby'}:\n`;
     context += `- ${feedCount} feeds\n`;
     context += `- ${napCount} naps totaling ${totalNapHours}h ${totalNapMins}m\n`;
     
@@ -56,10 +67,6 @@ serve(async (req) => {
     if (longestWakeWindow) {
       context += `- Longest wake window: ${longestWakeWindow}\n`;
     }
-    
-    if (specialMoments && specialMoments.length > 0) {
-      context += `- Special moments: ${specialMoments.join(', ')}\n`;
-    }
 
     const systemPrompt = `You are a poetic storyteller for parents. Analyze a baby's day and provide a meaningful headline and icon.
 
@@ -67,6 +74,8 @@ Style guidelines for headline:
 - Poetic, gentle, and emotionally resonant (max 15 words)
 - Use soft, lyrical language
 - Focus on rhythm, balance, and growth
+- PRIORITIZE special moments and notes when present - weave them naturally into the headline
+- If notes mention specific moments, make them the heart of the headline
 - Avoid clichés and overly sentimental phrases
 
 For the icon, choose ONE Lucide icon name that best represents the essence of the day:
