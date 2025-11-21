@@ -2,6 +2,8 @@ import { Activity } from "@/components/ActivityCard";
 import { format, subDays, startOfDay, endOfDay, startOfWeek, eachWeekOfInterval, endOfWeek, differenceInWeeks, eachDayOfInterval } from "date-fns";
 import { useMemo, useState } from "react";
 import { useTimelineCohortRanges } from "@/hooks/useTimelineCohortRanges";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { TimelineDetailModal } from "./TimelineDetailModal";
 import {
   Tooltip,
   TooltipContent,
@@ -37,6 +39,8 @@ export const TimelineChart = ({
   metricType
 }: TimelineChartProps) => {
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+  const [selectedWeekIndex, setSelectedWeekIndex] = useState<number | null>(null);
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   const { chartData, weeks } = useMemo(() => {
     const now = new Date();
@@ -286,7 +290,7 @@ export const TimelineChart = ({
                     className="cursor-pointer transition-all"
                     onMouseEnter={() => setHoveredPoint(i)}
                     onMouseLeave={() => setHoveredPoint(null)}
-                    onClick={() => setHoveredPoint(isHovered ? null : i)}
+                    onClick={() => setSelectedWeekIndex(i)}
                     style={{ pointerEvents: 'all' }}
                   />
                 </TooltipTrigger>
@@ -322,13 +326,31 @@ export const TimelineChart = ({
     );
   };
 
+  const selectedWeek = selectedWeekIndex !== null ? weeks[selectedWeekIndex] : null;
+  const selectedWeekEnd = selectedWeek ? endOfWeek(selectedWeek, { weekStartsOn: 1 }) : null;
+
   return (
-    <div className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        {icon}
-        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+    <>
+      <div className="mx-2 rounded-xl bg-card shadow-sm border border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          {icon}
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        </div>
+        {renderChart(180)}
       </div>
-      {renderChart(180)}
-    </div>
+      
+      {selectedWeek && selectedWeekEnd && (
+        <TimelineDetailModal
+          open={selectedWeekIndex !== null}
+          onOpenChange={(open) => !open && setSelectedWeekIndex(null)}
+          weekStart={selectedWeek}
+          weekEnd={selectedWeekEnd}
+          activities={activities}
+          metricType={metricType}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
+      )}
+    </>
   );
 };
