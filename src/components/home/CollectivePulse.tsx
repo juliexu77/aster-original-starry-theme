@@ -151,6 +151,16 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             </p>
           </div>
 
+          {/* What This Means */}
+          <div className="px-4 pb-3">
+            <div className="bg-primary/5 rounded-lg p-3 border border-primary/10">
+              <p className="text-xs text-foreground/80 leading-relaxed">
+                These averages show how babies around your baby's age are doing this week. 
+                Use them as gentle guideposts, not strict rules — every baby has their own unique rhythm.
+              </p>
+            </div>
+          </div>
+
           {/* Content */}
           <div className="px-4 pb-5 space-y-3">
         {/* Micro Stats */}
