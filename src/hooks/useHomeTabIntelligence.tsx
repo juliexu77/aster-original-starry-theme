@@ -156,6 +156,42 @@ export const useHomeTabIntelligence = (
     }
 
     // Otherwise, baby is awake
+    // First check: Is there ANY ongoing sleep in activities? (catches case where ongoingNap prop isn't set)
+    const ongoingSleep = sortedActivities.find(a => 
+      a.type === 'nap' && a.details?.startTime && !a.details?.endTime
+    );
+    
+    if (ongoingSleep) {
+      // There's an ongoing sleep session - baby is sleeping, not awake
+      let napStartTime: Date;
+      const match = ongoingSleep.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1]);
+        const minutes = parseInt(match[2]);
+        const period = match[3].toUpperCase();
+        if (period === 'PM' && hours !== 12) hours += 12;
+        if (period === 'AM' && hours === 12) hours = 0;
+        
+        const loggedDate = new Date(ongoingSleep.loggedAt);
+        napStartTime = new Date(loggedDate);
+        napStartTime.setHours(hours, minutes, 0, 0);
+      } else {
+        napStartTime = new Date(ongoingSleep.loggedAt);
+      }
+      
+      const sleepDuration = differenceInMinutes(new Date(), napStartTime);
+      const isNightSleepActivity = isNightSleep(ongoingSleep, nightSleepStartHour, nightSleepEndHour);
+      const sleepType = isNightSleepActivity ? 'sleeping' : 'napping';
+      const sleepNoun = isNightSleepActivity ? 'Sleep' : 'Nap';
+      
+      return {
+        type: isNightSleepActivity ? 'sleeping' : 'napping',
+        duration: sleepDuration,
+        statusText: `${babyName}'s ${sleepType} — ${sleepNoun} in progress`,
+        startTime: napStartTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      };
+    }
+    
     // Use the nap with the most recent END time (handles overnight sleep and optimistic updates)
     const napsWithEnd = activities
       .filter(a => a.type === 'nap' && a.details?.endTime)
