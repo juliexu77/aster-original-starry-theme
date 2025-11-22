@@ -162,7 +162,7 @@ export function useActivities() {
       console.error('Error fetching activities:', error);
       toast({
         title: "Error loading activities",
-        description: "Please try refreshing the page.",
+        description: "Please try refreshing the page",
         variant: "destructive"
       });
     } finally {
@@ -195,7 +195,7 @@ export function useActivities() {
       
       toast({
         title: "Activity saved locally",
-        description: "Sign up to sync your data across devices.",
+        description: "Sign up to sync your data across devices",
       });
       
       return newActivity;
@@ -253,7 +253,7 @@ export function useActivities() {
       console.error('Error adding activity:', error);
       toast({
         title: "Error adding activity",
-        description: "Please try again.",
+        description: "Please try again",
         variant: "destructive"
       });
       throw error;
@@ -283,8 +283,8 @@ export function useActivities() {
       if (error) throw error;
 
       toast({
-        title: "Activity updated!",
-        description: "Changes have been saved."
+        title: "Activity updated",
+        description: "Changes have been saved"
       });
 
       return data;
@@ -292,7 +292,7 @@ export function useActivities() {
       console.error('Error updating activity:', error);
       toast({
         title: "Error updating activity",
-        description: "Please try again.",
+        description: "Please try again",
         variant: "destructive"
       });
       throw error;
@@ -329,13 +329,13 @@ export function useActivities() {
 
       toast({
         title: 'Activity deleted',
-        description: 'Activity has been removed.'
+        description: 'Activity has been removed'
       });
     } catch (error: any) {
       console.error('Error deleting activity:', error);
       toast({
         title: 'Could not delete activity',
-        description: error?.message || 'Please try again.',
+        description: error?.message || 'Please try again',
         variant: 'destructive'
       });
       throw error;

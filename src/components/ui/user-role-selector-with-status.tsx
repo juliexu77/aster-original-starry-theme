@@ -36,7 +36,7 @@ export function UserRoleSelectorWithStatus({
   const getStatusText = () => {
     switch (saveStatus) {
       case "saving":
-        return "Saving...";
+        return "Saving…";
       case "saved":
         return "Saved";
       case "error":

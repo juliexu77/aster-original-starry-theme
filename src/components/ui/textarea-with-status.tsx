@@ -42,7 +42,7 @@ const TextareaWithStatus = React.forwardRef<HTMLTextAreaElement, TextareaWithSta
     const getStatusText = () => {
       switch (saveStatus) {
         case "saving":
-          return "Saving...";
+          return "Saving…";
         case "saved":
           return "Saved";
         case "error":

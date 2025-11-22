@@ -625,7 +625,7 @@ const ongoingNap = (() => {
       console.error('Error adding activity:', error);
       toast({
         title: "Error adding activity",
-        description: "Please try again.",
+        description: "Please try again",
         variant: "destructive"
       });
     }
