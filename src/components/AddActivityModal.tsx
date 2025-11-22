@@ -105,6 +105,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   
   // Solids state
   const [solidsDescription, setSolidsDescription] = useState("");
+  const [foodType, setFoodType] = useState<"purees" | "finger-foods">("purees");
+  const [allergens, setAllergens] = useState<string[]>([]);
 
   // Load last used settings and handle editing
   useEffect(() => {
@@ -176,7 +178,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       } else if (editingActivity.type === "solids") {
         const details = editingActivity.details;
         setSolidsDescription(details.solidDescription || "");
-        setNote(details.note || "");
+        setFoodType((details as any).foodType || "purees");
+        setAllergens((details as any).allergens || []);
       } else if (editingActivity.type === "photo") {
         setPhotoUrl((editingActivity.details as any).photoUrl || null);
         setNote(editingActivity.details.note || "");
@@ -289,6 +292,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
     setIsTimerActive(false);
     setTimerStart(null);
     setSolidsDescription("");
+    setFoodType("purees");
+    setAllergens([]);
     setNote("");
   };
 
@@ -506,7 +511,8 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
         break;
       case "solids":
         if (solidsDescription) details.solidDescription = solidsDescription;
-        if (note) details.note = note;
+        details.foodType = foodType;
+        if (allergens.length > 0) details.allergens = allergens;
         break;
       case "photo":
         if (note) details.note = note;
@@ -1021,28 +1027,78 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   label={t('time')} 
                 />
 
+                {/* Food Type Selector */}
                 <div>
-                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">{t('whatDidTheyEat')}</Label>
+                  <Label className="text-sm font-medium mb-2 block">Food Type</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={foodType === "purees" ? "default" : "outline"}
+                      onClick={() => setFoodType("purees")}
+                      className="w-full"
+                    >
+                      Purees
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={foodType === "finger-foods" ? "default" : "outline"}
+                      onClick={() => setFoodType("finger-foods")}
+                      className="w-full"
+                    >
+                      Finger Foods
+                    </Button>
+                  </div>
+                </div>
+
+                {/* What did they eat */}
+                <div>
+                  <Label htmlFor="solids-description" className="text-sm font-medium mb-2 block">What did they eat?</Label>
                   <Textarea
                     id="solids-description"
                     value={solidsDescription}
                     onChange={(e) => setSolidsDescription(e.target.value)}
-                    placeholder={t('describeSolidFood')}
+                    placeholder="e.g., banana puree, rice cereal, cheerios..."
                     rows={3}
                     className="resize-none"
                   />
                 </div>
 
+                {/* Allergen Checklist */}
                 <div>
-                  <Label htmlFor="solids-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>
-                  <Textarea
-                    id="solids-note"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    placeholder={t('anyAdditionalNotes')}
-                    rows={3}
-                    className="resize-none"
-                  />
+                  <Label className="text-sm font-medium mb-2 block">Common allergens (optional)</Label>
+                  <div className="space-y-2">
+                    {[
+                      { id: 'peanut', label: 'Peanut' },
+                      { id: 'egg', label: 'Egg' },
+                      { id: 'dairy', label: 'Dairy' },
+                      { id: 'wheat', label: 'Wheat' },
+                      { id: 'soy', label: 'Soy' },
+                      { id: 'tree-nuts', label: 'Tree nuts' },
+                      { id: 'sesame', label: 'Sesame' },
+                      { id: 'fish', label: 'Fish' },
+                      { id: 'shellfish', label: 'Shellfish' },
+                    ].map((allergen) => (
+                      <div key={allergen.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`allergen-${allergen.id}`}
+                          checked={allergens.includes(allergen.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setAllergens([...allergens, allergen.id]);
+                            } else {
+                              setAllergens(allergens.filter(a => a !== allergen.id));
+                            }
+                          }}
+                        />
+                        <Label 
+                          htmlFor={`allergen-${allergen.id}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {allergen.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

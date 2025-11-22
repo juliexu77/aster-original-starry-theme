@@ -171,9 +171,32 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
     case "note":
       return activity.details.note || `${babyName} ${t('note')}`;
     case "solids":
-      return activity.details.solidDescription 
+      const foodTypeLabel = (activity.details as any)?.foodType === 'finger-foods' ? 'Finger foods' : 'Purees';
+      const allergensArray = (activity.details as any)?.allergens || [];
+      let solidsText = activity.details.solidDescription 
         ? `${babyName} ${t('ate')}: ${activity.details.solidDescription}`
         : `${babyName} ${t('ateSolids')}`;
+      
+      if (allergensArray.length > 0) {
+        const allergenLabels = allergensArray.map((id: string) => {
+          const allergenMap: Record<string, string> = {
+            'peanut': 'Peanut',
+            'egg': 'Egg',
+            'dairy': 'Dairy',
+            'wheat': 'Wheat',
+            'soy': 'Soy',
+            'tree-nuts': 'Tree nuts',
+            'sesame': 'Sesame',
+            'fish': 'Fish',
+            'shellfish': 'Shellfish',
+          };
+          return allergenMap[id] || id;
+        }).join(', ');
+        solidsText += ` • ${foodTypeLabel} • Allergens: ${allergenLabels}`;
+      } else {
+        solidsText += ` • ${foodTypeLabel}`;
+      }
+      return solidsText;
     case "photo":
       return activity.details.note || `${babyName} ${t('photo')}`;
     default:
