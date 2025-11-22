@@ -955,16 +955,14 @@ const ongoingNap = (() => {
                           </DropdownMenuCheckboxItem>
                         </div>
                         
-                        <div className="border-t border-border mt-2 pt-2 px-2 pb-2 space-y-2">
+                          <div className="border-t border-border mt-2 pt-2 px-2 pb-2 space-y-2">
                           <div className="flex gap-2">
                             <Button 
                               variant="outline" 
                               size="sm" 
                               className="flex-1"
                               onClick={() => {
-                                setSelectedActivityTypes(allActivityTypes);
-                                setPendingActivityTypes(allActivityTypes);
-                                setShowFilterDropdown(false);
+                                setPendingActivityTypes([]);
                               }}
                             >
                               Clear
