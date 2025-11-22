@@ -88,8 +88,8 @@ const BabySetup = () => {
       localStorage.setItem('active_household_id', householdId);
 
       toast({
-        title: "Profile created!",
-        description: `Welcome to ${babyName}'s journey.`,
+        title: "Profile created",
+        description: `Welcome to ${babyName}'s journey`,
       });
 
       // Mark that we're coming from baby setup to prevent redirect loops
@@ -99,7 +99,7 @@ const BabySetup = () => {
       console.error("Error creating baby profile:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create profile. Please try again.",
+        description: error.message || "Failed to create profile. Please try again",
         variant: "destructive",
       });
     } finally {

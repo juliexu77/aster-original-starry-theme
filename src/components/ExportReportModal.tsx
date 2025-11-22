@@ -176,8 +176,8 @@ export const ExportReportModal = ({ open, onOpenChange, activities, babyName }: 
     // Small delay to ensure the modal updates before showing toast
     setTimeout(() => {
       toast({
-        title: "Generating Report",
-        description: "Please wait while we create your activity report...",
+        title: "Generating report",
+        description: "Please wait while we create your activity report",
       });
     }, 100);
 

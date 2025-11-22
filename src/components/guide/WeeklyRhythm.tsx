@@ -151,7 +151,7 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                   <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
                 )}
                 {subtitleLoading && (
-                  <p className="text-sm text-muted-foreground/50 mt-1 italic">Analyzing patterns...</p>
+                  <p className="text-sm text-muted-foreground/50 mt-1 italic">Analyzing patterns…</p>
                 )}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />

@@ -1231,7 +1231,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                   disabled={uploadingPhoto || isSaving}
                   className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
-                  {uploadingPhoto ? 'Uploading...' : isSaving ? 'Saving...' : (editingActivity ? 'Update' : 'Save')}
+                  {uploadingPhoto ? 'Uploading…' : isSaving ? 'Saving…' : (editingActivity ? 'Update' : 'Save')}
                 </Button>
               </div>
               
