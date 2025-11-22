@@ -56,6 +56,13 @@ export const useHomeTabIntelligence = (
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   // Calculate current activity state
   const currentActivity = useMemo((): CurrentActivityState | null => {
+    console.log('🔍 Current activity check:', {
+      ongoingNapExists: !!ongoingNap,
+      ongoingNapId: ongoingNap?.id,
+      ongoingNapHasEndTime: ongoingNap?.details?.endTime,
+      totalActivities: activities.length
+    });
+    
     if (ongoingNap) {
       // For naps, use the actual startTime from details if available (user may log retroactively)
       // Otherwise fall back to loggedAt
@@ -161,6 +168,14 @@ export const useHomeTabIntelligence = (
     const ongoingSleep = sortedActivities.find(a => 
       a.type === 'nap' && a.details?.startTime && !a.details?.endTime
     );
+    
+    console.log('🛌 Checking for ongoing sleep:', {
+      found: !!ongoingSleep,
+      ongoingSleepId: ongoingSleep?.id,
+      details: ongoingSleep?.details,
+      totalNaps: sortedActivities.filter(a => a.type === 'nap').length,
+      napsWithEndTime: sortedActivities.filter(a => a.type === 'nap' && a.details?.endTime).length
+    });
     
     if (ongoingSleep) {
       // There's an ongoing sleep session - baby is sleeping, not awake

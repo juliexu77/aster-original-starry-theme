@@ -267,7 +267,17 @@ const ongoingNap = (() => {
   };
   
   const candidates = activities.filter(a => {
-    if (a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId) {
+    const shouldExclude = a.type !== 'nap' || !a.details?.startTime || a.details?.endTime || a.id === justEndedNapId;
+    if (a.type === 'nap') {
+      console.log('🛏️  Nap candidate check:', {
+        id: a.id,
+        hasStartTime: !!a.details?.startTime,
+        hasEndTime: !!a.details?.endTime,
+        isJustEnded: a.id === justEndedNapId,
+        willExclude: shouldExclude
+      });
+    }
+    if (shouldExclude) {
       return false;
     }
     // Determine the activity's local date from details if available
