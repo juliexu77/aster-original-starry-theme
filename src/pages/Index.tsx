@@ -280,6 +280,16 @@ const ongoingNap = (() => {
     if (shouldExclude) {
       return false;
     }
+    
+    // Exclude naps older than 2 days (likely data errors from incomplete logging)
+    const loggedAtDate = new Date(a.loggedAt!);
+    const twoDaysAgo = new Date(todayStart);
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    if (loggedAtDate < twoDaysAgo) {
+      console.log('🗑️ Excluding old incomplete nap:', { id: a.id, loggedAt: a.loggedAt });
+      return false;
+    }
+    
     // Determine the activity's local date from details if available
     const dateLocal = (a.details as any).date_local as string | undefined;
     const baseLocalDate = dateLocal ? dateLocal : (() => {
