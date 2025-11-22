@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Ruler, Scale, Moon } from "lucide-react";
+import { Calendar, Ruler, Scale, Moon, X, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -142,235 +142,232 @@ export const BabyProfile = ({ onClose }: { onClose?: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-y-auto">
-      <div className="max-w-md mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-h2 text-foreground">Baby Profile</h1>
+    <div className="h-full flex flex-col bg-background">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 h-14">
+          <h1 className="text-xl font-semibold">Profile</h1>
+          {onClose && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          )}
         </div>
+      </div>
 
-        {/* Baby Photo */}
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            <Avatar className="h-32 w-32">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Baby Photo & Name Section */}
+        <div className="px-6 pt-8 pb-6 border-b border-border">
+          <div className="flex flex-col items-center gap-4">
+            <Avatar className="h-24 w-24 ring-2 ring-border ring-offset-2 ring-offset-background">
               <AvatarImage src={household?.baby_photo_url || undefined} />
-              <AvatarFallback className="text-4xl">
+              <AvatarFallback className="text-3xl">
                 {household?.baby_name?.charAt(0).toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
+            
+            <div className="text-center">
+              <h2 className="text-2xl font-bold">{household?.baby_name || 'Baby'}</h2>
+              <p className="text-muted-foreground mt-1">{getBabyAge() || 'Age not set'}</p>
+            </div>
+            
+            <PhotoUpload
+              currentPhotoUrl={household?.baby_photo_url || null}
+              bucketName="baby-photos"
+              folder={household?.id || 'default'}
+              onPhotoUpdate={handleBabyPhotoUpdate}
+              fallbackIcon="baby"
+              size="sm"
+            />
           </div>
-          
-          <PhotoUpload
-            currentPhotoUrl={household?.baby_photo_url || null}
-            bucketName="baby-photos"
-            folder={household?.id || 'default'}
-            onPhotoUpdate={handleBabyPhotoUpdate}
-            fallbackIcon="baby"
-            size="lg"
-          />
         </div>
 
-        {/* Baby Details */}
-        <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Name</p>
-                <p className="text-base font-medium">{household?.baby_name || 'Not set'}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p className="text-base font-medium">{getBabyAge() || 'Not set'}</p>
-              </div>
-            </div>
-          </div>
-
+        {/* Info Section */}
+        <div className="px-6 py-2">
           {household?.baby_birthday && (
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between py-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Birthday</p>
-                  <p className="text-base font-medium">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Birthday</p>
+                  <p className="text-sm text-muted-foreground">
                     {format(new Date(household.baby_birthday), 'MMMM d, yyyy')}
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          {latestWeight && (
+            <div className="flex items-center justify-between py-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Scale className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Weight</p>
+                  <p className="text-sm text-muted-foreground">
+                    {latestWeight} kg
+                    {weightPercentile && ` • ${weightPercentile}th percentile`}
+                  </p>
+                  {latestWeightDate && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {format(new Date(latestWeightDate), 'MMM d')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {latestHeight && (
+            <div className="flex items-center justify-between py-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Ruler className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Height</p>
+                  <p className="text-sm text-muted-foreground">
+                    {latestHeight} cm
+                    {heightPercentile && ` • ${heightPercentile}th percentile`}
+                  </p>
+                  {latestHeightDate && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {format(new Date(latestHeightDate), 'MMM d')}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Measurements */}
-        {(latestWeight || latestHeight) && (
-          <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-            <h3 className="text-sm font-semibold text-foreground">Latest Measurements</h3>
-            
-            {latestWeight && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Scale className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Weight</p>
-                    <p className="text-base font-medium">
-                      {latestWeight} kg
-                      {weightPercentile && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          ({weightPercentile}th percentile)
-                        </span>
-                      )}
-                    </p>
-                    {latestWeightDate && (
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(latestWeightDate), 'MMM d, yyyy')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {latestHeight && (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Ruler className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Height</p>
-                    <p className="text-base font-medium">
-                      {latestHeight} cm
-                      {heightPercentile && (
-                        <span className="text-sm text-muted-foreground ml-2">
-                          ({heightPercentile}th percentile)
-                        </span>
-                      )}
-                    </p>
-                    {latestHeightDate && (
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(latestHeightDate), 'MMM d, yyyy')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Night Sleep Window */}
-        <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-          <h3 className="text-sm font-semibold text-foreground">Sleep Schedule</h3>
+        {/* Sleep Schedule Section */}
+        <div className="px-6 py-4 border-t-8 border-muted/50">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+            Sleep Schedule
+          </h3>
           
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Moon className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Night Sleep Start</p>
-                <p className="text-xs text-muted-foreground">When overnight sleep typically begins</p>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Moon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Night starts</p>
+                  <p className="text-xs text-muted-foreground">When sleep begins</p>
+                </div>
               </div>
+              <Select
+                value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
+                onValueChange={async (value) => {
+                  try {
+                    const [hour, minute] = value.split(':').map(Number);
+                    await updateUserProfile({ 
+                      night_sleep_start_hour: hour,
+                      night_sleep_start_minute: minute 
+                    } as any);
+                    toast({
+                      title: "Updated",
+                      description: "Night sleep start time saved",
+                    });
+                  } catch (error) {
+                    console.error('Error updating night sleep start:', error);
+                    toast({
+                      title: "Error",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[110px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 24 }, (_, i) => {
+                    const totalMinutes = (18 * 60) + (i * 15);
+                    const hour = Math.floor(totalMinutes / 60);
+                    const minute = totalMinutes % 60;
+                    if (hour >= 24) return null;
+                    
+                    const displayHour = hour > 12 ? hour - 12 : hour;
+                    const minuteStr = minute.toString().padStart(2, '0');
+                    const label = `${displayHour}:${minuteStr} PM`;
+                    
+                    return (
+                      <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                        {label}
+                      </SelectItem>
+                    );
+                  }).filter(Boolean)}
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
-              onValueChange={async (value) => {
-                try {
-                  const [hour, minute] = value.split(':').map(Number);
-                  await updateUserProfile({ 
-                    night_sleep_start_hour: hour,
-                    night_sleep_start_minute: minute 
-                  } as any);
-                  toast({
-                    title: "Night sleep start updated",
-                    description: "Schedule will update on next refresh",
-                  });
-                } catch (error) {
-                  console.error('Error updating night sleep start:', error);
-                  toast({
-                    title: "Error updating setting",
-                    variant: "destructive",
-                  });
-                }
-              }}
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 24 }, (_, i) => {
-                  const totalMinutes = (18 * 60) + (i * 15);
-                  const hour = Math.floor(totalMinutes / 60);
-                  const minute = totalMinutes % 60;
-                  if (hour >= 24) return null;
-                  
-                  const displayHour = hour > 12 ? hour - 12 : hour;
-                  const minuteStr = minute.toString().padStart(2, '0');
-                  const label = `${displayHour}:${minuteStr} PM`;
-                  
-                  return (
-                    <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                      {label}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Moon className="h-5 w-5 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="text-sm text-muted-foreground">Night Sleep End</p>
-                <p className="text-xs text-muted-foreground">When overnight sleep typically ends</p>
+            <div className="flex items-center justify-between py-3">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                  <Moon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Night ends</p>
+                  <p className="text-xs text-muted-foreground">When sleep ends</p>
+                </div>
               </div>
+              <Select
+                value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
+                onValueChange={async (value) => {
+                  try {
+                    const [hour, minute] = value.split(':').map(Number);
+                    await updateUserProfile({ 
+                      night_sleep_end_hour: hour,
+                      night_sleep_end_minute: minute 
+                    } as any);
+                    toast({
+                      title: "Updated",
+                      description: "Night sleep end time saved",
+                    });
+                  } catch (error) {
+                    console.error('Error updating night sleep end:', error);
+                    toast({
+                      title: "Error",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger className="w-[110px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 21 }, (_, i) => {
+                    const totalMinutes = (5 * 60) + (i * 15);
+                    const hour = Math.floor(totalMinutes / 60);
+                    const minute = totalMinutes % 60;
+                    if (hour > 10) return null;
+                    
+                    const minuteStr = minute.toString().padStart(2, '0');
+                    const label = `${hour}:${minuteStr} AM`;
+                    
+                    return (
+                      <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
+                        {label}
+                      </SelectItem>
+                    );
+                  }).filter(Boolean)}
+                </SelectContent>
+              </Select>
             </div>
-            <Select
-              value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
-              onValueChange={async (value) => {
-                try {
-                  const [hour, minute] = value.split(':').map(Number);
-                  await updateUserProfile({ 
-                    night_sleep_end_hour: hour,
-                    night_sleep_end_minute: minute 
-                  } as any);
-                  toast({
-                    title: "Night sleep end updated",
-                    description: "Schedule will update on next refresh",
-                  });
-                } catch (error) {
-                  console.error('Error updating night sleep end:', error);
-                  toast({
-                    title: "Error updating setting",
-                    variant: "destructive",
-                  });
-                }
-              }}
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: 21 }, (_, i) => {
-                  const totalMinutes = (5 * 60) + (i * 15);
-                  const hour = Math.floor(totalMinutes / 60);
-                  const minute = totalMinutes % 60;
-                  if (hour > 10) return null;
-                  
-                  const minuteStr = minute.toString().padStart(2, '0');
-                  const label = `${hour}:${minuteStr} AM`;
-                  
-                  return (
-                    <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                      {label}
-                    </SelectItem>
-                  );
-                }).filter(Boolean)}
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>
