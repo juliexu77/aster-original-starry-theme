@@ -1341,11 +1341,18 @@ const lastDiaper = displayActivities
                   }
                 }}
                 onEdit={() => {
-                  const { activityType, subType } = missedActivitySuggestion;
+                  const { activityType, subType, suggestedTime } = missedActivitySuggestion;
                   
                   if (subType === 'morning-wake' && ongoingNap) {
-                    // For morning wake, open the edit modal for the ongoing nap
-                    onEditActivity(ongoingNap);
+                    // For morning wake, pre-fill the end time with suggested time
+                    const prefillActivity = {
+                      ...ongoingNap,
+                      details: {
+                        ...ongoingNap.details,
+                        endTime: suggestedTime
+                      }
+                    };
+                    onEditActivity(prefillActivity);
                   } else {
                     // For other activities, open the add activity modal
                     onAddActivity?.(activityType);
