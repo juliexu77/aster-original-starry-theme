@@ -179,7 +179,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
               Collective Pulse
             </h3>
             <p className="text-[10px] text-muted-foreground">
-              Big-picture view
+              Based on aggregated BabyRhythm data{cohortStats?.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
             </p>
           </div>
         </div>
@@ -193,6 +193,13 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       {/* Expandable Content */}
       {isExpanded && (
         <>
+          {/* Insight Text at Top */}
+          <div className="px-4 pt-4">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {cohortStats.insight_text}
+            </p>
+          </div>
+
           {/* Content */}
           <div className="px-4 py-5 space-y-3">
         {/* Micro Stats */}
@@ -240,19 +247,6 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
             </div>
           )}
 
-          {/* Insight Text */}
-          <div className="px-4 pb-5">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {cohortStats.insight_text}
-            </p>
-          </div>
-
-          {/* Footer */}
-          <div className="px-4 pb-3">
-            <p className="text-[10px] text-muted-foreground/70 italic">
-              Based on aggregated BabyRhythm data{cohortStats.fallback_tier && cohortStats.fallback_tier !== 'minimal' ? ' and developmental norms' : ''} — updated weekly.
-            </p>
-          </div>
         </>
       )}
     </div>
