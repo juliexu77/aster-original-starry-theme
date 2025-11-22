@@ -639,10 +639,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             <div className="grid grid-cols-3 gap-2">
               {[
                 { type: "feed", icon: Baby, label: t('feeding') },
-                { type: "diaper", icon: Droplet, label: t('diaper') },
+                { type: "solids", icon: Carrot, label: t('solids') },
                 { type: "note", icon: StickyNote, label: t('note') },
                 { type: "nap", icon: Moon, label: t('sleep') },
-                { type: "solids", icon: Carrot, label: t('solids') },
+                { type: "diaper", icon: Droplet, label: t('diaper') },
                 { type: "photo", icon: Camera, label: t('photo') }
               ].map(({ type, icon: Icon, label }) => (
                 <Button
