@@ -1,13 +1,14 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
-import { Baby, Moon, Clock, Sparkles, X } from "lucide-react";
+import { X, Sparkles } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { generateStoryHeadline } from "@/utils/storyHeadlineGenerator";
+import { generateStoryInsights } from "@/utils/storyInsightsGenerator";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -367,20 +368,19 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   const headline = generatedHeadline || fallbackHeadline;
 
-  console.log('📖 Story Metrics:', {
-    feedCount,
-    napCount,
-    totalNapMinutes,
-    totalNapTime: `${totalNapHours}h ${totalNapMins}m`,
-    longestWakeWindow,
-    hadSolidFood,
-    headline,
-    napActivities: todayActivities.filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).map(a => ({
-      startTime: a.details.startTime,
-      endTime: a.details.endTime,
-      loggedAt: a.loggedAt
-    }))
-  });
+  // Generate meaningful insights instead of raw metrics
+  const storyInsights = useMemo(() => {
+    return generateStoryInsights({
+      activities: todayActivities,
+      feedCount,
+      napCount,
+      totalNapMinutes,
+      longestWakeWindowMinutes,
+      nightSleepStartHour,
+      nightSleepEndHour,
+      babyName: babyName || 'Baby'
+    });
+  }, [todayActivities, feedCount, napCount, totalNapMinutes, longestWakeWindowMinutes, nightSleepStartHour, nightSleepEndHour, babyName]);
 
   // Get photo caption
   const getPhotoCaption = (): string | null => {
@@ -509,110 +509,36 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
             {/* Breathing room - 60px */}
             <div className="h-[60px]" />
 
-            {/* ACT 2: Reveal - Metric cards section - tighter, softer */}
+            {/* ACT 2: Reveal - Meaningful insights section */}
             {animationPhase !== 'act1' && (
               <div className="relative w-full px-6 pb-6 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 24px)' }}>
-              {/* Feeds */}
-              <div 
-                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
-                style={{ animationDelay: '1s' }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Baby className="w-[15px] h-[15px] text-primary/70" strokeWidth={1.5} />
-                    <span className="text-[14px] font-medium text-foreground/70">Feeds</span>
-                  </div>
-                  <span className="text-[14px] font-medium text-foreground/70">{feedCount}</span>
-                </div>
-                <div className="h-[3px] bg-muted/20 rounded-full overflow-hidden relative">
-                  <div 
-                    className="h-full bg-primary/70 rounded-full animate-story-bar-feed"
-                    style={{ 
-                      width: `${Math.min(100, (feedCount / avgFeeds) * 100)}%`,
-                      animationDelay: '1.5s'
-                    }}
-                  />
-                </div>
-                <div className="mt-1.5 text-[11px] italic text-muted-foreground/60">
-                  steady as always
-                </div>
-              </div>
-
-              {/* Naps */}
-              <div 
-                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
-                style={{ animationDelay: '1.5s' }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Moon className="w-[15px] h-[15px] text-accent/70" strokeWidth={1.5} />
-                    <span className="text-[14px] font-medium text-foreground/70">Naps</span>
-                  </div>
-                  <span className="text-[14px] font-medium text-foreground/70">{napCount}</span>
-                </div>
-                <div className="h-[3px] bg-muted/20 rounded-full overflow-hidden relative">
-                  <div 
-                    className="h-full bg-accent/70 rounded-full animate-story-bar-nap"
-                    style={{ 
-                      width: `${Math.min(100, (napCount / avgNaps) * 100)}%`,
-                      animationDelay: '2s'
-                    }}
-                  />
-                </div>
-                <div className="mt-1.5 text-[11px] italic text-muted-foreground/60">
-                  right on rhythm
-                </div>
-              </div>
-
-              {/* Nap time */}
-              <div 
-                className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
-                style={{ animationDelay: '2s' }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-[15px] h-[15px] text-secondary-foreground/70" strokeWidth={1.5} />
-                    <span className="text-[14px] font-medium text-foreground/70">Nap time</span>
-                  </div>
-                  <span className="text-[14px] font-medium text-foreground/70">{totalNapHours}h {totalNapMins}m</span>
-                </div>
-                <div className="h-[3px] bg-muted/20 rounded-full overflow-hidden relative">
-                  <div 
-                    className="h-full bg-secondary/70 rounded-full animate-story-bar-naptime"
-                    style={{ 
-                      width: `${Math.min(100, (totalNapMinutes / avgNapMinutes) * 100)}%`,
-                      animationDelay: '2.5s'
-                    }}
-                  />
-                </div>
-                <div className="mt-1.5 text-[11px] italic text-muted-foreground/60">
-                  deep and calm
-                </div>
-              </div>
-
-              {/* Longest wake window */}
-              {longestWakeWindow && (
+              
+              {/* Story Insights - Meaningful patterns instead of raw metrics */}
+              {storyInsights.map((insight, index) => (
                 <div 
+                  key={index}
                   className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
-                  style={{ animationDelay: '2.5s' }}
+                  style={{ animationDelay: insight.animationDelay }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-[15px] h-[15px] text-muted-foreground/70" strokeWidth={1.5} />
-                      <span className="text-[14px] font-medium text-foreground/70">Longest wake</span>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-[18px] flex-shrink-0 mt-0.5">{insight.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[12px] font-medium text-muted-foreground/70 uppercase tracking-wider mb-1">
+                        {insight.label}
+                      </div>
+                      <p className="text-[14px] leading-relaxed text-foreground/80">
+                        {insight.text}
+                      </p>
                     </div>
                   </div>
-                  <div className="mt-1.5 text-[13px] font-light text-foreground/70 animate-story-window-pulse" style={{ animationDelay: '3s' }}>
-                    {longestWakeWindow}
-                  </div>
                 </div>
-              )}
+              ))}
 
               {/* Special moments */}
               {allSpecialNotes.length > 0 && (
                 <div 
                   className="backdrop-blur-md bg-background/50 rounded-[12px] p-3 border border-border/10 animate-story-card-slide-up shadow-sm"
-                  style={{ animationDelay: longestWakeWindow ? '3s' : '2.5s' }}
+                  style={{ animationDelay: '3s' }}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Sparkles className="w-[15px] h-[15px] text-primary/70" strokeWidth={1.5} />
