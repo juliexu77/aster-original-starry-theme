@@ -21,11 +21,5 @@ verify_jwt = true
 [functions.delete-household]
 verify_jwt = false
 
-[functions.generate-story-headline]
-verify_jwt = true
-
 [functions.clear-schedule-cache]
 verify_jwt = false
-
-[functions.generate-rhythm-subtitle]
-verify_jwt = true

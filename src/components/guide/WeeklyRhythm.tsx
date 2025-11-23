@@ -6,6 +6,7 @@ import { format, subDays, startOfDay } from "date-fns";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { supabase } from "@/integrations/supabase/client";
+import { generateRhythmSubtitle } from "@/utils/rhythmSubtitleGenerator";
 
 interface NapData {
   date: string;
@@ -21,7 +22,6 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedNap, setSelectedNap] = useState<{ startTime: string; endTime: string } | null>(null);
   const [subtitle, setSubtitle] = useState<string>("");
-  const [subtitleLoading, setSubtitleLoading] = useState(false);
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
 
   // Get last 7 days of nap data
@@ -95,30 +95,25 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
 
   const weekData = getLast7DaysNaps();
 
-  // Generate AI subtitle when weekData changes
+  // Generate template-based subtitle (instant, no loading)
   useEffect(() => {
-    const generateSubtitle = async () => {
-      if (weekData.length === 0) return;
-      
-      setSubtitleLoading(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-rhythm-subtitle', {
-          body: { weekData, babyName }
-        });
-
-        if (error) throw error;
-        if (data?.subtitle) {
-          setSubtitle(data.subtitle);
-        }
-      } catch (error) {
-        console.error('Error generating rhythm subtitle:', error);
-      } finally {
-        setSubtitleLoading(false);
-      }
-    };
-
-    generateSubtitle();
-  }, [weekData.length, babyName]);
+    if (weekData.length === 0) {
+      setSubtitle("");
+      return;
+    }
+    
+    // Convert weekData to format expected by template generator
+    const formattedData = weekData.map(day => ({
+      date: day.date,
+      naps: day.naps.map(nap => ({
+        duration: nap.durationMinutes,
+        startTime: nap.startTime
+      }))
+    }));
+    
+    const generated = generateRhythmSubtitle(formattedData);
+    setSubtitle(generated);
+  }, [weekData.length]);
 
   // Timeline matches user's night sleep window (daytime window)
   const timelineStart = nightSleepEndHour * 60; // Night sleep end (e.g., 7am)
@@ -147,11 +142,8 @@ export const WeeklyRhythm = ({ activities, babyName }: WeeklyRhythmProps) => {
                 <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
                   This Week&apos;s Rhythm
                 </h3>
-                {subtitle && !subtitleLoading && (
+                {subtitle && (
                   <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
-                )}
-                {subtitleLoading && (
-                  <p className="text-sm text-muted-foreground/50 mt-1 italic">Analyzing patterns…</p>
                 )}
               </div>
               <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
