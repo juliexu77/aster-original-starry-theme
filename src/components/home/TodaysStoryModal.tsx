@@ -2,11 +2,12 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Activity } from "@/components/ActivityCard";
 import { format } from "date-fns";
 import { Baby, Moon, Clock, Sparkles, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { isDaytimeNap } from "@/utils/napClassification";
 import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
+import { generateStoryHeadline } from "@/utils/storyHeadlineGenerator";
 
 interface TodaysStoryModalProps {
   isOpen: boolean;
@@ -21,8 +22,6 @@ interface TodaysStoryModalProps {
 
 export function TodaysStoryModal({ isOpen, onClose, activities, babyName, targetDate, availableDates, onNavigate, allActivities }: TodaysStoryModalProps) {
   const [animationPhase, setAnimationPhase] = useState<'act1' | 'act2' | 'act3'>('act1');
-  const [aiHeadline, setAiHeadline] = useState<string | null>(null);
-  const [isLoadingHeadline, setIsLoadingHeadline] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [navigationDirection, setNavigationDirection] = useState<'prev' | 'next' | null>(null);
@@ -135,12 +134,11 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   
   console.log('📖 Naps with times for wake window:', napsWithTimes);
 
-  let longestWakeWindow = "";
+  // Calculate longest wake window (in minutes)
+  let longestWakeWindowMinutes = 0;
   if (napsWithTimes.length >= 2) {
     // Find the longest gap between nap end and next nap start
     let maxGap = 0;
-    let maxGapStart = "";
-    let maxGapEnd = "";
 
     for (let i = 0; i < napsWithTimes.length - 1; i++) {
       const endTime = napsWithTimes[i].end;
@@ -162,15 +160,15 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
       if (gap > maxGap) {
         maxGap = gap;
-        maxGapStart = endTime;
-        maxGapEnd = nextStartTime;
       }
     }
 
-    if (maxGapStart && maxGapEnd) {
-      longestWakeWindow = `${maxGapStart} – ${maxGapEnd}`;
-    }
+    longestWakeWindowMinutes = maxGap;
   }
+
+  const longestWakeWindow = longestWakeWindowMinutes > 0 
+    ? `${Math.floor(longestWakeWindowMinutes / 60)}h ${longestWakeWindowMinutes % 60}m`
+    : "";
 
   // Historical averages (simplified - in production would use actual history)
   const avgFeeds = 7;
@@ -237,94 +235,47 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
 
   const fallbackHeadline = getHeadline();
 
-  // Generate AI headline when modal opens - with date-based caching
-  useEffect(() => {
-    if (!isOpen) return;
-
+  // Generate template-based headline (instant, no loading)
+  const generatedHeadline = useMemo(() => {
     const dateKey = format(dayStart, 'yyyy-MM-dd');
     const cacheKey = `babyrhythm_story_headline_${dateKey}`;
 
     // Try to load from cache first
-    const loadCachedHeadline = () => {
-      try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed.headline && parsed.timestamp) {
-            // Use cached headline if it was generated for this date
-            setAiHeadline(parsed.headline);
-            return true;
-          }
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.headline && parsed.date === dateKey) {
+          return parsed.headline;
         }
-      } catch (err) {
-        console.error('Error loading cached headline:', err);
       }
-      return false;
-    };
-
-    // If we have a cached headline, use it
-    if (loadCachedHeadline()) {
-      return;
+    } catch (err) {
+      console.error('Error loading cached headline:', err);
     }
 
-    // Otherwise generate new headline if not already loading
-    if (isLoadingHeadline || aiHeadline) return;
+    // Generate new headline using template logic
+    const headline = generateStoryHeadline({
+      feedCount,
+      napCount,
+      totalNapMinutes,
+      hadSolidFood,
+      longestWakeWindow: longestWakeWindowMinutes,
+      specialMoments: allSpecialNotes.map(a => a.details.note || '')
+    });
 
-    const generateAIHeadline = async () => {
-      setIsLoadingHeadline(true);
-      try {
-        const { data, error } = await supabase.functions.invoke('generate-story-headline', {
-          body: {
-            feedCount,
-            napCount,
-            totalNapMinutes,
-            hadSolidFood,
-            solidFoodNote: hadSolidFood ? solidFeeds[0]?.details.note : null,
-            longestWakeWindow,
-            specialMoments: allSpecialNotes.slice(0, 3).map(a => a.details.note),
-            babyName
-          }
-        });
-
-        if (error) {
-          console.error('Error generating AI headline:', error);
-          return;
-        }
-
-        if (data?.headline) {
-          setAiHeadline(data.headline);
-          // Cache the headline with date
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify({
-              headline: data.headline,
-              timestamp: new Date().toISOString(),
-              date: dateKey
-            }));
-          } catch (err) {
-            console.error('Error caching headline:', err);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to generate AI headline:', err);
-      } finally {
-        setIsLoadingHeadline(false);
-      }
-    };
-
-    generateAIHeadline();
-  }, [isOpen, targetDate, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindow, babyName]);
-
-  // Reset AI headline state when navigating to a different date
-  useEffect(() => {
-    if (!isOpen) {
-      setAiHeadline(null);
-      setIsLoadingHeadline(false);
-    } else {
-      // When opening or changing dates, reset state to trigger reload
-      setAiHeadline(null);
-      setIsLoadingHeadline(false);
+    // Cache the headline
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        headline,
+        date: dateKey,
+        timestamp: new Date().toISOString()
+      }));
+    } catch (err) {
+      console.error('Error caching headline:', err);
     }
-  }, [isOpen, targetDate]);
+
+    return headline;
+  }, [dayStart, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindowMinutes, allSpecialNotes]);
 
   // Navigation handlers
   const currentDate = targetDate || format(new Date(), 'yyyy-MM-dd');
@@ -414,7 +365,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     }
   };
 
-  const headline = aiHeadline || fallbackHeadline;
+  const headline = generatedHeadline || fallbackHeadline;
 
   console.log('📖 Story Metrics:', {
     feedCount,
