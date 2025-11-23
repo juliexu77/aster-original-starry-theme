@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 /**
  * Clear all app-related session storage caches and database cache
  */
+/**
+ * Clear all app-related session storage caches and database cache
+ */
 export const clearAppCache = async (householdId?: string) => {
   try {
     console.log('🧹 Starting cache clear...');
@@ -28,6 +31,15 @@ export const clearAppCache = async (householdId?: string) => {
     localStorageCaches.forEach(key => {
       localStorage.removeItem(key);
       console.log(`🗑️ Cleared localStorage: ${key}`);
+    });
+    
+    // Clear story headline caches (they have dynamic date keys)
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+      if (key.includes('babyrhythm_story_headline')) {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Cleared localStorage: ${key}`);
+      }
     });
     
     // Clear ALL localStorage keys (including React Query, Supabase, and user profile caches)
