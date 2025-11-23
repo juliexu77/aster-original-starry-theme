@@ -9,7 +9,7 @@ interface Activity {
   };
 }
 
-export interface AISchedulePrediction {
+export interface NapCountAnalysis {
   total_naps_today: number;
   confidence: 'high' | 'medium' | 'low';
   is_transitioning: boolean;
@@ -77,7 +77,7 @@ export function predictDailySchedule(
   todayActivities: Activity[],
   babyBirthday: string | undefined,
   timezone: string
-): AISchedulePrediction {
+): NapCountAnalysis {
   if (!babyBirthday) {
     return {
       total_naps_today: 0,
