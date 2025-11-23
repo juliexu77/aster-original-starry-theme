@@ -3,6 +3,7 @@ import { Activity } from "@/components/ActivityCard";
 import { isNightSleep, isDaytimeNap } from "./napClassification";
 import { getActivityEventDateString } from './activityDate';
 import { formatInTimeZone } from 'date-fns-tz';
+import { getScheduleForAge, calculateAgeInWeeks } from './ageAppropriateBaselines';
 
 export interface ScheduleEvent {
   time: string;
@@ -13,7 +14,7 @@ export interface ScheduleEvent {
   reasoning?: string;
 }
 
-export interface AISchedulePrediction {
+export interface NapCountAnalysis {
   total_naps_today: number;
   confidence: 'high' | 'medium' | 'low';
   is_transitioning: boolean;
@@ -33,14 +34,14 @@ export interface AdaptiveSchedule {
 }
 
 /**
- * Generate an adaptive schedule using AI pattern prediction + historical timing data
- * AI provides high-level pattern (nap count, transitions, confidence)
- * This function calculates all specific times, wake windows, and bedtime
+ * Generate an adaptive schedule using nap count analysis + age-appropriate patterns
+ * Uses actual wake time when available, recent nap count from data,
+ * but age-appropriate wake windows and nap durations for timing
  */
 export function generateAdaptiveSchedule(
   activities: Activity[],
   babyBirthday?: string,
-  aiPrediction?: AISchedulePrediction,
+  napCountAnalysis?: NapCountAnalysis,
   totalActivitiesCount?: number,
   forceShowAllNaps?: boolean, // When true, show all naps regardless of bedtime proximity
   nightSleepStartHour: number = 19,
@@ -48,10 +49,10 @@ export function generateAdaptiveSchedule(
   timezone: string = 'America/New_York'
 ): AdaptiveSchedule {
   console.log('🔮 Generating adaptive schedule:', {
-    hasAIPrediction: !!aiPrediction,
-    aiNapCount: aiPrediction?.total_naps_today,
-    aiConfidence: aiPrediction?.confidence,
-    isTransitioning: aiPrediction?.is_transitioning,
+    hasNapCountAnalysis: !!napCountAnalysis,
+    napCount: napCountAnalysis?.total_naps_today,
+    confidence: napCountAnalysis?.confidence,
+    isTransitioning: napCountAnalysis?.is_transitioning,
     timezone
   });
   
@@ -203,184 +204,102 @@ export function generateAdaptiveSchedule(
     reasoning: hasActualWake ? 'Actual logged wake time' : 'Based on typical wake pattern'
   });
   
-  // Analyze nap patterns - GROUP BY DAY to track position-based durations
-  const recentNaps = activities.filter(a => a.type === 'nap' && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).slice(0, 100);
+  // Get age-appropriate schedule baselines
+  const ageInWeeks = babyBirthday ? calculateAgeInWeeks(babyBirthday) : null;
+  const ageBasedSchedule = ageInWeeks ? getScheduleForAge(ageInWeeks) : null;
   
-  // Build a map of all days with nap data
-  const napsByDay = new Map<string, Array<{ time: Date, duration: number }>>();
-  
-  recentNaps.forEach(nap => {
-    if (nap.details?.startTime && nap.details?.endTime) {
-      const start = parseTimeString(nap.details.startTime);
-      const end = parseTimeString(nap.details.endTime);
-      if (start && end) {
-        const duration = (end.getTime() - start.getTime()) / 60000;
-        // Valid nap: 15min to 4 hours
-        if (duration > 15 && duration < 240) {
-          const dateKey = new Date(nap.loggedAt).toDateString();
-          if (!napsByDay.has(dateKey)) {
-            napsByDay.set(dateKey, []);
-          }
-          napsByDay.get(dateKey)!.push({ time: start, duration });
-        }
-      }
-    }
-  });
-  
-  // Sort naps within each day by time
-  napsByDay.forEach((naps) => {
-    naps.sort((a, b) => a.time.getTime() - b.time.getTime());
-  });
-  
-  console.log('🔍 All nap data by day:', {
-    totalDays: napsByDay.size,
-    napCountDistribution: Array.from(napsByDay.values()).reduce((acc, naps) => {
-      const count = naps.length;
-      acc[count] = (acc[count] || 0) + 1;
-      return acc;
-    }, {} as Record<number, number>),
-    sampleDays: Array.from(napsByDay.entries()).slice(0, 5).map(([date, naps]) => ({
-      date,
-      napCount: naps.length,
-      durations: naps.map(n => Math.round(n.duration))
-    }))
-  });
-  
-  // Calculate nap timings from wake (only for days with wake data)
-  let napTimingsMinutesFromWake: number[] = [];
-  const daysWithWakeAndNaps = new Map<string, { wakeTime: Date, naps: Array<{ time: Date, duration: number }> }>();
-  
-  activities.filter(a => a.type === 'nap' && isNightSleep(a, nightSleepStartHour, nightSleepEndHour)).slice(0, 21).forEach(nightSleep => {
-    if (nightSleep.details?.endTime) {
-      const wakeTime = parseTimeString(nightSleep.details.endTime);
-      if (wakeTime) {
-        const dateKey = new Date(nightSleep.loggedAt).toDateString();
-        const wakeDate = new Date(nightSleep.loggedAt);
-        wakeDate.setHours(wakeTime.getHours(), wakeTime.getMinutes(), 0, 0);
-        
-        // Add naps for this day if we have them
-        const napsForDay = napsByDay.get(dateKey) || [];
-        daysWithWakeAndNaps.set(dateKey, { wakeTime: wakeDate, naps: napsForDay });
-        
-        // Calculate minutes from wake for each nap
-        napsForDay.forEach(nap => {
-          const minutesFromWake = (nap.time.getTime() - wakeDate.getTime()) / 60000;
-          if (minutesFromWake > 0 && minutesFromWake < 720) {
-            napTimingsMinutesFromWake.push(minutesFromWake);
-          }
-        });
-      }
-    }
-  });
-  
-  // Calculate nap count per day (use all nap data, not just days with wake data)
-  const napCountsPerDay: number[] = [];
-  napsByDay.forEach(naps => {
-    if (naps.length > 0) {
-      napCountsPerDay.push(naps.length);
-    }
-  });
-  
-  // Use AI prediction if available, otherwise fall back to historical analysis
+  // Determine nap count from analysis or fallback to age-appropriate default
   let napCount: number;
   let isInTransition: boolean;
-  let transitioningToCount: number | null;
   
-  if (aiPrediction) {
-    // AI tells us the expected nap count and transition state
-    napCount = aiPrediction.total_naps_today;
-    isInTransition = aiPrediction.is_transitioning;
-    transitioningToCount = isInTransition ? napCount : null;
-    console.log('📊 Using AI prediction for schedule structure:', {
+  if (napCountAnalysis) {
+    napCount = napCountAnalysis.total_naps_today;
+    isInTransition = napCountAnalysis.is_transitioning;
+    console.log('📊 Using nap count from analysis:', {
       napCount,
       isInTransition,
-      confidence: aiPrediction.confidence,
-      reasoning: aiPrediction.reasoning
+      confidence: napCountAnalysis.confidence,
+      reasoning: napCountAnalysis.reasoning
+    });
+  } else if (ageBasedSchedule) {
+    napCount = ageBasedSchedule.totalNaps;
+    isInTransition = false;
+    console.log('📊 Using age-appropriate nap count:', {
+      napCount,
+      ageInWeeks
     });
   } else {
-    // Fallback to historical pattern detection
-    isInTransition = detectNapTransition(napCountsPerDay);
-    napCount = getMostCommonValue(napCountsPerDay) || 2;
-    transitioningToCount = isInTransition ? napCount : null;
-    console.log('📊 Using historical analysis for schedule structure:', {
-      napCount,
-      isInTransition,
-      napCountsPerDay
-    });
+    // Ultimate fallback
+    napCount = 3;
+    isInTransition = false;
+    console.log('📊 Using default nap count:', napCount);
   }
   
-  // Calculate baby's age in months
-  const babyAgeMonths = babyBirthday 
-    ? Math.floor((Date.now() - new Date(babyBirthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
-    : null;
-  
-  // Extract nap durations by position - ONLY from days matching the requested nap count
-  const napDurationsByPosition = new Map<number, number[]>();
-  napsByDay.forEach((naps) => {
-    // CRITICAL: Only use days that have the SAME nap count as requested
-    if (naps.length === napCount) {
-      naps.forEach((nap, position) => {
-        if (!napDurationsByPosition.has(position)) {
-          napDurationsByPosition.set(position, []);
-        }
-        napDurationsByPosition.get(position)!.push(nap.duration);
-      });
+  // Parse age-appropriate wake window (e.g., "2.5-3hrs" → use midpoint)
+  let wakeWindowMinutes = 150; // default 2.5 hours
+  if (ageBasedSchedule && ageBasedSchedule.wakeWindows.length > 0) {
+    const wwStr = ageBasedSchedule.wakeWindows[0];
+    const match = wwStr.match(/(\d+(?:\.\d+)?)/g); // Extract numbers
+    if (match && match.length > 0) {
+      const firstNum = parseFloat(match[0]);
+      const lastNum = match.length > 1 ? parseFloat(match[match.length - 1]) : firstNum;
+      const avgHours = (firstNum + lastNum) / 2;
+      wakeWindowMinutes = Math.round(avgHours * 60);
     }
-  });
+  }
   
-  console.log(`🎯 Nap position data for ${napCount}-nap days ONLY:`, {
-    requestedNapCount: napCount,
-    daysMatchingCount: Array.from(napsByDay.values()).filter(n => n.length === napCount).length,
-    totalDaysInData: napsByDay.size,
-    positionData: Array.from(napDurationsByPosition.entries()).map(([pos, durs]) => ({
-      position: pos + 1,
-      samples: durs.length,
-      avgMinutes: Math.round(durs.reduce((a,b)=>a+b,0)/durs.length)
-    }))
-  });
+  // Generate naps using age-appropriate patterns
+  let currentTime = new Date(scheduleStartTime);
   
-  // Generate nap schedule with AI-predicted nap count and historical data
-  const napSchedule = generateNapSchedule(
-    scheduleStartTime,
-    napCount,
-    napDurationsByPosition,
-    napTimingsMinutesFromWake,
-    isInTransition,
-    transitioningToCount,
-    babyAgeMonths,
-    napsByDay, // Use all nap data for accurate duration calculations
-    daysWithWakeAndNaps, // Days with wake times for timing calculations
-    todayCompletedNaps, // Pass today's completed naps to adjust schedule
-    forceShowAllNaps // When true, show all naps regardless of bedtime proximity
-  );
+  for (let napIndex = 0; napIndex < napCount; napIndex++) {
+    // Add wake window
+    currentTime = new Date(currentTime.getTime() + wakeWindowMinutes * 60000);
+    
+    // Determine nap duration based on position and age
+    let napDurationMinutes = 60; // default 1 hour
+    
+    if (ageBasedSchedule && ageBasedSchedule.napWindows[napIndex]) {
+      const napWindow = ageBasedSchedule.napWindows[napIndex];
+      const durStr = napWindow.duration;
+      // Parse duration like "1-2h" or "30m-1h"
+      const hourMatch = durStr.match(/(\d+)-(\d+)h/);
+      const minMatch = durStr.match(/(\d+)m-(\d+)h/);
+      
+      if (hourMatch) {
+        const avgHours = (parseInt(hourMatch[1]) + parseInt(hourMatch[2])) / 2;
+        napDurationMinutes = Math.round(avgHours * 60);
+      } else if (minMatch) {
+        const minVal = parseInt(minMatch[1]);
+        const hourVal = parseInt(minMatch[2]) * 60;
+        napDurationMinutes = Math.round((minVal + hourVal) / 2);
+      }
+    } else {
+      // Fallback: first nap longer, later naps shorter
+      if (napIndex === 0) {
+        napDurationMinutes = 90; // 1.5 hours
+      } else {
+        napDurationMinutes = 60; // 1 hour
+      }
+    }
+    
+    const napEndTime = new Date(currentTime.getTime() + napDurationMinutes * 60000);
+    
+    events.push({
+      time: formatTime(currentTime),
+      type: 'nap',
+      duration: formatDuration(napDurationMinutes),
+      notes: `Nap ${napIndex + 1}`,
+      confidence: 'medium',
+      reasoning: ageBasedSchedule 
+        ? `Age-appropriate wake window: ${ageBasedSchedule.wakeWindows[0]}`
+        : 'Standard wake window for age'
+    });
+    
+    currentTime = napEndTime;
+  }
   
-  events.push(...napSchedule);
   
-  // Calculate bedtime using robust final wake window logic
-  // 1) Prefer today's last nap end + final wake window (FWW)
-  // 2) Fallback to predicted last nap end + FWW
-  // 3) Fallback to historical night sleep start average (7-day)
-  // 4) Clamp to a reasonable window (6:30 PM - 9:30 PM)
-  
-  const getMonths = (birthday?: string) => {
-    if (!birthday) return null;
-    const dob = new Date(birthday);
-    const diff = Date.now() - dob.getTime();
-    return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24 * 30.44)));
-  };
-  
-  const ageMonths = getMonths(babyBirthday);
-  
-  const parseDurationToMinutes = (dur?: string) => {
-    if (!dur) return 90; // sensible default
-    const m = dur.match(/(?:(\d+)h)?\s*(?:(\d+)m)?/i);
-    if (!m) return 90;
-    const h = m[1] ? parseInt(m[1]) : 0;
-    const min = m[2] ? parseInt(m[2]) : 0;
-    return h * 60 + min;
-  };
-  
-  // Bedtime based on historical average only
+  // Calculate bedtime using historical average
   let computedBedtime: Date | null = null;
   let bedtimeConfidence: 'high' | 'medium' | 'low' = 'medium';
   let bedtimeReason = '';
@@ -410,6 +329,26 @@ export function generateAdaptiveSchedule(
     computedBedtime.setHours(h, m, 0, 0);
     bedtimeConfidence = nightStarts.length >= 5 ? 'high' : 'medium';
     bedtimeReason = `Based on ${nightStarts.length} nights of historical data`;
+  } else if (ageBasedSchedule) {
+    // Use age-appropriate bedtime from baselines
+    // Parse bedtime like "7:00-8:00 PM" → use midpoint
+    const bedtimeStr = ageBasedSchedule.bedtime;
+    const timeMatch = bedtimeStr.match(/(\d+):(\d+)/);
+    if (timeMatch) {
+      const hour = parseInt(timeMatch[1]);
+      const minute = parseInt(timeMatch[2]);
+      computedBedtime = new Date(scheduleStartTime);
+      // Adjust for PM if hour < 12
+      computedBedtime.setHours(hour < 12 ? hour + 12 : hour, minute, 0, 0);
+      bedtimeConfidence = 'medium';
+      bedtimeReason = 'Age-appropriate bedtime';
+    } else {
+      // Fallback to 7:30 PM
+      computedBedtime = new Date(scheduleStartTime);
+      computedBedtime.setHours(19, 30, 0, 0);
+      bedtimeConfidence = 'low';
+      bedtimeReason = 'Default bedtime';
+    }
   } else {
     // Sensible default near 7:30 PM
     computedBedtime = new Date(scheduleStartTime);
@@ -429,7 +368,7 @@ export function generateAdaptiveSchedule(
   
   computedBedtime = clamp(computedBedtime!);
   
-  console.log('🛏️ Bedtime (historical average):', {
+  console.log('🛏️ Bedtime:', {
     nightSamplesCount: nightStarts.length,
     computed: formatTime(computedBedtime!),
     reason: bedtimeReason,
@@ -446,10 +385,10 @@ export function generateAdaptiveSchedule(
     reasoning: bedtimeReason
   });
   
-  // Use AI confidence if available, otherwise determine from data stability
+  // Use analysis confidence if available, otherwise determine from data stability
   let overallConfidence: 'high' | 'medium' | 'low';
-  if (aiPrediction) {
-    overallConfidence = aiPrediction.confidence;
+  if (napCountAnalysis) {
+    overallConfidence = napCountAnalysis.confidence;
   } else {
     const dataStability = activities.length > 100 ? 'stable' : activities.length > 30 ? 'unstable' : 'sparse';
     if (dataStability === 'stable') {
@@ -466,8 +405,8 @@ export function generateAdaptiveSchedule(
   const daysOfData = Math.ceil(displayActivitiesCount / 8);
   const basedOn = `${displayActivitiesCount} activities over ${daysOfData} days`;
   
-  const adjustmentNote = aiPrediction?.is_transitioning 
-    ? aiPrediction.transition_note 
+  const adjustmentNote = napCountAnalysis?.is_transitioning 
+    ? napCountAnalysis.transition_note 
     : undefined;
   
   
@@ -517,7 +456,7 @@ export function generateAdaptiveSchedule(
     hasActualWake,
     napCount,
     isInTransition,
-    usedAIPrediction: !!aiPrediction,
+    usedNapCountAnalysis: !!napCountAnalysis,
     accuracyScore
   });
   

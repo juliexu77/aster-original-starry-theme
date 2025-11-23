@@ -19,7 +19,7 @@ import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 import { supabase } from "@/integrations/supabase/client";
 import { logger, logError } from "@/utils/logger";
 import { getDailySentiment } from "@/utils/sentimentAnalysis";
-import { generateAdaptiveSchedule, type AdaptiveSchedule, type AISchedulePrediction } from "@/utils/adaptiveScheduleGenerator";
+import { generateAdaptiveSchedule, type AdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { useSmartReminders } from "@/hooks/useSmartReminders";
 import { UnifiedInsightCard } from "@/components/guide/UnifiedInsightCard";
@@ -201,8 +201,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   } | null>(null);
   const [rhythmInsightsLoading, setRhythmInsightsLoading] = useState(false);
   const [rhythmInsightsRefreshing, setRhythmInsightsRefreshing] = useState(false);
-  const [aiPrediction, setAiPrediction] = useState<AISchedulePrediction | null>(null);
-  const [aiPredictionLoading, setAiPredictionLoading] = useState(false);
+  const [napCountAnalysis, setNapCountAnalysis] = useState<NapCountAnalysis | null>(null);
+  const [napCountAnalysisLoading, setNapCountAnalysisLoading] = useState(false);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const [adjustmentContext, setAdjustmentContext] = useState<string>("");
   const [remindersEnabled, setRemindersEnabled] = useState(() => {
@@ -469,7 +469,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const schedule = generateAdaptiveSchedule(
         activitiesForEngine, 
         household.baby_birthday, 
-        hasTier3Data ? aiPrediction : null, // Only use AI prediction if we have enough data
+        hasTier3Data ? napCountAnalysis : null, // Only use nap count analysis if we have enough data
         activities.length, // Pass total activities count for "basedOn" text
         false, // forceShowAllNaps
         nightSleepStartHour,
@@ -480,7 +480,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     } catch (error) {
       return null;
     }
-  }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, aiPrediction, hasTier3Data, activities.length, todayKeyEvents]);
+  }, [activities, household?.baby_birthday, hasTier1Data, userTimezone, napCountAnalysis, hasTier3Data, activities.length, todayKeyEvents]);
 
   // Use adaptive schedule directly
   const displaySchedule = adaptiveSchedule;
@@ -509,12 +509,12 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     return null;
   }, [babyAgeInDays]);
 
-  // Combined transition detection: AI reactive OR age-based anticipatory
-  const shouldShowTransition = aiPrediction?.is_transitioning || transitionWindow !== null;
+  // Combined transition detection: analysis reactive OR age-based anticipatory
+  const shouldShowTransition = napCountAnalysis?.is_transitioning || transitionWindow !== null;
   const effectiveTransitionCounts = transitionWindow 
     ? { current: transitionWindow.from, transitioning: transitionWindow.to }
-    : (aiPrediction?.is_transitioning 
-        ? { current: aiPrediction.total_naps_today, transitioning: aiPrediction.total_naps_today - 1 }
+    : (napCountAnalysis?.is_transitioning 
+        ? { current: napCountAnalysis.total_naps_today, transitioning: napCountAnalysis.total_naps_today - 1 }
         : undefined);
   
   // Auto-recalculate schedule when morning wake is logged
@@ -560,8 +560,8 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (todayWakeActivity) {
       const hasRecalculatedToday = sessionStorage.getItem(`schedule-recalc-${todayStart.toDateString()}`);
       if (!hasRecalculatedToday) {
-        localStorage.removeItem('aiPrediction');
-        localStorage.removeItem('aiPredictionLastFetch');
+        localStorage.removeItem('napCountAnalysis');
+        localStorage.removeItem('napCountAnalysisLastFetch');
         sessionStorage.setItem(`schedule-recalc-${todayStart.toDateString()}`, 'true');
         
         // Clear database cache as well
@@ -654,10 +654,10 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     setAdjustmentContext("Adjusting today's rhythm…");
     
     // Clear cached prediction
-    localStorage.removeItem('aiPrediction');
-    localStorage.removeItem('aiPredictionLastFetch');
-    setAiPrediction(null);
-    setAiPredictionLoading(true);
+    localStorage.removeItem('napCountAnalysis');
+    localStorage.removeItem('napCountAnalysisLastFetch');
+    setNapCountAnalysis(null);
+    setNapCountAnalysisLoading(true);
     
     try {
       // Immediately fetch fresh prediction with current data
@@ -682,13 +682,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         Intl.DateTimeFormat().resolvedOptions().timeZone
       );
       
-      setAiPrediction(prediction);
-      localStorage.setItem('aiPrediction', JSON.stringify(prediction));
-      localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
+      setNapCountAnalysis(prediction);
+      localStorage.setItem('napCountAnalysis', JSON.stringify(prediction));
+      localStorage.setItem('napCountAnalysisLastFetch', new Date().toISOString());
     } catch (err) {
       // Error handled silently
     } finally {
-      setAiPredictionLoading(false);
+      setNapCountAnalysisLoading(false);
     }
     
     // Clear adjustment animation after 1.8 seconds
@@ -700,11 +700,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   
   // Detect nap transition and get nap counts - DON'T presume which will happen
   const transitionInfo = useMemo(() => {
-    // Check if AI detects transition OR baby is in age-based window
-    const aiTransition = aiPrediction?.is_transitioning;
+    // Check if analysis detects transition OR baby is in age-based window
+    const analysisTransition = napCountAnalysis?.is_transitioning;
     const ageBasedWindow = transitionWindow !== null;
     
-    if (!aiTransition && !ageBasedWindow) return null;
+    if (!analysisTransition && !ageBasedWindow) return null;
 
     // Prefer age-based guardrails; never show 2→1 before 12 months
     if (ageBasedWindow) {
@@ -717,9 +717,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       };
     }
 
-    // Fallback: AI-only transition
-    if (aiPrediction) {
-      const currentCount = Math.max(1, aiPrediction.total_naps_today);
+    // Fallback: analysis-only transition
+    if (napCountAnalysis) {
+      const currentCount = Math.max(1, napCountAnalysis.total_naps_today);
       const transitioningCount = Math.max(1, currentCount - 1);
       
       return {
@@ -732,15 +732,15 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     }
 
     return null;
-  }, [aiPrediction, transitionWindow]);
+  }, [napCountAnalysis, transitionWindow]);
   
   // Generate alternate schedule for transitions - default to showing higher nap count
   const [showAlternateSchedule, setShowAlternateSchedule] = useState(false);
   
   // Initialize to show higher nap count by default when transitioning
   useEffect(() => {
-    if (transitionInfo && transitionInfo.napCounts && aiPrediction) {
-      const displayNapCount = aiPrediction.total_naps_today;
+    if (transitionInfo && transitionInfo.napCounts && napCountAnalysis) {
+      const displayNapCount = napCountAnalysis.total_naps_today;
       const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
         ? transitionInfo.napCounts.transitioning
         : transitionInfo.napCounts.current;
@@ -749,7 +749,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const shouldShowAlternate = alternateNapCount > displayNapCount;
       setShowAlternateSchedule(shouldShowAlternate);
     }
-  }, [transitionInfo?.napCounts?.current, transitionInfo?.napCounts?.transitioning, aiPrediction?.total_naps_today]);
+  }, [transitionInfo?.napCounts?.current, transitionInfo?.napCounts?.transitioning, napCountAnalysis?.total_naps_today]);
   
   // Reset toggle when transition ends
   useEffect(() => {
@@ -771,11 +771,11 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
   }, [normalizedActivities]);
   
   const alternateSchedule = useMemo(() => {
-    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !aiPrediction) return null;
+    if (!transitionInfo || !hasTier3Data || !household?.baby_birthday || !napCountAnalysis) return null;
     
     try {
       // Get the nap count that's NOT in the display schedule
-      const displayNapCount = aiPrediction.total_naps_today;
+      const displayNapCount = napCountAnalysis.total_naps_today;
       const alternateNapCount = transitionInfo.napCounts.current === displayNapCount
         ? transitionInfo.napCounts.transitioning
         : transitionInfo.napCounts.current;
@@ -785,9 +785,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
         return null;
       }
       
-      const alternateAIPrediction: AISchedulePrediction = {
+      const alternateNapCountAnalysis: NapCountAnalysis = {
         total_naps_today: alternateNapCount,
-        confidence: aiPrediction.confidence,
+        confidence: napCountAnalysis.confidence,
         is_transitioning: true,
         reasoning: `Alternative ${alternateNapCount}-nap schedule`
       };
@@ -808,7 +808,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
       const result = generateAdaptiveSchedule(
         activitiesForEngine, 
         household.baby_birthday, 
-        alternateAIPrediction,
+        alternateNapCountAnalysis,
         undefined, // totalActivitiesCount
         true, // forceShowAllNaps - user explicitly selected this nap count
         nightSleepStartHour,
@@ -819,7 +819,7 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     } catch (error) {
       return null;
     }
-  }, [transitionInfo, hasTier3Data, household?.baby_birthday, aiPrediction, activities, userTimezone]);
+  }, [transitionInfo, hasTier3Data, household?.baby_birthday, napCountAnalysis, activities, userTimezone]);
   
   // Use alternate schedule when toggled during transitions
   const activeDisplaySchedule = (transitionInfo && showAlternateSchedule && alternateSchedule) 
@@ -999,13 +999,13 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     fetchRhythmInsights(true); // Show loading state only on first load
   }, [hasTier3Data, household, babyAgeInWeeks, activities.length, userTimezone]);
 
-  // Fetch AI-enhanced schedule prediction (only for Tier 2+)
+  // Fetch nap count analysis (only for Tier 2+)
   useEffect(() => {
     if (!hasTier2Data || !household) return;
     
-    const fetchAiPrediction = async (showLoadingState = false) => {
+    const fetchNapCountAnalysis = async (showLoadingState = false) => {
       if (showLoadingState) {
-        setAiPredictionLoading(true);
+        setNapCountAnalysisLoading(true);
       }
       try {
         // Get today's activities (use event dates, not logged_at)
@@ -1031,30 +1031,30 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           Intl.DateTimeFormat().resolvedOptions().timeZone
         );
         
-        setAiPrediction(prediction);
-        localStorage.setItem('aiPrediction', JSON.stringify(prediction));
-        localStorage.setItem('aiPredictionLastFetch', new Date().toISOString());
+        setNapCountAnalysis(prediction);
+        localStorage.setItem('napCountAnalysis', JSON.stringify(prediction));
+        localStorage.setItem('napCountAnalysisLastFetch', new Date().toISOString());
       } catch (err) {
         // Error handled silently
       } finally {
         if (showLoadingState) {
-          setAiPredictionLoading(false);
+          setNapCountAnalysisLoading(false);
         }
       }
     };
 
     // Check if we need to fetch - only generate new prediction at 5am each day
-    const lastFetch = localStorage.getItem('aiPredictionLastFetch');
-    const cached = localStorage.getItem('aiPrediction');
+    const lastFetch = localStorage.getItem('napCountAnalysisLastFetch');
+    const cached = localStorage.getItem('napCountAnalysis');
     
     // Load cached data IMMEDIATELY if available
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
-        setAiPrediction(parsed);
-        setAiPredictionLoading(false);
+        setNapCountAnalysis(parsed);
+        setNapCountAnalysisLoading(false);
       } catch (e) {
-        localStorage.removeItem('aiPrediction');
+        localStorage.removeItem('napCountAnalysis');
       }
     }
     
@@ -1066,17 +1066,17 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (!lastFetch || !cached) {
       // No cached prediction - show loading and fetch now
       shouldFetch = true;
-      fetchAiPrediction(true); // Show loading state only on first load
+      fetchNapCountAnalysis(true); // Show loading state only on first load
     } else {
       const lastFetchDate = new Date(lastFetch);
       const isNewDay = now.toDateString() !== lastFetchDate.toDateString();
       
       // Fetch in background if it's a new day AND we're past 5am
       if (isNewDay && currentHour >= 5) {
-        fetchAiPrediction(false); // Don't show loading state
+        fetchNapCountAnalysis(false); // Don't show loading state
       }
     }
-  }, [hasTier2Data, household, activities.length, aiPrediction]);
+  }, [hasTier2Data, household, activities.length, napCountAnalysis]);
 
   // Adaptive schedule is now generated via useMemo, no need for separate effect
 
