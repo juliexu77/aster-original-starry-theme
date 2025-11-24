@@ -16,7 +16,7 @@ interface TimelineChartProps {
   title: string;
   icon: React.ReactNode;
   activities: Activity[];
-  timeRange: '6weeks' | '3months' | '6months';
+  timeRange: '1week' | '6weeks' | '3months';
   dataExtractor: (activities: Activity[], date: Date) => number;
   unit: string;
   color: string;
@@ -100,12 +100,27 @@ export const TimelineChart = ({
     // Exclude today - go back to yesterday
     const yesterday = startOfDay(subDays(now, 1));
     
-    let daysBack = 42; // 6 weeks
+    let daysBack = 7; // 1 week
+    if (timeRange === '6weeks') daysBack = 42;
     if (timeRange === '3months') daysBack = 90;
-    if (timeRange === '6months') daysBack = 180;
     
-    const startDate = startOfDay(subDays(yesterday, daysBack));
+    const startDate = startOfDay(subDays(yesterday, daysBack - 1)); // Include yesterday
     const endDate = endOfDay(yesterday);
+    
+    // For 1 week, show daily data; otherwise show weekly averages
+    if (timeRange === '1week') {
+      const days = eachDayOfInterval({ start: startDate, end: endDate });
+      
+      const data = days.map(day => {
+        const value = dataExtractor(activities, day);
+        return {
+          label: format(day, 'EEE'), // Mon, Tue, etc.
+          value: value
+        };
+      });
+      
+      return { chartData: data, weeks: [] };
+    }
     
     // Get all weeks in the range
     const weeks = eachWeekOfInterval({ start: startDate, end: endDate }, { weekStartsOn: 1 });

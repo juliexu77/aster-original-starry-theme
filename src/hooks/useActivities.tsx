@@ -13,7 +13,7 @@ export interface DatabaseActivity {
   timezone?: string; // IANA timezone name (e.g., "America/Los_Angeles")
   details: {
     // Feed details
-    feedType?: "bottle" | "nursing" | "solid";
+    feedType?: "bottle" | "nursing";
     quantity?: string;
     unit?: "oz" | "ml";
     // Diaper details

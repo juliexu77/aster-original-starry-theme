@@ -107,20 +107,20 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
 
   // Detect first solids milestone across all activities
   const firstSolidDate = useMemo(() => {
-    const solidFeeds = activities.filter(a => 
-      a.type === 'feed' && a.details.feedType === 'solid'
+    const solidActivities = activities.filter(a => 
+      a.type === 'solids'
     );
     
-    if (solidFeeds.length === 0) return null;
+    if (solidActivities.length === 0) return null;
     
-    // Find the earliest solid feed
-    const earliest = solidFeeds.reduce((earliest, current) => {
+    // Find the earliest solid activity
+    const earliestSolid = solidActivities.reduce((earliest, current) => {
       const currentDate = new Date(current.logged_at);
       const earliestDate = new Date(earliest.logged_at);
       return currentDate < earliestDate ? current : earliest;
     });
     
-    return new Date(earliest.logged_at);
+    return new Date(earliestSolid.logged_at);
   }, [activities]);
 
   // Calculate weekly stats
@@ -463,10 +463,13 @@ export default function WeeklyReport({ config }: WeeklyReportProps) {
       ? avgBedtimeMinutes
       : null;
 
-    // Detect solids dominance (>25% of feeds are solids for this period)
+    // Detect solids dominance (>25% of feed/solids activities are solids for this period)
     const totalFeedsInPeriod = feeds.length;
-    const solidFeedsInPeriod = feeds.filter(f => f.details.feedType === 'solid').length;
-    const solidsDominant = totalFeedsInPeriod > 0 && (solidFeedsInPeriod / totalFeedsInPeriod) > 0.25;
+    const solidsActivitiesInPeriod = weekActivities.filter(a => 
+      a.type === 'solids'
+    ).length;
+    const solidsDominant = (totalFeedsInPeriod + solidsActivitiesInPeriod) > 0 && 
+      (solidsActivitiesInPeriod / (totalFeedsInPeriod + solidsActivitiesInPeriod)) > 0.25;
 
     // Detect feed frequency stabilization (feeds/day consistent across period)
     const dailyFeedCounts = feedIncludedDays.map(d => d.feeds).filter(f => f > 0);

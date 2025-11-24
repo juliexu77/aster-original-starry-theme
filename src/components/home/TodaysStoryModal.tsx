@@ -61,10 +61,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
   const feedCount = todayActivities.filter(a => a.type === "feed").length;
   const napCount = todayActivities.filter(a => a.type === "nap" && isDaytimeNap(a, nightSleepStartHour, nightSleepEndHour)).length;
   
-  // Get solid food info
-  const solidFeeds = todayActivities.filter(a => a.type === "feed" && a.details.feedType === "solid");
-  const hadSolidFood = solidFeeds.length > 0;
-  
   // Get special notes/moments from photos or activities with notes
   const specialMoments = todayActivities.filter(a => 
     a.details.note && a.details.note.length > 0 && a.type !== "photo"
@@ -171,16 +167,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
       return `${noteWords}${firstNote.length > 20 ? '...' : ''}. A day to remember.`;
     }
 
-    // Solid food milestone
-    if (hadSolidFood) {
-      const solidMeal = solidFeeds[0];
-      if (solidMeal?.details.note) {
-        const foodName = solidMeal.details.note.toLowerCase();
-        return `First taste of ${foodName}. A new world opens.`;
-      }
-      return `New flavors. Curious eyes. Growing strong.`;
-    }
-
     // Extra hungry day
     if (feedDiff >= 3) {
       return `${feedCount} feeds — steady as always. Growing fast.`;
@@ -240,7 +226,6 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
       feedCount,
       napCount,
       totalNapMinutes,
-      hadSolidFood,
       longestWakeWindow: longestWakeWindowMinutes,
       specialMoments: allSpecialNotes.map(a => a.details.note || '')
     });
@@ -257,7 +242,7 @@ export function TodaysStoryModal({ isOpen, onClose, activities, babyName, target
     }
 
     return headline;
-  }, [dayStart, feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindowMinutes, allSpecialNotes]);
+  }, [dayStart, feedCount, napCount, totalNapMinutes, longestWakeWindowMinutes, allSpecialNotes]);
 
   // Navigation handlers
   const currentDate = targetDate || format(new Date(), 'yyyy-MM-dd');
