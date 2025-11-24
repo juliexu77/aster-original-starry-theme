@@ -16,12 +16,12 @@ interface InsightsTabProps {
   activities: Activity[];
 }
 
-type TimeRange = '6weeks' | '3months' | '6months';
+type TimeRange = '1week' | '6weeks' | '3months';
 
 export const InsightsTab = ({ activities }: InsightsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
-  const [timeRange, setTimeRange] = useState<TimeRange>('6weeks');
+  const [timeRange, setTimeRange] = useState<TimeRange>('1week');
   const [expandedCharts, setExpandedCharts] = useState<Record<string, boolean>>({});
 
   // Helper to parse time to minutes
@@ -367,7 +367,7 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
       {/* Time Range Switcher */}
       <div className="mx-2">
         <div className="flex justify-center gap-2">
-        {(['6weeks', '3months', '6months'] as TimeRange[]).map((range) => (
+        {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
           <Button
             key={range}
             variant={timeRange === range ? 'default' : 'outline'}
@@ -375,9 +375,9 @@ export const InsightsTab = ({ activities }: InsightsTabProps) => {
             onClick={() => setTimeRange(range)}
             className="text-xs"
           >
+            {range === '1week' && '1 Week'}
             {range === '6weeks' && '6 Weeks'}
             {range === '3months' && '3 Months'}
-            {range === '6months' && '6 Months'}
           </Button>
         ))}
         </div>

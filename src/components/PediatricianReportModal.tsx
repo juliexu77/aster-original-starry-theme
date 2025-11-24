@@ -158,11 +158,11 @@ export function PediatricianReportModal({
       const maxVolume = dailyVolumes.length > 0 ? Math.max(...dailyVolumes) : 0;
 
       // First solid date
-      const solidFeeds = activities.filter(a => 
-        a.type === 'feed' && a.details?.feedType === 'solid'
+      const solidActivities = activities.filter(a => 
+        a.type === 'solids'
       );
-      const firstSolidDate = solidFeeds.length > 0 
-        ? format(new Date(solidFeeds.reduce((earliest, current) => {
+      const firstSolidDate = solidActivities.length > 0 
+        ? format(new Date(solidActivities.reduce((earliest, current) => {
             const currentDate = new Date(current.loggedAt!);
             const earliestDate = new Date(earliest.loggedAt!);
             return currentDate < earliestDate ? current : earliest;

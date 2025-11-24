@@ -11,7 +11,7 @@ export interface Activity {
   timezone?: string; // IANA timezone name where activity was logged
   details: {
     // Feed details
-    feedType?: "bottle" | "nursing" | "solid";
+    feedType?: "bottle" | "nursing";
     quantity?: string;
     unit?: "oz" | "ml";
     minutesLeft?: string;
@@ -139,12 +139,6 @@ const getPersonalizedActivityText = (activity: Activity, babyName: string = "Bab
           feedText = `${babyName} ${t('nursed')} ${totalTime} ${t('minTotal')}`;
         } else {
           feedText = `${babyName} ${t('nursed')}`;
-        }
-      } else if (feedType === "solid") {
-        if (solidDescription) {
-          feedText = `${babyName} ${t('ate')} ${solidDescription}`;
-        } else {
-          feedText = `${babyName} ${t('hadSolids')}`;
         }
       } else {
         feedText = `${babyName} ${t('hadAFeeding')}`;

@@ -55,7 +55,7 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
   const [time, setTime] = useState(() => getCurrentTime());
   
   // Feed state
-  const [feedType, setFeedType] = useState<"bottle" | "nursing" | "solid">("bottle");
+  const [feedType, setFeedType] = useState<"bottle" | "nursing">("bottle");
   const [quantity, setQuantity] = useState("");
   
   // Get last bottle feed unit from household activities
@@ -152,7 +152,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       
       if (editingActivity.type === "feed") {
         const details = editingActivity.details;
-        setFeedType(details.feedType || "bottle");
+        const editFeedType = details.feedType;
+        // Only set feedType if it's bottle or nursing (skip solid since it's now a separate type)
+        if (editFeedType === 'bottle' || editFeedType === 'nursing') {
+          setFeedType(editFeedType);
+        }
         setQuantity(details.quantity || "");
         setUnit(details.unit || "oz");
         setMinutesLeft(details.minutesLeft || "");
@@ -238,7 +242,11 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
       if (prefillActivity) {
         if (quickAddType === 'feed' && prefillActivity.type === 'feed') {
           const details = prefillActivity.details;
-          setFeedType(details.feedType || "bottle");
+          const prefillFeedType = details.feedType;
+          // Only prefill if it's bottle or nursing (skip solid)
+          if (prefillFeedType === 'bottle' || prefillFeedType === 'nursing') {
+            setFeedType(prefillFeedType);
+          }
           setQuantity(details.quantity || "");
           setUnit(details.unit || "oz");
           setMinutesLeft(details.minutesLeft || "");
@@ -482,8 +490,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
             details.minutesRight = minutesRight;
             localStorage.setItem('lastNursingRight', minutesRight);
           }
-        } else if (feedType === "solid") {
-          if (solidDescription) details.solidDescription = solidDescription;
         }
         details.isDreamFeed = isDreamFeed;
         if (note) details.note = note;
@@ -669,11 +675,10 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium mb-2 block">{t('type')}</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                      { type: "bottle", icon: Milk, label: t('bottle') },
-                      { type: "nursing", icon: Baby, label: t('nursing') },
-                      { type: "solid", icon: Carrot, label: t('solid') }
+                      { type: "nursing", icon: Baby, label: t('nursing') }
                     ].map(({ type, icon: Icon, label }) => (
                       <Button
                         key={type}
@@ -752,20 +757,6 @@ export const AddActivityModal = ({ onAddActivity, isOpen, onClose, showFixedButt
                     </div>
                   </div>
                 )}
-
-                {feedType === "solid" && (
-                  <div>
-                    <Label htmlFor="solid-description" className="text-sm font-medium mb-2 block">{t('whatDidTheyEat')}</Label>
-                    <Textarea
-                      id="solid-description"
-                      value={solidDescription}
-                      onChange={(e) => setSolidDescription(e.target.value)}
-                      placeholder="e.g., banana puree, rice cereal, cheerios..."
-                      rows={2}
-                      className="resize-none"
-                    />
-                  </div>
-                 )}
 
                 <div>
                   <Label htmlFor="feed-note" className="text-sm font-medium mb-2 block">{t('notes')}</Label>

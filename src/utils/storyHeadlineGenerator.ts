@@ -7,13 +7,12 @@ interface StoryData {
   feedCount: number;
   napCount: number;
   totalNapMinutes: number;
-  hadSolidFood: boolean;
   longestWakeWindow: number;
   specialMoments: string[];
 }
 
 export function generateStoryHeadline(data: StoryData): string {
-  const { feedCount, napCount, totalNapMinutes, hadSolidFood, longestWakeWindow, specialMoments } = data;
+  const { feedCount, napCount, totalNapMinutes, longestWakeWindow, specialMoments } = data;
   
   // Calculate averages for context
   const avgNapLength = napCount > 0 ? Math.round(totalNapMinutes / napCount) : 0;
@@ -33,11 +32,6 @@ export function generateStoryHeadline(data: StoryData): string {
   // Short sleep day
   if (totalNapMinutes < 90 && napCount > 0) {
     return "⚡ A lively day with short naps";
-  }
-  
-  // Solid food milestone
-  if (hadSolidFood) {
-    return "🥄 Exploring new foods and flavors";
   }
   
   // Many feeds
