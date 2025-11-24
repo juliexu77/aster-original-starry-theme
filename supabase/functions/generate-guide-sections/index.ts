@@ -308,8 +308,12 @@ serve(async (req) => {
 
     const guideSections = await generateGuideSections(lovableApiKey, geminiPayload, dataQuality);
 
-    // Return guide sections
-    return new Response(JSON.stringify(guideSections), {
+    // Return guide sections with baseline and pattern context
+    return new Response(JSON.stringify({
+      ...guideSections,
+      baseline_context: baselineContext,
+      current_pattern: currentPatternContext
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 

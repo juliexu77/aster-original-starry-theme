@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { Activity } from "@/components/ActivityCard";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useNightSleepWindow } from "@/hooks/useNightSleepWindow";
 
 interface DailyStoryCirclesProps {
   activities: Activity[];
@@ -16,6 +17,8 @@ export const DailyStoryCircles = ({
   babyPhotoUrl,
   onSelectDay 
 }: DailyStoryCirclesProps) => {
+  const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
+  
   // Get today's date and activities
   const today = new Date();
   const todayStr = format(today, 'yyyy-MM-dd');
@@ -29,8 +32,12 @@ export const DailyStoryCircles = ({
   const activityWithPhoto = todayActivities.find(a => a.details?.photoUrl);
   const hasPhotoFromToday = !!activityWithPhoto;
 
-  // Don't show if no activities today
-  if (todayActivities.length === 0) {
+  // Check if current time is within "story time" window (bedtime to wake-up time)
+  const currentHour = today.getHours();
+  const isStoryTime = currentHour >= nightSleepStartHour || currentHour < nightSleepEndHour;
+
+  // Don't show if no activities today OR if it's not story time
+  if (todayActivities.length === 0 || !isStoryTime) {
     return null;
   }
 
