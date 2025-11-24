@@ -500,8 +500,9 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
     if (babyAgeInDays >= 180 && babyAgeInDays <= 270) {
       return { from: 3, to: 2, label: "6-9 month transition" };
     }
-    if (babyAgeInDays >= 365 && babyAgeInDays <= 547) {
-      return { from: 2, to: 1, label: "12-18 month transition" };
+    // Made more conservative: 15-18 months instead of 12-18 months
+    if (babyAgeInDays >= 456 && babyAgeInDays <= 547) {
+      return { from: 2, to: 1, label: "15-18 month transition" };
     }
     return null;
   }, [babyAgeInDays]);

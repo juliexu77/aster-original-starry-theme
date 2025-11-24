@@ -218,8 +218,9 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     if (babyAgeInDays >= 180 && babyAgeInDays <= 270) {
       return { from: 3, to: 2, label: "6-9 month transition" };
     }
-    if (babyAgeInDays >= 365 && babyAgeInDays <= 547) {
-      return { from: 2, to: 1, label: "12-18 month transition" };
+    // Made more conservative: 15-18 months instead of 12-18 months
+    if (babyAgeInDays >= 456 && babyAgeInDays <= 547) {
+      return { from: 2, to: 1, label: "15-18 month transition" };
     }
     return null;
   }, [babyAgeInDays]);
@@ -1554,22 +1555,6 @@ const lastDiaper = displayActivities
             onOpenAddActivity={(type, prefillActivity) => onAddActivity(type, prefillActivity)}
             activities={activities}
             addActivity={addActivity}
-            chatComponent={
-              <ParentingChat
-                activities={activities.map(a => ({
-                  id: a.id,
-                  type: a.type,
-                  logged_at: a.loggedAt || "",
-                  details: a.details
-                }))}
-                babyName={babyName}
-                babyAgeInWeeks={babyAgeInWeeks}
-                babySex={household?.baby_sex || undefined}
-                userName={userName}
-                predictionIntent={prediction?.intent}
-                predictionConfidence={prediction?.confidence}
-              />
-            }
           />
 
         {/* Predicted Schedule - Collapsible */}
