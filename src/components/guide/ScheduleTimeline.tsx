@@ -415,6 +415,11 @@ export const ScheduleTimeline = ({
                 <>
                   <button
                     onClick={() => {
+                      console.log('🔘 Toggle clicked - Lower nap count:', {
+                        lowerCount,
+                        currentDisplayedNaps,
+                        willToggle: currentDisplayedNaps !== lowerCount
+                      });
                       // Click on lower nap count button - request that specific count
                       if (currentDisplayedNaps !== lowerCount) {
                         onToggleAlternate?.(lowerCount);
@@ -430,6 +435,11 @@ export const ScheduleTimeline = ({
                   </button>
                   <button
                     onClick={() => {
+                      console.log('🔘 Toggle clicked - Higher nap count:', {
+                        higherCount,
+                        currentDisplayedNaps,
+                        willToggle: currentDisplayedNaps !== higherCount
+                      });
                       // Click on higher nap count button - request that specific count
                       if (currentDisplayedNaps !== higherCount) {
                         onToggleAlternate?.(higherCount);
