@@ -83,34 +83,9 @@ export const NextNeedHero = ({
             </h3>
 
             {/* Middle line */}
-            <p className="text-sm text-foreground/70 leading-relaxed mb-3">
+            <p className="text-sm text-foreground/70 leading-relaxed">
               {getContextLine()}
             </p>
-
-            {/* Primary action */}
-            {shouldShowNapAction && (
-              <Button
-                onClick={() => onLogActivity('nap')}
-                variant="default"
-                size="sm"
-                className="w-full mb-3"
-              >
-                <Moon className="w-4 h-4 mr-2" />
-                Start nap
-              </Button>
-            )}
-
-            {shouldShowFeedAction && !shouldShowNapAction && (
-              <Button
-                onClick={() => onLogActivity('feed')}
-                variant="default"
-                size="sm"
-                className="w-full mb-3"
-              >
-                <Milk className="w-4 h-4 mr-2" />
-                Log feeding
-              </Button>
-            )}
 
             {/* Expand trigger */}
             <CollapsibleTrigger asChild>
