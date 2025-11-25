@@ -375,7 +375,7 @@ export const DailyReassurance = ({
           <IconComponent className="w-4 h-4 text-primary/60 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-1">
-              Today's Overview
+              Noticed Today
             </p>
             <p className="text-sm text-foreground/70 leading-relaxed">
               {reassuranceMessage}
