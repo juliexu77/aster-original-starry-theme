@@ -30,6 +30,7 @@ import { FirstActivityCelebration } from "@/components/FirstActivityCelebration"
 import { PrefillDayModal } from "@/components/PrefillDayModal";
 import { SchedulePreview } from "@/components/home/SchedulePreview";
 import { isDaytimeNap, isNightSleep } from "@/utils/napClassification";
+import { DailyReassurance } from "@/components/home/DailyReassurance";
 import { ScheduleTimeline } from "@/components/guide/ScheduleTimeline";
 import { generateAdaptiveSchedule, type NapCountAnalysis } from "@/utils/adaptiveScheduleGenerator";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -1543,6 +1544,14 @@ const lastDiaper = displayActivities
               />
             </div>
         )}
+
+        {/* Daily Reassurance */}
+        <DailyReassurance
+          activities={activities}
+          babyName={babyName || 'Baby'}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
 
         {/* Zone 1: Next Need Hero */}
         <NextNeedHero
