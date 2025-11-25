@@ -211,10 +211,6 @@ function parseActivitiesToEvents(activities: Activity[]): PredictionEvent[] {
       if (activity.type === 'nap' && activity.details?.startTime) {
         // Use UTC date from loggedAt for consistency
         const loggedDate = new Date(utcTimestamp);
-        const hours = loggedDate.getUTCHours();
-        const minutes = loggedDate.getUTCMinutes();
-        const seconds = loggedDate.getUTCSeconds();
-        const ms = loggedDate.getUTCMilliseconds();
         
         // Parse start time
         const startMatch = activity.details.startTime.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
@@ -331,12 +327,17 @@ function extractSleepSegments(events: PredictionEvent[]): SleepSegment[] {
   sleepSegments.forEach(segment => {
     if (!segment.end) {
       const timeSinceStart = (now.getTime() - segment.start.getTime()) / 60000; // minutes
-      const nextAfter = eventsAsc.find(e => e.timestamp > segment.start);
+      const nextAfter = eventsAsc.find(e => e.timestamp > segment.start && e.type !== 'nap' && e.type !== 'night');
       
-      // Don't auto-close any sleep that's ongoing (within last 2 hours) or night sleep
-      // Only infer closure for old unclosed naps (likely user forgot to log wake time)
-      if (nextAfter && segment.type !== 'night' && timeSinceStart > 120) {
+      // If there's a subsequent non-sleep activity (feed, diaper, etc.), 
+      // the baby must have woken up by then - use that as the nap end time
+      if (nextAfter && segment.type !== 'night') {
         segment.end = nextAfter.timestamp;
+        console.log('🔄 Auto-closing nap based on subsequent activity:', {
+          napStart: segment.start.toISOString(),
+          nextActivity: nextAfter.timestamp.toISOString(),
+          activityType: nextAfter.type
+        });
       }
     }
   });
