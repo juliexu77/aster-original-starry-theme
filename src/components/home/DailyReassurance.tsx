@@ -232,7 +232,7 @@ export const DailyReassurance = ({
 
   return (
     <div className="mx-2 mb-3">
-      <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-accent/10 to-accent/5 border border-border/20">
+      <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-card-ombre-4-dark to-card-ombre-4 border border-border/20 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
         <p className="text-sm text-foreground/80 leading-relaxed text-center">
           {reassuranceMessage}
         </p>
