@@ -130,7 +130,7 @@ export const TodaysPulse = ({
   const hasDeviations = deviations.some(d => d.hasDeviation);
 
   return (
-    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-2-dark to-card-ombre-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
+    <div className="mx-2 mb-6 rounded-xl bg-gradient-to-b from-card-ombre-3-dark to-card-ombre-3 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-border/20 overflow-hidden">
       <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
         {/* Header */}
         <div className="px-4 py-5 border-b border-border/30">

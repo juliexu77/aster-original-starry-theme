@@ -75,7 +75,7 @@ export const NextNeedHero = ({
   return (
     <div className="mx-2 mb-6">
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <div className="rounded-xl bg-gradient-to-b from-card-ombre-1-dark to-card-ombre-1 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden border border-border/20">
+        <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="px-4 py-5">
             {/* Top line */}
             <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
