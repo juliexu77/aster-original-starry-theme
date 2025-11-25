@@ -1622,11 +1622,21 @@ const lastDiaper = displayActivities
                   transitionNapCounts={transitionInfo?.napCounts}
                   showAlternate={showAlternateSchedule}
                   onToggleAlternate={(desiredNapCount: number) => {
+                    console.log('🔄 Toggle handler called:', {
+                      desiredNapCount,
+                      alternateScheduleNapCount,
+                      mainScheduleNapCount,
+                      currentShowAlternate: showAlternateSchedule
+                    });
                     // Toggle between schedules based on desired nap count
                     if (desiredNapCount === alternateScheduleNapCount) {
+                      console.log('  ✅ Setting showAlternateSchedule to TRUE');
                       setShowAlternateSchedule(true);
                     } else if (desiredNapCount === mainScheduleNapCount) {
+                      console.log('  ✅ Setting showAlternateSchedule to FALSE');
                       setShowAlternateSchedule(false);
+                    } else {
+                      console.log('  ⚠️ Desired nap count matches neither schedule');
                     }
                   }}
                   mainScheduleNapCount={mainScheduleNapCount}
