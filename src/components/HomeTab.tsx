@@ -1622,17 +1622,12 @@ const lastDiaper = displayActivities
                   transitionNapCounts={transitionInfo?.napCounts}
                   showAlternate={showAlternateSchedule}
                   onToggleAlternate={(desiredNapCount: number) => {
-                    // Determine which schedule to show based on desired nap count
+                    // Toggle between schedules based on desired nap count
                     if (desiredNapCount === alternateScheduleNapCount) {
                       setShowAlternateSchedule(true);
                     } else if (desiredNapCount === mainScheduleNapCount) {
                       setShowAlternateSchedule(false);
                     }
-                    // Provide feedback even if already on that schedule
-                    toast({
-                      title: `Showing ${desiredNapCount}-nap schedule`,
-                      description: "Predicted schedule updated",
-                    });
                   }}
                   mainScheduleNapCount={mainScheduleNapCount}
                   alternateScheduleNapCount={alternateScheduleNapCount}

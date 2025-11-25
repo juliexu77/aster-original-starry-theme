@@ -78,9 +78,9 @@ export const NextNeedHero = ({
         <div className="rounded-xl bg-gradient-to-b from-primary/20 via-primary/12 to-primary/5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
           <div className="px-4 py-5">
             {/* Top line */}
-            <h2 className="text-sm font-semibold text-foreground/90 mb-3">
-              What your baby probably needs next
-            </h2>
+            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
+              What's Next
+            </h3>
 
             {/* Middle line */}
             <p className="text-sm text-foreground/70 leading-relaxed mb-3">
