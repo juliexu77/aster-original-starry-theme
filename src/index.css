@@ -6,10 +6,10 @@
 
 @layer base {
   :root {
-    /* Font stacks - Editorial Style */
+    /* Font stacks - Editorial Style: Emotion is Serif, Data is Sans */
     --font-serif: "Fraunces", Georgia, serif;
     --font-sans: "Satoshi", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-num: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-num: "Satoshi", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     
     /* Brand colors - base definitions (for dark mode) */
     --pp-mint: 153 35% 50%; /* #54AF7D - original sage mint */
