@@ -1,5 +1,5 @@
 import { Activity } from "@/components/ActivityCard";
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes } from "date-fns";
 import { getActivityEventDate } from "@/utils/activityDate";
 import { Sun, Moon } from "lucide-react";
 
@@ -15,7 +15,6 @@ interface CurrentMomentArcProps {
 const getMostRecentActivity = (activities: Activity[]): Activity | null => {
   if (activities.length === 0) return null;
   
-  // Sort by loggedAt descending
   const sorted = [...activities].sort((a, b) => {
     const aTime = new Date(a.loggedAt || '').getTime();
     const bTime = new Date(b.loggedAt || '').getTime();
@@ -28,10 +27,8 @@ const getMostRecentActivity = (activities: Activity[]): Activity | null => {
 // Determine if we're in daytime or nighttime
 const isDaytime = (currentHour: number, nightSleepStartHour: number, nightSleepEndHour: number): boolean => {
   if (nightSleepEndHour > nightSleepStartHour) {
-    // Unusual case: daytime sleep (e.g., sleep 10am-6pm, awake 6pm-10am)
     return currentHour >= nightSleepEndHour || currentHour < nightSleepStartHour;
   } else {
-    // Normal overnight case: e.g., sleep 7pm-7am, awake 7am-7pm
     return currentHour >= nightSleepEndHour && currentHour < nightSleepStartHour;
   }
 };
@@ -57,7 +54,6 @@ const getCurrentState = (
   const currentHour = now.getHours();
   const isDay = isDaytime(currentHour, nightSleepStartHour, nightSleepEndHour);
   
-  // If there's an ongoing nap, prioritize that
   if (ongoingNap) {
     const startTime = ongoingNap.details?.startTime;
     if (startTime) {
@@ -66,7 +62,6 @@ const getCurrentState = (
       startDate.setHours(hours, minutes, 0, 0);
       const napMinutes = differenceInMinutes(now, startDate);
       
-      // Check if we're in the night sleep window
       const isInNightWindow = !isDay;
       
       if (napMinutes < 5) {
@@ -76,18 +71,16 @@ const getCurrentState = (
         return "Just fell asleep";
       }
       
-      // If in night sleep window, show night sleep messages
       if (isInNightWindow) {
         return "Soundly asleep";
       }
       
-      // Check if this is the first nap of the day
       const todayNaps = activities.filter(a => {
         const activityDate = new Date(a.loggedAt || '');
         const today = new Date();
         return a.type === 'nap' && 
           activityDate.toDateString() === today.toDateString() &&
-          a.details?.endTime; // Only count completed naps
+          a.details?.endTime;
       });
       
       const isFirstNap = todayNaps.length === 0;
@@ -96,14 +89,12 @@ const getCurrentState = (
         return "First nap";
       }
       
-      // Daytime nap variations based on duration
       if (napMinutes < 20) {
         return "Quick snooze";
       } else if (napMinutes > 90) {
         return "Long snooze";
       }
       
-      // Time-based variations for subsequent naps
       if (currentHour >= 15 && currentHour < 18) {
         return "Cat nap";
       } else if (currentHour >= 12 && currentHour < 17) {
@@ -115,10 +106,8 @@ const getCurrentState = (
     return "Nap in progress";
   }
   
-  // Get most recent activity
   const recentActivity = getMostRecentActivity(activities);
   if (!recentActivity) {
-    // No activity yet
     if (currentHour >= 5 && currentHour < 10) {
       return "Starting the morning";
     } else if (currentHour >= 19 || currentHour < 5) {
@@ -130,14 +119,12 @@ const getCurrentState = (
   const activityTime = new Date(recentActivity.loggedAt || '');
   const minutesSince = differenceInMinutes(now, activityTime);
   
-  // SLEEP STATES
   if (recentActivity.type === 'nap') {
     const endTime = recentActivity.details?.endTime;
     const startTime = recentActivity.details?.startTime;
     const isNightTime = currentHour >= 19 || currentHour < 5;
     
     if (endTime) {
-      // Calculate nap duration for delightful variations
       if (startTime) {
         const [startHours, startMinutes] = startTime.split(':').map(Number);
         const [endHours, endMinutes] = endTime.split(':').map(Number);
@@ -148,7 +135,6 @@ const getCurrentState = (
         const napDuration = differenceInMinutes(endDate, startDate);
         
         if (minutesSince < 10) {
-          // Night wake-ups
           if (isNightTime) {
             if (minutesSince < 3) {
               return "Just woke up";
@@ -159,7 +145,6 @@ const getCurrentState = (
             }
           }
           
-          // Add context based on nap length
           if (napDuration < 20) {
             return "Just woke up from quick snooze";
           } else if (napDuration > 90) {
@@ -169,7 +154,6 @@ const getCurrentState = (
         }
       }
       
-      // Nap has ended
       if (minutesSince < 10) {
         if (isNightTime) {
           return "Late-night wake";
@@ -179,14 +163,12 @@ const getCurrentState = (
         return "Nap just ended";
       }
     } else if (!ongoingNap) {
-      // Nap was logged but no ongoing nap - might be a completed nap
       if (minutesSince < 10) {
         return "Just woke up";
       }
     }
   }
   
-  // FEED & SOLIDS STATES
   if (recentActivity.type === 'feed') {
     const quantity = recentActivity.details?.quantity;
     const unit = recentActivity.details?.unit;
@@ -194,7 +176,6 @@ const getCurrentState = (
     const minutesRight = recentActivity.details?.minutesRight;
     const isNightTime = currentHour >= 19 || currentHour < 5;
     
-    // Count today's feeds for milestone celebrations
     const todayFeeds = activities.filter(a => {
       const activityDate = new Date(a.loggedAt || '');
       const today = new Date();
@@ -203,7 +184,6 @@ const getCurrentState = (
     }).length;
     
     if (minutesSince < 10) {
-      // Night feed messages
       if (isNightTime) {
         if (minutesSince < 3) {
           return "Just had a night feed";
@@ -214,14 +194,12 @@ const getCurrentState = (
         }
       }
       
-      // Celebrate feed milestones
       if (todayFeeds === 3) {
         return "Third feed today! 🎉";
       } else if (todayFeeds === 5) {
         return "Fifth feed today! 🌟";
       }
       
-      // Full belly for larger feeds
       const quantityNum = quantity ? parseFloat(quantity) : 0;
       const nursingMinutes = (minutesLeft ? parseInt(minutesLeft) : 0) + (minutesRight ? parseInt(minutesRight) : 0);
       
@@ -251,7 +229,6 @@ const getCurrentState = (
     const foodDescription = recentActivity.details?.solidDescription;
     if (minutesSince < 15) {
       if (foodDescription) {
-        // Check if this is the first time this food appears
         const previousSolids = activities.filter(a => 
           a.type === 'solids' && 
           a.id !== recentActivity.id &&
@@ -268,7 +245,6 @@ const getCurrentState = (
     }
   }
   
-  // DIAPER STATES
   if (recentActivity.type === 'diaper') {
     if (minutesSince < 10) {
       const diaperType = recentActivity.details?.diaperType;
@@ -279,8 +255,6 @@ const getCurrentState = (
     }
   }
   
-  // AWARE / ROUTINE STATES
-  // Find the last sleep activity to calculate awake time
   const lastSleep = activities
     .filter(a => a.type === 'nap')
     .sort((a, b) => {
@@ -296,14 +270,12 @@ const getCurrentState = (
     wakeDate.setHours(hours, minutes, 0, 0);
     const awakeMinutes = differenceInMinutes(now, wakeDate);
     
-    // Only show awake time if it's a valid positive number
     if (!isNaN(awakeMinutes) && awakeMinutes >= 0) {
       if (awakeMinutes < 15) {
         return "Just started awake time";
       } else if (awakeMinutes > 150) {
         return `Long stretch awake · ${getDurationString(awakeMinutes)}`;
       } else if (awakeMinutes > 120) {
-        // Getting sleepy after 2+ hours awake
         return "Getting sleepy";
       } else if (awakeMinutes > 60) {
         return `Awake · ${getDurationString(awakeMinutes)}`;
@@ -312,13 +284,11 @@ const getCurrentState = (
     }
   }
   
-  // Check if bedtime is approaching (within 1 hour of night sleep start)
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const nightSleepStartMinute = 0; // Using nightSleepStartHour only, assuming on the hour
+  const nightSleepStartMinute = 0;
   const bedtimeMinutes = nightSleepStartHour * 60 + nightSleepStartMinute;
   let minutesUntilBedtime = bedtimeMinutes - currentMinutes;
   
-  // Handle midnight crossing
   if (minutesUntilBedtime < 0) {
     minutesUntilBedtime += 24 * 60;
   }
@@ -327,7 +297,6 @@ const getCurrentState = (
     return "Bedtime coming soon";
   }
   
-  // Time-based fallbacks
   if (currentHour >= 5 && currentHour < 9) {
     return "Starting the morning";
   } else if (currentHour >= 17 && currentHour < 20) {
@@ -356,12 +325,11 @@ export const CurrentMomentArc = ({
   
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
   
-  // Calculate position along the arc (0 to 1, where 0 is start of day/night and 1 is end)
+  // Calculate position along the arc (0 = start, 1 = end of wake/sleep cycle)
   const calculateArcPosition = (): number => {
     const currentTimeInMinutes = currentHour * 60 + currentMinutes;
     
     if (isDay) {
-      // Daytime: from nightSleepEndHour to nightSleepStartHour
       const dayStartMinutes = nightSleepEndHour * 60;
       const dayEndMinutes = nightSleepStartHour * 60;
       const dayDuration = nightSleepStartHour > nightSleepEndHour 
@@ -373,7 +341,6 @@ export const CurrentMomentArc = ({
       
       return Math.min(Math.max(minutesSinceDayStart / dayDuration, 0), 1);
     } else {
-      // Nighttime: from nightSleepStartHour to nightSleepEndHour
       const nightStartMinutes = nightSleepStartHour * 60;
       const nightEndMinutes = nightSleepEndHour * 60;
       const nightDuration = nightSleepEndHour > nightSleepStartHour
@@ -389,52 +356,158 @@ export const CurrentMomentArc = ({
   
   const arcPosition = calculateArcPosition();
   
-  // Calculate triangle position on the arc
-  // Arc goes from angle 180° (left) to 0° (right) on a semicircle
-  const arcAngle = Math.PI - (arcPosition * Math.PI); // 180° to 0°
-  const arcRadius = 80;
-  const centerX = 100;
-  const centerY = 100;
+  // Calculate icon position on the arc (0 = left, 1 = right)
+  const arcAngle = Math.PI * (1 - arcPosition); // π to 0 (left to right)
+  const arcRadius = 180;
+  const centerX = 200;
+  const centerY = 210;
   
-  const triangleX = centerX + Math.cos(arcAngle) * arcRadius;
-  const triangleY = centerY - Math.sin(arcAngle) * arcRadius;
+  const iconX = centerX - Math.cos(arcAngle) * arcRadius;
+  const iconY = centerY - Math.sin(arcAngle) * arcRadius;
+  
+  // Check if in twilight zone (last 20% of arc)
+  const inTwilightZone = arcPosition >= 0.8;
+  
+  // Create path for trailing fill (from start to current position)
+  const createTrailPath = (): string => {
+    const startAngle = Math.PI; // Start at left (180°)
+    const currentAngle = Math.PI * (1 - arcPosition); // Current position
+    
+    // Create arc path
+    const startX = centerX - Math.cos(startAngle) * arcRadius;
+    const startY = centerY - Math.sin(startAngle) * arcRadius;
+    
+    const endX = centerX - Math.cos(currentAngle) * arcRadius;
+    const endY = centerY - Math.sin(currentAngle) * arcRadius;
+    
+    const largeArcFlag = arcPosition > 0.5 ? 1 : 0;
+    
+    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endX} ${endY} L ${centerX} ${centerY} Z`;
+  };
+  
+  const trailPath = createTrailPath();
   
   return (
     <div className="px-0 pb-2 relative z-10">
       <div className="relative w-full flex flex-col items-center">
-        {/* Large prominent arc with peachy-pink gradient */}
         <svg
-          viewBox="0 0 400 220"
+          viewBox="0 0 400 240"
           className="w-full"
           style={{ maxWidth: '100%' }}
         >
           <defs>
-            {/* Daytime gradient: soft peachy-cream to pink/mauve */}
-            <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(25 35% 90%)" stopOpacity="0.7" />
-              <stop offset="50%" stopColor="hsl(15 40% 85%)" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="hsl(340 30% 80%)" stopOpacity="0.85" />
+            {/* Daytime gradients */}
+            <linearGradient id="dayBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(30 40% 92%)" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="hsl(15 45% 88%)" stopOpacity="0.35" />
             </linearGradient>
             
-            {/* Nighttime gradient: soft indigo to lavender */}
-            <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(240 25% 75%)" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="hsl(250 20% 78%)" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="hsl(260 18% 80%)" stopOpacity="0.6" />
+            <linearGradient id="dayTrailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(40 60% 88%)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="hsl(35 55% 85%)" stopOpacity="0.6" />
             </linearGradient>
+            
+            <linearGradient id="dayTwilightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(25 50% 80%)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(15 45% 75%)" stopOpacity="0.5" />
+            </linearGradient>
+            
+            {/* Nighttime gradients */}
+            <linearGradient id="nightBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(240 25% 75%)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="hsl(260 18% 80%)" stopOpacity="0.3" />
+            </linearGradient>
+            
+            <linearGradient id="nightTrailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="hsl(245 30% 70%)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(255 22% 75%)" stopOpacity="0.45" />
+            </linearGradient>
+            
+            {/* Icon glows */}
+            <radialGradient id="sunGlow">
+              <stop offset="0%" stopColor="hsl(45 90% 60%)" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="hsl(45 90% 60%)" stopOpacity="0" />
+            </radialGradient>
+            
+            <radialGradient id="moonGlow">
+              <stop offset="0%" stopColor="hsl(240 40% 80%)" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="hsl(240 40% 80%)" stopOpacity="0" />
+            </radialGradient>
           </defs>
           
-          {/* Large filled semicircle */}
+          {/* Base arc path */}
           <path
-            d="M 20 210 A 180 180 0 0 1 380 210 L 380 220 L 20 220 Z"
-            fill={`url(#${isDay ? 'day' : 'night'}Gradient)`}
-            stroke="none"
+            d="M 20 210 A 180 180 0 0 1 380 210"
+            fill="none"
+            stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
+            strokeWidth="8"
+            strokeLinecap="round"
           />
+          
+          {/* Twilight zone (last 20% of arc) */}
+          {inTwilightZone && isDay && (
+            <path
+              d="M 308 210 A 180 180 0 0 1 380 210"
+              fill="none"
+              stroke="url(#dayTwilightGradient)"
+              strokeWidth="8"
+              strokeLinecap="round"
+            />
+          )}
+          
+          {/* Trailing fill showing progress */}
+          <path
+            d={trailPath}
+            fill={isDay ? "url(#dayTrailGradient)" : "url(#nightTrailGradient)"}
+            opacity="0.8"
+          />
+          
+          {/* Icon glow effect */}
+          <circle
+            cx={iconX}
+            cy={iconY}
+            r="20"
+            fill={isDay ? "url(#sunGlow)" : "url(#moonGlow)"}
+          />
+          
+          {/* Icon (Sun or Moon) */}
+          <g transform={`translate(${iconX}, ${iconY})`}>
+            <circle
+              r="12"
+              fill="hsl(var(--background))"
+              stroke={isDay ? "hsl(45 85% 55%)" : "hsl(240 30% 75%)"}
+              strokeWidth="2"
+            />
+            {isDay ? (
+              <Sun className="w-5 h-5" style={{ 
+                transform: 'translate(-10px, -10px)',
+                color: 'hsl(45 85% 55%)'
+              }} />
+            ) : (
+              <Moon className="w-5 h-5" style={{ 
+                transform: 'translate(-10px, -10px)',
+                color: 'hsl(240 30% 75%)'
+              }} />
+            )}
+          </g>
+          
+          {/* Twilight zone indicator text */}
+          {inTwilightZone && isDay && (
+            <text
+              x="340"
+              y="225"
+              textAnchor="middle"
+              className="text-[9px] font-medium fill-muted-foreground"
+            >
+              Wind down
+            </text>
+          )}
         </svg>
         
-        {/* State text positioned in center of the arc */}
-        <div className="absolute" style={{ top: '50%', transform: 'translateY(-50%)' }}>
-          <p className="text-[28px] font-normal text-foreground tracking-tight text-center leading-tight">
+        {/* State text positioned in center - use serif for editorial look */}
+        <div className="absolute" style={{ top: '48%', transform: 'translateY(-50%)' }}>
+          <p className="text-[26px] font-serif font-normal text-foreground tracking-tight text-center leading-tight" 
+             style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
           </p>
         </div>
