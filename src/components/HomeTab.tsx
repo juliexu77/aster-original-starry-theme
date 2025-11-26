@@ -1583,65 +1583,6 @@ const lastDiaper = displayActivities
             isQuickLogging={isQuickLogging}
           />
 
-        {/* Predicted Schedule - Collapsible */}
-        {adaptiveSchedule && activeDisplaySchedule && (
-          <Collapsible
-            open={scheduleOpen}
-            onOpenChange={setScheduleOpen}
-            className="mx-2 mb-4 rounded-xl bg-gradient-to-b from-card-ombre-1 to-card-ombre-1-dark shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-border/20 overflow-hidden"
-          >
-            <CollapsibleTrigger asChild>
-              <button className="w-full px-4 py-3 flex items-center justify-between hover:bg-background/10 transition-colors">
-                <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
-                  {babyName}&apos;s Predicted Schedule
-                </h3>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${scheduleOpen ? 'rotate-180' : ''}`} />
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <div className="px-4 pb-5 pt-1">
-                <ScheduleTimeline
-                  schedule={activeDisplaySchedule}
-                  babyName={babyName || 'Baby'}
-                  onRecalculate={() => {
-                    setScheduleRefreshKey(prev => prev + 1);
-                    toast({
-                      title: "Schedule updated",
-                      description: "Prediction refreshed based on latest activities",
-                    });
-                  }}
-                  isTransitioning={transitionInfo?.isTransitioning}
-                  transitionNapCounts={transitionInfo?.napCounts}
-                  showAlternate={showAlternateSchedule}
-                  onToggleAlternate={(desiredNapCount: number) => {
-                    console.log('🔄 Toggle handler called:', {
-                      desiredNapCount,
-                      alternateScheduleNapCount,
-                      mainScheduleNapCount,
-                      currentShowAlternate: showAlternateSchedule
-                    });
-                    // Toggle between schedules based on desired nap count
-                    if (desiredNapCount === alternateScheduleNapCount) {
-                      console.log('  ✅ Setting showAlternateSchedule to TRUE');
-                      setShowAlternateSchedule(true);
-                    } else if (desiredNapCount === mainScheduleNapCount) {
-                      console.log('  ✅ Setting showAlternateSchedule to FALSE');
-                      setShowAlternateSchedule(false);
-                    } else {
-                      console.log('  ⚠️ Desired nap count matches neither schedule');
-                    }
-                  }}
-                  mainScheduleNapCount={mainScheduleNapCount}
-                  alternateScheduleNapCount={alternateScheduleNapCount}
-                  transitionWindow={transitionWindow}
-                  todayActualNapCount={todayActualNapCount}
-                />
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        )}
-
-
         {/* Today's Story - moved to bottom */}
         <DailyStoryCircles
           activities={activities}
