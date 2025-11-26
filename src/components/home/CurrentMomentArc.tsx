@@ -400,60 +400,44 @@ export const CurrentMomentArc = ({
   const triangleY = centerY - Math.sin(arcAngle) * arcRadius;
   
   return (
-    <div className="px-4 pb-0 relative z-10">
-      <div className="relative w-full flex flex-col items-center pt-0 pb-2">
-        {/* Arc SVG */}
+    <div className="px-0 pb-4 relative z-10 -mt-4">
+      <div className="relative w-full flex flex-col items-center">
+        {/* Large filled arc with subtle gradient */}
         <svg
-          viewBox="0 0 200 110"
+          viewBox="0 0 400 240"
           className="w-full"
-          style={{ maxWidth: '340px' }}
+          style={{ maxWidth: '100%' }}
         >
           <defs>
-            {/* Daytime gradient: white to orange to blush (left to right) */}
+            {/* Daytime gradient: soft cream to peachy-pink */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(0 0% 95%)" stopOpacity="1" />
-              <stop offset="50%" stopColor="hsl(30 90% 65%)" stopOpacity="1" />
-              <stop offset="100%" stopColor="hsl(340 60% 70%)" stopOpacity="1" />
+              <stop offset="0%" stopColor="hsl(30 40% 92%)" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="hsl(15 50% 88%)" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="hsl(340 45% 88%)" stopOpacity="0.6" />
             </linearGradient>
             
-            {/* Nighttime gradient: bright indigo to light gray (left to right) */}
+            {/* Nighttime gradient: soft indigo to lavender */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(230 50% 45%)" stopOpacity="1" />
-              <stop offset="50%" stopColor="hsl(230 30% 55%)" stopOpacity="1" />
-              <stop offset="100%" stopColor="hsl(0 0% 65%)" stopOpacity="1" />
+              <stop offset="0%" stopColor="hsl(230 30% 70%)" stopOpacity="0.4" />
+              <stop offset="50%" stopColor="hsl(240 25% 75%)" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="hsl(250 20% 80%)" stopOpacity="0.4" />
             </linearGradient>
           </defs>
           
-          {/* Semicircle arc - always right-side up */}
+          {/* Large filled semicircle */}
           <path
-            d="M 20 100 A 80 80 0 0 1 180 100"
-            fill="none"
-            stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
-            strokeWidth="8.5"
-            strokeLinecap="round"
+            d="M 20 220 A 180 180 0 0 1 380 220 L 380 240 L 20 240 Z"
+            fill={`url(#${isDay ? 'day' : 'night'}Gradient)`}
+            stroke="none"
           />
-          
-          {/* Sun/Moon indicator showing current position in day/night - rotated to point outward */}
-          <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
-            <foreignObject x="-10" y="-10" width="20" height="20">
-              {isDay ? (
-                <Sun className="w-5 h-5 text-[hsl(0,0%,35%)]" fill="hsl(0,0%,35%)" />
-              ) : (
-                <Moon className="w-5 h-5 text-[hsl(230,50%,45%)]" />
-              )}
-            </foreignObject>
-          </g>
         </svg>
         
-        {/* State text positioned inside the arc - bigger and bolder */}
-        <p className="absolute text-base font-bold text-foreground tracking-wide text-center" 
-           style={{ 
-             top: '58%',
-             left: '50%',
-             transform: 'translateX(-50%)'
-           }}>
-          {currentState}
-        </p>
+        {/* State text positioned below the arc */}
+        <div className="absolute" style={{ top: '60%' }}>
+          <p className="text-2xl font-medium text-foreground tracking-tight text-center">
+            {currentState}
+          </p>
+        </div>
       </div>
     </div>
   );
