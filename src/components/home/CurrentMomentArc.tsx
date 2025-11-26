@@ -95,7 +95,13 @@ const getCurrentState = (
         return "Long snooze";
       }
       
-      if (currentHour >= 15 && currentHour < 18) {
+      // Cat nap: only between 4:30 PM and 6:30 PM
+      const nowMinutes = now.getMinutes();
+      const currentTimeMinutes = currentHour * 60 + nowMinutes;
+      const catNapStart = 16 * 60 + 30; // 4:30 PM
+      const catNapEnd = 18 * 60 + 30; // 6:30 PM
+      
+      if (currentTimeMinutes >= catNapStart && currentTimeMinutes < catNapEnd) {
         return "Cat nap";
       } else if (currentHour >= 12 && currentHour < 17) {
         return "Afternoon nap";
