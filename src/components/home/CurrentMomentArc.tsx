@@ -392,36 +392,18 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient: deep plum to grey (left to right) fading top to bottom */}
+            {/* Daytime gradient: deep plum to grey (left to right) */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(280 40% 35%)" />
-              <stop offset="100%" stopColor="hsl(0 0% 55%)" />
-            </linearGradient>
-            <linearGradient id="dayFade" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopOpacity="0.3" />
-              <stop offset="50%" stopOpacity="0.9" />
-              <stop offset="100%" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="hsl(280 40% 35%)" stopOpacity="1" />
+              <stop offset="100%" stopColor="hsl(0 0% 55%)" stopOpacity="1" />
             </linearGradient>
             
-            {/* Nighttime gradient: bright indigo to light gray (left to right) fading top to bottom */}
+            {/* Nighttime gradient: bright indigo to light gray (left to right) */}
             <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(230 50% 45%)" />
-              <stop offset="50%" stopColor="hsl(230 30% 55%)" />
-              <stop offset="100%" stopColor="hsl(0 0% 65%)" />
+              <stop offset="0%" stopColor="hsl(230 50% 45%)" stopOpacity="1" />
+              <stop offset="50%" stopColor="hsl(230 30% 55%)" stopOpacity="1" />
+              <stop offset="100%" stopColor="hsl(0 0% 65%)" stopOpacity="1" />
             </linearGradient>
-            <linearGradient id="nightFade" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopOpacity="0.3" />
-              <stop offset="50%" stopOpacity="0.9" />
-              <stop offset="100%" stopOpacity="0.3" />
-            </linearGradient>
-            
-            {/* Masks to apply color + fade */}
-            <mask id="dayMask">
-              <rect x="0" y="0" width="200" height="110" fill="url(#dayFade)" />
-            </mask>
-            <mask id="nightMask">
-              <rect x="0" y="0" width="200" height="110" fill="url(#nightFade)" />
-            </mask>
           </defs>
           
           {/* Semicircle arc - always right-side up */}
@@ -431,15 +413,17 @@ export const CurrentMomentArc = ({
             stroke={`url(#${isDay ? 'day' : 'night'}Gradient)`}
             strokeWidth="8.5"
             strokeLinecap="round"
-            mask={`url(#${isDay ? 'day' : 'night'}Mask)`}
+            opacity="0.85"
           />
           
-          {/* Triangle indicator showing current position in day/night */}
-          <polygon
-            points={`${triangleX},${triangleY - 8} ${triangleX - 4},${triangleY - 2} ${triangleX + 4},${triangleY - 2}`}
-            fill={isDay ? "hsl(264 28% 50%)" : "hsl(230 50% 55%)"}
-            className="transition-all duration-1000"
-          />
+          {/* Triangle indicator showing current position in day/night - rotated to point outward */}
+          <g transform={`translate(${triangleX}, ${triangleY}) rotate(${(arcAngle * 180 / Math.PI) - 90})`}>
+            <polygon
+              points="0,-8 -4,-2 4,-2"
+              fill={isDay ? "hsl(280 40% 35%)" : "hsl(230 50% 45%)"}
+              className="transition-all duration-1000"
+            />
+          </g>
         </svg>
         
         {/* State text positioned inside the arc - bigger and bolder */}
