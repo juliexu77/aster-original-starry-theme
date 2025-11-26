@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Palette, Circle, AlertCircle, Activity as ActivityIcon, FileText, Sun, Thermometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CurrentMomentArc } from "@/components/home/CurrentMomentArc";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format, isToday, differenceInMinutes, differenceInHours } from "date-fns";
 import { usePredictionEngine } from "@/hooks/usePredictionEngine";
@@ -1376,6 +1377,15 @@ const lastDiaper = displayActivities
             </div>
           </div>
         )}
+
+        {/* Current Moment Arc */}
+        <CurrentMomentArc
+          activities={activities}
+          babyName={babyName}
+          ongoingNap={passedOngoingNap}
+          nightSleepStartHour={nightSleepStartHour}
+          nightSleepEndHour={nightSleepEndHour}
+        />
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
