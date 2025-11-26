@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Moon, Milk, Clock, ChevronDown, AlertCircle, CheckCircle, Lightbulb } from "lucide-react";
+import { Moon, Milk, Clock, ChevronDown, AlertCircle, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface DeviationData {
@@ -33,12 +32,6 @@ interface TodaysPulseProps {
       transitioning: number;
     };
   } | null;
-  rhythmInsights?: {
-    whatToKnow?: string[];
-    whatToDo?: string[];
-    whatsNext?: string;
-    prepTip?: string;
-  };
 }
 
 export const TodaysPulse = ({
@@ -48,8 +41,7 @@ export const TodaysPulse = ({
   babyName,
   babyAge,
   activities,
-  transitionInfo,
-  rhythmInsights
+  transitionInfo
 }: TodaysPulseProps) => {
   const [explanation, setExplanation] = useState<string>('');
   const [explanationLoading, setExplanationLoading] = useState(false);
@@ -209,55 +201,6 @@ export const TodaysPulse = ({
             </div>
           </CollapsibleContent>
         </Collapsible>
-
-      {/* Understanding Rhythm Section */}
-      {rhythmInsights && (rhythmInsights.whatToKnow?.length || rhythmInsights.whatToDo?.length) && (
-        <div className="border-t border-border/30">
-          <div className="px-4 py-4">
-            <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider mb-3">
-              Understanding {babyName}&apos;s Rhythm
-            </h3>
-            <div className="space-y-4">
-              {rhythmInsights.whatToKnow && rhythmInsights.whatToKnow.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Lightbulb className="w-4 h-4 text-amber-500" />
-                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                      What to Know
-                    </h4>
-                  </div>
-                  <div className="pl-6 space-y-2">
-                    {rhythmInsights.whatToKnow.map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <div className="w-1 h-1 rounded-full bg-amber-500/60 mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {rhythmInsights.whatToDo && rhythmInsights.whatToDo.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    <h4 className="text-xs font-medium text-foreground uppercase tracking-wider">
-                      What to Do
-                    </h4>
-                  </div>
-                  <div className="pl-6 space-y-2">
-                    {rhythmInsights.whatToDo.map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-2">
-                        <div className="w-1 h-1 rounded-full bg-green-500/60 mt-2 flex-shrink-0"></div>
-                        <p className="text-sm text-muted-foreground leading-relaxed">{item}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
