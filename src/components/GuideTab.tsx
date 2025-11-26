@@ -1327,14 +1327,6 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
           {/* Predicted Schedule - Show for Tier 1+ */}
           {hasMinimumData && (
             <>
-              {/* This Week's Rhythm - Nap Barcode Visualization */}
-              {activities.length > 0 && (
-                <WeeklyRhythm 
-                  activities={activities}
-                  babyName={babyName}
-                />
-              )}
-              
               {/* AI-Generated Guidance - Personalized to your data */}
               {hasTier3Data && (
                 <UnifiedInsightCard
@@ -1356,6 +1348,14 @@ export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
                       </span>
                     </button>
                   }
+                />
+              )}
+              
+              {/* This Week's Rhythm - Nap Barcode Visualization */}
+              {activities.length > 0 && (
+                <WeeklyRhythm 
+                  activities={activities}
+                  babyName={babyName}
                 />
               )}
             </>
