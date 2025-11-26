@@ -296,17 +296,20 @@ const getCurrentState = (
     wakeDate.setHours(hours, minutes, 0, 0);
     const awakeMinutes = differenceInMinutes(now, wakeDate);
     
-    if (awakeMinutes < 15) {
-      return "Just started awake time";
-    } else if (awakeMinutes > 150) {
-      return `Long stretch awake · ${getDurationString(awakeMinutes)}`;
-    } else if (awakeMinutes > 120) {
-      // Getting sleepy after 2+ hours awake
-      return "Getting sleepy";
-    } else if (awakeMinutes > 60) {
+    // Only show awake time if it's a valid positive number
+    if (!isNaN(awakeMinutes) && awakeMinutes >= 0) {
+      if (awakeMinutes < 15) {
+        return "Just started awake time";
+      } else if (awakeMinutes > 150) {
+        return `Long stretch awake · ${getDurationString(awakeMinutes)}`;
+      } else if (awakeMinutes > 120) {
+        // Getting sleepy after 2+ hours awake
+        return "Getting sleepy";
+      } else if (awakeMinutes > 60) {
+        return `Awake · ${getDurationString(awakeMinutes)}`;
+      }
       return `Awake · ${getDurationString(awakeMinutes)}`;
     }
-    return `Awake · ${getDurationString(awakeMinutes)}`;
   }
   
   // Check if bedtime is approaching (within 1 hour of night sleep start)
