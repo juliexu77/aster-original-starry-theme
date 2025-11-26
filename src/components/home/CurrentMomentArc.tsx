@@ -65,32 +65,35 @@ const getCurrentState = (
       startDate.setHours(hours, minutes, 0, 0);
       const napMinutes = differenceInMinutes(now, startDate);
       
-      // Check if this is night sleep (outside daytime hours)
-      const isNightTime = currentHour >= 19 || currentHour < 5;
+      // Check if we're in the night sleep window
+      const isInNightWindow = !isDay;
       
       if (napMinutes < 5) {
-        if (isNightTime) {
+        if (isInNightWindow) {
           return "Down for the night";
         }
         return "Just fell asleep";
       }
       
-      // Delightful variations based on duration first
+      // If in night sleep window, show night sleep messages
+      if (isInNightWindow) {
+        return "Soundly asleep";
+      }
+      
+      // Daytime nap variations based on duration first
       if (napMinutes < 20) {
         return "Quick snooze";
       } else if (napMinutes > 90) {
         return "Long snooze";
       }
       
-      // Time-based delightful variations (use current hour, not start time hour)
+      // Time-based delightful variations for daytime naps
       if (currentHour >= 5 && currentHour < 12) {
         return "Morning snooze";
       } else if (currentHour >= 15 && currentHour < 18) {
         return "Cat nap";
       } else if (currentHour >= 12 && currentHour < 17) {
         return "Afternoon nap";
-      } else if (currentHour >= 19 || currentHour < 5) {
-        return "Sleeping peacefully";
       } else {
         return "Nap in progress";
       }
@@ -389,10 +392,10 @@ export const CurrentMomentArc = ({
           style={{ maxWidth: '340px' }}
         >
           <defs>
-            {/* Daytime gradient: light to dark (left to right) fading top to bottom */}
+            {/* Daytime gradient: deep plum to grey (left to right) fading top to bottom */}
             <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(var(--pp-lavender))" />
-              <stop offset="100%" stopColor="hsl(264 28% 50%)" />
+              <stop offset="0%" stopColor="hsl(280 40% 35%)" />
+              <stop offset="100%" stopColor="hsl(0 0% 55%)" />
             </linearGradient>
             <linearGradient id="dayFade" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopOpacity="0.3" />
