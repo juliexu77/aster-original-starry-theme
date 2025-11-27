@@ -54,6 +54,20 @@ export const useRhythmArc = ({
       let averageWakeHour = nightSleepEndHour || 7; // Default to night sleep end hour
       let averageWakeMinute = 0;
       
+      // Calculate age-based wake window for state messages
+      let ageBasedWakeWindow = 120; // Default 2 hours
+      if (babyBirthday) {
+        const ageInWeeks = calculateAgeInWeeks(babyBirthday);
+        if (ageInWeeks < 4) ageBasedWakeWindow = 45;
+        else if (ageInWeeks < 8) ageBasedWakeWindow = 60;
+        else if (ageInWeeks < 12) ageBasedWakeWindow = 75;
+        else if (ageInWeeks < 16) ageBasedWakeWindow = 90;
+        else if (ageInWeeks < 24) ageBasedWakeWindow = 105;
+        else if (ageInWeeks < 36) ageBasedWakeWindow = 150; // ~2.5 hours for 6-8 months
+        else if (ageInWeeks < 52) ageBasedWakeWindow = 180; // ~3 hours for 9-12 months
+        else ageBasedWakeWindow = 240; // 4+ hours for 12+ months
+      }
+      
       // Try to find average wake time from recent completed night sleeps
       if (activities && activities.length > 0) {
         const recentMorningWakes = activities
@@ -93,6 +107,7 @@ export const useRhythmArc = ({
         ongoingNap,
         averageWakeHour,
         averageWakeMinute,
+        typicalWakeWindowMinutes: ageBasedWakeWindow,
       }) || "Tracking your rhythm";
 
       // Determine mode and calculate start time + typical duration
