@@ -134,6 +134,34 @@ export const TodaysPulse = ({
   };
 
   const hasDeviations = deviations.some(d => d.hasDeviation);
+  
+  // If no deviations, show "Everything looks normal" state
+  const displayDeviations = deviations.length > 0 ? deviations : [
+    {
+      category: 'schedule' as const,
+      status: 'normal' as const,
+      icon: <Moon className="w-5 h-5" />,
+      title: 'Sleep',
+      details: 'On track',
+      hasDeviation: false,
+    },
+    {
+      category: 'feeding' as const,
+      status: 'normal' as const,
+      icon: <Milk className="w-5 h-5" />,
+      title: 'Feeding',
+      details: 'On track',
+      hasDeviation: false,
+    },
+    {
+      category: 'schedule' as const,
+      status: 'normal' as const,
+      icon: <Clock className="w-5 h-5" />,
+      title: 'Schedule',
+      details: 'On track',
+      hasDeviation: false,
+    },
+  ];
 
   return (
     <div className="mx-2 mb-6 rounded-xl bg-card shadow-card border border-border overflow-hidden">
@@ -154,7 +182,7 @@ export const TodaysPulse = ({
         <CollapsibleContent>
           <div className="px-4 pb-4 pt-3 space-y-3">
             {/* Categories */}
-            {deviations.map((deviation, index) => (
+            {displayDeviations.map((deviation, index) => (
               <div key={index}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -173,8 +201,9 @@ export const TodaysPulse = ({
         </CollapsibleContent>
       </Collapsible>
 
-      {/* What This Means Section - Collapsed by default */}
-      <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
+      {/* What This Means Section - Only show if there are actual deviations */}
+      {hasDeviations && (
+        <Collapsible open={meaningOpen} onOpenChange={setMeaningOpen}>
           <CollapsibleTrigger className="w-full px-4 py-3 hover:bg-muted/20 transition-colors border-t border-border/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -201,6 +230,7 @@ export const TodaysPulse = ({
             </div>
           </CollapsibleContent>
         </Collapsible>
+      )}
     </div>
   );
 };
