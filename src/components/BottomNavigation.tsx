@@ -14,12 +14,12 @@ export const BottomNavigation = ({ activeTab, onTabChange, onAddActivity, addBut
   
 const leftTabs = [
     { id: "home", label: "Home", icon: Home },
-    { id: "helper", label: "Rhythm", icon: Activity },
+    { id: "rhythm", label: "Rhythm", icon: Activity },
   ];
   
   const rightTabs = [
     { id: "trends", label: "Trends", icon: TrendingUp },
-    { id: "insights", label: "History", icon: List },
+    { id: "history", label: "History", icon: List },
   ];
 
   return (
@@ -30,13 +30,12 @@ const leftTabs = [
           {leftTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const dataTab = tab.id === 'helper' ? 'guide' : tab.id;
             
             return (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                data-tab={dataTab}
+                data-tab={tab.id}
                 className={`flex flex-col items-center space-y-0.5 transition-colors ${
                   isActive 
                     ? "text-primary" 
@@ -70,13 +69,12 @@ const leftTabs = [
           {rightTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-            const dataTab = tab.id === 'insights' ? 'log' : tab.id;
             
             return (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                data-tab={dataTab}
+                data-tab={tab.id}
                 className={`flex flex-col items-center space-y-0.5 transition-colors ${
                   isActive 
                     ? "text-primary" 

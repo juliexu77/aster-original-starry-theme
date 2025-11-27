@@ -142,7 +142,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   }, []);
 
   const hasVisitedAllTabs = visitedTabs.has('home') && visitedTabs.has('trends') && 
-                             visitedTabs.has('guide') && visitedTabs.has('log');
+                             visitedTabs.has('rhythm') && visitedTabs.has('history');
   
   // Show educational content until user has logged at least one feed AND one nap
   const hasFeed = activities.some(a => a.type === 'feed');
@@ -187,14 +187,14 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   }, [showFirstActivityCelebration, activities.length]);
 
-  // P4: Pulse Guide tab after first nap
+  // P4: Pulse Rhythm tab after first nap
   useEffect(() => {
     if (napsCount === 1) {
-      const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-      if (guideTab && !guideTab.classList.contains('animate-pulse')) {
-        guideTab.classList.add('animate-pulse');
+      const rhythmTab = document.querySelector('[data-tab="rhythm"]') as HTMLElement;
+      if (rhythmTab && !rhythmTab.classList.contains('animate-pulse')) {
+        rhythmTab.classList.add('animate-pulse');
         setTimeout(() => {
-          guideTab.classList.remove('animate-pulse');
+          rhythmTab.classList.remove('animate-pulse');
         }, 3000);
       }
     }
@@ -1328,8 +1328,8 @@ const lastDiaper = displayActivities
                 </div>
                 <Button
                   onClick={() => {
-                    const guideTab = document.querySelector('[data-tab="guide"]') as HTMLElement;
-                    guideTab?.click();
+                    const rhythmTab = document.querySelector('[data-tab="rhythm"]') as HTMLElement;
+                    rhythmTab?.click();
                   }}
                   variant="outline"
                   size="sm"
@@ -1339,20 +1339,20 @@ const lastDiaper = displayActivities
                 </Button>
               </div>
 
-              {/* Log Tab Info */}
+              {/* History Tab Info */}
               <div className="space-y-2">
                 <div className="flex items-start gap-3">
                   <FileText className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="flex-1 space-y-1">
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Export and share your data with partners or pediatricians anytime from your Log.
+                      Export and share your data with partners or pediatricians anytime from History.
                     </p>
                   </div>
                 </div>
                 <Button
                   onClick={() => {
-                    const logTab = document.querySelector('[data-tab="log"]') as HTMLElement;
-                    logTab?.click();
+                    const historyTab = document.querySelector('[data-tab="history"]') as HTMLElement;
+                    historyTab?.click();
                   }}
                   variant="outline"
                   size="sm"

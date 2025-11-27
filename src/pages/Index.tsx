@@ -351,7 +351,7 @@ const ongoingNap = (() => {
   // Set default tab based on user role
   useEffect(() => {
     if (currentUserRole === 'caregiver') {
-      setActiveTab("insights");
+      setActiveTab("history");
     }
   }, [currentUserRole]);
   const [previousTab, setPreviousTab] = useState("home"); // Track previous tab for settings navigation
@@ -699,7 +699,7 @@ const ongoingNap = (() => {
         />;
       case "trends":
         return <InsightsTab activities={activities} />;
-      case "helper":
+      case "rhythm":
         return (
           <ErrorBoundary onRetry={() => setActiveTab("home")}>
             <GuideTab 
@@ -718,7 +718,7 @@ const ongoingNap = (() => {
         );
     case "settings":
       return <SettingsPage />;
-      case "insights":
+      case "history":
         return (
           <div className="bg-background min-h-screen">
             {/* Log Header */}
@@ -1249,9 +1249,9 @@ return (
             <div className="flex-1 flex justify-center">
               <h1 className="text-base font-serif font-bold text-foreground">
                 {activeTab === 'home' && 'Home'}
-                {activeTab === 'helper' && 'Rhythm'}
+                {activeTab === 'rhythm' && 'Rhythm'}
                 {activeTab === 'trends' && 'Trends'}
-                {activeTab === 'insights' && 'History'}
+                {activeTab === 'history' && 'History'}
                 {activeTab === 'settings' && 'Settings'}
               </h1>
             </div>
