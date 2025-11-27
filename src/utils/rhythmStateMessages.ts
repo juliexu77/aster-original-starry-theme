@@ -10,6 +10,7 @@ interface StateMessageContext {
   ongoingNap?: Activity | null;
   averageWakeHour?: number; // Expected wake up hour (0-23)
   averageWakeMinute?: number; // Expected wake up minute (0-59)
+  typicalWakeWindowMinutes?: number; // Age-appropriate wake window in minutes
 }
 
 // Get nap ordinal (1st, 2nd, 3rd, etc.)
@@ -186,16 +187,16 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
       )[0]
     : null;
   
+  // Use age-appropriate wake window or default to 2 hours
+  const typicalWakeWindow = context.typicalWakeWindowMinutes || 120;
+  const windDownThreshold = typicalWakeWindow - 30;
+  
   // Check if we're approaching next nap time (within 30 minutes of typical wake window end)
   if (lastNap?.details?.endTime) {
     const napEndTime = parseTimeToMinutes(lastNap.details.endTime);
     const currentMinutes = currentHour * 60 + currentTime.getMinutes();
     let minutesSinceNap = currentMinutes - napEndTime;
     if (minutesSinceNap < 0) minutesSinceNap += 24 * 60;
-    
-    // Approximate wake window (adjust based on age if needed)
-    const typicalWakeWindow = 120; // 2 hours default
-    const windDownThreshold = typicalWakeWindow - 30;
     
     if (minutesSinceNap >= windDownThreshold && minutesSinceNap < typicalWakeWindow) {
       return "Start winding down";
@@ -226,12 +227,29 @@ export const getRhythmStateMessage = (context: StateMessageContext): string => {
     }
   }
   
-  // Default fallback - only use approved messages
-  // If no naps today, assume morning wake
-  if (todayActivities.length === 0) {
-    return "Start winding down";
+  // Default fallback - check if enough time awake for wind down
+  // Find first activity today as proxy for wake time
+  const firstActivityToday = todayActivities.length > 0 
+    ? todayActivities.sort((a, b) => 
+        new Date(a.loggedAt || a.time).getTime() - new Date(b.loggedAt || b.time).getTime()
+      )[0]
+    : null;
+  
+  if (firstActivityToday) {
+    const firstActivityTime = new Date(firstActivityToday.loggedAt || firstActivityToday.time);
+    const minutesSinceFirstActivity = differenceInMinutes(currentTime, firstActivityTime);
+    
+    // Only show "wind down" if past the threshold
+    if (minutesSinceFirstActivity >= windDownThreshold && minutesSinceFirstActivity < typicalWakeWindow) {
+      return "Start winding down";
+    }
+    
+    // Past wake window
+    if (minutesSinceFirstActivity >= typicalWakeWindow) {
+      return "Ready for a nap";
+    }
   }
   
-  // Generic awake state - should be improved with more context
-  return "Start winding down";
+  // Not yet at wind down threshold - return neutral state
+  return "Awake and active";
 };
