@@ -62,18 +62,11 @@ export const RhythmArc = ({
     endPoint
   );
   
-  // Calculate the partial control point for the wedge to follow the arc curve exactly
-  // This ensures the wedge traces the same curve as the arc up to the icon position
-  const partialControlPoint = {
-    x: startPoint.x + iconProgress * (controlPoint.x - startPoint.x),
-    y: startPoint.y + iconProgress * (controlPoint.y - startPoint.y)
-  };
-  
   // Create wedge path: follows the arc curve precisely from start to icon, then fills down to horizon
-  // This creates the "light sweeping across" effect with the icon positioned exactly on the arc edge
+  // Use the SAME control point as the main arc to ensure the wedge follows the exact curve
   const wedgePath = `
     M ${startPoint.x} ${startPoint.y}
-    Q ${partialControlPoint.x} ${partialControlPoint.y} ${iconPosition.x} ${iconPosition.y}
+    Q ${controlPoint.x} ${controlPoint.y} ${iconPosition.x} ${iconPosition.y}
     L ${iconPosition.x} ${horizonY}
     L ${startPoint.x} ${horizonY}
     Z
