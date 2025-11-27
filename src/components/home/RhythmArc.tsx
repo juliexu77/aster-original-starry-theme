@@ -60,11 +60,11 @@ export const RhythmArc = ({
     endPoint
   );
   
-  // Create wedge path: from arc start → current sun position → down to horizon → back to start
+  // Create wedge path: follows the arc curve from start to current icon position, then fills down to horizon
   // This creates the "light sweeping across" effect
   const wedgePath = `
     M ${startPoint.x} ${startPoint.y}
-    Q ${controlPoint.x * iconProgress} ${startPoint.y - (startPoint.y - controlPoint.y) * iconProgress * 2} ${iconPosition.x} ${iconPosition.y}
+    Q ${controlPoint.x} ${controlPoint.y} ${iconPosition.x} ${iconPosition.y}
     L ${iconPosition.x} ${horizonY}
     L ${startPoint.x} ${horizonY}
     Z
