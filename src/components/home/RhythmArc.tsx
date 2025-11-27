@@ -311,7 +311,7 @@ export const RhythmArc = ({
           </g>
           
           {/* Refined zone labels */}
-          {inTwilightZone && !isOvertired && (
+          {inTwilightZone && !isOvertired && mode === "wake" && (
             <text
               x={endPoint.x - 50}
               y={endPoint.y + 25}
@@ -323,7 +323,7 @@ export const RhythmArc = ({
               Wind down
             </text>
           )}
-          {isOvertired && (
+          {isOvertired && mode === "wake" && (
             <text
               x={endPoint.x - 50}
               y={endPoint.y + 25}
