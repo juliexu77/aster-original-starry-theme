@@ -40,7 +40,7 @@ interface Activity {
   details: any;
 }
 
-interface GuideTabProps {
+interface RhythmTabProps {
   activities: Activity[];
   onGoToSettings?: () => void;
 }
@@ -178,7 +178,7 @@ const getDailyTone = (dayActivities: Activity[], allActivities: Activity[], baby
   return getDailySentiment(dayActivities, allActivities, babyAgeMonths, 12); // Use noon as default hour
 };
 
-export const GuideTab = ({ activities, onGoToSettings }: GuideTabProps) => {
+export const RhythmTab = ({ activities, onGoToSettings }: RhythmTabProps) => {
   // ===== ALL HOOKS FIRST (must be before any conditional returns) =====
   const { household, loading: householdLoading } = useHousehold();
   const { user } = useAuth();
