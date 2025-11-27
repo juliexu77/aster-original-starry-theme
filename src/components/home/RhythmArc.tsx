@@ -43,7 +43,7 @@ export const RhythmArc = ({
   const padding = 50;
   const horizonY = viewBoxHeight - 20; // Horizon at bottom (180)
   const arcStartEndY = 120; // Arc endpoints elevated above horizon
-  const arcPeakY = 25; // Peak of the arc - 25% steeper (was 40)
+  const arcPeakY = 17; // Peak of the arc - 30% steeper (was 25)
   
   // Arc endpoints elevated above horizon, curving upward
   const startPoint = { x: padding, y: arcStartEndY };
@@ -304,8 +304,8 @@ export const RhythmArc = ({
           <div className="font-bold mb-2 text-yellow-900 dark:text-yellow-200">🔍 ARC DEBUG VALUES:</div>
           <div className="space-y-1 text-yellow-800 dark:text-yellow-300">
             <div>Mode: {mode}</div>
-            <div>Start Time: {startTime.toLocaleTimeString()}</div>
-            <div>Current Time: {currentTime.toLocaleTimeString()}</div>
+            <div>Start Date: {startTime.toLocaleDateString()} {startTime.toLocaleTimeString()}</div>
+            <div>Current Date: {currentTime.toLocaleDateString()} {currentTime.toLocaleTimeString()}</div>
             <div>Typical Duration: {typicalDuration} min ({(typicalDuration / 60).toFixed(1)}h)</div>
             <div>Elapsed Minutes: {elapsedMinutes}</div>
             <div>Progress: {(progress * 100).toFixed(1)}% (raw: {(rawProgress * 100).toFixed(1)}%)</div>
