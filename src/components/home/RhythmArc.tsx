@@ -53,22 +53,28 @@ export const RhythmArc = ({
   // Create the full arc path (SVG quadratic Bézier)
   const arcPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
   
-  // Calculate icon position - allow beyond arc for overtired (up to 150%)
-  const iconProgress = Math.min(progress, 1.5);
-  
-  // If overtired (> 1.0), extrapolate beyond the arc end point
+  // Calculate icon position - use same progress as wedge for consistency
+  // For overtired (> 1.0), extrapolate beyond the arc
   let iconPosition;
-  if (iconProgress > 1.0) {
-    // Calculate direction from control to end point
+  let iconProgress;
+  
+  if (progress > 1.0) {
+    // Extrapolate beyond end point for overtired state
+    iconProgress = Math.min(progress, 1.5);
+    const extraProgress = iconProgress - 1.0; // 0 to 0.5
+    
+    // Calculate direction vector from control to end
     const dx = endPoint.x - controlPoint.x;
     const dy = endPoint.y - controlPoint.y;
-    const extraProgress = iconProgress - 1.0; // 0 to 0.5
-    // Move further along the trajectory
+    
+    // Extrapolate position
     iconPosition = {
       x: endPoint.x + dx * extraProgress * 0.8,
       y: endPoint.y + dy * extraProgress * 0.8
     };
   } else {
+    // Use same progress as wedge for normal operation (0 to 1.0)
+    iconProgress = progress;
     iconPosition = getPointOnQuadraticCurve(
       iconProgress,
       startPoint,
@@ -76,6 +82,15 @@ export const RhythmArc = ({
       endPoint
     );
   }
+  
+  console.log('🌙 Moon position debug:', {
+    progress: progress.toFixed(3),
+    iconProgress: iconProgress.toFixed(3),
+    iconPosition: { x: iconPosition.x.toFixed(1), y: iconPosition.y.toFixed(1) },
+    startPoint,
+    controlPoint,
+    endPoint
+  });
   
   // De Casteljau subdivision for wedge path (only for progress <= 1.0)
   const wedgeProgress = Math.min(progress, 1.0);
@@ -309,6 +324,8 @@ export const RhythmArc = ({
             <div>Typical Duration: {typicalDuration} min ({(typicalDuration / 60).toFixed(1)}h)</div>
             <div>Elapsed Minutes: {elapsedMinutes}</div>
             <div>Progress: {(progress * 100).toFixed(1)}% (raw: {(rawProgress * 100).toFixed(1)}%)</div>
+            <div className="font-bold text-blue-900 dark:text-blue-300 mt-2">Moon iconProgress: {iconProgress.toFixed(3)}</div>
+            <div>Moon position: x={iconPosition.x.toFixed(1)}, y={iconPosition.y.toFixed(1)}</div>
           </div>
         </div>
       </div>
