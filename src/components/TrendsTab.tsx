@@ -342,15 +342,9 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
   }
 
   return (
-    <div className="space-y-5 pb-6">
-      {/* Header - Elegant with subtle accent */}
-      <div className="mx-4 pt-6">
-        <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">Trends</h1>
-        <p className="text-sm text-muted-foreground mt-1">Your baby's journey over time</p>
-      </div>
-      
-      {/* Time Range Switcher - Elegant pill style */}
-      <div className="mx-4">
+    <div className="space-y-5 pb-6 pt-6">
+      {/* Time Range Switcher - Centered elegant pill style */}
+      <div className="flex justify-center px-4">
         <div className="inline-flex p-1 rounded-full bg-muted/60 border border-border/30 shadow-sm dark:bg-card/50 dark:border-border/20">
           {(['1week', '6weeks', '3months'] as TimeRange[]).map((range) => (
             <button
