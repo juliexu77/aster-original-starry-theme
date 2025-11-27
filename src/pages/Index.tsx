@@ -721,13 +721,13 @@ const ongoingNap = (() => {
       case "history":
         return (
           <div className="min-h-screen relative">
-            {/* Slight vertical gradient - top of page feels illuminated */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(25,38%,91%)]/60 via-transparent to-transparent pointer-events-none" />
+            {/* Soft studio-lighting gradient - whisper of warmth top to bottom */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[hsl(28,40%,94%)]/70 via-[hsl(25,35%,92%)]/40 to-transparent pointer-events-none" />
             
             {/* Header with title and actions */}
             <div className="relative mx-4 pt-6 pb-4">
-              <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">History</h1>
-              <p className="text-sm text-[hsl(20,22%,50%)] dark:text-muted-foreground mt-1">Your activity timeline</p>
+              <h1 className="text-2xl font-serif font-semibold text-[hsl(18,28%,32%)] dark:text-foreground tracking-tight">History</h1>
+              <p className="text-sm text-[hsl(20,20%,55%)] dark:text-muted-foreground mt-1">Your activity timeline</p>
             </div>
             
             {/* Action buttons - elegant style */}
@@ -735,23 +735,23 @@ const ongoingNap = (() => {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm text-[hsl(12,40%,50%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Pediatrician Report
                 </button>
-                <span className="text-[hsl(20,25%,78%)] dark:text-border">•</span>
+                <span className="text-[hsl(20,22%,78%)] dark:text-border">•</span>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm text-[hsl(12,40%,50%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
+                  className="text-sm text-[hsl(15,38%,52%)] dark:text-primary hover:opacity-80 transition-opacity font-medium"
                 >
                   Export CSV
                 </button>
               </div>
             </div>
             
-            {/* Activities Timeline */}
+            {/* Activities Timeline - increased spacing */}
             <div className="relative px-4 py-4">
-              <div className="space-y-4 pb-20">
+              <div className="space-y-6 pb-20">
                 {activities.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <p>No activities yet. Start adding activities to see your timeline!</p>
@@ -868,16 +868,12 @@ const ongoingNap = (() => {
                           }
 
                           return (
-                            <div key={dateKey} className="mb-5">
-                              {/* Date block with subtle tonal background instead of hard separator */}
-                              <div className="space-y-3">
-                                {/* Date Header - subtle tonal block background for "Today" and "Yesterday" */}
-                                <div className={`flex items-center justify-between pb-2 pt-2 px-3 -mx-3 rounded-xl ${
-                                  (dateKey === todayKey || dateKey === yesterdayKey) 
-                                    ? 'bg-[hsl(22,35%,92%)]/50 dark:bg-card/30' 
-                                    : ''
-                                }`}>
-                                  <h3 className="text-sm font-serif font-semibold text-[hsl(18,30%,38%)] dark:text-foreground uppercase tracking-wide">
+                            <div key={dateKey} className="mb-6">
+                              {/* Day section with soft tonal block background - like warm paper */}
+                              <div className="bg-[hsl(24,30%,91%)]/45 dark:bg-card/25 rounded-xl px-3 py-3 -mx-1">
+                                {/* Date Header - softer clay with increased letter spacing */}
+                                <div className="flex items-center justify-between pb-2 pt-1">
+                                  <h3 className="text-xs font-serif font-medium text-[hsl(20,25%,48%)] dark:text-foreground/80 uppercase tracking-widest">
                                     {displayDate}
                                   </h3>
                                   
@@ -1008,10 +1004,10 @@ const ongoingNap = (() => {
                   )}
                                 </div>
                                 
-                                {/* Activities for this date - increased spacing */}
-                                <div className="relative space-y-1 pl-1">
-                                  {/* Continuous timeline line - warm clay color */}
-                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(20,28%,82%)] dark:bg-border/40"></div>
+                                {/* Activities for this date - more breathing room */}
+                                <div className="relative space-y-2.5 pl-1">
+                                  {/* Continuous timeline line - warmed clay-rose */}
+                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-[hsl(18,25%,78%)] dark:bg-border/40"></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY

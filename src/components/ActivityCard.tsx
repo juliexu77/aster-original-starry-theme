@@ -259,9 +259,9 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
   };
 
   return (
-    <div className="relative flex items-center py-0 group transition-colors">
-      {/* Icon - minimalist line art */}
-      <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-foreground/70" style={{ marginLeft: '8px' }}>
+    <div className="relative flex items-center py-0.5 group transition-colors">
+      {/* Icon - warm clay stroke color */}
+      <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[hsl(18,28%,52%)] dark:text-foreground/70" style={{ marginLeft: '8px' }}>
         {getActivityIcon(activity.type)}
       </div>
       
@@ -271,20 +271,20 @@ export const ActivityCard = ({ activity, babyName = "Baby", onEdit, onDelete }: 
           onClick={handleClick}
           className="flex-1 text-left min-w-0 flex items-baseline gap-2 hover:opacity-80 transition-opacity"
         >
-          {/* Value - Semibold serif */}
-          <span className="text-sm font-serif font-semibold text-foreground">
+          {/* Value - Semibold serif, softened text */}
+          <span className="text-sm font-serif font-semibold text-[hsl(18,26%,35%)] dark:text-foreground">
             {value}
           </span>
-          {/* Descriptor - Lighter sans-serif */}
+          {/* Descriptor - Lighter sans-serif, warmer muted */}
           {descriptor && (
-            <span className="text-sm font-light truncate text-muted-foreground">
+            <span className="text-sm font-light truncate text-[hsl(20,18%,52%)] dark:text-muted-foreground">
               {descriptor}
             </span>
           )}
         </button>
         
         {/* Timestamp - lighter weight sans-serif with tabular-nums */}
-        <span className="text-xs font-light whitespace-nowrap tabular-nums text-muted-foreground">
+        <span className="text-xs font-light whitespace-nowrap tabular-nums text-[hsl(20,18%,55%)] dark:text-muted-foreground">
           {activity.type === 'nap' && activity.details.startTime && !activity.details.endTime
             ? activity.details.startTime  // Show just start time for ongoing naps
             : activity.time  // Show full time or time range for completed activities
