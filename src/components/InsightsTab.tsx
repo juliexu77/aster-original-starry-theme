@@ -12,13 +12,13 @@ import { CollectivePulse } from "@/components/home/CollectivePulse";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { subDays, startOfDay, eachDayOfInterval } from "date-fns";
 
-interface InsightsTabProps {
+interface TrendsTabProps {
   activities: Activity[];
 }
 
 type TimeRange = '1week' | '6weeks' | '3months';
 
-export const InsightsTab = ({ activities }: InsightsTabProps) => {
+export const TrendsTab = ({ activities }: TrendsTabProps) => {
   const { household, loading: householdLoading } = useHousehold();
   const { nightSleepStartHour, nightSleepEndHour } = useNightSleepWindow();
   const [timeRange, setTimeRange] = useState<TimeRange>('1week');

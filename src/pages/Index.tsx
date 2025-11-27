@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ActivityCard, Activity } from "@/components/ActivityCard";
 import { AddActivityModal } from "@/components/AddActivityModal";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { InsightsTab } from "@/components/InsightsTab";
+import { TrendsTab } from "@/components/InsightsTab";
 import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
 import { GuideTab } from "@/components/GuideTab";
@@ -698,7 +698,7 @@ const ongoingNap = (() => {
           percentile={percentile}
         />;
       case "trends":
-        return <InsightsTab activities={activities} />;
+        return <TrendsTab activities={activities} />;
       case "rhythm":
         return (
           <ErrorBoundary onRetry={() => setActiveTab("home")}>
@@ -721,21 +721,27 @@ const ongoingNap = (() => {
       case "history":
         return (
           <div className="bg-background min-h-screen">
-            {/* Log Header */}
-            <div className="px-4 py-2.5 border-b border-border">
-              <div className="flex items-center gap-4">
+            {/* Header with title and actions */}
+            <div className="mx-4 pt-6 pb-4">
+              <h1 className="text-2xl font-serif font-semibold text-foreground tracking-tight">History</h1>
+              <p className="text-sm text-muted-foreground mt-1">Your activity timeline</p>
+            </div>
+            
+            {/* Action buttons - elegant style */}
+            <div className="px-4 pb-4">
+              <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setShowPediatricianReport(true)}
-                  className="text-sm text-foreground underline hover:text-primary transition-colors"
+                  className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                 >
                   Pediatrician Report
                 </button>
-                
+                <span className="text-border">•</span>
                 <button 
                   onClick={() => setShowCSVExport(true)}
-                  className="text-sm text-foreground underline hover:text-primary transition-colors"
+                  className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
                 >
-                  Export to CSV
+                  Export CSV
                 </button>
               </div>
             </div>
@@ -996,8 +1002,8 @@ const ongoingNap = (() => {
                                 
                                 {/* Activities for this date */}
                                 <div className="relative space-y-0">
-                                  {/* Continuous timeline line running through all activities - Soft Rose-Taupe */}
-                                  <div className="absolute left-[20px] top-0 bottom-0 w-px" style={{ background: '#E6DCD8' }}></div>
+                                  {/* Continuous timeline line - uses design system */}
+                                  <div className="absolute left-[20px] top-0 bottom-0 w-px bg-border/60 dark:bg-border/40"></div>
                                   {(() => {
                                     // To detect night sleep for this day, we need to check:
                                     // 1. Sleeps that started TODAY and ended TODAY
