@@ -234,12 +234,40 @@ export const useRhythmArc = ({
         if (sortedNaps.length > 0) {
           const lastNap = sortedNaps[0];
           const endTimeStr = String(lastNap.details.endTime);
-          const timeParts = endTimeStr.split(":").map(Number);
-          if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
-            const [hours, minutes] = timeParts;
-            const napEndDate = new Date(lastNap.loggedAt || lastNap.time || currentTime);
-            napEndDate.setHours(hours, minutes, 0, 0);
-            startTime = napEndDate;
+          const detailsAny = lastNap.details as any;
+          
+          // Parse time with AM/PM support
+          const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+          if (timeMatch) {
+            let hours = parseInt(timeMatch[1]);
+            const minutes = parseInt(timeMatch[2]);
+            const period = timeMatch[3]?.toUpperCase();
+            
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+            
+            // Use end_date_local if available (for overnight sleeps that end the next day)
+            // Otherwise fall back to date_local, then loggedAt
+            let baseDate: Date;
+            if (detailsAny.end_date_local) {
+              const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
+              baseDate = new Date(year, month - 1, day);
+            } else if (detailsAny.date_local) {
+              const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+              baseDate = new Date(year, month - 1, day);
+            } else {
+              baseDate = new Date(lastNap.loggedAt || lastNap.time || currentTime);
+            }
+            
+            baseDate.setHours(hours, minutes, 0, 0);
+            startTime = baseDate;
+            
+            console.log('⏰ WAKE MODE - End time parsing:', {
+              endTimeStr,
+              end_date_local: detailsAny.end_date_local,
+              date_local: detailsAny.date_local,
+              parsedStartTime: startTime.toLocaleString()
+            });
           }
 
           // Calculate age-appropriate wake window
