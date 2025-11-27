@@ -373,7 +373,7 @@ export const CurrentMomentArc = ({
       return Math.min(Math.max(minutesElapsed / recommendedWindow, 0), 1.5);
     }
     
-    return 0.15; // Default starting position if no data - closer to start
+    return 0.25; // Default starting position if no data - visible on arc
   };
   
   const arcPosition = calculateArcPosition();

@@ -103,7 +103,7 @@ export const useHomeTabIntelligence = (
         napStartTime = new Date(ongoingNap.loggedAt);
       }
       
-      const duration = differenceInMinutes(new Date(), napStartTime);
+      const duration = Math.max(0, differenceInMinutes(new Date(), napStartTime));
       
       // Check if we're past anticipated wake time (if prediction exists)
       let isPastAnticipatedWake = false;
@@ -133,7 +133,7 @@ export const useHomeTabIntelligence = (
     if (!lastActivity) return null;
 
     const lastActivityTime = new Date(lastActivity.loggedAt);
-    const duration = differenceInMinutes(new Date(), lastActivityTime);
+    const duration = Math.max(0, differenceInMinutes(new Date(), lastActivityTime));
 
     // Check if last activity is an ongoing feed (no endTime = still feeding)
     if (lastActivity.type === 'feed' && duration < 30 && !lastActivity.details?.endTime) {
@@ -164,7 +164,7 @@ export const useHomeTabIntelligence = (
         napStartTime = lastActivityTime;
       }
       
-      const sleepDuration = differenceInMinutes(new Date(), napStartTime);
+      const sleepDuration = Math.max(0, differenceInMinutes(new Date(), napStartTime));
       const isNightSleepActivity = isNightSleep(lastActivity, nightSleepStartHour, nightSleepEndHour);
       const sleepType = isNightSleepActivity ? 'sleeping' : 'napping';
       const sleepNoun = isNightSleepActivity ? 'Sleep' : 'Nap';
@@ -234,7 +234,7 @@ export const useHomeTabIntelligence = (
         napStartTime = new Date(ongoingSleep.loggedAt);
       }
       
-      const sleepDuration = differenceInMinutes(new Date(), napStartTime);
+      const sleepDuration = Math.max(0, differenceInMinutes(new Date(), napStartTime));
       const isNightSleepActivity = isNightSleep(ongoingSleep, nightSleepStartHour, nightSleepEndHour);
       const sleepType = isNightSleepActivity ? 'sleeping' : 'napping';
       const sleepNoun = isNightSleepActivity ? 'Sleep' : 'Nap';
@@ -273,7 +273,7 @@ export const useHomeTabIntelligence = (
     const lastByEnd = napsWithEnd.sort((a, b) => b.endDate.getTime() - a.endDate.getTime())[0];
     if (lastByEnd) {
       const napEndTime = lastByEnd.endDate;
-      const awakeMinutes = differenceInMinutes(new Date(), napEndTime);
+      const awakeMinutes = Math.max(0, differenceInMinutes(new Date(), napEndTime));
       if (awakeMinutes < 0) {
         return {
           type: 'awake',

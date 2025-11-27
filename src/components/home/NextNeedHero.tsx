@@ -116,7 +116,7 @@ export const NextNeedHero = ({
                       <p className="text-xs font-medium text-foreground/80">Time awake</p>
                     </div>
                     <p className="text-2xl font-num font-bold text-foreground">
-                      {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
+                      {Math.floor(Math.max(0, currentActivity.duration) / 60)}h {Math.max(0, currentActivity.duration) % 60}m
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Awake since {currentActivity.startTime}
@@ -140,7 +140,7 @@ export const NextNeedHero = ({
                       </p>
                     </div>
                     <p className="text-2xl font-num font-bold text-foreground">
-                      {Math.floor(currentActivity.duration / 60)}h {currentActivity.duration % 60}m
+                      {Math.floor(Math.max(0, currentActivity.duration) / 60)}h {Math.max(0, currentActivity.duration) % 60}m
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Since {currentActivity.startTime}
