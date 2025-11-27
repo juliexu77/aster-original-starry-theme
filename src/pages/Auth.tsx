@@ -111,9 +111,10 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-6 bg-background">
-      {/* Glow Orb - soft halo behind card */}
+      {/* Soft organic glow - subtle warm halo */}
       <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full opacity-40 blur-3xl pointer-events-none bg-primary/20"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-30 blur-[100px] pointer-events-none"
+        style={{ background: 'radial-gradient(circle, hsla(18, 50%, 80%, 0.4) 0%, hsla(15, 40%, 85%, 0.2) 50%, transparent 70%)' }}
       />
       
       <div className="w-full max-w-md relative z-10">
@@ -121,9 +122,9 @@ const Auth = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6 relative">
-            {/* Circular glow behind icon - animated pulse */}
-            <div className="absolute w-16 h-16 bg-gradient-to-br from-primary/40 to-accent/40 rounded-full blur-xl opacity-75 animate-pulse"></div>
-            <Activity className="auth-icon w-8 h-8 text-primary relative z-10" strokeWidth={1.5} />
+            {/* Subtle warm glow - no animation, organic feel */}
+            <div className="absolute w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/15 rounded-full blur-2xl opacity-60"></div>
+            <Activity className="auth-icon w-7 h-7 text-primary relative z-10" strokeWidth={1.5} />
           </div>
           <h1 className="text-[22px] md:text-[36px] font-serif font-medium mb-6 tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
             Step into the rhythm
@@ -135,7 +136,7 @@ const Auth = () => {
 
         {/* Auth Forms */}
         <Card 
-          className="rounded-xl bg-card shadow-card border border-border overflow-hidden"
+          className="overflow-hidden"
         >
           <CardContent className="pt-6">
             {mode === 'signup' ? (
