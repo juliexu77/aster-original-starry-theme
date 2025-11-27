@@ -379,6 +379,15 @@ export const CurrentMomentArc = ({
   const arcPosition = calculateArcPosition();
   const clampedPosition = Math.min(arcPosition, 1.0); // Stop movement at end of arc for icon
 
+  // Debug logging
+  console.log('🎯 CurrentMomentArc debug:', {
+    arcPosition,
+    clampedPosition,
+    hasOngoingNap: !!ongoingNap,
+    activitiesCount: activities.length,
+    babyBirthday
+  });
+
   // --- FIXED LAYOUT CONSTANTS ---
   // Widen the viewBox width to 500 (was 460) to add internal side padding
   const viewBoxWidth = 500;
@@ -396,6 +405,15 @@ export const CurrentMomentArc = ({
   // At 0 (Right): cos is 1. 250 + (180) = 430. (Safe margin from 500)
   const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
+  
+  console.log('🎯 Icon position:', {
+    arcAngle: (arcAngle * 180 / Math.PI).toFixed(1) + '°',
+    iconX: iconX.toFixed(1),
+    iconY: iconY.toFixed(1),
+    centerX,
+    centerY,
+    arcRadius
+  });
   
   const inTwilightZone = arcPosition >= 0.8 && arcPosition <= 1.0;
   const isOvertired = arcPosition > 1.0;
