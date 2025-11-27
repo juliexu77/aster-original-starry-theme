@@ -53,19 +53,40 @@ export const RhythmArc = ({
   // Create the full arc path (SVG quadratic Bézier)
   const arcPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
   
-  // Calculate icon position along the arc (clamped to 0-1 for display)
-  const iconProgress = Math.min(progress, 1.0);
-  const iconPosition = getPointOnQuadraticCurve(
-    iconProgress,
+  // Calculate icon position - allow beyond arc for overtired (up to 150%)
+  const iconProgress = Math.min(progress, 1.5);
+  
+  // If overtired (> 1.0), extrapolate beyond the arc end point
+  let iconPosition;
+  if (iconProgress > 1.0) {
+    // Calculate direction from control to end point
+    const dx = endPoint.x - controlPoint.x;
+    const dy = endPoint.y - controlPoint.y;
+    const extraProgress = iconProgress - 1.0; // 0 to 0.5
+    // Move further along the trajectory
+    iconPosition = {
+      x: endPoint.x + dx * extraProgress * 0.8,
+      y: endPoint.y + dy * extraProgress * 0.8
+    };
+  } else {
+    iconPosition = getPointOnQuadraticCurve(
+      iconProgress,
+      startPoint,
+      controlPoint,
+      endPoint
+    );
+  }
+  
+  // De Casteljau subdivision for wedge path (only for progress <= 1.0)
+  const wedgeProgress = Math.min(progress, 1.0);
+  const wedgePosition = getPointOnQuadraticCurve(
+    wedgeProgress,
     startPoint,
     controlPoint,
     endPoint
   );
   
-  // De Casteljau subdivision for quadratic Bézier
-  // To split curve at t, first control point = lerp(P0, P1, t)
-  // But we also need to account that the curve continues to P2
-  const t = iconProgress;
+  const t = wedgeProgress;
   const t1 = 1 - t;
   
   // First level interpolation
@@ -73,19 +94,12 @@ export const RhythmArc = ({
     x: t1 * startPoint.x + t * controlPoint.x,
     y: t1 * startPoint.y + t * controlPoint.y
   };
-  const q1 = {
-    x: t1 * controlPoint.x + t * endPoint.x,
-    y: t1 * controlPoint.y + t * endPoint.y
-  };
   
-  // The control point for the first segment (0 to t) is q0
-  // The end point is the interpolation of q0 and q1 at t (which equals iconPosition)
-  
-  // Create wedge path: follows the exact arc curve from start to icon, then fills down to horizon
+  // Create wedge path: follows the exact arc curve from start to wedge position, then fills down to horizon
   const wedgePath = `
     M ${startPoint.x} ${startPoint.y}
-    Q ${q0.x} ${q0.y} ${iconPosition.x} ${iconPosition.y}
-    L ${iconPosition.x} ${horizonY}
+    Q ${q0.x} ${q0.y} ${wedgePosition.x} ${wedgePosition.y}
+    L ${wedgePosition.x} ${horizonY}
     L ${startPoint.x} ${horizonY}
     Z
   `;
