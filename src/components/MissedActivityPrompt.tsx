@@ -46,7 +46,7 @@ export const MissedActivityPrompt = ({
               variant="default"
               onClick={handleAccept}
               disabled={isLoading}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
+              className="bg-primary hover:bg-primary/90"
             >
               {isLoading ? "Logging..." : "Yes, log it"}
             </Button>

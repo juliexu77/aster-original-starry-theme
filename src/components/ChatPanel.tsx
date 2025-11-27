@@ -90,7 +90,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
         className="fixed bottom-6 left-6 h-14 w-14 rounded-full bg-gradient-chat shadow-soft hover:shadow-lg transition-all duration-300"
         size="icon"
       >
-        <MessageCircle className="h-6 w-6 text-white" />
+        <MessageCircle className="h-6 w-6 text-primary-foreground" />
       </Button>
     );
   }
@@ -101,7 +101,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
 
   return (
     <Card className="fixed bottom-6 left-6 w-80 h-96 shadow-soft flex flex-col">
-      <div className="p-4 border-b bg-gradient-chat text-white rounded-t-lg flex items-center justify-between">
+      <div className="p-4 border-b bg-gradient-chat text-primary-foreground rounded-t-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5" />
           <h3 className="font-medium">Baby Insights</h3>
@@ -110,7 +110,7 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
           variant="ghost"
           size="sm"
           onClick={onToggle}
-          className="text-white hover:bg-white/20 h-8 w-8 p-0"
+          className="text-primary-foreground hover:bg-[hsl(30,50%,97%)]/20 h-8 w-8 p-0"
         >
           ×
         </Button>
@@ -142,15 +142,15 @@ export const ChatPanel = ({ activities, isOpen, onToggle, showFixedButton = fals
                 message.sender === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {message.sender === "bot" && (
+            {message.sender === "bot" && (
                 <div className="h-6 w-6 rounded-full bg-gradient-chat flex items-center justify-center">
-                  <Bot className="h-3 w-3 text-white" />
+                  <Bot className="h-3 w-3 text-primary-foreground" />
                 </div>
               )}
               <div
                 className={`max-w-[200px] rounded-lg p-2 text-sm ${
                   message.sender === "user"
-                    ? "bg-gradient-primary text-white"
+                    ? "bg-gradient-primary text-primary-foreground"
                     : "bg-muted text-foreground"
                 }`}
               >

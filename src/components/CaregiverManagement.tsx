@@ -58,9 +58,9 @@ export function CaregiverManagement({ onClose }: CaregiverManagementProps) {
       case 'parent':
         return 'bg-primary text-primary-foreground';
       case 'partner':
-        return 'bg-blue-500 text-white';
+        return 'bg-[hsl(18,40%,55%)] text-[hsl(30,50%,97%)]';
       case 'caregiver':
-        return 'bg-green-500 text-white';
+        return 'bg-[hsl(22,35%,50%)] text-[hsl(30,50%,97%)]';
       default:
         return 'bg-muted text-muted-foreground';
     }

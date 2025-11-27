@@ -107,7 +107,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       <div className="rounded-xl bg-gradient-to-b from-[hsl(22,38%,89%)] to-[hsl(20,35%,86%)] dark:from-card dark:to-card shadow-[0_4px_14px_-4px_hsla(20,40%,45%,0.10)] dark:shadow-none border border-[hsl(20,28%,80%)]/40 dark:border-border/20 overflow-hidden">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-white/30 dark:hover:bg-muted/20 transition-colors"
+          className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
         >
           <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
             Collective Pulse
@@ -162,7 +162,7 @@ export const CollectivePulse = ({ babyBirthday }: CollectivePulseProps) => {
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-white/30 dark:hover:bg-muted/20 transition-colors"
+        className="w-full px-4 py-4 border-b border-[hsl(20,25%,78%)]/30 dark:border-border/30 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-muted/20 transition-colors"
       >
         <h3 className="text-xs font-medium text-foreground/70 uppercase tracking-wider">
           Collective Pulse

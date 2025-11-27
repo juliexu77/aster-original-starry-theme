@@ -98,7 +98,7 @@ const InviteAccept = () => {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-              <Baby className="w-8 h-8 text-white" />
+              <Baby className="w-8 h-8 text-primary-foreground" />
             </div>
             <CardTitle>{t('joinBabyTracking')}</CardTitle>
             <CardDescription>
@@ -120,7 +120,7 @@ const InviteAccept = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <Baby className="w-8 h-8 text-white" />
+            <Baby className="w-8 h-8 text-primary-foreground" />
           </div>
           <CardTitle>{t('youveBeenInvited')}</CardTitle>
           <CardDescription>
