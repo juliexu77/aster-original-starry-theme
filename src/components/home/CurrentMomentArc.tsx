@@ -373,12 +373,12 @@ export const CurrentMomentArc = ({
   const centerY = 180; // Adjusted for reduced height
   const arcRadius = 180;
 
-  // --- ARC RANGE: Cut bottom 10% (extended from 20%) ---
-  // Start angle: 0.9 * PI (162°) - left side
-  // End angle: 0.1 * PI (18°) - right side
-  const startAngle = Math.PI * 0.9;
-  const endAngle = Math.PI * 0.1;
-  const angleRange = startAngle - endAngle; // 0.8 * PI (144°)
+  // --- ARC RANGE: Narrower to prevent edge clipping ---
+  // Start angle: 0.82 * PI (147.6°) - left side
+  // End angle: 0.18 * PI (32.4°) - right side
+  const startAngle = Math.PI * 0.82;
+  const endAngle = Math.PI * 0.18;
+  const angleRange = startAngle - endAngle; // 0.64 * PI (115.2°)
 
   // --- FIXED MATH (Left to Right on shortened arc) ---
   // Map position (0 to 1) to angle range (startAngle to endAngle)
@@ -584,8 +584,8 @@ export const CurrentMomentArc = ({
           )}
         </svg>
         
-        {/* State Card - Layered over bottom of arc */}
-        <Card className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 px-6 py-3 shadow-lg border-border/50 bg-card/95 backdrop-blur-sm">
+        {/* State Card - Connected to arc bottom */}
+        <Card className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-6 py-3 shadow-md border-border/40 bg-card">
           <p className="text-[18px] font-serif font-semibold text-foreground tracking-tight text-center leading-snug whitespace-nowrap" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
