@@ -119,6 +119,13 @@ export const useRhythmArc = ({
         if (babyBirthday) {
           try {
             const ageInWeeks = calculateAgeInWeeks(babyBirthday);
+            console.log('🍼 NAP MODE - Age calculation:', { 
+              babyBirthday, 
+              ageInWeeks, 
+              startTime: startTime.toLocaleString(),
+              currentTime: currentTime.toLocaleString(),
+              isNightSleep 
+            });
             
             if (isNightSleep) {
               // Night sleep durations from baseline data (hours -> minutes)
@@ -183,6 +190,14 @@ export const useRhythmArc = ({
               const ageInWeeks = Math.floor(
                 (currentTime.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 7)
               );
+              
+              console.log('⏰ WAKE MODE - Age calculation:', { 
+                babyBirthday, 
+                birthDate: birthDate.toLocaleDateString(),
+                currentTime: currentTime.toLocaleString(),
+                ageInWeeks,
+                lastNapEnd: startTime.toLocaleString()
+              });
 
               // Age-based wake windows (in minutes)
               if (ageInWeeks < 4) typicalDuration = 45;
