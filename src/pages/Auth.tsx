@@ -200,7 +200,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]" 
+                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_hsla(30,50%,97%,0.3)]" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('settingUp') : t('createAccount')}
@@ -255,7 +255,7 @@ const Auth = () => {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]" 
+                  className="w-full font-sans font-medium rounded-xl shadow-[inset_0_1px_2px_hsla(30,50%,97%,0.3)]" 
                   disabled={isLoading}
                 >
                   {isLoading ? t('loading') : t('signIn')}

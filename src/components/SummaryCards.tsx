@@ -37,37 +37,37 @@ export const SummaryCards = ({ activities }: SummaryCardsProps) => {
   return (
     <div className="grid grid-cols-2 gap-4 mb-8">
       {/* Total Feeds Card */}
-      <div className="bg-gradient-to-br from-rose-50 to-rose-100/50 rounded-xl p-6 border border-rose-200/30">
+      <div className="bg-gradient-to-br from-[hsl(18,40%,92%)] to-[hsl(15,38%,88%)]/50 dark:from-card dark:to-card rounded-xl p-6 border border-[hsl(15,35%,80%)]/30 dark:border-border/30">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-gradient-feed flex items-center justify-center">
-            <Baby className="w-5 h-5 text-white" />
+            <Baby className="w-5 h-5 text-[hsl(30,50%,97%)]" />
           </div>
-          <div className="text-sm font-medium text-rose-700 uppercase tracking-wide">
+          <div className="text-sm font-medium text-[hsl(12,40%,40%)] dark:text-foreground/70 uppercase tracking-wide">
             Total Feeds
           </div>
         </div>
         <div className="space-y-1">
-          <div className="text-3xl font-num font-semibold text-rose-900 dark:font-bold dark:text-primary">
+          <div className="text-3xl font-num font-semibold text-[hsl(12,35%,30%)] dark:font-bold dark:text-primary">
             {feedActivities.length}
           </div>
-          <div className="text-sm text-rose-600 font-medium">
+          <div className="text-sm text-[hsl(15,30%,45%)] dark:text-muted-foreground font-medium">
             {totalOunces.toFixed(1)} oz total
           </div>
         </div>
       </div>
 
       {/* Total Naps Card */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-6 border border-blue-200/30">
+      <div className="bg-gradient-to-br from-[hsl(22,38%,91%)] to-[hsl(20,35%,87%)]/50 dark:from-card dark:to-card rounded-xl p-6 border border-[hsl(20,32%,80%)]/30 dark:border-border/30">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-full bg-gradient-nap flex items-center justify-center">
-            <Clock className="w-5 h-5 text-white" />
+            <Clock className="w-5 h-5 text-[hsl(30,50%,97%)]" />
           </div>
-          <div className="text-sm font-medium text-blue-700 uppercase tracking-wide">
+          <div className="text-sm font-medium text-[hsl(18,35%,42%)] dark:text-foreground/70 uppercase tracking-wide">
             Total Naps
           </div>
         </div>
         <div className="space-y-1">
-          <div className="text-3xl font-num font-semibold text-blue-900 dark:font-bold dark:text-primary">
+          <div className="text-3xl font-num font-semibold text-[hsl(18,30%,30%)] dark:font-bold dark:text-primary">
             {napActivities.length}
           </div>
           <div className="text-sm text-blue-600 font-medium">

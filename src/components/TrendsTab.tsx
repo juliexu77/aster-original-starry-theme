@@ -372,18 +372,18 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
         <div className="rounded-2xl bg-gradient-to-br from-[hsl(18,38%,92%)] via-[hsl(15,35%,89%)] to-[hsl(12,32%,86%)] dark:from-[hsl(18,30%,18%)] dark:via-[hsl(15,25%,15%)] dark:to-[hsl(12,20%,12%)] border border-[hsl(15,30%,82%)]/60 dark:border-[hsl(15,25%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(15,40%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(15,35%,20%,0.4)]">
           <button
             onClick={() => toggleChart('nightSleep')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(18,35%,65%)] to-[hsl(12,38%,55%)] dark:from-[hsl(18,40%,50%)] dark:to-[hsl(12,35%,40%)] flex items-center justify-center shadow-md">
-                <Moon className="w-5 h-5 text-white drop-shadow-sm" />
+                <Moon className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
               </div>
               <div className="text-left">
                 <h3 className="text-sm font-semibold text-foreground">Night Sleep</h3>
                 <p className="text-xs text-muted-foreground">See how night sleep has shifted</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
+            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['nightSleep'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-[hsl(15,30%,45%)] dark:text-[hsl(15,35%,65%)]" />
             </div>
           </button>
@@ -411,18 +411,18 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
         <div className="rounded-2xl bg-gradient-to-br from-[hsl(22,42%,91%)] via-[hsl(20,38%,88%)] to-[hsl(18,35%,85%)] dark:from-[hsl(22,35%,18%)] dark:via-[hsl(20,30%,15%)] dark:to-[hsl(18,25%,12%)] border border-[hsl(20,32%,80%)]/60 dark:border-[hsl(20,35%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(20,45%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(20,40%,20%,0.4)]">
           <button
             onClick={() => toggleChart('dayNaps')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(22,45%,60%)] to-[hsl(18,48%,50%)] dark:from-[hsl(22,50%,48%)] dark:to-[hsl(18,45%,38%)] flex items-center justify-center shadow-md">
-                <Sun className="w-5 h-5 text-white drop-shadow-sm" />
+                <Sun className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
               </div>
               <div className="text-left">
                 <h3 className="text-sm font-semibold text-foreground">Day Naps</h3>
                 <p className="text-xs text-muted-foreground">Consolidation over time</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
+            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['dayNaps'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-[hsl(20,40%,42%)] dark:text-[hsl(20,45%,60%)]" />
             </div>
           </button>
@@ -450,18 +450,18 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
         <div className="rounded-2xl bg-gradient-to-br from-[hsl(12,38%,91%)] via-[hsl(10,35%,88%)] to-[hsl(8,32%,85%)] dark:from-[hsl(12,30%,18%)] dark:via-[hsl(10,25%,15%)] dark:to-[hsl(8,20%,12%)] border border-[hsl(10,28%,80%)]/60 dark:border-[hsl(10,30%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(10,42%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(10,38%,20%,0.4)]">
           <button
             onClick={() => toggleChart('feedVolume')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(12,42%,58%)] to-[hsl(8,45%,48%)] dark:from-[hsl(12,48%,48%)] dark:to-[hsl(8,45%,38%)] flex items-center justify-center shadow-md">
-                <Milk className="w-5 h-5 text-white drop-shadow-sm" />
+                <Milk className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
               </div>
               <div className="text-left">
                 <h3 className="text-sm font-semibold text-foreground">Feed Volume</h3>
                 <p className="text-xs text-muted-foreground">Feeding patterns over time</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
+            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['feedVolume'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-[hsl(10,35%,42%)] dark:text-[hsl(10,40%,60%)]" />
             </div>
           </button>
@@ -489,18 +489,18 @@ export const TrendsTab = ({ activities }: TrendsTabProps) => {
         <div className="rounded-2xl bg-gradient-to-br from-[hsl(16,40%,90%)] via-[hsl(14,36%,87%)] to-[hsl(12,33%,84%)] dark:from-[hsl(16,32%,18%)] dark:via-[hsl(14,28%,15%)] dark:to-[hsl(12,24%,12%)] border border-[hsl(14,30%,79%)]/60 dark:border-[hsl(14,32%,35%)]/40 overflow-hidden shadow-[0_6px_18px_-4px_hsla(14,40%,45%,0.12)] dark:shadow-[0_6px_18px_-4px_hsla(14,36%,20%,0.4)]">
           <button
             onClick={() => toggleChart('wakeWindows')}
-            className="w-full px-4 py-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-white/5 transition-colors"
+            className="w-full px-4 py-4 flex items-center justify-between hover:bg-[hsl(25,45%,95%)]/30 dark:hover:bg-[hsl(0,0%,100%)]/5 transition-colors"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[hsl(16,45%,58%)] to-[hsl(12,48%,48%)] dark:from-[hsl(16,50%,48%)] dark:to-[hsl(12,45%,38%)] flex items-center justify-center shadow-md">
-                <Clock className="w-5 h-5 text-white drop-shadow-sm" />
+                <Clock className="w-5 h-5 text-[hsl(30,50%,97%)] drop-shadow-sm" />
               </div>
               <div className="text-left">
                 <h3 className="text-sm font-semibold text-foreground">Wake Windows</h3>
                 <p className="text-xs text-muted-foreground">Wake times stretch as baby grows</p>
               </div>
             </div>
-            <div className={`w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
+            <div className={`w-7 h-7 rounded-full bg-[hsl(25,45%,95%)]/40 dark:bg-[hsl(0,0%,100%)]/10 flex items-center justify-center transition-transform duration-300 ${expandedCharts['wakeWindows'] ? 'rotate-180' : ''}`}>
               <ChevronDown className="w-4 h-4 text-[hsl(14,38%,42%)] dark:text-[hsl(14,42%,60%)]" />
             </div>
           </button>

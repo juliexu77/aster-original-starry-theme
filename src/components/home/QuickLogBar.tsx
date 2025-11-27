@@ -26,7 +26,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
           variant="outline"
           onClick={() => handleQuickLog('feed')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-white/60 hover:bg-white/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
         >
           <Milk className="w-4.5 h-4.5 text-[hsl(12,40%,50%)] dark:text-foreground/80" />
         </Button>
@@ -35,7 +35,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
           variant="outline"
           onClick={() => handleQuickLog('nap')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-white/60 hover:bg-white/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
         >
           <Moon className="w-4.5 h-4.5 text-[hsl(18,35%,52%)] dark:text-foreground/80" />
         </Button>
@@ -44,7 +44,7 @@ export const QuickLogBar = ({ onLogActivity, isLoading }: QuickLogBarProps) => {
           variant="outline"
           onClick={() => handleQuickLog('diaper')}
           disabled={isLoading}
-          className="flex-1 h-10 rounded-xl bg-white/60 hover:bg-white/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
+          className="flex-1 h-10 rounded-xl bg-[hsl(25,45%,95%)]/60 hover:bg-[hsl(25,45%,95%)]/80 border-[hsl(18,28%,78%)]/50 shadow-[0_2px_8px_-2px_hsla(18,35%,45%,0.08)] dark:bg-card dark:border-border/30 dark:hover:bg-accent/10"
         >
           <Droplet className="w-4.5 h-4.5 text-[hsl(20,30%,48%)] dark:text-foreground/80" />
         </Button>

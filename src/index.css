@@ -101,7 +101,7 @@
     --popover: var(--surface);
     --popover-foreground: var(--text);
     --primary: var(--rb-berry-mauve);
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 30 50% 97%; /* Warm cream instead of pure white */
     --secondary: var(--rb-dusty-blush);
     --secondary-foreground: 350 35% 20%;
     --muted: var(--surface-muted);
@@ -109,7 +109,7 @@
     --accent: var(--rb-rose-clay);
     --accent-foreground: 350 35% 20%;
     --destructive: 0 50% 55%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 30 50% 97%; /* Warm cream */
     --border: var(--divider);
     --input: var(--surface-muted);
     --ring: var(--rb-terracotta-rose);
