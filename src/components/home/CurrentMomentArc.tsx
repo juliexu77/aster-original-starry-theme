@@ -329,30 +329,23 @@ export const CurrentMomentArc = ({
 }: CurrentMomentArcProps) => {
   const now = new Date();
   const currentHour = now.getHours();
-  const currentMinutes = now.getMinutes();
   const isDay = isDaytime(currentHour, nightSleepStartHour, nightSleepEndHour);
-  
   const currentState = getCurrentState(activities, ongoingNap || null, nightSleepStartHour, nightSleepEndHour);
   
-  // NEW LOGIC: Calculate arc position based on wake window battery
+  // 1. Calculate Progress (0.0 to 1.0+)
   const calculateArcPosition = (): number => {
-    // If baby is asleep (nap in progress), track nap progress
+    // NAP LOGIC
     if (ongoingNap?.details?.startTime) {
       const [hours, minutes] = ongoingNap.details.startTime.split(':').map(Number);
       const startDate = new Date(now);
       startDate.setHours(hours, minutes, 0, 0);
       const napMinutes = differenceInMinutes(now, startDate);
-      
-      // Target nap length: 1.5 hours for naps, use it as the recommended window
-      const targetNapMinutes = 90;
-      const progress = napMinutes / targetNapMinutes;
-      
-      // Clamp between 0 and 1.3 (allow slight overfill)
-      return Math.min(Math.max(progress, 0), 1.3);
+      const targetNapMinutes = 90; // 1.5 hour target
+      // Clamp nap progress
+      return Math.min(Math.max(napMinutes / targetNapMinutes, 0), 1.2);
     }
     
-    // If baby is awake, track wake window battery
-    // Find the last wake event (most recent nap end time)
+    // WAKE WINDOW LOGIC
     const lastSleep = activities
       .filter(a => a.type === 'nap' && a.details?.endTime)
       .sort((a, b) => {
@@ -367,136 +360,114 @@ export const CurrentMomentArc = ({
       wakeDate.setHours(hours, minutes, 0, 0);
       const minutesElapsed = differenceInMinutes(now, wakeDate);
       
-      // Get recommended wake window based on baby's age
-      let recommendedWindow = 150; // Default: 2.5 hours
+      let recommendedWindow = 150; // Default 2.5h
       if (babyBirthday) {
         const ageInWeeks = calculateAgeInWeeks(babyBirthday);
         const wakeWindowData = getWakeWindowForAge(ageInWeeks);
         if (wakeWindowData?.wakeWindows?.[0]) {
-          // Parse wake window string like "2-2.5hrs" or "1.5-2hrs"
           const windowStr = wakeWindowData.wakeWindows[0];
           const match = windowStr.match(/([\d.]+)(?:-[\d.]+)?h/);
-          if (match) {
-            const hours = parseFloat(match[1]);
-            recommendedWindow = hours * 60;
-          }
+          if (match) recommendedWindow = parseFloat(match[1]) * 60;
         }
       }
-      
-      // Calculate progress (0 = just woke, 0.8 = sweet spot, 1.0 = end of window, >1.0 = overtired)
-      const progress = minutesElapsed / recommendedWindow;
-      
-      // Clamp between 0 and 1.5 (allow overfill visualization)
-      return Math.min(Math.max(progress, 0), 1.5);
+      return Math.min(Math.max(minutesElapsed / recommendedWindow, 0), 1.5);
     }
     
-    // Fallback: no recent sleep data, assume mid-window
-    return 0.5;
+    return 0.1; // Default starting position if no data
   };
   
   const arcPosition = calculateArcPosition();
-  
-  // Calculate icon position on the arc (0 = left, 1 = right)
-  // Clamp position for display between 0 and 1 for icon placement
-  const clampedPosition = Math.min(arcPosition, 1.0);
-  const arcAngle = Math.PI * (1 - clampedPosition); // π to 0 (left to right)
+  const clampedPosition = Math.min(arcPosition, 1.0); // Stop movement at end of arc for icon
+
+  // --- FIXED LAYOUT CONSTANTS ---
+  // Widen the viewBox width to 500 (was 460) to add internal side padding
+  const viewBoxWidth = 500;
+  const viewBoxHeight = 260; // Slightly taller for text
+  const centerX = 250; // Exact center of new width
+  const centerY = 220; // Lower down
   const arcRadius = 180;
-  const centerX = 230; // Adjusted for 30px padding
-  const centerY = 210;
-  
-  const iconX = centerX - Math.cos(arcAngle) * arcRadius;
+
+  // --- FIXED MATH (Left to Right) ---
+  // Angle: PI (Left) -> 0 (Right)
+  const arcAngle = Math.PI * (1 - clampedPosition); 
+
+  // FIXED FORMULA: Plus (+) Cosine
+  // At PI (Left): cos is -1. 250 + (-180) = 70. (Safe margin from 0)
+  // At 0 (Right): cos is 1. 250 + (180) = 430. (Safe margin from 500)
+  const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
-  // Check if in twilight zone (sweet spot at 80% of wake window)
   const inTwilightZone = arcPosition >= 0.8 && arcPosition <= 1.0;
-  
-  // Check if overtired (beyond 100% of wake window)
   const isOvertired = arcPosition > 1.0;
   
-  // Create path for trailing fill (from start to current position)
+  // --- FIXED TRAIL PATH LOGIC ---
   const createTrailPath = (): string => {
-    const startAngle = Math.PI; // Start at left (180°)
-    // Clamp to max 1.0 for trail path (we'll render overtired separately)
-    const trailPosition = Math.min(clampedPosition, 1.0);
-    const currentAngle = Math.PI * (1 - trailPosition);
+    // Start Point (Far Left)
+    // Angle = PI
+    const startX = centerX + Math.cos(Math.PI) * arcRadius; // 70
+    const startY = centerY - Math.sin(Math.PI) * arcRadius; // 220
     
-    // Create arc path
-    const startX = centerX - Math.cos(startAngle) * arcRadius;
-    const startY = centerY - Math.sin(startAngle) * arcRadius;
-    
-    const endX = centerX - Math.cos(currentAngle) * arcRadius;
+    // End Point (Current Icon Position)
+    // We reuse iconX/iconY logic but based on clamped position
+    const currentAngle = Math.PI * (1 - Math.min(arcPosition, 1.0));
+    const endX = centerX + Math.cos(currentAngle) * arcRadius;
     const endY = centerY - Math.sin(currentAngle) * arcRadius;
     
-    const largeArcFlag = trailPosition > 0.5 ? 1 : 0;
-    
-    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 ${largeArcFlag} 1 ${endX} ${endY} L ${centerX} ${centerY} Z`;
+    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
   };
   
   const trailPath = createTrailPath();
-  
+
   return (
     <div className="px-0 pb-2 relative z-10">
-      <div className="relative w-full flex flex-col items-center px-8">
+      <div className="relative w-full flex flex-col items-center">
         <svg
-          viewBox="0 0 460 240"
+          viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`}
           className="w-full"
           style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
-            {/* Daytime gradients */}
             <linearGradient id="dayBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(30 40% 92%)" stopOpacity="0.3" />
               <stop offset="100%" stopColor="hsl(15 45% 88%)" stopOpacity="0.35" />
             </linearGradient>
-            
             <linearGradient id="dayTrailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(40 60% 88%)" stopOpacity="0.5" />
               <stop offset="100%" stopColor="hsl(35 55% 85%)" stopOpacity="0.6" />
             </linearGradient>
-            
             <linearGradient id="dayTwilightGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(25 50% 80%)" stopOpacity="0.4" />
               <stop offset="100%" stopColor="hsl(15 45% 75%)" stopOpacity="0.5" />
             </linearGradient>
-            
-            {/* Overtired gradient - red/orange warning */}
             <linearGradient id="overtiredGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(15 70% 65%)" stopOpacity="0.7" />
               <stop offset="100%" stopColor="hsl(0 60% 60%)" stopOpacity="0.8" />
             </linearGradient>
-            
-            {/* Nighttime gradients */}
             <linearGradient id="nightBaseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(240 25% 75%)" stopOpacity="0.25" />
               <stop offset="100%" stopColor="hsl(260 18% 80%)" stopOpacity="0.3" />
             </linearGradient>
-            
             <linearGradient id="nightTrailGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(245 30% 70%)" stopOpacity="0.4" />
               <stop offset="100%" stopColor="hsl(255 22% 75%)" stopOpacity="0.45" />
             </linearGradient>
-            
-            {/* Icon glows - warm honey color */}
             <radialGradient id="sunGlow">
               <stop offset="0%" stopColor="#FFD580" stopOpacity="0.6" />
               <stop offset="100%" stopColor="#FFD580" stopOpacity="0" />
             </radialGradient>
-            
             <radialGradient id="moonGlow">
               <stop offset="0%" stopColor="hsl(240 40% 80%)" stopOpacity="0.5" />
               <stop offset="100%" stopColor="hsl(240 40% 80%)" stopOpacity="0" />
             </radialGradient>
-            
-            {/* Overtired warning glow */}
             <radialGradient id="overtiredGlow">
               <stop offset="0%" stopColor="hsl(0 70% 60%)" stopOpacity="0.4" />
               <stop offset="100%" stopColor="hsl(0 70% 60%)" stopOpacity="0" />
             </radialGradient>
           </defs>
           
-          {/* Base arc path */}
+          {/* Base Arc Background */}
           <path
-            d="M 50 210 A 180 180 0 0 1 410 210"
+            d={`M ${centerX - arcRadius} ${centerY} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
             fill="none"
             stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
             strokeWidth="8"
@@ -506,7 +477,7 @@ export const CurrentMomentArc = ({
           {/* Twilight zone (sweet spot at 80-100%) */}
           {inTwilightZone && isDay && !isOvertired && (
             <path
-              d="M 338 210 A 180 180 0 0 1 410 210"
+              d={`M ${centerX + Math.cos(Math.PI * 0.2) * arcRadius} ${centerY - Math.sin(Math.PI * 0.2) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
               fill="none"
               stroke="url(#dayTwilightGradient)"
               strokeWidth="8"
@@ -517,7 +488,7 @@ export const CurrentMomentArc = ({
           {/* Overtired zone (>100% of wake window) */}
           {isOvertired && isDay && (
             <path
-              d="M 338 210 A 180 180 0 0 1 410 210"
+              d={`M ${centerX + Math.cos(Math.PI * 0.2) * arcRadius} ${centerY - Math.sin(Math.PI * 0.2) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + arcRadius} ${centerY}`}
               fill="none"
               stroke="url(#overtiredGradient)"
               strokeWidth="10"
@@ -525,14 +496,17 @@ export const CurrentMomentArc = ({
             />
           )}
           
-          {/* Trailing fill showing progress */}
+          {/* Trail Fill (Progress) */}
           <path
             d={trailPath}
-            fill={isOvertired ? "url(#overtiredGradient)" : (isDay ? "url(#dayTrailGradient)" : "url(#nightTrailGradient)")}
+            fill="none"
+            stroke={isOvertired ? "url(#overtiredGradient)" : (isDay ? "url(#dayTrailGradient)" : "url(#nightTrailGradient)")}
+            strokeWidth="8"
+            strokeLinecap="round"
             opacity="0.8"
           />
           
-          {/* Icon glow effect */}
+          {/* Icon Glow */}
           <circle
             cx={iconX}
             cy={iconY}
@@ -540,7 +514,7 @@ export const CurrentMomentArc = ({
             fill={isOvertired ? "url(#overtiredGlow)" : (isDay ? "url(#sunGlow)" : "url(#moonGlow)")}
           />
           
-          {/* Icon - Solid filled circle or moon */}
+          {/* The Icon Itself */}
           <g transform={`translate(${iconX}, ${iconY})`}>
             {isDay ? (
               <circle
@@ -571,8 +545,8 @@ export const CurrentMomentArc = ({
           {/* Zone indicator text */}
           {isOvertired && isDay && (
             <text
-              x="370"
-              y="225"
+              x={centerX + arcRadius - 40}
+              y={centerY + 15}
               textAnchor="middle"
               className="text-[9px] font-semibold"
               fill="hsl(0 70% 55%)"
@@ -582,8 +556,8 @@ export const CurrentMomentArc = ({
           )}
           {inTwilightZone && isDay && !isOvertired && (
             <text
-              x="370"
-              y="225"
+              x={centerX + arcRadius - 40}
+              y={centerY + 15}
               textAnchor="middle"
               className="text-[9px] font-medium fill-muted-foreground"
             >
@@ -592,8 +566,8 @@ export const CurrentMomentArc = ({
           )}
         </svg>
         
-        {/* State text positioned in center - use serif for editorial look */}
-        <div className="absolute" style={{ top: '48%', transform: 'translateY(-50%)' }}>
+        {/* State Text - Centered Absolute */}
+        <div className="absolute top-[50%] left-0 right-0 text-center transform -translate-y-1/2 mt-4">
           <p className="text-[26px] font-serif font-normal text-foreground tracking-tight text-center leading-tight" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
