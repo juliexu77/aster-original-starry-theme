@@ -62,43 +62,43 @@ const getActivityIcon = (type: string) => {
   }
 };
 
-// Color tinting for icons based on type - Brand palette: Plum -> Fig -> Rose
+// Color tinting for icons based on type - Uses design system colors
 const getIconColorClass = (type: string) => {
   switch (type) {
     case "nap":
-      return "text-[#4A2B36]"; // Fig color for sleep
+      return "text-[hsl(315,30%,40%)] dark:text-[hsl(315,35%,70%)]"; // Mauve for sleep
     case "feed":
-      return "text-[#A85D52]"; // Dusty Clay for feeding
+      return "text-[hsl(350,40%,45%)] dark:text-[hsl(350,45%,65%)]"; // Rose/berry for feeding
     case "diaper":
-      return "text-[#6D645F]"; // Mushroom for diaper
+      return "text-[hsl(30,25%,45%)] dark:text-[hsl(30,30%,65%)]"; // Warm taupe for diaper
     case "solids":
-      return "text-[#A85D52]"; // Dusty Clay (same as feed)
+      return "text-[hsl(25,45%,50%)] dark:text-[hsl(25,50%,65%)]"; // Coral for solids
     case "note":
-      return "text-[#8C7C7A]"; // Warm Mauve-Grey
+      return "text-[hsl(15,20%,50%)] dark:text-[hsl(15,25%,65%)]"; // Warm grey
     case "photo":
-      return "text-[#4A2B36]"; // Fig color
+      return "text-[hsl(320,25%,45%)] dark:text-[hsl(320,30%,65%)]"; // Dusty rose
     default:
-      return "text-[#6D645F]"; // Mushroom default
+      return "text-muted-foreground";
   }
 };
 
-// Background circles for icons - Brand palette backgrounds
+// Background circles for icons - Uses design system with dark mode
 const getIconBackgroundClass = (type: string) => {
   switch (type) {
     case "nap":
-      return "bg-[#F5E6EA]"; // Deep Plum background for sleep
+      return "bg-[hsl(315,25%,92%)] dark:bg-[hsl(315,20%,20%)]"; // Mauve tint
     case "feed":
-      return "bg-[#FCECE6]"; // Soft Rose background for feeding
+      return "bg-[hsl(350,35%,93%)] dark:bg-[hsl(350,25%,18%)]"; // Rose tint
     case "diaper":
-      return "bg-[#F0EEEB]"; // Warm Taupe for diaper
+      return "bg-[hsl(30,20%,92%)] dark:bg-[hsl(30,15%,18%)]"; // Taupe tint
     case "solids":
-      return "bg-[#FCECE6]"; // Soft Rose (same as feed)
+      return "bg-[hsl(25,40%,93%)] dark:bg-[hsl(25,30%,18%)]"; // Coral tint
     case "note":
-      return "bg-[#F0EEEB]"; // Warm Taupe
+      return "bg-[hsl(15,15%,92%)] dark:bg-[hsl(15,10%,18%)]"; // Neutral tint
     case "photo":
-      return "bg-[#F5E6EA]"; // Deep Plum
+      return "bg-[hsl(320,20%,93%)] dark:bg-[hsl(320,15%,18%)]"; // Dusty rose tint
     default:
-      return "bg-[#F0EEEB]"; // Warm Taupe default
+      return "bg-muted/50";
   }
 };
 
