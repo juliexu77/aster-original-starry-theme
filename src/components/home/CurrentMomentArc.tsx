@@ -589,7 +589,7 @@ export const CurrentMomentArc = ({
         
         {/* State Text - Centered Absolute */}
         <div className="absolute top-[60%] left-0 right-0 px-8 text-center transform -translate-y-1/2">
-          <p className="text-[20px] font-serif font-normal text-foreground tracking-tight text-center leading-snug max-w-[280px] mx-auto" 
+          <p className="text-[20px] font-serif font-semibold text-foreground tracking-tight text-center leading-snug max-w-[240px] mx-auto" 
              style={{ fontVariationSettings: '"SOFT" 100' }}>
             {currentState}
           </p>
