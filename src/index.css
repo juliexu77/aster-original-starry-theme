@@ -14,8 +14,8 @@
     
     /* Brand colors - Rare Beauty packaging inspired */
     --pp-burgundy: 350 45% 28%; /* #6B3344 - deep burgundy (primary) */
-    --pp-dusty-mauve: 345 20% 65%; /* #B8929B - dusty mauve (accent) */
-    --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay (secondary accent) */
+    --pp-dusty-mauve: 0 20% 71%; /* #C4A4A4 - rose clay (accent) - warmer, neutral-blush */
+    --pp-rose-clay: 0 20% 71%; /* #C4A4A4 - rose clay */
     --pp-warm-taupe: 15 15% 55%; /* #9A8A85 - warm taupe for muted text */
     
     /* Spacing scale (8pt grid) */
