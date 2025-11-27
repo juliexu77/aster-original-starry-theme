@@ -333,6 +333,11 @@
   .dusk .bg-background {
     background: transparent !important;
   }
+  
+  /* Dusk mode - header should blend with gradient background */
+  .dusk .sticky.top-0 {
+    background: transparent !important;
+  }
 
   /* Dusk mode - "Inverted Twilight with nightlight glow" */
   .dusk body {
