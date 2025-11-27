@@ -144,13 +144,13 @@ export const RhythmArc = ({
       };
     }
     
-    // Day theme - Rose Gold gradient: dusty pink to warm gold
+    // Day theme - Rose Gold gradient: richer, more visible tones
     return {
-      base: "hsl(18 40% 88%)",
-      trail: inTwilightZone ? "hsl(12 45% 78%)" : "hsl(15 42% 82%)",
-      glow: "hsl(25 50% 80%)",
-      icon: "hsl(20 55% 75%)",
-      horizonGlow: inTwilightZone ? "hsla(12, 45%, 78%, 0.20)" : "hsla(20, 42%, 82%, 0.16)",
+      base: "hsl(15 55% 72%)",
+      trail: inTwilightZone ? "hsl(10 60% 65%)" : "hsl(18 50% 68%)",
+      glow: "hsl(20 65% 70%)",
+      icon: "hsl(15 60% 62%)",
+      horizonGlow: inTwilightZone ? "hsla(10, 60%, 65%, 0.35)" : "hsla(18, 50%, 68%, 0.28)",
     };
   };
   
@@ -181,15 +181,15 @@ export const RhythmArc = ({
             
             {/* Light wedge gradient - vertical: brighter at arc, darker at baseline */}
             <linearGradient id="lightWedge" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={colors.trail} stopOpacity="0.18" />
-              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.08" />
+              <stop offset="0%" stopColor={colors.trail} stopOpacity="0.35" />
+              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.15" />
             </linearGradient>
             
             {/* Arc stroke gradient - lighter at peak, darker at ends */}
             <linearGradient id="arcStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={colors.base} stopOpacity="0.5" />
-              <stop offset="50%" stopColor={colors.base} stopOpacity="0.7" />
-              <stop offset="100%" stopColor={colors.base} stopOpacity="0.5" />
+              <stop offset="0%" stopColor={colors.base} stopOpacity="0.75" />
+              <stop offset="50%" stopColor={colors.base} stopOpacity="0.95" />
+              <stop offset="100%" stopColor={colors.base} stopOpacity="0.75" />
             </linearGradient>
             
             {/* Horizon ambient glow */}
