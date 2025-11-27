@@ -37,6 +37,17 @@ export const RhythmArc = ({
   const rawProgress = elapsedMinutes / typicalDuration;
   const progress = Math.max(0, Math.min(rawProgress, 1.5)); // Cap at 150%
   
+  // DEBUG: Log and display arc inputs
+  console.log("🌙 RhythmArc Component Inputs:", {
+    mode,
+    startTime: startTime.toLocaleString(),
+    currentTime: currentTime.toLocaleString(),
+    typicalDuration,
+    elapsedMinutes,
+    progress,
+    rawProgress
+  });
+  
   // Arc configuration - elevated arc above horizon with steeper curve
   const viewBoxWidth = 520;
   const viewBoxHeight = 200;
@@ -284,6 +295,19 @@ export const RhythmArc = ({
             </div>
           </foreignObject>
         </svg>
+        
+        {/* DEBUG: On-screen display of arc values */}
+        <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/20 border border-yellow-400 rounded-lg text-xs font-mono">
+          <div className="font-bold mb-2 text-yellow-900 dark:text-yellow-200">🔍 ARC DEBUG VALUES:</div>
+          <div className="space-y-1 text-yellow-800 dark:text-yellow-300">
+            <div>Mode: {mode}</div>
+            <div>Start Time: {startTime.toLocaleTimeString()}</div>
+            <div>Current Time: {currentTime.toLocaleTimeString()}</div>
+            <div>Typical Duration: {typicalDuration} min ({(typicalDuration / 60).toFixed(1)}h)</div>
+            <div>Elapsed Minutes: {elapsedMinutes}</div>
+            <div>Progress: {(progress * 100).toFixed(1)}% (raw: {(rawProgress * 100).toFixed(1)}%)</div>
+          </div>
+        </div>
       </div>
     </div>
   );
