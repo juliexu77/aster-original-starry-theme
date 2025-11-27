@@ -219,30 +219,39 @@ export const useRhythmArc = ({
         typicalDuration = ageBasedDuration;
       } else if (activities && activities.length > 0) {
         // Wake mode - find last nap end time
-        // Helper to parse activity end time into a Date
+        // Helper to parse time string into 24h hours
+        const parseTimeTo24h = (timeStr: string): { hours: number; minutes: number } | null => {
+          const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+          if (!match) return null;
+          let hours = parseInt(match[1]);
+          const minutes = parseInt(match[2]);
+          const period = match[3]?.toUpperCase();
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          return { hours, minutes };
+        };
+        
+        // Helper to parse activity end time into a Date, detecting overnight sleep
         const getEndDateTime = (a: Activity): Date | null => {
           const detailsAny = a.details as any;
           const endTimeStr = String(a.details?.endTime || '');
-          const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-          if (!timeMatch) return null;
+          const startTimeStr = String(a.details?.startTime || '');
           
-          let hours = parseInt(timeMatch[1]);
-          const minutes = parseInt(timeMatch[2]);
-          const period = timeMatch[3]?.toUpperCase();
-          if (period === 'PM' && hours !== 12) hours += 12;
-          if (period === 'AM' && hours === 12) hours = 0;
+          const endParsed = parseTimeTo24h(endTimeStr);
+          const startParsed = parseTimeTo24h(startTimeStr);
+          if (!endParsed) return null;
           
-          let baseDate: Date;
-          if (detailsAny.end_date_local) {
-            const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
-            baseDate = new Date(year, month - 1, day);
-          } else if (detailsAny.date_local) {
-            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
-            baseDate = new Date(year, month - 1, day);
-          } else {
-            return null;
+          if (!detailsAny.date_local) return null;
+          const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+          let baseDate = new Date(year, month - 1, day);
+          
+          // Detect overnight sleep: if endTime is earlier than startTime, add a day
+          // e.g., startTime 7:44 PM (19:44), endTime 6:45 AM (6:45) - end is next day
+          if (startParsed && endParsed.hours < startParsed.hours) {
+            baseDate.setDate(baseDate.getDate() + 1);
           }
-          baseDate.setHours(hours, minutes, 0, 0);
+          
+          baseDate.setHours(endParsed.hours, endParsed.minutes, 0, 0);
           return baseDate;
         };
         
@@ -256,40 +265,30 @@ export const useRhythmArc = ({
         if (sortedNaps.length > 0) {
           const lastNap = sortedNaps[0];
           const endTimeStr = String(lastNap.details.endTime);
+          const startTimeStr = String(lastNap.details.startTime);
           const detailsAny = lastNap.details as any;
           
-          // Parse time with AM/PM support
-          const timeMatch = endTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-          if (timeMatch) {
-            let hours = parseInt(timeMatch[1]);
-            const minutes = parseInt(timeMatch[2]);
-            const period = timeMatch[3]?.toUpperCase();
+          const endParsed = parseTimeTo24h(endTimeStr);
+          const startParsed = parseTimeTo24h(startTimeStr);
+          
+          if (endParsed && detailsAny.date_local) {
+            const [year, month, day] = detailsAny.date_local.split('-').map(Number);
+            let baseDate = new Date(year, month - 1, day);
             
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0;
-            
-            // Use end_date_local if available (for overnight sleeps that end the next day)
-            // Otherwise fall back to date_local - never use loggedAt
-            let baseDate: Date;
-            if (detailsAny.end_date_local) {
-              const [year, month, day] = detailsAny.end_date_local.split('-').map(Number);
-              baseDate = new Date(year, month - 1, day);
-            } else if (detailsAny.date_local) {
-              const [year, month, day] = detailsAny.date_local.split('-').map(Number);
-              baseDate = new Date(year, month - 1, day);
-            } else {
-              // Skip this nap if no date_local info - can't determine actual end time
-              return;
+            // Detect overnight sleep: if endTime is earlier than startTime, add a day
+            if (startParsed && endParsed.hours < startParsed.hours) {
+              baseDate.setDate(baseDate.getDate() + 1);
             }
             
-            baseDate.setHours(hours, minutes, 0, 0);
+            baseDate.setHours(endParsed.hours, endParsed.minutes, 0, 0);
             startTime = baseDate;
             
             console.log('⏰ WAKE MODE - End time parsing:', {
+              startTimeStr,
               endTimeStr,
-              end_date_local: detailsAny.end_date_local,
               date_local: detailsAny.date_local,
-              parsedStartTime: startTime.toLocaleString()
+              isOvernightSleep: startParsed ? endParsed.hours < startParsed.hours : false,
+              parsedWakeTime: startTime.toLocaleString()
             });
           }
 
