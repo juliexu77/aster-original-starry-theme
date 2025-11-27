@@ -202,55 +202,41 @@ export const RhythmArc = ({
             />
           )}
           
-          {/* Sun glow - radial gradient centered exactly on arc position */}
-          <circle
-            cx={iconPosition.x}
-            cy={iconPosition.y}
-            r="40"
-            fill="url(#sunGlow)"
-            className="transition-all duration-700 ease-out"
-          />
-          
-          {/* Sun/Moon icon - center positioned exactly on arc curve */}
-          <foreignObject
-            x={iconPosition.x - 12}
-            y={iconPosition.y - 12}
-            width="24"
-            height="24"
-            className="transition-all duration-700 ease-out"
-            style={{ overflow: 'visible' }}
-          >
-            <div 
-              className="w-full h-full flex items-center justify-center"
-              style={{ 
-                transform: 'translate(0, 0)',
-                position: 'relative'
-              }}
-            >
-              <IconComponent 
-                size={24} 
-                strokeWidth={2}
-                style={{
-                  color: colors.icon,
-                  filter: theme === "night" 
-                    ? 'drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))'
-                    : isOvertired
-                      ? 'drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))'
-                      : 'drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))',
-                }}
-              />
-            </div>
-          </foreignObject>
-          
-          {/* Subtle anchor point to visualize icon is on the arc */}
-          <circle
-            cx={iconPosition.x}
-            cy={iconPosition.y}
-            r="2"
-            fill={colors.icon}
-            opacity="0.4"
-            className="transition-all duration-700 ease-out"
-          />
+          {/* Sun/Moon icon - placed directly at curve point with no offsets */}
+          <g transform={`translate(${iconPosition.x}, ${iconPosition.y})`}>
+            {/* Sun glow */}
+            <circle
+              r="40"
+              fill="url(#sunGlow)"
+              className="transition-all duration-700 ease-out"
+            />
+            
+            {/* Icon positioned at center */}
+            <g transform="translate(-12, -12)">
+              <foreignObject width="24" height="24">
+                <IconComponent 
+                  size={24} 
+                  strokeWidth={2}
+                  style={{
+                    color: colors.icon,
+                    filter: theme === "night" 
+                      ? 'drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))'
+                      : isOvertired
+                        ? 'drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))'
+                        : 'drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))',
+                  }}
+                />
+              </foreignObject>
+            </g>
+            
+            {/* Anchor point */}
+            <circle
+              r="2"
+              fill={colors.icon}
+              opacity="0.4"
+              className="transition-all duration-700 ease-out"
+            />
+          </g>
           
           {/* Refined zone labels */}
           {inTwilightZone && !isOvertired && (
