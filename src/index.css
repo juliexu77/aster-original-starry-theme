@@ -29,22 +29,23 @@
     --s-7: 32px;
     
     /* Light Mode - Warm Peachy Cream (Rare Beauty packaging) */
-    --bg: 20 45% 94%; /* Warm peachy cream background */
-    --surface: 18 40% 96%; /* Soft peachy white */
-    --surface-muted: 18 35% 91%; /* Warmer cream with presence */
+    --bg: 22 50% 95%; /* Warmer peachy cream background */
+    --surface: 20 45% 97%; /* Soft peachy white */
+    --surface-muted: 20 40% 92%; /* Warmer cream with presence */
     --text: 350 35% 22%; /* Deep burgundy-brown text */
-    --text-muted: 15 20% 45%; /* Warm brown-grey */
-    --divider: 15 30% 85%; /* Warm peachy border */
+    --text-muted: 18 22% 50%; /* Warmer muted text */
+    --divider: 18 35% 88%; /* Softer warm peachy border */
+    --divider-soft: 18 30% 90%; /* Extra soft border for cards */
     
-    /* Card ombré progression (warm peachy tones - more saturated) */
-    --card-ombre-1: 18 38% 95%; /* Warm peachy cream */
-    --card-ombre-1-dark: 18 35% 90%; /* Deeper peach */
-    --card-ombre-2: 15 35% 93%; /* Soft blush */
-    --card-ombre-2-dark: 15 32% 88%; /* Deeper blush */
-    --card-ombre-3: 12 32% 94%; /* Rose-tinted cream */
-    --card-ombre-3-dark: 12 30% 89%; /* Deeper rose cream */
-    --card-ombre-4: 8 35% 92%; /* Coral tint */
-    --card-ombre-4-dark: 8 32% 87%; /* Deeper coral */
+    /* Card ombré progression (warm peachy tones - richer) */
+    --card-ombre-1: 20 42% 96%; /* Warm peachy cream */
+    --card-ombre-1-dark: 20 38% 92%; /* Deeper peach */
+    --card-ombre-2: 18 38% 95%; /* Soft blush */
+    --card-ombre-2-dark: 18 35% 90%; /* Deeper blush */
+    --card-ombre-3: 15 35% 95%; /* Rose-tinted cream */
+    --card-ombre-3-dark: 15 32% 91%; /* Deeper rose cream */
+    --card-ombre-4: 12 38% 94%; /* Coral tint */
+    --card-ombre-4-dark: 12 35% 89%; /* Deeper coral */
     
     /* Color aliases */
     --pp-blackberry: var(--pp-burgundy); /* Deep burgundy for primary */
@@ -57,8 +58,11 @@
     --chart-sleep: var(--pp-dusty-mauve); /* Dusty mauve for sleep */
     
     /* Card elevation - warm peachy shadows */
-    --elev-shadow: 0 4px 24px -6px hsla(18, 50%, 50%, 0.12), 0 2px 10px -3px hsla(18, 50%, 50%, 0.08);
-    --card-radius: 20px;
+    --elev-shadow: 0 4px 20px -4px hsla(18, 55%, 50%, 0.10), 0 2px 8px -2px hsla(18, 55%, 50%, 0.06);
+    --card-radius: 24px;
+    
+    /* Softer border opacity for Rare Beauty aesthetic */
+    --border-soft-opacity: 0.3;
     
     /* Transitions - gentle & elegant */
     --transition-smooth: all 200ms ease-in-out;
@@ -105,9 +109,9 @@
     --gradient-note: linear-gradient(135deg, hsl(350 35% 32%), hsl(350 40% 25%));
     --gradient-chat: linear-gradient(135deg, hsl(var(--pp-burgundy)), hsl(350 50% 22%));
     
-    /* Shadows - warm peachy-tinted */
-    --shadow-soft: 0 4px 18px -4px hsla(18, 50%, 50%, 0.12), 0 2px 8px -2px hsla(18, 50%, 50%, 0.08);
-    --shadow-card: 0 4px 24px -6px hsla(18, 50%, 50%, 0.14), 0 2px 10px -3px hsla(18, 50%, 50%, 0.10);
+    /* Shadows - warm peachy-tinted (softer for Rare Beauty) */
+    --shadow-soft: 0 4px 16px -4px hsla(18, 55%, 50%, 0.08), 0 2px 6px -2px hsla(18, 55%, 50%, 0.05);
+    --shadow-card: 0 6px 24px -6px hsla(18, 55%, 50%, 0.10), 0 3px 12px -3px hsla(18, 55%, 50%, 0.06);
     
     /* Sidebar */
     --sidebar-background: var(--bg);
@@ -313,11 +317,23 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    background: linear-gradient(180deg, #FAF0EB 0%, #F5E5DE 100%);
+    background: linear-gradient(180deg, #FCF3EE 0%, #F7E8E0 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+  }
+  
+  h1 {
+    letter-spacing: -0.03em;
+    font-weight: 600;
+  }
+  
+  h2 {
+    letter-spacing: -0.025em;
+    font-weight: 550;
   }
 
   #root {

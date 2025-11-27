@@ -19,6 +19,15 @@ export default {
         serif: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
         num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
       },
+      letterSpacing: {
+        'rare': '-0.02em',
+        'rare-tight': '-0.03em',
+      },
+      fontWeight: {
+        'rare-light': '300',
+        'rare-normal': '400',
+        'rare-medium': '450',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -94,6 +103,8 @@ export default {
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
+        'warm': '0 4px 20px -4px hsla(18, 50%, 50%, 0.10), 0 2px 8px -2px hsla(18, 50%, 50%, 0.06)',
+        'warm-lg': '0 8px 32px -8px hsla(18, 50%, 50%, 0.14), 0 4px 16px -4px hsla(18, 50%, 50%, 0.08)',
       },
       borderRadius: {
         lg: "var(--radius)",
