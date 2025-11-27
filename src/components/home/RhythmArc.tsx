@@ -277,22 +277,26 @@ export const RhythmArc = ({
               Overtired
             </text>
           )}
-        </svg>
-        
-        {/* State message - positioned directly under arc center */}
-        <div 
-          className="mt-4 max-w-[180px] mx-auto"
-        >
-          <p 
-            className="text-[18px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
-            style={{
-              wordSpacing: '100vw', // Force line breaks after each word
-              fontVariationSettings: '"wght" 700'
-            }}
+          {/* State message - positioned directly under arc apex */}
+          <foreignObject
+            x={controlPoint.x - 90}
+            y={controlPoint.y + 60}
+            width="180"
+            height="80"
           >
-            {stateMessage}
-          </p>
-        </div>
+            <div className="w-full">
+              <p 
+                className="text-[20px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
+                style={{
+                  wordSpacing: '100vw', // Force line breaks after each word
+                  fontVariationSettings: '"wght" 700'
+                }}
+              >
+                {stateMessage}
+              </p>
+            </div>
+          </foreignObject>
+        </svg>
       </div>
     </div>
   );
