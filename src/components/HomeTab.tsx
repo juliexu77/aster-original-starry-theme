@@ -66,7 +66,7 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
   const { nightSleepEndHour, nightSleepStartHour } = useNightSleepWindow();
   const { household } = useHousehold();
   
-  // Use household baby_birthday as authoritative source (same as GuideTab)
+  // Use household baby_birthday as authoritative source (same as RhythmTab)
   const effectiveBabyBirthday = household?.baby_birthday || babyBirthday;
   
   const [currentTime, setCurrentTime] = useState(new Date());

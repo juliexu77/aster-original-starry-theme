@@ -6,7 +6,7 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { TrendsTab } from "@/components/TrendsTab";
 import { HomeTab } from "@/components/HomeTab";
 import { Settings as SettingsPage } from "@/pages/Settings";
-import { GuideTab } from "@/components/GuideTab";
+import { RhythmTab } from "@/components/RhythmTab";
 import { PediatricianReportModal } from "@/components/PediatricianReportModal";
 import { ExportCSVModal } from "@/components/ExportCSVModal";
 
@@ -702,7 +702,7 @@ const ongoingNap = (() => {
       case "rhythm":
         return (
           <ErrorBoundary onRetry={() => setActiveTab("home")}>
-            <GuideTab 
+            <RhythmTab 
               activities={activities.map(a => ({
                 id: a.id,
                 type: a.type,
