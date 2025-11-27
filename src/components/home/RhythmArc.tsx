@@ -332,16 +332,16 @@ export const RhythmArc = ({
               Overtired
             </text>
           )}
-          {/* State message - positioned directly under arc apex */}
+          {/* State message - positioned under arc, centered vertically between peak and baseline */}
           <foreignObject
-            x={controlPoint.x - 120}
-            y={controlPoint.y + 60}
-            width="240"
-            height="80"
+            x={controlPoint.x - 140}
+            y={20}
+            width="280"
+            height="120"
           >
-            <div className="w-full">
+            <div className="w-full h-full flex items-center justify-center px-4">
               <p 
-                className="text-[20px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
+                className="text-[32px] font-bold text-foreground/90 tracking-tight text-center leading-tight"
                 style={{
                   fontVariationSettings: '"wght" 700'
                 }}
