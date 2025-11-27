@@ -65,22 +65,26 @@ export const useRhythmArc = ({
         // Check if this is night sleep or a nap
         mode = "nap";
         
-        // Use the actual logged_at timestamp as the base date
-        const activityDate = new Date(ongoingNap.loggedAt || ongoingNap.time || currentTime);
+        // Use the activity's time field which is already in local timezone
+        const activityTime = new Date(ongoingNap.time);
         const startTimeStr = String(ongoingNap.details.startTime);
-        const timeParts = startTimeStr.split(":").map(Number);
         
-        if (timeParts.length >= 2 && !isNaN(timeParts[0]) && !isNaN(timeParts[1])) {
-          const [hours, minutes] = timeParts;
-          // Use the activity's logged date, not current date
-          startTime = new Date(activityDate);
-          startTime.setHours(hours, minutes, 0, 0);
+        // Parse the time string (e.g., "7:44 PM")
+        const timeParts = startTimeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        
+        if (timeParts) {
+          let hours = parseInt(timeParts[1]);
+          const minutes = parseInt(timeParts[2]);
+          const period = timeParts[3].toUpperCase();
           
-          // If the calculated time is in the future, it must have been yesterday
-          if (startTime.getTime() > currentTime.getTime()) {
-            startTime.setDate(startTime.getDate() - 1);
-          }
+          if (period === 'PM' && hours !== 12) hours += 12;
+          if (period === 'AM' && hours === 12) hours = 0;
+          
+          // Use the date from activity.time but set the hours/minutes from startTime
+          startTime = new Date(activityTime);
+          startTime.setHours(hours, minutes, 0, 0);
         }
+        
         
         // Determine if this is night sleep based on start time
         const startHour = startTime.getHours();
