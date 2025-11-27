@@ -407,8 +407,7 @@ export const CurrentMomentArc = ({
   // Map position (0 to 1) to angle range (startAngle to endAngle)
   const arcAngle = startAngle - (clampedPosition * angleRange);
 
-  // FIXED FORMULA: Plus (+) Cosine
-  // Icon moves along the shortened arc
+  // Calculate icon position on arc
   const iconX = centerX + Math.cos(arcAngle) * arcRadius;
   const iconY = centerY - Math.sin(arcAngle) * arcRadius;
   
@@ -434,8 +433,8 @@ export const CurrentMomentArc = ({
     const endX = centerX + Math.cos(currentAngle) * arcRadius;
     const endY = centerY - Math.sin(currentAngle) * arcRadius;
     
-    // Use small arc flag (0) since we're drawing less than 180°
-    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
+    // Use large arc flag (1) for the 144° arc going the long way
+    return `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 1 1 ${endX} ${endY}`;
   };
   
   const trailPath = createTrailPath();
@@ -489,7 +488,7 @@ export const CurrentMomentArc = ({
           
           {/* Base Arc Background (shortened) */}
           <path
-            d={`M ${centerX + Math.cos(startAngle) * arcRadius} ${centerY - Math.sin(startAngle) * arcRadius} A ${arcRadius} ${arcRadius} 0 0 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
+            d={`M ${centerX + Math.cos(startAngle) * arcRadius} ${centerY - Math.sin(startAngle) * arcRadius} A ${arcRadius} ${arcRadius} 0 1 1 ${centerX + Math.cos(endAngle) * arcRadius} ${centerY - Math.sin(endAngle) * arcRadius}`}
             fill="none"
             stroke={isDay ? "url(#dayBaseGradient)" : "url(#nightBaseGradient)"}
             strokeWidth="8"
