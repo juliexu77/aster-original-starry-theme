@@ -41,11 +41,12 @@ export const RhythmArc = ({
   const viewBoxWidth = 520;
   const viewBoxHeight = 180;
   const padding = 50;
+  const horizonY = viewBoxHeight - 20; // Horizon line at bottom
   
   // Flatter arc: bottom-left → gentle peak → bottom-right (like sun on horizon)
-  const startPoint = { x: padding, y: viewBoxHeight - 30 };
-  const controlPoint = { x: viewBoxWidth / 2, y: 60 }; // Gentler peak (was 30)
-  const endPoint = { x: viewBoxWidth - padding, y: viewBoxHeight - 30 };
+  const startPoint = { x: padding, y: horizonY };
+  const controlPoint = { x: viewBoxWidth / 2, y: 50 }; // Peak of the arc
+  const endPoint = { x: viewBoxWidth - padding, y: horizonY };
   
   // Create the full arc path (SVG quadratic Bézier)
   const arcPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${endPoint.x} ${endPoint.y}`;
@@ -59,14 +60,15 @@ export const RhythmArc = ({
     endPoint
   );
   
-  // Calculate trail path (from start to current position)
-  const trailEndPoint = getPointOnQuadraticCurve(
-    iconProgress,
-    startPoint,
-    controlPoint,
-    endPoint
-  );
-  const trailPath = `M ${startPoint.x} ${startPoint.y} Q ${controlPoint.x} ${controlPoint.y} ${trailEndPoint.x} ${trailEndPoint.y}`;
+  // Create wedge path: from arc start → current sun position → down to horizon → back to start
+  // This creates the "light sweeping across" effect
+  const wedgePath = `
+    M ${startPoint.x} ${startPoint.y}
+    Q ${controlPoint.x * iconProgress} ${startPoint.y - (startPoint.y - controlPoint.y) * iconProgress * 2} ${iconPosition.x} ${iconPosition.y}
+    L ${iconPosition.x} ${horizonY}
+    L ${startPoint.x} ${horizonY}
+    Z
+  `;
   
   // Zone detection
   const inTwilightZone = progress >= 0.8 && progress <= 1.0;
@@ -117,91 +119,97 @@ export const RhythmArc = ({
           style={{ maxWidth: '100%', overflow: 'visible' }}
         >
           <defs>
-            {/* Subtle glow gradient */}
-            <radialGradient id="rhythmGlow">
-              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.3" />
+            {/* Sun glow gradient */}
+            <radialGradient id="sunGlow">
+              <stop offset="0%" stopColor={colors.glow} stopOpacity="0.4" />
+              <stop offset="50%" stopColor={colors.glow} stopOpacity="0.2" />
               <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
             </radialGradient>
             
-            {/* Horizon glow effect */}
+            {/* Light wedge gradient - fades from sun position down to horizon */}
+            <linearGradient id="lightWedge" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor={colors.trail} stopOpacity="0.25" />
+              <stop offset="70%" stopColor={colors.trail} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={colors.trail} stopOpacity="0.03" />
+            </linearGradient>
+            
+            {/* Horizon ambient glow */}
             <linearGradient id="horizonGlow" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor={colors.glow} stopOpacity="0" />
-              <stop offset="100%" stopColor={colors.glow} stopOpacity="0.08" />
+              <stop offset="100%" stopColor={colors.glow} stopOpacity="0.06" />
             </linearGradient>
           </defs>
           
-          {/* Horizon glow backdrop */}
+          {/* Horizon ambient glow backdrop */}
           <rect
             x="0"
-            y={viewBoxHeight - 60}
+            y={horizonY - 40}
             width={viewBoxWidth}
             height="60"
             fill="url(#horizonGlow)"
-            opacity="0.6"
+            opacity="0.7"
           />
           
-          {/* Base arc (full path) - subtle and elegant */}
+          {/* Light wedge - sweeps across as sun moves */}
+          <path
+            d={wedgePath}
+            fill="url(#lightWedge)"
+            className="transition-all duration-700 ease-out"
+            style={{ mixBlendMode: 'screen' }}
+          />
+          
+          {/* Base arc path - thin line above the wedge */}
           <path
             d={arcPath}
             fill="none"
             stroke={colors.base}
-            strokeWidth="6"
+            strokeWidth="2"
             strokeLinecap="round"
-            opacity="0.25"
+            opacity="0.3"
           />
           
-          {/* Twilight zone subtle highlight */}
+          {/* Twilight zone subtle pulse on arc */}
           {inTwilightZone && !isOvertired && (
             <path
               d={arcPath}
               fill="none"
               stroke={colors.trail}
-              strokeWidth="8"
+              strokeWidth="3"
               strokeLinecap="round"
-              opacity="0.2"
-              strokeDasharray={`${(endPoint.x - startPoint.x) * 0.2} ${(endPoint.x - startPoint.x) * 0.8}`}
-              strokeDashoffset={-(endPoint.x - startPoint.x) * 0.8}
+              opacity="0.25"
+              strokeDasharray="10 20"
+              className="transition-all duration-500 ease-out"
             />
           )}
           
-          {/* Progress trail - refined stroke */}
-          <path
-            d={trailPath}
-            fill="none"
-            stroke={colors.trail}
-            strokeWidth="6"
-            strokeLinecap="round"
-            opacity="0.5"
-            className="transition-all duration-500 ease-out"
-          />
-          
-          {/* Icon glow - subtle and refined */}
+          {/* Sun glow - radial gradient behind icon */}
           <circle
             cx={iconPosition.x}
             cy={iconPosition.y}
-            r="32"
-            fill="url(#rhythmGlow)"
-            className="transition-all duration-500 ease-out"
+            r="45"
+            fill="url(#sunGlow)"
+            className="transition-all duration-700 ease-out"
           />
           
-          {/* Icon - Lucide component embedded in SVG */}
+          {/* Sun/Moon icon - moves along arc path */}
           <foreignObject
-            x={iconPosition.x - 12}
-            y={iconPosition.y - 12}
-            width="24"
-            height="24"
-            className="transition-all duration-500 ease-out overflow-visible"
+            x={iconPosition.x - 14}
+            y={iconPosition.y - 14}
+            width="28"
+            height="28"
+            className="transition-all duration-700 ease-out overflow-visible"
           >
             <div className="w-full h-full flex items-center justify-center">
               <IconComponent 
-                size={20} 
+                size={24} 
+                strokeWidth={1.5}
                 style={{
                   color: colors.icon,
                   filter: theme === "night" 
-                    ? 'drop-shadow(0 0 6px hsla(235, 20%, 72%, 0.3))'
+                    ? 'drop-shadow(0 0 8px hsla(235, 20%, 72%, 0.5)) drop-shadow(0 0 16px hsla(235, 20%, 72%, 0.3))'
                     : isOvertired
-                      ? 'drop-shadow(0 0 8px hsla(15, 35%, 65%, 0.4))'
-                      : 'drop-shadow(0 0 10px hsla(38, 40%, 75%, 0.35))'
+                      ? 'drop-shadow(0 0 10px hsla(15, 35%, 65%, 0.6)) drop-shadow(0 0 20px hsla(15, 35%, 65%, 0.4))'
+                      : 'drop-shadow(0 0 12px hsla(38, 40%, 75%, 0.6)) drop-shadow(0 0 24px hsla(38, 40%, 75%, 0.4))',
                 }}
               />
             </div>
