@@ -1554,10 +1554,10 @@ const lastDiaper = displayActivities
           nightSleepEndHour={nightSleepEndHour}
         />
 
-        {/* Today's Pulse - Show deviations */}
-        {todaysPulse?.deviations && (
+        {/* Today's Pulse - Always visible */}
+        {todaysPulse && (
           <TodaysPulse
-            deviations={todaysPulse.deviations}
+            deviations={todaysPulse.deviations || []}
             biggestDeviation={todaysPulse.biggestDeviation}
             babyName={babyName || 'Baby'}
             babyAge={babyAgeInWeeks}
