@@ -120,10 +120,21 @@ export default {
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'card': 'var(--shadow-card)',
+        'elevated': 'var(--shadow-elevated)',
         // Rare Beauty diffused cinematic shadows (8% opacity)
         'diffused': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 4px 12px -2px hsla(15, 50%, 40%, 0.08)',
         'diffused-lg': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 6px 16px -3px hsla(15, 50%, 40%, 0.08), 0 12px 32px -6px hsla(15, 50%, 40%, 0.06)',
+        // Glow effects - living interface
         'glow-soft': '0 0 20px -5px hsla(15, 45%, 60%, 0.15)',
+        'glow-primary': 'var(--glow-primary)',
+        'glow-accent': 'var(--glow-accent)',
+        'glow-warm': 'var(--glow-warm)',
+        // Combined depth + glow for premium feel
+        'alive': '0 2px 4px -1px hsla(15, 50%, 40%, 0.04), 0 8px 20px -4px hsla(15, 50%, 40%, 0.1), 0 0 30px -8px hsla(15, 45%, 65%, 0.15)',
+        'alive-hover': '0 4px 8px -2px hsla(15, 50%, 40%, 0.05), 0 12px 28px -6px hsla(15, 50%, 40%, 0.12), 0 0 40px -10px hsla(15, 45%, 60%, 0.2)',
+        // Inner highlight for top-lit feel
+        'inner-highlight': 'inset 0 1px 0 0 hsla(30, 60%, 98%, 0.5)',
+        'inner-glow': 'inset 0 0 20px 0 hsla(30, 50%, 95%, 0.3)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -188,6 +199,30 @@ export default {
           },
           "50%": {
             boxShadow: "0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary))"
+          }
+        },
+        "glow-pulse": {
+          "0%, 100%": {
+            boxShadow: "0 0 15px -5px hsla(15, 45%, 60%, 0.15), 0 8px 20px -4px hsla(15, 50%, 40%, 0.1)"
+          },
+          "50%": {
+            boxShadow: "0 0 25px -5px hsla(15, 45%, 60%, 0.25), 0 10px 25px -4px hsla(15, 50%, 40%, 0.12)"
+          }
+        },
+        "shimmer": {
+          "0%": {
+            backgroundPosition: "-200% 0"
+          },
+          "100%": {
+            backgroundPosition: "200% 0"
+          }
+        },
+        "soft-bounce": {
+          "0%, 100%": {
+            transform: "translateY(0)"
+          },
+          "50%": {
+            transform: "translateY(-2px)"
           }
         },
         "breathe": {
@@ -363,6 +398,9 @@ export default {
         "bounce-in": "bounce-in 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
         "flash": "flash 0.5s ease-in-out",
         "glow": "glow 1s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        "shimmer": "shimmer 2s linear infinite",
+        "soft-bounce": "soft-bounce 2s ease-in-out infinite",
         "breathe": "breathe 2s ease-in-out infinite",
         "breathe-dark": "breathe-dark 1.8s ease-out infinite",
         // Today's Story Modal Animations
