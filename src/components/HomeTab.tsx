@@ -168,10 +168,21 @@ export const HomeTab = ({ activities, babyName, userName, babyBirthday, onAddAct
     }
   }, [activities.length]);
   
-  // Show onboarding for new users (before any activities)
+  // Show onboarding only for truly new users (no activities ever logged)
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem('onboarding_completed') === 'true';
-    if (!hasSeenOnboarding && activities.length === 0) {
+    
+    // If user has activities, they're not new - mark onboarding as complete and hide it
+    if (activities.length > 0) {
+      if (!hasSeenOnboarding) {
+        localStorage.setItem('onboarding_completed', 'true');
+      }
+      setShowOnboarding(false);
+      return;
+    }
+    
+    // Only show onboarding for users with no activities who haven't seen it
+    if (!hasSeenOnboarding) {
       setShowOnboarding(true);
     }
   }, [activities.length]);
