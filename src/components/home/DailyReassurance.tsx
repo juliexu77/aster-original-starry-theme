@@ -138,16 +138,30 @@ export const DailyReassurance = ({
     );
     
     const recentNapDurations: number[] = [];
-    const recentNapStartTimes: number[] = [];
     recentNaps.forEach(nap => {
       if (nap.details?.startTime && nap.details?.endTime) {
         const start = parseTimeToMinutes(nap.details.startTime);
         let end = parseTimeToMinutes(nap.details.endTime);
         if (end < start) end += 24 * 60;
         recentNapDurations.push(end - start);
-        recentNapStartTimes.push(start);
       }
     });
+
+    // Group recent naps by day to find first nap of each day
+    const recentNapsByDay: Record<string, number[]> = {};
+    recentNaps.forEach(nap => {
+      if (nap.details?.startTime) {
+        const dateStr = new Date(nap.loggedAt || nap.time).toISOString().split('T')[0];
+        const start = parseTimeToMinutes(nap.details.startTime);
+        if (!recentNapsByDay[dateStr]) recentNapsByDay[dateStr] = [];
+        recentNapsByDay[dateStr].push(start);
+      }
+    });
+
+    // Get the earliest (first) nap start time for each day
+    const recentFirstNapStartTimes: number[] = Object.values(recentNapsByDay).map(
+      dayNaps => Math.min(...dayNaps)
+    );
 
     const avgTodayNapDuration = todayNapDurations.length > 0 
       ? todayNapDurations.reduce((sum, d) => sum + d, 0) / todayNapDurations.length 
@@ -157,8 +171,8 @@ export const DailyReassurance = ({
       ? recentNapDurations.reduce((sum, d) => sum + d, 0) / recentNapDurations.length 
       : 0;
 
-    const avgRecentFirstNapStart = recentNapStartTimes.length > 0
-      ? recentNapStartTimes.slice(0, 7).reduce((sum, t) => sum + t, 0) / Math.min(7, recentNapStartTimes.length)
+    const avgRecentFirstNapStart = recentFirstNapStartTimes.length > 0
+      ? recentFirstNapStartTimes.reduce((sum, t) => sum + t, 0) / recentFirstNapStartTimes.length
       : 0;
 
     // Analyze feeds
@@ -274,7 +288,7 @@ export const DailyReassurance = ({
     }
 
     // Check first nap timing (earlier/later)
-    if (todayNapStartTimes.length > 0 && recentNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
+    if (todayNapStartTimes.length > 0 && recentFirstNapStartTimes.length >= 3 && avgRecentFirstNapStart > 0) {
       const firstNapToday = todayNapStartTimes[0];
       if (firstNapToday < avgRecentFirstNapStart - 30) {
         return { message: pick(messages.napEarlier), iconType: 'nap' as const };
