@@ -17,11 +17,13 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       // Shape: Large radius, feels like a physical object
       "rounded-[28px] text-card-foreground",
       // Border: Very soft, barely visible
-      "border border-[hsl(18,28%,80%)]/30",
+      "border border-[hsl(18,28%,85%)]/40",
       // Background: Unified rose-clay tone with soft matte top-light effect
-      "bg-gradient-to-b from-[hsl(20,40%,92%)] via-[hsl(18,38%,89%)] to-[hsl(16,35%,86%)]",
-      // Depth: Diffused cinematic shadow (8-10% opacity, blur 14-20px)
-      "shadow-[0_4px_8px_-2px_hsla(18,40%,45%,0.05),0_8px_20px_-4px_hsla(18,40%,45%,0.10),0_14px_32px_-8px_hsla(18,40%,45%,0.08)]",
+      "bg-gradient-to-b from-[hsl(22,45%,94%)] via-[hsl(18,40%,90%)] to-[hsl(16,36%,87%)]",
+      // Inner highlight: Top-lit soft glow for depth
+      "shadow-[inset_0_1px_0_0_hsla(30,60%,98%,0.6),inset_0_0_16px_0_hsla(30,50%,95%,0.25),0_2px_4px_-1px_hsla(18,45%,40%,0.04),0_8px_20px_-4px_hsla(18,45%,45%,0.1),0_0_30px_-8px_hsla(15,45%,65%,0.12)]",
+      // Hover: Enhanced glow
+      "transition-shadow duration-300",
       // Dark mode: Clean flat design
       "dark:rounded-xl dark:shadow-none dark:bg-card dark:border-border/40",
       className
