@@ -1130,24 +1130,21 @@ const ongoingNap = (() => {
                                               console.log('Clicked wake up indicator, opening night sleep:', nightSleep);
                                               setEditingActivity(nightSleep);
                                             }}
-                                            className="relative flex items-center py-1.5 group transition-colors w-full text-left"
+                                            className="relative flex items-center py-0.5 group transition-colors w-full text-left"
                                           >
-                                            {/* Icon - centered on timeline with brand background */}
-                                            <div className="relative z-10 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ marginLeft: '8px', background: '#F5E6EA', color: '#4A2B36' }}>
-                                              <Sun className="w-4 h-4" />
+                                            {/* Icon - matches ActivityCard styling */}
+                                            <div className="relative z-10 flex-shrink-0 w-6 h-6 flex items-center justify-center text-[hsl(18,28%,52%)] dark:text-foreground/70 dusk:text-foreground/70" style={{ marginLeft: '8px' }}>
+                                              <Sun className="h-4 w-4" />
                                             </div>
                                             
-                                            {/* Content */}
+                                            {/* Content - matches ActivityCard layout */}
                                             <div className="flex-1 flex items-center justify-between min-w-0 gap-3 pl-4">
                                               <div className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
-                                                <span className="text-sm font-semibold" style={{ color: '#3E2F2B' }}>
-                                                  {wakeTime}
-                                                </span>
-                                                <span className="text-sm" style={{ color: '#8C7C7A' }}>
+                                                <span className="text-sm font-serif font-semibold text-[hsl(18,26%,35%)] dark:text-foreground dusk:text-foreground">
                                                   Woke up
                                                 </span>
                                               </div>
-                                              <span className="text-xs font-medium whitespace-nowrap tabular-nums" style={{ color: '#8C7C7A' }}>
+                                              <span className="text-xs font-light whitespace-nowrap tabular-nums text-[hsl(20,18%,55%)] dark:text-muted-foreground dusk:text-muted-foreground">
                                                 {wakeTime}
                                               </span>
                                             </div>
