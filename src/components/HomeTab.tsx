@@ -1591,8 +1591,21 @@ const lastDiaper = displayActivities
                   await addActivity?.('nap', { startTime: time }, new Date(), time);
                   toast({ title: "Nap started", description: `Started at ${time}` });
                 } else if (type === 'feed') {
-                  await addActivity?.('feed', {}, new Date(), time);
-                  toast({ title: "Feeding logged", description: `Logged at ${time}` });
+                  // Get most recent feed with quantity to auto-populate
+                  const recentFeed = activities
+                    .filter(a => a.type === 'feed' && a.details?.quantity)
+                    .sort((a, b) => new Date(b.loggedAt || b.time).getTime() - new Date(a.loggedAt || a.time).getTime())[0];
+                  
+                  const feedDetails: any = {};
+                  if (recentFeed?.details?.quantity) {
+                    feedDetails.quantity = recentFeed.details.quantity;
+                    if (recentFeed.details.unit) feedDetails.unit = recentFeed.details.unit;
+                    if (recentFeed.details.feedType) feedDetails.feedType = recentFeed.details.feedType;
+                  }
+                  
+                  await addActivity?.('feed', feedDetails, new Date(), time);
+                  const amountText = feedDetails.quantity ? ` (${feedDetails.quantity}${feedDetails.unit || 'ml'})` : '';
+                  toast({ title: "Feeding logged", description: `Logged at ${time}${amountText}` });
                 } else if (type === 'diaper') {
                   await addActivity?.('diaper', {}, new Date(), time);
                   toast({ title: "Diaper change logged", description: `Logged at ${time}` });
