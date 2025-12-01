@@ -5,12 +5,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { CaregiverManagement } from "@/components/CaregiverManagement";
 
 const VillageInvite = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, loading } = useAuth();
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showInviteFlow, setShowInviteFlow] = useState(false);
 
   // Require authentication for this step
   useEffect(() => {
@@ -20,9 +22,16 @@ const VillageInvite = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleContinue = () => {
+  const handleSkip = () => {
     setIsTransitioning(true);
-    // Show loading animation for 1.5 seconds before navigating
+    setTimeout(() => {
+      navigate("/app");
+    }, 1500);
+  };
+
+  const handleInviteComplete = () => {
+    setShowInviteFlow(false);
+    setIsTransitioning(true);
     setTimeout(() => {
       navigate("/app");
     }, 1500);
@@ -38,6 +47,16 @@ const VillageInvite = () => {
           <p className="text-foreground/90 font-medium">
             Loading your household…
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showInviteFlow) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <CaregiverManagement onClose={handleInviteComplete} />
         </div>
       </div>
     );
@@ -65,14 +84,14 @@ const VillageInvite = () => {
         <Card className="border-border bg-card/50 backdrop-blur shadow-card">
           <CardContent className="pt-6 space-y-4">
             <Button
-              onClick={handleContinue}
+              onClick={() => setShowInviteFlow(true)}
               className="w-full font-semibold"
             >
               + Add someone
             </Button>
             
             <Button
-              onClick={handleContinue}
+              onClick={handleSkip}
               variant="ghost"
               className="w-full font-normal text-muted-foreground"
             >
