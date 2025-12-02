@@ -4,6 +4,7 @@ import { Baby, Droplet, Moon, HeartPulse, Milk, Eye, TrendingUp, Ruler, Plus, Pa
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RhythmArc } from "@/components/home/RhythmArc";
+import { FeedFrequency } from "@/components/home/FeedFrequency";
 import { useRhythmArc } from "@/hooks/useRhythmArc";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -1409,6 +1410,11 @@ const lastDiaper = displayActivities
 
         {/* Rhythm Arc */}
         <RhythmArc {...rhythmArcData} />
+
+        {/* Feed Frequency */}
+        <div className="mt-4">
+          <FeedFrequency activities={activities} />
+        </div>
 
         {/* Today's Story Modal */}
         <TodaysStoryModal
