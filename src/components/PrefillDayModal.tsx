@@ -105,6 +105,8 @@ export const PrefillDayModal = ({
     onClose();
   };
 
+  console.log("PrefillDayModal render - isOpen:", isOpen, "babyAgeMonths:", babyAgeMonths);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
