@@ -1289,7 +1289,10 @@ const lastDiaper = displayActivities
                   Log first activity
                 </Button>
                 <Button
-                  onClick={() => setShowPrefillModal(true)}
+                  onClick={() => {
+                    console.log("Quick start button clicked, showing prefill modal");
+                    setShowPrefillModal(true);
+                  }}
                   variant="outline"
                   className="w-full"
                   size="lg"
