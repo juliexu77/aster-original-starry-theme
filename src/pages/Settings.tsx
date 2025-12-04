@@ -14,7 +14,8 @@ import {
   Users,
   Bell,
   Baby,
-  Moon
+  Moon,
+  Sunrise
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { CaregiverManagement } from "@/components/CaregiverManagement";
@@ -263,6 +264,33 @@ export const Settings = () => {
                     }).filter(Boolean)}
                   </SelectContent>
                 </Select>
+              </SettingsRow>
+              <SettingsRow
+                icon={<Sunrise className="w-5 h-5" />}
+                title="Auto-log wake up"
+                subtitle="Automatically log morning wake at your set time if forgotten"
+                showChevron={false}
+              >
+                <Switch
+                  checked={(userProfile as any)?.auto_log_wake_enabled ?? false}
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await updateUserProfile({ auto_log_wake_enabled: checked } as any);
+                      toast({
+                        title: checked ? "Auto-log enabled" : "Auto-log disabled",
+                        description: checked 
+                          ? `Wake will be logged at ${(userProfile as any)?.night_sleep_end_hour ?? 7}:${((userProfile as any)?.night_sleep_end_minute ?? 0).toString().padStart(2, '0')} AM if not manually logged`
+                          : "Wake must be logged manually",
+                      });
+                    } catch (error) {
+                      console.error('Error updating auto-log wake:', error);
+                      toast({
+                        title: "Error",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                />
               </SettingsRow>
             </SettingsSection>
           )}
