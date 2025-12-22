@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useHousehold } from "@/hooks/useHousehold";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { createHousehold } = useHousehold();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
@@ -31,49 +32,7 @@ const BabySetup = () => {
     setIsLoading(true);
 
     try {
-      // Create household
-      const { data: household, error: householdError } = await supabase
-        .from("households")
-        .insert({
-          created_by: user.id,
-          name: `${babyName}'s Family`,
-        })
-        .select()
-        .single();
-
-      if (householdError) throw householdError;
-
-      // Create baby record
-      const { error: babyError } = await supabase
-        .from("babies")
-        .insert({
-          household_id: household.id,
-          name: babyName,
-          birthday: babyBirthday,
-        });
-
-      if (babyError) throw babyError;
-
-      // Create household member entry for the user as owner
-      const { error: memberError } = await supabase
-        .from("household_members")
-        .insert({
-          household_id: household.id,
-          user_id: user.id,
-          role: "owner",
-        });
-
-      if (memberError) throw memberError;
-
-      // Create or update user profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert({
-          user_id: user.id,
-          email: user.email,
-        });
-
-      if (profileError) throw profileError;
+      await createHousehold(babyName, babyBirthday || undefined);
 
       toast({
         title: "Profile created",
