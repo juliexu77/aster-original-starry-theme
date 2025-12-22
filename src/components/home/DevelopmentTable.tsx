@@ -1,102 +1,142 @@
-import { Moon, Sun, Sparkles, Heart, Hand, MessageCircle, Eye, Footprints } from "lucide-react";
-import { GlassCard } from "./GlassCard";
+import { Moon, Sun, Sparkles, Heart, Hand, MessageCircle, Eye, Footprints, Star } from "lucide-react";
 
-interface TraitsCardProps {
+interface DevelopmentTableProps {
   ageInWeeks: number;
 }
 
-interface Trait {
-  icon: React.ReactNode;
-  label: string;
+interface TraitRow {
+  sign: string;
+  planet: string;
+  planetSymbol: React.ReactNode;
+  house?: number;
 }
 
-const getTraits = (ageInWeeks: number): Trait[] => {
+const getTraitRows = (ageInWeeks: number): TraitRow[] => {
   if (ageInWeeks < 4) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "Sleeping in short stretches" },
-      { icon: <Eye className="w-3.5 h-3.5" />, label: "Focusing on close faces" },
-      { icon: <Heart className="w-3.5 h-3.5" />, label: "Seeking warmth and closeness" },
-      { icon: <Hand className="w-3.5 h-3.5" />, label: "Reflexive movements" },
+      { sign: "Dreamer", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" />, house: 1 },
+      { sign: "Watcher", planet: "EYES", planetSymbol: <Eye className="w-3 h-3" />, house: 2 },
+      { sign: "Seeker", planet: "HEART", planetSymbol: <Heart className="w-3 h-3" /> },
+      { sign: "Reflex", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" />, house: 3 },
     ];
   }
   if (ageInWeeks < 8) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "Many short naps" },
-      { icon: <Eye className="w-3.5 h-3.5" />, label: "Following movement with eyes" },
-      { icon: <MessageCircle className="w-3.5 h-3.5" />, label: "Beginning to coo" },
-      { icon: <Hand className="w-3.5 h-3.5" />, label: "Lifting head briefly" },
+      { sign: "Catnapper", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" />, house: 1 },
+      { sign: "Tracker", planet: "EYES", planetSymbol: <Eye className="w-3 h-3" /> },
+      { sign: "Coo-er", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Lifter", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" /> },
     ];
   }
   if (ageInWeeks < 12) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "Sleep rhythm emerging" },
-      { icon: <Heart className="w-3.5 h-3.5" />, label: "Social smiling" },
-      { icon: <Hand className="w-3.5 h-3.5" />, label: "Hands finding each other" },
-      { icon: <Eye className="w-3.5 h-3.5" />, label: "Noticing colors" },
+      { sign: "Consolidator", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Smiler", planet: "HEART", planetSymbol: <Heart className="w-3 h-3" />, house: 1 },
+      { sign: "Finder", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" />, house: 2 },
+      { sign: "Noticer", planet: "EYES", planetSymbol: <Eye className="w-3 h-3" /> },
     ];
   }
   if (ageInWeeks < 16) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "Naps becoming steadier" },
-      { icon: <Heart className="w-3.5 h-3.5" />, label: "Laughing out loud" },
-      { icon: <Hand className="w-3.5 h-3.5" />, label: "Reaching and grasping" },
-      { icon: <MessageCircle className="w-3.5 h-3.5" />, label: "Early babbling" },
+      { sign: "Steady", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Laugher", planet: "HEART", planetSymbol: <Heart className="w-3 h-3" />, house: 1 },
+      { sign: "Reacher", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" />, house: 2 },
+      { sign: "Babbler", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" /> },
     ];
   }
   if (ageInWeeks < 26) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "Around 3 naps" },
-      { icon: <Footprints className="w-3.5 h-3.5" />, label: "Rolling over" },
-      { icon: <Eye className="w-3.5 h-3.5" />, label: "Recognizing familiar people" },
-      { icon: <Sparkles className="w-3.5 h-3.5" />, label: "Curious about everything" },
+      { sign: "Three-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Roller", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Knower", planet: "EYES", planetSymbol: <Eye className="w-3 h-3" /> },
+      { sign: "Curious", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" />, house: 2 },
     ];
   }
   if (ageInWeeks < 39) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "2–3 naps" },
-      { icon: <Footprints className="w-3.5 h-3.5" />, label: "Sitting and reaching" },
-      { icon: <MessageCircle className="w-3.5 h-3.5" />, label: "Babbling with sounds" },
-      { icon: <Heart className="w-3.5 h-3.5" />, label: "Strong attachments forming" },
+      { sign: "Two-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Sitter", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Chatter", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" /> },
+      { sign: "Attached", planet: "HEART", planetSymbol: <Heart className="w-3 h-3" />, house: 2 },
     ];
   }
   if (ageInWeeks < 52) {
     return [
-      { icon: <Moon className="w-3.5 h-3.5" />, label: "2 naps" },
-      { icon: <Footprints className="w-3.5 h-3.5" />, label: "Crawling and cruising" },
-      { icon: <MessageCircle className="w-3.5 h-3.5" />, label: "Understanding words" },
-      { icon: <Hand className="w-3.5 h-3.5" />, label: "Waving and pointing" },
+      { sign: "Two-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Cruiser", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Understander", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Pointer", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" /> },
     ];
   }
   return [
-    { icon: <Moon className="w-3.5 h-3.5" />, label: "1–2 naps" },
-    { icon: <Footprints className="w-3.5 h-3.5" />, label: "Walking and climbing" },
-    { icon: <MessageCircle className="w-3.5 h-3.5" />, label: "First words appearing" },
-    { icon: <Sparkles className="w-3.5 h-3.5" />, label: "Pretend play beginning" },
+    { sign: "One-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+    { sign: "Walker", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+    { sign: "Talker", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+    { sign: "Player", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
   ];
 };
 
-export const DevelopmentTable = ({ ageInWeeks }: TraitsCardProps) => {
-  const traits = getTraits(ageInWeeks);
+export const DevelopmentTable = ({ ageInWeeks }: DevelopmentTableProps) => {
+  const rows = getTraitRows(ageInWeeks);
 
   return (
-    <GlassCard className="mx-5">
-      <div className="px-4 py-3 border-b border-border/30">
-        <p className="text-xs text-muted-foreground uppercase tracking-wide">Right now</p>
-      </div>
+    <div className="mx-5 mt-6">
+      {/* Table container with border */}
+      <div className="relative border border-border/40 rounded-sm">
+        {/* Vertical TRAITS label on left */}
+        <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center">
+          <span 
+            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium"
+            style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+          >
+            Traits
+          </span>
+        </div>
 
-      <div className="p-4">
-        <div className="flex flex-wrap gap-2">
-          {traits.map((trait, index) => (
+        {/* Vertical PHASE label on right */}
+        <div className="absolute right-0 top-0 bottom-0 w-6 flex items-center justify-center">
+          <span 
+            className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-medium"
+            style={{ writingMode: 'vertical-rl' }}
+          >
+            Phase
+          </span>
+        </div>
+
+        {/* Main table content */}
+        <div className="mx-6">
+          {rows.map((row, index) => (
             <div 
-              key={index}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/30 border border-border/20"
+              key={index} 
+              className={`flex items-center py-3 ${
+                index !== rows.length - 1 ? 'border-b border-border/20' : ''
+              }`}
             >
-              <span className="text-muted-foreground">{trait.icon}</span>
-              <span className="text-xs text-foreground">{trait.label}</span>
+              {/* Sign name (left column) */}
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-foreground">
+                  {row.sign}
+                </span>
+              </div>
+
+              {/* Planet with symbol (middle column) */}
+              <div className="flex items-center gap-1.5 text-muted-foreground px-4">
+                <span className="opacity-70">{row.planetSymbol}</span>
+                <span className="text-xs uppercase tracking-wide">{row.planet}</span>
+              </div>
+
+              {/* House number (right column) - only show if present */}
+              <div className="w-8 text-right">
+                {row.house && (
+                  <span className="text-lg font-light text-foreground">
+                    {row.house}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
-    </GlassCard>
+    </div>
   );
 };
