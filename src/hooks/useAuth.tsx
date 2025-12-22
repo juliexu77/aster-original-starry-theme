@@ -19,28 +19,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let initialLoadComplete = false;
     
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Only set loading false after initial load is done
         if (initialLoadComplete) {
           setLoading(false);
         }
         
-        // Clear user data when signed out or user deleted
         if (event === 'SIGNED_OUT' || !session) {
           clearAllUserData();
+        }
+
+        // Auto-create household for new users
+        if (event === 'SIGNED_IN' && session?.user) {
+          await ensureUserHasHousehold(session.user.id);
         }
       }
     );
 
-    // THEN check for existing session - this is the source of truth for initial load
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await ensureUserHasHousehold(session.user.id);
+      }
+      
       initialLoadComplete = true;
       setLoading(false);
     });
@@ -50,54 +56,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    // Clear all app-related localStorage data
     clearAllUserData();
   };
 
   const ensureUserHasHousehold = async (userId: string) => {
     try {
-      // Check if user already has any household (as parent or collaborator)
-      const { data: collaboratorData } = await supabase
-        .from('collaborators')
-        .select('household_id, role')
-        .eq('user_id', userId);
+      // Check if user already has a household membership
+      const { data: memberData } = await supabase
+        .from('household_members')
+        .select('household_id')
+        .eq('user_id', userId)
+        .limit(1);
 
-      if (collaboratorData && collaboratorData.length > 0) {
-        // User already has a household - don't create a new one
-        console.log('User already has household(s), not creating new one');
-        return;
+      if (memberData && memberData.length > 0) {
+        return; // User already has a household
       }
 
-      // Only create household if user has NO households
-      console.log('Creating default household for new user');
-
-      // Create default household
+      // Create a new household
       const newHouseholdId = crypto.randomUUID();
-
+      
       const { error: householdError } = await supabase
         .from('households')
         .insert([{
           id: newHouseholdId,
           name: 'My Household',
+          created_by: userId
         }]);
 
       if (householdError) {
-        console.error('Error creating default household:', householdError);
+        console.error('Error creating household:', householdError);
         return;
       }
 
-      // Add user as parent collaborator
-      const { error: collaboratorError } = await supabase
-        .from('collaborators')
+      // Add user as parent member
+      const { error: memberError } = await supabase
+        .from('household_members')
         .insert([{
           household_id: newHouseholdId,
           user_id: userId,
-          role: 'parent',
-          invited_by: userId,
+          role: 'parent'
         }]);
 
-      if (collaboratorError) {
-        console.error('Error adding user as collaborator:', collaboratorError);
+      if (memberError) {
+        console.error('Error adding household member:', memberError);
       }
     } catch (error) {
       console.error('Error ensuring user has household:', error);
@@ -105,7 +106,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const clearAllUserData = () => {
-    // Clear all user-related localStorage items
     const keysToRemove = [
       'babyProfile',
       'babyProfileCompleted', 
@@ -116,16 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       'hasSeenDemo',
       'lastUsedUnit',
       'lastFeedQuantity',
-      'language', // Keep this one as it's a user preference
       'baby_tracker_offline_activities',
       'baby_tracker_sync_status',
-      'active_household_id' // Clear household ID on logout
+      'active_household_id'
     ];
     
     keysToRemove.forEach(key => {
-      if (key !== 'language') { // Keep language preference
-        localStorage.removeItem(key);
-      }
+      localStorage.removeItem(key);
     });
   };
 

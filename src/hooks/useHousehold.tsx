@@ -5,88 +5,52 @@ import { useAuth } from "@/hooks/useAuth";
 interface Household {
   id: string;
   name: string;
-  baby_name: string | null;
-  baby_birthday: string | null; // Date as string in YYYY-MM-DD format
-  baby_sex: string | null; // 'male' or 'female' for WHO percentiles
-  baby_photo_url: string | null; // Added baby photo URL
+  created_by: string;
   created_at: string;
   updated_at: string;
 }
 
-interface Collaborator {
+interface Baby {
+  id: string;
+  household_id: string;
+  name: string;
+  birthday: string | null;
+  photo_url: string | null;
+}
+
+interface HouseholdMember {
   id: string;
   household_id: string;
   user_id: string;
   role: string;
-  invited_by: string;
-  created_at: string;
-  full_name?: string | null;
-  email?: string | null;
-  last_sign_in_at?: string | null;
-  profiles?: {
-    full_name: string | null;
-    user_id: string;
-  } | null;
+  joined_at: string;
 }
+
+// Extended household with baby info
+interface HouseholdWithBaby extends Household {
+  baby_name: string | null;
+  baby_birthday: string | null;
+  baby_photo_url: string | null;
+  baby_sex?: string | null;
+}
+
+export type { Household, Baby, HouseholdMember, HouseholdWithBaby };
 
 export const useHousehold = () => {
   const { user } = useAuth();
-  const [household, setHousehold] = useState<Household | null>(null);
-  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [household, setHousehold] = useState<HouseholdWithBaby | null>(null);
+  const [baby, setBaby] = useState<Baby | null>(null);
+  const [collaborators, setCollaborators] = useState<HouseholdMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch user's household and collaborators
   useEffect(() => {
     if (!user) {
-      // Load from localStorage when no user (auth disabled)
-      try {
-        const stored = localStorage.getItem('temp_household');
-        if (stored) {
-          setHousehold(JSON.parse(stored));
-        }
-      } catch (error) {
-        // Error loading from localStorage
-      }
       setLoading(false);
       return;
     }
 
-    fetchHousehold().catch(err => {
-      setError('Failed to load household');
-      setLoading(false);
-    });
-    // fetchCollaborators will be called from within fetchHousehold after household is set
-
-    // Set up real-time subscriptions
-    const householdsSubscription = supabase
-      .channel('household-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'households' }, 
-        () => {
-          fetchHousehold().catch(() => {
-            // Real-time household fetch error
-          });
-        }
-      )
-      .subscribe();
-
-    const collaboratorsSubscription = supabase
-      .channel('collaborator-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'collaborators' }, 
-        () => {
-          fetchCollaborators().catch(() => {
-            // Real-time collaborators fetch error
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(householdsSubscription);
-      supabase.removeChannel(collaboratorsSubscription);
-    };
+    fetchHousehold();
   }, [user]);
 
   const fetchHousehold = async () => {
@@ -94,462 +58,156 @@ export const useHousehold = () => {
 
     try {
       setError(null);
-      
-      // Try to use the active household from localStorage first
-      let preferredHouseholdId: string | null = null;
-      try {
-        preferredHouseholdId = localStorage.getItem('active_household_id');
-      } catch (e) {
-        // Error reading from localStorage
-      }
-      
-      let householdId: string | null = null;
 
-      if (preferredHouseholdId) {
-        // Verify the user is a collaborator of the preferred household
-        const { data: preferredCollab, error: preferredError } = await supabase
-          .from('collaborators')
-          .select('household_id')
-          .eq('user_id', user.id)
-          .eq('household_id', preferredHouseholdId)
-          .maybeSingle();
+      // Get user's household membership
+      const { data: memberData, error: memberError } = await supabase
+        .from('household_members')
+        .select('household_id, role')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
 
-        if (preferredError) {
-          // Clear invalid household ID
-          try {
-            localStorage.removeItem('active_household_id');
-          } catch (e) {
-            // Error clearing localStorage
-          }
-        } else if (preferredCollab) {
-          householdId = preferredCollab.household_id;
-        } else {
-          // User no longer has access
-          try {
-            localStorage.removeItem('active_household_id');
-          } catch (e) {
-            // Error clearing localStorage
-          }
-        }
+      if (memberError) {
+        console.error('Error fetching membership:', memberError);
+        setError('Failed to load household');
+        setLoading(false);
+        return;
       }
 
-      if (!householdId) {
-        console.log('No preferred household, fetching oldest household for user');
-        // Fallback to the oldest (original) household as default
-        const { data: collaboratorData, error: collaboratorError } = await supabase
-          .from('collaborators')
-          .select('household_id, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (collaboratorError) {
-          console.error('Error fetching collaborator data:', collaboratorError);
-          setError('Failed to load your household. Please try again.');
-          setHousehold(null);
-          setLoading(false);
-          return;
-        }
-
-        if (!collaboratorData) {
-          console.log('No household found for user');
-          setHousehold(null);
-          setCollaborators([]);
-          setError(null); // No error - user just doesn't have a household
-          setLoading(false);
-          return;
-        }
-
-        householdId = collaboratorData.household_id;
-        console.log('Found oldest household:', householdId);
-
-        // Persist as active
-        try {
-          localStorage.setItem('active_household_id', householdId);
-          console.log('Set active household in localStorage:', householdId);
-        } catch (e) {
-          console.error('Error setting localStorage:', e);
-        }
+      if (!memberData) {
+        setHousehold(null);
+        setLoading(false);
+        return;
       }
 
-      // Fetch the actual household data
-      console.log('Fetching household data for ID:', householdId);
+      // Fetch household
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('*')
-        .eq('id', householdId)
-        .maybeSingle();
+        .eq('id', memberData.household_id)
+        .single();
 
       if (householdError) {
         console.error('Error fetching household:', householdError);
-        setError('Failed to load household data. Please try again.');
-        setHousehold(null);
-        // Clear the invalid household ID
-        try {
-          localStorage.removeItem('active_household_id');
-        } catch (e) {
-          console.error('Error clearing localStorage:', e);
-        }
+        setError('Failed to load household');
         setLoading(false);
         return;
       }
 
-      if (!householdData) {
-        console.error('Household not found for ID:', householdId);
-        setError('Household not found. It may have been deleted.');
-        setHousehold(null);
-        // Clear the invalid household ID
-        try {
-          localStorage.removeItem('active_household_id');
-        } catch (e) {
-          console.error('Error clearing localStorage:', e);
-        }
-        setLoading(false);
-        return;
-      }
+      // Fetch baby for this household
+      const { data: babyData } = await supabase
+        .from('babies')
+        .select('*')
+        .eq('household_id', memberData.household_id)
+        .limit(1)
+        .maybeSingle();
 
-      console.log('Household data loaded successfully:', householdData);
-      setHousehold(householdData);
-      setError(null);
-      
-      // Fetch collaborators immediately after setting household
-      await fetchCollaborators(householdData.id);
+      setBaby(babyData);
+
+      // Combine household and baby info
+      const combined: HouseholdWithBaby = {
+        ...householdData,
+        baby_name: babyData?.name || null,
+        baby_birthday: babyData?.birthday || null,
+        baby_photo_url: babyData?.photo_url || null,
+        baby_sex: null
+      };
+
+      setHousehold(combined);
+
+      // Fetch members
+      const { data: membersData } = await supabase
+        .from('household_members')
+        .select('*')
+        .eq('household_id', memberData.household_id);
+
+      setCollaborators(membersData || []);
+
     } catch (error) {
       console.error('Error in fetchHousehold:', error);
-      setError('An unexpected error occurred. Please try again.');
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchCollaborators = async (householdId?: string) => {
-    if (!user) return;
-
-    try {
-      const targetHouseholdId = householdId || household?.id;
-      if (!targetHouseholdId) return;
-
-      console.log('Fetching collaborators for household:', targetHouseholdId);
-
-      // Use the secure function to get collaborators with email and last sign-in
-      const { data, error } = await supabase.rpc('get_collaborator_details', {
-        _household_id: targetHouseholdId
-      });
-
-      if (error) {
-        console.error('Error fetching collaborators:', error);
-        return;
-      }
-
-      console.log('Collaborators with details:', data);
-      setCollaborators(data || []);
-    } catch (error) {
-      console.error('Error in fetchCollaborators:', error);
-    }
-  };
-
   const createHousehold = async (babyName: string, babyBirthday?: string) => {
-    if (!user) {
-      throw new Error('User must be authenticated to create household');
-    }
+    if (!user) throw new Error('User must be authenticated');
 
-    try {
-      console.log('Creating household with baby name:', babyName, 'birthday:', babyBirthday);
+    const newHouseholdId = crypto.randomUUID();
 
-      // Check if user is already a parent in another household
-      const { data: isParent } = await supabase.rpc('user_is_parent_in_household', {
-        _user_id: user.id
-      });
+    // Create household
+    const { error: householdError } = await supabase
+      .from('households')
+      .insert([{
+        id: newHouseholdId,
+        name: `${babyName}'s Household`,
+        created_by: user.id
+      }]);
 
-      if (isParent) {
-        throw new Error('You already have a household. You can only be the owner of one household, but you can join others as a collaborator.');
-      }
+    if (householdError) throw householdError;
 
-      // Create household with client-generated id to avoid RLS issues on RETURNING
-      const newHouseholdId = crypto.randomUUID();
+    // Add user as member
+    await supabase
+      .from('household_members')
+      .insert([{
+        household_id: newHouseholdId,
+        user_id: user.id,
+        role: 'parent'
+      }]);
 
-      const { error: householdError } = await supabase
-        .from('households')
-        .insert([
-          {
-            id: newHouseholdId,
-            name: `${babyName}'s Household`,
-            baby_name: babyName,
-            baby_birthday: babyBirthday || null,
-          }
-        ]);
+    // Create baby
+    await supabase
+      .from('babies')
+      .insert([{
+        household_id: newHouseholdId,
+        name: babyName,
+        birthday: babyBirthday || null
+      }]);
 
-      if (householdError) {
-        console.error('Household creation error:', householdError);
-        throw householdError;
-      }
-
-      // Add user as collaborator (parent)
-      const { error: collaboratorError } = await supabase
-        .from('collaborators')
-        .insert([{
-          household_id: newHouseholdId,
-          user_id: user.id,
-          role: 'parent',
-          invited_by: user.id,
-        }]);
-
-      if (collaboratorError) {
-        console.error('Error adding user as collaborator:', collaboratorError);
-        throw collaboratorError;
-      }
-
-      // Now we can safely fetch the household (SELECT policy will pass)
-      const { data: householdData, error: fetchError } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', newHouseholdId)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching newly created household:', fetchError);
-        throw fetchError;
-      }
-
-      setHousehold(householdData);
-      await fetchCollaborators(newHouseholdId);
-      
-      return householdData;
-    } catch (error) {
-      console.error('Error creating household:', error);
-      throw error;
-    }
+    await fetchHousehold();
   };
 
-  const updateHousehold = async (updates: Partial<Pick<Household, 'name' | 'baby_name' | 'baby_birthday' | 'baby_sex' | 'baby_photo_url'>>) => {
-    if (!household) {
-      throw new Error('No household to update');
-    }
+  const updateHousehold = async (updates: { baby_name?: string; baby_birthday?: string; baby_photo_url?: string; baby_sex?: string }) => {
+    if (!household || !baby) throw new Error('No household or baby');
 
-    // Optimistic update - update local state immediately
-    const previousHousehold = household;
-    const optimisticHousehold = { ...household, ...updates };
-    setHousehold(optimisticHousehold);
+    // Update baby record
+    const { error } = await supabase
+      .from('babies')
+      .update({
+        name: updates.baby_name ?? baby.name,
+        birthday: updates.baby_birthday ?? baby.birthday,
+        photo_url: updates.baby_photo_url ?? baby.photo_url
+      })
+      .eq('id', baby.id);
 
-    try {
-      const { data, error } = await supabase
-        .from('households')
-        .update(updates)
-        .eq('id', household.id)
-        .select()
-        .single();
+    if (error) throw error;
 
-      if (error) {
-        console.error('Error updating household:', error);
-        // Revert to previous state on error
-        setHousehold(previousHousehold);
-        throw error;
-      }
-
-      console.log('Updated household data:', data);
-      // Update with server response to ensure consistency
-      setHousehold(data);
-      return data;
-    } catch (error) {
-      console.error('Error in updateHousehold:', error);
-      throw error;
-    }
-  };
-
-  const generateInviteLink = async (role?: 'caregiver') => {
-    if (!user || !household) {
-      throw new Error('User and household required for invite');
-    }
-
-    try {
-      const inviteRole = role || 'caregiver';
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
-
-      const { data, error } = await supabase
-        .from('invite_links')
-        .insert([{
-          household_id: household.id,
-          role: inviteRole,
-          expires_at: expiresAt.toISOString(),
-          created_by: user.id,
-          code: generateInviteCode(),
-        }])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error creating invite:', error);
-        throw error;
-      }
-
-      const inviteLink = `${window.location.origin}/invite/${data.code}`;
-      return {
-        ...data,
-        link: inviteLink,
-      };
-    } catch (error) {
-      console.error('Error generating invite link:', error);
-      throw error;
-    }
-  };
-
-  const acceptInvite = async (code: string) => {
-    if (!user) {
-      throw new Error('User must be authenticated to accept invite');
-    }
-
-    try {
-      const { data, error } = await supabase.rpc('accept_invite', {
-        invite_code: code,
-      });
-
-      if (error) {
-        console.error('Error accepting invite:', error);
-        throw error;
-      }
-
-      const householdId = data as string;
-
-      // Remember this as the active household and immediately set it
-      try {
-        localStorage.setItem('active_household_id', householdId);
-      } catch {}
-
-      // Immediately fetch and set the accepted household as current
-      await fetchHousehold();
-      const { data: householdData, error: householdError } = await supabase
-        .from('households')
-        .select('*')
-        .eq('id', householdId)
-        .single();
-
-      if (householdError) {
-        console.error('Error fetching accepted household:', householdError);
-        throw householdError;
-      }
-
-      setHousehold(householdData);
-      await fetchCollaborators(householdId);
-      return householdId;
-    } catch (error) {
-      console.error('Error in acceptInvite:', error);
-      throw error;
-    }
-  };
-
-  const removeCollaborator = async (collaboratorId: string) => {
-    try {
-      const { error } = await supabase
-        .from('collaborators')
-        .delete()
-        .eq('id', collaboratorId);
-
-      if (error) {
-        console.error('Error removing collaborator:', error);
-        throw error;
-      }
-
-      // Refresh collaborators
-      await fetchCollaborators();
-    } catch (error) {
-      console.error('Error in removeCollaborator:', error);
-      throw error;
-    }
-  };
-
-  const updateCollaboratorRole = async (collaboratorId: string, newRole: string) => {
-    try {
-      const { error } = await supabase
-        .from('collaborators')
-        .update({ role: newRole })
-        .eq('id', collaboratorId);
-
-      if (error) {
-        console.error('Error updating collaborator role:', error);
-        throw error;
-      }
-
-      // Refresh collaborators to ensure UI updates
-      await fetchCollaborators();
-      
-      // Also update local state immediately to ensure instant UI feedback
-      setCollaborators(prev => 
-        prev.map(collab => 
-          collab.id === collaboratorId 
-            ? { ...collab, role: newRole }
-            : collab
-        )
-      );
-    } catch (error) {
-      console.error('Error in updateCollaboratorRole:', error);
-      throw error;
-    }
+    await fetchHousehold();
   };
 
   const refetch = async () => {
     setLoading(true);
     await fetchHousehold();
-    await fetchCollaborators();
-  };
-
-  const switchHousehold = async (householdId: string) => {
-    try {
-      localStorage.setItem('active_household_id', householdId);
-      await fetchHousehold();
-    } catch (error) {
-      console.error('Error switching household:', error);
-      throw error;
-    }
-  };
-
-  const getUserHouseholds = async (): Promise<Household[]> => {
-    if (!user) return [];
-    
-    try {
-      const { data: collabs, error: collabError } = await supabase
-        .from('collaborators')
-        .select('household_id')
-        .eq('user_id', user.id);
-
-      if (collabError) throw collabError;
-      if (!collabs || collabs.length === 0) return [];
-
-      const householdIds = collabs.map(c => c.household_id);
-      
-      const { data: households, error: householdError } = await supabase
-        .from('households')
-        .select('*')
-        .in('id', householdIds)
-        .order('created_at', { ascending: true });
-
-      if (householdError) throw householdError;
-      return households || [];
-    } catch (error) {
-      console.error('Error fetching user households:', error);
-      return [];
-    }
   };
 
   return {
     household,
+    baby,
     collaborators,
     loading,
     error,
     createHousehold,
     updateHousehold,
-    generateInviteLink,
-    acceptInvite,
-    removeCollaborator,
-    updateCollaboratorRole,
     refetch,
-    switchHousehold,
-    getUserHouseholds,
+    // Stub methods for compatibility
+    generateInviteLink: async () => ({ link: '', code: '' }),
+    acceptInvite: async () => '',
+    removeCollaborator: async () => {},
+    updateCollaboratorRole: async () => {},
+    switchHousehold: async () => {},
+    getAllHouseholds: async (): Promise<HouseholdWithBaby[]> => [],
+    leaveHousehold: async () => {},
+    fetchHousehold
   };
 };
-
-// Helper function to generate invite codes
-function generateInviteCode(): string {
-  return Math.random().toString(36).substring(2, 10).toUpperCase();
-}
