@@ -1,4 +1,4 @@
-import { Home, List } from "lucide-react";
+import { Home, BookOpen } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -7,8 +7,8 @@ interface BottomNavigationProps {
 
 export const BottomNavigation = ({ activeTab, onTabChange }: BottomNavigationProps) => {
   const tabs = [
-    { id: "home", label: "Today", icon: Home },
-    { id: "history", label: "History", icon: List },
+    { id: "today", label: "Today", icon: Home },
+    { id: "guide", label: "Guide", icon: BookOpen },
   ];
 
   return (
