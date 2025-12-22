@@ -1,61 +1,38 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   LogOut, 
   Key,
-  Share,
-  Users,
-  Bell,
-  Baby,
-  Moon,
-  Sunrise
+  Baby
 } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { CaregiverManagement } from "@/components/CaregiverManagement";
-import { EmailInvite } from "@/components/EmailInvite";
-import { ProfileEditModal } from "@/components/settings/ProfileEditModal";
-import { BabyEditModal } from "@/components/settings/BabyEditModal";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
-import { shareInviteLink } from "@/utils/nativeShare";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
-  const { household, generateInviteLink } = useHousehold();
-  const { userProfile, updateUserProfile } = useUserProfile();
+  const { household, refetch } = useHousehold();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [copied, setCopied] = useState(false);
-  const [currentInviteLink, setCurrentInviteLink] = useState<string | null>(null);
-  const [showCaregiverManagement, setShowCaregiverManagement] = useState(false);
-  const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showBabyEdit, setShowBabyEdit] = useState(false);
-  const [remindersEnabled, setRemindersEnabled] = useState(() => {
-    const stored = localStorage.getItem('smartRemindersEnabled');
-    return stored !== null ? stored === 'true' : true;
-  });
-
-  // Sync reminder state with localStorage changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const stored = localStorage.getItem('smartRemindersEnabled');
-      if (stored !== null) {
-        setRemindersEnabled(stored === 'true');
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [babyName, setBabyName] = useState(household?.baby_name || "");
+  const [babyBirthday, setBabyBirthday] = useState(household?.baby_birthday || "");
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -81,63 +58,43 @@ export const Settings = () => {
     }
   };
 
-  const handleInviteClick = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    try {
-      const inviteData = await generateInviteLink();
-      if (inviteData?.link) {
-        setCurrentInviteLink(inviteData.link);
-        const shared = await shareInviteLink(inviteData.link, household?.baby_name);
-        
-        if (shared) {
-          toast({
-            title: "Invite shared",
-            description: "Share dialog opened",
-          });
-        } else {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-          
-          toast({
-            title: "Invite link copied",
-            description: "Share with your partner",
-          });
-        }
-      }
-    } catch (err) {
-      toast({
-        title: "Failed to create invite",
-        description: "Please try again",
-        variant: "destructive",
-      });
-    }
-  };
-
   const getUserDisplayName = () => {
     const email = user?.email;
     return email?.split('@')[0] || "User";
   };
 
-  const handleReminderToggle = () => {
-    const newValue = !remindersEnabled;
-    setRemindersEnabled(newValue);
-    localStorage.setItem('smartRemindersEnabled', String(newValue));
+  const handleSaveBaby = async () => {
+    if (!household) return;
     
-    toast({
-      title: newValue ? "Smart reminders enabled" : "Smart reminders disabled",
-      description: newValue 
-        ? "You'll receive notifications before naps, feeds, and bedtime"
-        : "You won't receive schedule notifications",
-    });
-  };
+    setIsSaving(true);
+    try {
+      // Update baby record
+      const { error } = await supabase
+        .from("babies")
+        .update({
+          name: babyName,
+          birthday: babyBirthday,
+        })
+        .eq("household_id", household.id);
 
-  if (showCaregiverManagement) {
-    return <CaregiverManagement onClose={() => setShowCaregiverManagement(false)} />;
-  }
+      if (error) throw error;
+
+      toast({
+        title: "Baby profile updated",
+      });
+      setShowBabyEdit(false);
+      refetch();
+    } catch (error: any) {
+      console.error('Error updating baby:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <>
@@ -156,142 +113,12 @@ export const Settings = () => {
                 icon={<Baby className="w-5 h-5" />}
                 title={household.baby_name || "Baby's Name"}
                 subtitle={household.baby_birthday ? `Birthday: ${new Date(household.baby_birthday).toLocaleDateString()}` : "Set birthday"}
-                onClick={() => setShowBabyEdit(true)}
+                onClick={() => {
+                  setBabyName(household.baby_name || "");
+                  setBabyBirthday(household.baby_birthday || "");
+                  setShowBabyEdit(true);
+                }}
               />
-            </SettingsSection>
-          )}
-
-          {/* Sleep Schedule Section */}
-          {user && (
-            <SettingsSection title="Sleep Schedule">
-              <SettingsRow
-                icon={<Moon className="w-5 h-5" />}
-                title="Night starts"
-                subtitle="When sleep begins"
-                showChevron={false}
-              >
-                <Select
-                  value={`${(userProfile as any)?.night_sleep_start_hour ?? 19}:${(userProfile as any)?.night_sleep_start_minute ?? 0}`}
-                  onValueChange={async (value) => {
-                    try {
-                      const [hour, minute] = value.split(':').map(Number);
-                      await updateUserProfile({ 
-                        night_sleep_start_hour: hour,
-                        night_sleep_start_minute: minute 
-                      } as any);
-                      toast({
-                        title: "Updated",
-                        description: "Night sleep start time saved",
-                      });
-                    } catch (error) {
-                      console.error('Error updating night sleep start:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[110px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 24 }, (_, i) => {
-                      const totalMinutes = (18 * 60) + (i * 15);
-                      const hour = Math.floor(totalMinutes / 60);
-                      const minute = totalMinutes % 60;
-                      if (hour >= 24) return null;
-                      
-                      const displayHour = hour > 12 ? hour - 12 : hour;
-                      const minuteStr = minute.toString().padStart(2, '0');
-                      const label = `${displayHour}:${minuteStr} PM`;
-                      
-                      return (
-                        <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                          {label}
-                        </SelectItem>
-                      );
-                    }).filter(Boolean)}
-                  </SelectContent>
-                </Select>
-              </SettingsRow>
-              <SettingsRow
-                icon={<Moon className="w-5 h-5" />}
-                title="Night ends"
-                subtitle="When sleep ends"
-                showChevron={false}
-              >
-                <Select
-                  value={`${(userProfile as any)?.night_sleep_end_hour ?? 7}:${(userProfile as any)?.night_sleep_end_minute ?? 0}`}
-                  onValueChange={async (value) => {
-                    try {
-                      const [hour, minute] = value.split(':').map(Number);
-                      await updateUserProfile({ 
-                        night_sleep_end_hour: hour,
-                        night_sleep_end_minute: minute 
-                      } as any);
-                      toast({
-                        title: "Updated",
-                        description: "Night sleep end time saved",
-                      });
-                    } catch (error) {
-                      console.error('Error updating night sleep end:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-[110px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 21 }, (_, i) => {
-                      const totalMinutes = (5 * 60) + (i * 15);
-                      const hour = Math.floor(totalMinutes / 60);
-                      const minute = totalMinutes % 60;
-                      if (hour > 10) return null;
-                      
-                      const minuteStr = minute.toString().padStart(2, '0');
-                      const label = `${hour}:${minuteStr} AM`;
-                      
-                      return (
-                        <SelectItem key={`${hour}:${minute}`} value={`${hour}:${minute}`}>
-                          {label}
-                        </SelectItem>
-                      );
-                    }).filter(Boolean)}
-                  </SelectContent>
-                </Select>
-              </SettingsRow>
-              <SettingsRow
-                icon={<Sunrise className="w-5 h-5" />}
-                title="Auto-log wake up"
-                subtitle="Automatically log morning wake at your set time if forgotten"
-                showChevron={false}
-              >
-                <Switch
-                  checked={(userProfile as any)?.auto_log_wake_enabled ?? false}
-                  onCheckedChange={async (checked) => {
-                    try {
-                      await updateUserProfile({ auto_log_wake_enabled: checked } as any);
-                      toast({
-                        title: checked ? "Auto-log enabled" : "Auto-log disabled",
-                        description: checked 
-                          ? `Wake will be logged at ${(userProfile as any)?.night_sleep_end_hour ?? 7}:${((userProfile as any)?.night_sleep_end_minute ?? 0).toString().padStart(2, '0')} AM if not manually logged`
-                          : "Wake must be logged manually",
-                      });
-                    } catch (error) {
-                      console.error('Error updating auto-log wake:', error);
-                      toast({
-                        title: "Error",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                />
-              </SettingsRow>
             </SettingsSection>
           )}
 
@@ -302,7 +129,7 @@ export const Settings = () => {
                 icon={<User className="w-5 h-5" />}
                 title={getUserDisplayName()}
                 subtitle={user.email}
-                onClick={() => setShowProfileEdit(true)}
+                showChevron={false}
               />
             </SettingsSection>
           ) : (
@@ -315,38 +142,6 @@ export const Settings = () => {
               />
             </SettingsSection>
           )}
-
-          {/* Caregivers Section */}
-          {user && (
-            <SettingsSection title="Caregivers">
-              <SettingsRow
-                icon={<Share className="w-5 h-5" />}
-                title="Share Invite Link"
-                subtitle="Share tracking with caregivers"
-                onClick={handleInviteClick}
-              />
-              <SettingsRow
-                icon={<Users className="w-5 h-5" />}
-                title="Manage Caregivers"
-                onClick={() => setShowCaregiverManagement(true)}
-              />
-            </SettingsSection>
-          )}
-
-          {/* App Preferences Section */}
-          <SettingsSection title="App Preferences">
-            <SettingsRow
-              icon={<Bell className="w-5 h-5" />}
-              title="Smart Reminders"
-              subtitle="Get notified before naps, feeds, and bedtime"
-              showChevron={false}
-            >
-              <Switch
-                checked={remindersEnabled}
-                onCheckedChange={handleReminderToggle}
-              />
-            </SettingsRow>
-          </SettingsSection>
 
           {/* Account Section */}
           {user && (
@@ -363,28 +158,44 @@ export const Settings = () => {
               />
             </SettingsSection>
           )}
-
-          {/* Invite Link Actions */}
-          {user && currentInviteLink && (
-            <div className="mt-4">
-              <EmailInvite 
-                inviteLink={currentInviteLink}
-                babyName={household?.baby_name}
-              />
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Modals */}
-      <ProfileEditModal 
-        open={showProfileEdit} 
-        onOpenChange={setShowProfileEdit} 
-      />
-      <BabyEditModal 
-        open={showBabyEdit} 
-        onOpenChange={setShowBabyEdit} 
-      />
+      {/* Baby Edit Modal */}
+      <Dialog open={showBabyEdit} onOpenChange={setShowBabyEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Baby Profile</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="babyName">Name</Label>
+              <Input
+                id="babyName"
+                value={babyName}
+                onChange={(e) => setBabyName(e.target.value)}
+                placeholder="Baby's name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="babyBirthday">Birthday</Label>
+              <Input
+                id="babyBirthday"
+                type="date"
+                value={babyBirthday}
+                onChange={(e) => setBabyBirthday(e.target.value)}
+              />
+            </div>
+            <Button 
+              onClick={handleSaveBaby} 
+              disabled={isSaving}
+              className="w-full"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
