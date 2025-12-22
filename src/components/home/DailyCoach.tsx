@@ -2,6 +2,7 @@ import { Sun, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand } f
 import { GlassCard } from "./GlassCard";
 import { BabyProfileCard } from "./BabyProfileCard";
 import { DayRhythm } from "./DayRhythm";
+import { DevelopmentTable } from "./DevelopmentTable";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 
 interface DailyCoachProps {
@@ -184,6 +185,9 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
 
         {/* Day Rhythm - shape not schedule */}
         <DayRhythm ageInWeeks={ageInWeeks} />
+
+        {/* Development Table - astrology-style profile */}
+        <DevelopmentTable ageInWeeks={ageInWeeks} />
 
         {/* Things to Try - icons as primary signal */}
         <GlassCard className="mx-5">
