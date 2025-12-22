@@ -54,13 +54,13 @@ const BabySetup = () => {
 
       if (babyError) throw babyError;
 
-      // Create household member entry for the user
+      // Create household member entry for the user as owner
       const { error: memberError } = await supabase
         .from("household_members")
         .insert({
           household_id: household.id,
           user_id: user.id,
-          role: "parent",
+          role: "owner",
         });
 
       if (memberError) throw memberError;
