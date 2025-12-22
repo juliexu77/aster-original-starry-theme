@@ -147,13 +147,13 @@ export const useHousehold = () => {
 
     if (householdError) throw householdError;
 
-    // Add user as member
+    // Add user as owner
     await supabase
       .from('household_members')
       .insert([{
         household_id: newHouseholdId,
         user_id: user.id,
-        role: 'parent'
+        role: 'owner'
       }]);
 
     // Create baby
