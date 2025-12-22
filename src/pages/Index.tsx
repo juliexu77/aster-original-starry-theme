@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
@@ -22,6 +22,34 @@ const Index = () => {
   
   const [guideSection, setGuideSection] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Swipe handling for child switching
+  const touchStartRef = useRef<number | null>(null);
+  const touchEndRef = useRef<number | null>(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndRef.current = null;
+    touchStartRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
+    const distance = touchStartRef.current - touchEndRef.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && babies.length > 1) {
+      switchToNextBaby();
+    }
+    if (isRightSwipe && babies.length > 1) {
+      switchToPrevBaby();
+    }
+  };
 
   // Show loading while auth is being checked
   if (authLoading || babiesLoading) {
@@ -55,7 +83,12 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div 
+      className="min-h-screen bg-background"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Main Content */}
       <main className="pb-24">
         {activeBaby && (
