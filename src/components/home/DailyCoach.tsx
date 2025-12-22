@@ -81,15 +81,63 @@ const getActivitySuggestions = (ageInWeeks: number): ActivitySuggestion[] => {
       { title: "Imagination", icon: <Sparkles className="w-5 h-5" /> }
     ];
   }
-  // 3+ years
+  // 156-208 weeks (3-4 years)
+  if (ageInWeeks < 208) {
+    return [
+      { title: "Building", icon: <Puzzle className="w-5 h-5" /> },
+      { title: "Stories", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Nature walks", icon: <TreeDeciduous className="w-5 h-5" /> }
+    ];
+  }
+  // 208-260 weeks (4-5 years)
+  if (ageInWeeks < 260) {
+    return [
+      { title: "Games", icon: <Puzzle className="w-5 h-5" /> },
+      { title: "Creating", icon: <Palette className="w-5 h-5" /> },
+      { title: "Adventures", icon: <Sun className="w-5 h-5" /> }
+    ];
+  }
+  // 260-312 weeks (5-6 years)
+  if (ageInWeeks < 312) {
+    return [
+      { title: "Learning", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Sports", icon: <Footprints className="w-5 h-5" /> },
+      { title: "Art projects", icon: <Palette className="w-5 h-5" /> }
+    ];
+  }
+  // 312-364 weeks (6-7 years)
+  if (ageInWeeks < 364) {
+    return [
+      { title: "Reading", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Team games", icon: <Footprints className="w-5 h-5" /> },
+      { title: "Crafts", icon: <Palette className="w-5 h-5" /> }
+    ];
+  }
+  // 364-416 weeks (7-8 years)
+  if (ageInWeeks < 416) {
+    return [
+      { title: "Hobbies", icon: <Sparkles className="w-5 h-5" /> },
+      { title: "Building", icon: <Puzzle className="w-5 h-5" /> },
+      { title: "Exploring", icon: <TreeDeciduous className="w-5 h-5" /> }
+    ];
+  }
+  // 416-468 weeks (8-9 years)
+  if (ageInWeeks < 468) {
+    return [
+      { title: "Projects", icon: <Puzzle className="w-5 h-5" /> },
+      { title: "Music", icon: <Music className="w-5 h-5" /> },
+      { title: "Discovery", icon: <Sparkles className="w-5 h-5" /> }
+    ];
+  }
+  // 468+ weeks (9-10 years)
   return [
-    { title: "Active play", icon: <Footprints className="w-5 h-5" /> },
-    { title: "Art", icon: <Palette className="w-5 h-5" /> },
-    { title: "Stories", icon: <BookOpen className="w-5 h-5" /> }
+    { title: "Interests", icon: <Sparkles className="w-5 h-5" /> },
+    { title: "Friends", icon: <Coffee className="w-5 h-5" /> },
+    { title: "Creating", icon: <Palette className="w-5 h-5" /> }
   ];
 };
 
-// Observational notes - not instructional
+// Observational notes - behavioral focus for older children
 const getObservations = (ageInWeeks: number): string[] => {
   // 0-4 weeks
   if (ageInWeeks < 4) {
@@ -168,7 +216,7 @@ const getObservations = (ageInWeeks: number): string[] => {
     return [
       "Running and climbing",
       "Two-word phrases",
-      "Pretending with toys"
+      "Wanting to do it themselves"
     ];
   }
   // 130-156 weeks (2.5-3 years)
@@ -176,14 +224,62 @@ const getObservations = (ageInWeeks: number): string[] => {
     return [
       "Jumping and balancing",
       "Full sentences now",
-      "Rich imagination"
+      "Strong preferences emerging"
     ];
   }
-  // 3+ years
+  // 156-208 weeks (3-4 years)
+  if (ageInWeeks < 208) {
+    return [
+      "Asking why constantly",
+      "Playing with others more",
+      "Big feelings to navigate"
+    ];
+  }
+  // 208-260 weeks (4-5 years)
+  if (ageInWeeks < 260) {
+    return [
+      "Making up elaborate games",
+      "Negotiating with friends",
+      "Testing rules and boundaries"
+    ];
+  }
+  // 260-312 weeks (5-6 years)
+  if (ageInWeeks < 312) {
+    return [
+      "Ready for structure",
+      "Making real friendships",
+      "Wanting to be capable"
+    ];
+  }
+  // 312-364 weeks (6-7 years)
+  if (ageInWeeks < 364) {
+    return [
+      "Caring about fairness",
+      "Reading taking off",
+      "Growing more independent"
+    ];
+  }
+  // 364-416 weeks (7-8 years)
+  if (ageInWeeks < 416) {
+    return [
+      "Friendships matter deeply",
+      "Developing real interests",
+      "Managing emotions better"
+    ];
+  }
+  // 416-468 weeks (8-9 years)
+  if (ageInWeeks < 468) {
+    return [
+      "Thinking more abstractly",
+      "Peer opinions mattering",
+      "Taking on responsibility"
+    ];
+  }
+  // 468+ weeks (9-10 years)
   return [
-    "Boundless energy",
-    "Endless questions",
-    "Making up stories"
+    "Identity forming strongly",
+    "Complex social dynamics",
+    "Seeking more independence"
   ];
 };
 
@@ -195,6 +291,8 @@ const getFeedingNote = (ageInWeeks: number): string => {
   if (ageInWeeks < 78) return "Three meals and snacks.";
   if (ageInWeeks < 104) return "Eating with the family.";
   if (ageInWeeks < 156) return "Independent eater mostly.";
+  if (ageInWeeks < 260) return "Eating well, some picky phases.";
+  if (ageInWeeks < 364) return "Growing appetite, varied tastes.";
   return "Eating like a big kid.";
 };
 
@@ -231,11 +329,11 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
         {/* Current Traits */}
         <DevelopmentTable ageInWeeks={ageInWeeks} />
 
-        {/* Things to Try */}
+        {/* Ideas for the Day */}
         <GlassCard className="mx-5">
           <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Try</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">If it fits</p>
           </div>
           <div className="p-4">
             <div className="flex justify-around">
