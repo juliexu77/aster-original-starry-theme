@@ -200,14 +200,6 @@ export const useHousehold = () => {
     createHousehold,
     updateHousehold,
     refetch,
-    // Stub methods for compatibility
-    generateInviteLink: async () => ({ link: '', code: '' }),
-    acceptInvite: async () => '',
-    removeCollaborator: async () => {},
-    updateCollaboratorRole: async () => {},
-    switchHousehold: async () => {},
-    getAllHouseholds: async (): Promise<HouseholdWithBaby[]> => [],
-    leaveHousehold: async () => {},
     fetchHousehold
   };
 };

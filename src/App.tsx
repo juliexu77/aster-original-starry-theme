@@ -11,12 +11,9 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { DuskModeManager } from "@/components/DuskModeManager";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import InviteAccept from "./pages/InviteAccept";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
-import VillageInvite from "./pages/VillageInvite";
 import NotFound from "./pages/NotFound";
-import WeeklyReport from "./pages/WeeklyReport";
 
 const queryClient = new QueryClient();
 
@@ -42,13 +39,9 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/app" element={<Index />} />
                     <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/onboarding/baby-setup" element={<BabySetup />} />
-                    <Route path="/onboarding/village" element={<VillageInvite />} />
+                    <Route path="/baby-setup" element={<BabySetup />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/login" element={<Auth />} />
-                    <Route path="/invite/:code" element={<InviteAccept />} />
-                    <Route path="/report/weekly" element={<WeeklyReport />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </RouteGuard>
