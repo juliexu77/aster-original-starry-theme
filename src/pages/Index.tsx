@@ -21,6 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   
   const [guideSection, setGuideSection] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Show loading while auth is being checked
   if (authLoading || babiesLoading) {
@@ -55,13 +56,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Menu - top left */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur">
-        <div className="px-4 py-2 flex items-center justify-start">
-          <GuideMenu onSelectSection={setGuideSection} />
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="pb-24">
         {activeBaby && (
@@ -80,8 +74,16 @@ const Index = () => {
           onSwitch={switchBaby}
           onNext={switchToNextBaby}
           onPrev={switchToPrevBaby}
+          onOpenMenu={() => setMenuOpen(true)}
         />
       )}
+
+      {/* Guide Menu */}
+      <GuideMenu 
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        onSelectSection={setGuideSection} 
+      />
     </div>
   );
 };

@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Menu, X, Moon, Baby, Sparkles, Coffee, Settings, ChevronRight } from "lucide-react";
+import { Moon, Baby, Sparkles, Coffee, Settings, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface GuideSection {
   id: string;
@@ -18,31 +16,27 @@ const guideSections: GuideSection[] = [
 ];
 
 interface GuideMenuProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onSelectSection: (sectionId: string) => void;
 }
 
-export const GuideMenu = ({ onSelectSection }: GuideMenuProps) => {
-  const [open, setOpen] = useState(false);
+export const GuideMenu = ({ open, onOpenChange, onSelectSection }: GuideMenuProps) => {
   const navigate = useNavigate();
 
   const handleSelectSection = (sectionId: string) => {
     onSelectSection(sectionId);
-    setOpen(false);
+    onOpenChange(false);
   };
 
   const handleSettings = () => {
-    setOpen(false);
+    onOpenChange(false);
     navigate("/settings");
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Menu className="w-5 h-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-80 p-0 bg-background border-l border-border">
         <SheetHeader className="p-5 border-b border-border/40">
           <SheetTitle className="text-left font-serif">Menu</SheetTitle>
         </SheetHeader>
