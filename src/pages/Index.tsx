@@ -4,11 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { DailyCoach } from "@/components/home/DailyCoach";
 import { ChildSwitcher } from "@/components/home/ChildSwitcher";
-import { BottomNavigation } from "@/components/BottomNavigation";
-import { Guide } from "@/pages/Guide";
+import { GuideMenu } from "@/components/GuideMenu";
+import { GuideSectionView } from "@/components/GuideSectionView";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Settings as SettingsIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -22,7 +20,7 @@ const Index = () => {
   } = useBabies();
   const navigate = useNavigate();
   
-  const [activeTab, setActiveTab] = useState("today");
+  const [guideSection, setGuideSection] = useState<string | null>(null);
 
   // Show loading while auth is being checked
   if (authLoading || babiesLoading) {
@@ -45,23 +43,27 @@ const Index = () => {
     return null;
   }
 
+  // Show guide section view if selected
+  if (guideSection) {
+    return (
+      <GuideSectionView 
+        sectionId={guideSection} 
+        onBack={() => setGuideSection(null)} 
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Settings */}
+      {/* Header with Menu */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur">
-        <div className="px-5 py-2 flex items-center justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/settings")}
-          >
-            <SettingsIcon className="w-5 h-5" />
-          </Button>
+        <div className="px-4 py-2 flex items-center justify-end">
+          <GuideMenu onSelectSection={setGuideSection} />
         </div>
       </header>
 
-      {/* Child Switcher - only show on Today tab */}
-      {activeTab === "today" && activeBaby && (
+      {/* Child Switcher */}
+      {activeBaby && (
         <ChildSwitcher
           babies={babies}
           activeBaby={activeBaby}
@@ -72,24 +74,14 @@ const Index = () => {
       )}
 
       {/* Main Content */}
-      <main className="pb-20">
-        {activeTab === "today" && activeBaby && (
+      <main>
+        {activeBaby && (
           <DailyCoach 
             babyName={activeBaby.name} 
             babyBirthday={activeBaby.birthday || undefined} 
           />
         )}
-        
-        {activeTab === "guide" && (
-          <Guide />
-        )}
       </main>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation 
-        activeTab={activeTab} 
-        onTabChange={setActiveTab}
-      />
     </div>
   );
 };
