@@ -12,6 +12,7 @@ interface RhythmBlock {
 }
 
 const getRhythmBlocks = (ageInWeeks: number): RhythmBlock[] => {
+  // 0-16 weeks: Newborn/young infant - frequent naps
   if (ageInWeeks < 16) {
     return [
       { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Wake & feed" },
@@ -21,6 +22,7 @@ const getRhythmBlocks = (ageInWeeks: number): RhythmBlock[] => {
     ];
   }
   
+  // 16-52 weeks (4-12 months): More defined rhythm
   if (ageInWeeks < 52) {
     return [
       { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Play & nap" },
@@ -30,9 +32,40 @@ const getRhythmBlocks = (ageInWeeks: number): RhythmBlock[] => {
     ];
   }
   
+  // 52-78 weeks (12-18 months): Transitioning naps
+  if (ageInWeeks < 78) {
+    return [
+      { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Play & explore" },
+      { label: "Midday", icon: <Moon className="w-5 h-5" />, note: "Main nap" },
+      { label: "Afternoon", icon: <Sun className="w-5 h-5" />, note: "Active time" },
+      { label: "Evening", icon: <Moon className="w-5 h-5" />, note: "Bedtime" }
+    ];
+  }
+  
+  // 78-104 weeks (18-24 months): One solid nap
+  if (ageInWeeks < 104) {
+    return [
+      { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Busy play" },
+      { label: "Midday", icon: <Moon className="w-5 h-5" />, note: "Nap time" },
+      { label: "Afternoon", icon: <Sun className="w-5 h-5" />, note: "Outside" },
+      { label: "Evening", icon: <Moon className="w-5 h-5" />, note: "Wind down" }
+    ];
+  }
+  
+  // 104-156 weeks (2-3 years): Nap may be dropping
+  if (ageInWeeks < 156) {
+    return [
+      { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Active play" },
+      { label: "Midday", icon: <Moon className="w-5 h-5" />, note: "Nap or rest" },
+      { label: "Afternoon", icon: <Sun className="w-5 h-5" />, note: "Play & learn" },
+      { label: "Evening", icon: <Moon className="w-5 h-5" />, note: "Routine" }
+    ];
+  }
+  
+  // 3+ years: Quiet time replaces nap
   return [
     { label: "Morning", icon: <Sun className="w-5 h-5" />, note: "Explore" },
-    { label: "Midday", icon: <Moon className="w-5 h-5" />, note: "Main nap" },
+    { label: "Midday", icon: <Sun className="w-5 h-5" />, note: "Quiet time" },
     { label: "Afternoon", icon: <Sun className="w-5 h-5" />, note: "Play" },
     { label: "Evening", icon: <Moon className="w-5 h-5" />, note: "Bedtime" }
   ];
