@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef, useState } from "react";
+import { MapPin } from "lucide-react";
 import { Baby } from "@/hooks/useBabies";
 
 interface ChildSwitcherProps {
@@ -38,19 +38,28 @@ export const ChildSwitcher = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
   const minSwipeDistance = 50;
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setSwipeOffset(0);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    const current = e.targetTouches[0].clientX;
+    setTouchEnd(current);
+    if (touchStart && babies.length > 1) {
+      // Calculate offset for visual feedback (capped)
+      const diff = current - touchStart;
+      setSwipeOffset(Math.max(-30, Math.min(30, diff * 0.3)));
+    }
   };
 
   const onTouchEnd = () => {
+    setSwipeOffset(0);
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
@@ -72,67 +81,50 @@ export const ChildSwitcher = ({
   return (
     <div 
       ref={containerRef}
-      className="px-5 py-4 border-b border-border/40"
+      className="relative overflow-hidden"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex items-center justify-between">
-        {/* Left arrow (invisible placeholder if single child) */}
-        <div className="w-8">
-          {showNavigation && (
-            <button 
-              onClick={onPrev}
-              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Previous child"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {/* Child info - center */}
-        <div className="flex-1 text-center">
-          <h1 className="text-lg font-serif text-foreground">
-            {activeBaby.name}
-          </h1>
-          {activeBaby.birthday && (
-            <p className="text-sm text-muted-foreground">
-              {getAgeLabel(activeBaby.birthday)}
-            </p>
-          )}
-        </div>
-
-        {/* Right arrow */}
-        <div className="w-8">
-          {showNavigation && (
-            <button 
-              onClick={onNext}
-              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Next child"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          )}
-        </div>
+      {/* Content area with swipe transform */}
+      <div 
+        className="px-5 py-6 text-center transition-transform duration-150 ease-out"
+        style={{ transform: `translateX(${swipeOffset}px)` }}
+      >
+        <h1 className="text-2xl font-serif text-foreground mb-1">
+          {activeBaby.name}
+        </h1>
+        {activeBaby.birthday && (
+          <p className="text-sm text-muted-foreground">
+            {getAgeLabel(activeBaby.birthday)}
+          </p>
+        )}
       </div>
 
-      {/* Dots indicator */}
+      {/* Pagination dots - Apple Weather style, positioned at bottom of header */}
       {showNavigation && (
-        <div className="flex justify-center gap-1.5 mt-2">
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-2">
           {babies.map((baby, index) => (
             <button
               key={baby.id}
               onClick={() => onSwitch(baby.id)}
-              className={`w-1.5 h-1.5 rounded-full transition-colors ${
+              className={`transition-all duration-200 ${
                 index === currentIndex 
-                  ? 'bg-primary' 
-                  : 'bg-muted-foreground/30'
+                  ? 'w-2 h-2 bg-foreground rounded-full' 
+                  : 'w-1.5 h-1.5 bg-muted-foreground/40 rounded-full hover:bg-muted-foreground/60'
               }`}
               aria-label={`Switch to ${baby.name}`}
             />
           ))}
         </div>
+      )}
+
+      {/* Subtle edge indicators when there are multiple children */}
+      {showNavigation && currentIndex > 0 && (
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-r from-muted-foreground/20 to-transparent rounded-full" />
+      )}
+      {showNavigation && currentIndex < babies.length - 1 && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-l from-muted-foreground/20 to-transparent rounded-full" />
       )}
     </div>
   );
