@@ -15,10 +15,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
-        display: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
-        serif: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"],
-        num: ["Inter", "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"],
+        sans: ["DM Sans", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+        serif: ["Source Serif 4", "Georgia", "Cambria", "Times New Roman", "serif"],
+        display: ["Source Serif 4", "Georgia", "serif"],
+        num: ["DM Sans", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
       },
       letterSpacing: {
         'rare': '-0.015em',

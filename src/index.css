@@ -7,11 +7,11 @@
 
 @layer base {
   :root {
-    /* Font stacks - Clean sans-serif (Rare Beauty aesthetic) */
-    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    --font-display: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    --font-serif: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
-    --font-num: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    /* Font stacks - Editorial serif + Humanist sans */
+    --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-display: "Source Serif 4", Georgia, Cambria, "Times New Roman", serif;
+    --font-serif: "Source Serif 4", Georgia, Cambria, "Times New Roman", serif;
+    --font-num: "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     
     /* ═══════════════════════════════════════════════════════════════════
        RARE BEAUTY COLOR PALETTE - Rose-Clay-Beige Family
@@ -377,34 +377,44 @@
     line-height: 1.6;
   }
 
-  /* Typography - Weight contrast: headings 600, labels 500, body 400 */
-  h1, h2, h3, h4, h5, h6 {
+  /* Typography System - Editorial serif for meaning, humanist sans for utility */
+  
+  /* Serif: Child names, greetings, section titles, key statements, family insights */
+  h1, h2, h3 {
     @apply font-serif;
-    letter-spacing: -0.015em;
-    line-height: 1.3;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    font-weight: 400; /* Rely on size and spacing, not weight */
   }
   
   h1 {
-    letter-spacing: -0.025em;
-    font-weight: 600;
+    letter-spacing: -0.015em;
+    font-weight: 400;
   }
   
   h2 {
-    letter-spacing: -0.02em;
-    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-weight: 400;
   }
   
   h3 {
-    letter-spacing: -0.015em;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  
+  /* Sans: Chips, tags, labels, metadata, settings, controls */
+  h4, h5, h6, p, span, label, button {
+    @apply font-sans;
+    letter-spacing: 0;
+  }
+  
+  /* All-caps labels: slightly increased letter spacing */
+  .uppercase, [class*="uppercase"] {
+    letter-spacing: 0.06em;
     font-weight: 500;
   }
   
-  /* All-caps labels: +1-2% letter spacing */
-  .uppercase, [class*="uppercase"] {
-    letter-spacing: 0.04em;
-  }
-  
-  /* Labels use weight 500 */
+  /* Labels use weight 500 for subtle emphasis */
   label, .label {
     font-weight: 500;
   }
