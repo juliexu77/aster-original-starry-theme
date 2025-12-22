@@ -1,6 +1,6 @@
 import { Sun, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand } from "lucide-react";
 import { GlassCard } from "./GlassCard";
-import { WakeWindowHero } from "./WakeWindowHero";
+import { BabyProfileCard } from "./BabyProfileCard";
 import { DayRhythm } from "./DayRhythm";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 
@@ -179,8 +179,8 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
   return (
     <TimeOfDayBackground>
       <div className="space-y-4 pb-24">
-        {/* Hero Section - calm daily briefing */}
-        <WakeWindowHero babyName={displayName} babyBirthday={babyBirthday} />
+        {/* Profile Card - identity and "signs" */}
+        <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
 
         {/* Day Rhythm - shape not schedule */}
         <DayRhythm ageInWeeks={ageInWeeks} />
