@@ -90,9 +90,9 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
       </p>
       
       <div className="flex items-start gap-4">
-        {/* Avatar placeholder - circular, soft */}
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
-          <span className="text-2xl font-serif text-primary/60">
+        {/* Avatar placeholder - circular with initial */}
+        <div className="w-16 h-16 rounded-full bg-muted/30 border border-border/30 flex items-center justify-center shrink-0 overflow-hidden">
+          <span className="text-2xl font-serif text-foreground/60">
             {babyName.charAt(0).toUpperCase()}
           </span>
         </div>
@@ -104,29 +104,26 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
             {babyName}
           </h1>
           
-          {/* Signs row - compact, icon + label format */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-muted-foreground">
+          {/* Signs row - Co-Star style: symbol + name inline */}
+          <div className="flex flex-wrap items-center gap-x-3 mt-1.5 text-muted-foreground text-xs">
             {/* Zodiac sign */}
-            <div className="flex items-center gap-1">
-              <span className="text-sm opacity-70">{zodiac.symbol}</span>
-              <span className="text-xs">{zodiac.name}</span>
-            </div>
+            <span>
+              <span className="opacity-70 mr-0.5">{zodiac.symbol}</span> {zodiac.name}
+            </span>
             
             {/* Developmental archetype */}
-            <div className="flex items-center gap-1">
-              <span className="opacity-70">{developmentalArchetype.symbol}</span>
-              <span className="text-xs">{developmentalArchetype.name}</span>
-            </div>
+            <span className="flex items-center gap-0.5">
+              <span className="opacity-70">{developmentalArchetype.symbol}</span> {developmentalArchetype.name}
+            </span>
             
             {/* Rhythm archetype */}
-            <div className="flex items-center gap-1">
-              <span className="opacity-70">{rhythmArchetype.symbol}</span>
-              <span className="text-xs">{rhythmArchetype.name}</span>
-            </div>
+            <span className="flex items-center gap-0.5">
+              <span className="opacity-70">{rhythmArchetype.symbol}</span> {rhythmArchetype.name}
+            </span>
           </div>
           
           {/* Age - tertiary info */}
-          <p className="text-xs text-muted-foreground/60 mt-1">
+          <p className="text-xs text-muted-foreground/50 mt-1">
             {ageLabel}
           </p>
         </div>
