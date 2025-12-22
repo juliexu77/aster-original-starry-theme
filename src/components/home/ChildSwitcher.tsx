@@ -81,30 +81,15 @@ export const ChildSwitcher = ({
   return (
     <div 
       ref={containerRef}
-      className="relative overflow-hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-t border-border/30 safe-area-inset-bottom"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* Content area with swipe transform */}
-      <div 
-        className="px-5 py-6 text-center transition-transform duration-150 ease-out"
-        style={{ transform: `translateX(${swipeOffset}px)` }}
-      >
-        <h1 className="text-2xl font-serif text-foreground mb-1">
-          {activeBaby.name}
-        </h1>
-        {activeBaby.birthday && (
-          <p className="text-sm text-muted-foreground">
-            {getAgeLabel(activeBaby.birthday)}
-          </p>
-        )}
-      </div>
-
-      {/* Pagination dots - Apple Weather style, positioned at bottom of header */}
-      {showNavigation && (
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center items-center gap-2">
-          {babies.map((baby, index) => (
+      {/* Pagination dots - Apple Weather style */}
+      <div className="flex justify-center items-center gap-1.5 py-3">
+        {showNavigation ? (
+          babies.map((baby, index) => (
             <button
               key={baby.id}
               onClick={() => onSwitch(baby.id)}
@@ -115,17 +100,11 @@ export const ChildSwitcher = ({
               }`}
               aria-label={`Switch to ${baby.name}`}
             />
-          ))}
-        </div>
-      )}
-
-      {/* Subtle edge indicators when there are multiple children */}
-      {showNavigation && currentIndex > 0 && (
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-r from-muted-foreground/20 to-transparent rounded-full" />
-      )}
-      {showNavigation && currentIndex < babies.length - 1 && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-l from-muted-foreground/20 to-transparent rounded-full" />
-      )}
+          ))
+        ) : (
+          <div className="w-2 h-2 bg-foreground rounded-full" />
+        )}
+      </div>
     </div>
   );
 };

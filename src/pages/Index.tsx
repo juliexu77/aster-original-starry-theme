@@ -55,14 +55,24 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Menu */}
+      {/* Header with Menu - top left */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur">
-        <div className="px-4 py-2 flex items-center justify-end">
+        <div className="px-4 py-2 flex items-center justify-start">
           <GuideMenu onSelectSection={setGuideSection} />
         </div>
       </header>
 
-      {/* Child Switcher */}
+      {/* Main Content */}
+      <main className="pb-24">
+        {activeBaby && (
+          <DailyCoach 
+            babyName={activeBaby.name} 
+            babyBirthday={activeBaby.birthday || undefined} 
+          />
+        )}
+      </main>
+
+      {/* Child Switcher - fixed at bottom like Weather app */}
       {activeBaby && (
         <ChildSwitcher
           babies={babies}
@@ -72,16 +82,6 @@ const Index = () => {
           onPrev={switchToPrevBaby}
         />
       )}
-
-      {/* Main Content */}
-      <main>
-        {activeBaby && (
-          <DailyCoach 
-            babyName={activeBaby.name} 
-            babyBirthday={activeBaby.birthday || undefined} 
-          />
-        )}
-      </main>
     </div>
   );
 };

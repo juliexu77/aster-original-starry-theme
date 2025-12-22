@@ -42,7 +42,7 @@ export const GuideMenu = ({ onSelectSection }: GuideMenuProps) => {
           <Menu className="w-5 h-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-80 p-0">
+      <SheetContent side="left" className="w-80 p-0 bg-background border-r border-border">
         <SheetHeader className="p-5 border-b border-border/40">
           <SheetTitle className="text-left font-serif">Menu</SheetTitle>
         </SheetHeader>
