@@ -8,7 +8,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RouteGuard } from "@/components/RouteGuard";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { DuskModeManager } from "@/components/DuskModeManager";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -27,7 +26,6 @@ const App = () => (
         themes={["light", "dark", "dusk"]}
         disableTransitionOnChange
       >
-        <DuskModeManager />
         <AuthProvider>
           <LanguageProvider>
             <TooltipProvider>

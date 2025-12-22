@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Sun, Moon, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand } from "lucide-react";
-import { getMilestonesForAge, MilestoneSet } from "@/data/developmentalMilestones";
 
 interface DailyCoachProps {
   babyName?: string;
@@ -17,6 +16,12 @@ interface ActivitySuggestion {
   title: string;
   description: string;
   icon: React.ReactNode;
+}
+
+interface MilestoneSet {
+  emergingSkills: string[];
+  tribalTip?: string;
+  reminder?: string;
 }
 
 const getAgeInWeeks = (birthday?: string): number => {
@@ -97,12 +102,96 @@ const getActivitySuggestions = (ageInWeeks: number): ActivitySuggestion[] => {
   return activities;
 };
 
+const getMilestones = (ageInWeeks: number): MilestoneSet | null => {
+  if (ageInWeeks < 4) {
+    return {
+      emergingSkills: [
+        "Focusing on faces at close range",
+        "Responding to familiar voices",
+        "Brief moments of alertness"
+      ],
+      tribalTip: "Skin-to-skin contact helps regulate baby's temperature and heart rate.",
+      reminder: "Every baby develops at their own pace. These are general guides."
+    };
+  } else if (ageInWeeks < 8) {
+    return {
+      emergingSkills: [
+        "Starting to track moving objects",
+        "Cooing sounds beginning",
+        "Stronger neck control during tummy time"
+      ],
+      tribalTip: "Respond to baby's coos — this back-and-forth builds language skills.",
+      reminder: "Fussy evenings are common and temporary."
+    };
+  } else if (ageInWeeks < 12) {
+    return {
+      emergingSkills: [
+        "Social smiles becoming more frequent",
+        "Bringing hands together",
+        "Lifting head during tummy time"
+      ],
+      tribalTip: "Smiling back reinforces social bonding.",
+      reminder: "Growth spurts may temporarily disrupt sleep."
+    };
+  } else if (ageInWeeks < 16) {
+    return {
+      emergingSkills: [
+        "Reaching for objects",
+        "Laughing out loud",
+        "Better head control"
+      ],
+      tribalTip: "Offer safe objects to grasp and explore.",
+      reminder: "Sleep may consolidate around this age."
+    };
+  } else if (ageInWeeks < 26) {
+    return {
+      emergingSkills: [
+        "Rolling from tummy to back",
+        "Recognizing familiar faces",
+        "Showing interest in solid foods"
+      ],
+      tribalTip: "Create safe floor time for rolling practice.",
+      reminder: "Every baby rolls at different times."
+    };
+  } else if (ageInWeeks < 39) {
+    return {
+      emergingSkills: [
+        "Sitting with support",
+        "Babbling with consonant sounds",
+        "Passing objects between hands"
+      ],
+      tribalTip: "Narrate your day — babies absorb language constantly.",
+      reminder: "Separation anxiety may appear."
+    };
+  } else if (ageInWeeks < 52) {
+    return {
+      emergingSkills: [
+        "Crawling or scooting",
+        "Pulling to stand",
+        "Understanding simple words"
+      ],
+      tribalTip: "Baby-proof low spaces as mobility increases.",
+      reminder: "Some babies skip crawling — that's okay."
+    };
+  } else {
+    return {
+      emergingSkills: [
+        "First words emerging",
+        "Walking with support or independently",
+        "Simple gestures like waving"
+      ],
+      tribalTip: "Celebrate communication attempts, even imperfect ones.",
+      reminder: "Language develops on a wide spectrum."
+    };
+  }
+};
+
 export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
   const napPlan = getNapPlan(ageInWeeks);
   const activities = getActivitySuggestions(ageInWeeks);
-  const milestones = getMilestonesForAge(ageInWeeks);
+  const milestones = getMilestones(ageInWeeks);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
