@@ -27,17 +27,16 @@ const Index = () => {
     );
   }
 
-  // Redirect to auth if not logged in
-  if (!user) {
-    navigate("/auth");
-    return null;
-  }
+  // Auth temporarily disabled for preview
+  // if (!user) {
+  //   navigate("/auth");
+  //   return null;
+  // }
 
-  // Redirect to baby setup if no household
-  if (!household) {
-    navigate("/baby-setup");
-    return null;
-  }
+  // if (!household) {
+  //   navigate("/baby-setup");
+  //   return null;
+  // }
 
   const babyName = household.baby_name || undefined;
   const babyBirthday = household.baby_birthday || undefined;
