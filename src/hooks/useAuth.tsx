@@ -20,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let initialLoadComplete = false;
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -31,22 +31,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (event === 'SIGNED_OUT' || !session) {
           clearAllUserData();
         }
-
-        // Auto-create household for new users
-        if (event === 'SIGNED_IN' && session?.user) {
-          await ensureUserHasHousehold(session.user.id);
-        }
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await ensureUserHasHousehold(session.user.id);
-      }
-      
       initialLoadComplete = true;
       setLoading(false);
     });
@@ -57,52 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     clearAllUserData();
-  };
-
-  const ensureUserHasHousehold = async (userId: string) => {
-    try {
-      // Check if user already has a household membership
-      const { data: memberData } = await supabase
-        .from('household_members')
-        .select('household_id')
-        .eq('user_id', userId)
-        .limit(1);
-
-      if (memberData && memberData.length > 0) {
-        return; // User already has a household
-      }
-
-      // Create a new household
-      const newHouseholdId = crypto.randomUUID();
-      
-      const { error: householdError } = await supabase
-        .from('households')
-        .insert([{
-          id: newHouseholdId,
-          name: 'My Household',
-          created_by: userId
-        }]);
-
-      if (householdError) {
-        console.error('Error creating household:', householdError);
-        return;
-      }
-
-      // Add user as parent member
-      const { error: memberError } = await supabase
-        .from('household_members')
-        .insert([{
-          household_id: newHouseholdId,
-          user_id: userId,
-          role: 'parent'
-        }]);
-
-      if (memberError) {
-        console.error('Error adding household member:', memberError);
-      }
-    } catch (error) {
-      console.error('Error ensuring user has household:', error);
-    }
   };
 
   const clearAllUserData = () => {
