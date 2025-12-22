@@ -46,7 +46,7 @@ const getZodiacSign = (birthday?: string): { name: string; symbol: string } => {
   return { name: "Pisces", symbol: "♓" };
 };
 
-// Developmental "archetype" based on age - like an astrological sign but for growth stage
+// Developmental "archetype" based on age
 const getDevelopmentalArchetype = (ageInWeeks: number): { name: string; symbol: React.ReactNode } => {
   if (ageInWeeks < 4) return { name: "Dreamer", symbol: <Moon className="w-3 h-3" /> };
   if (ageInWeeks < 8) return { name: "Watcher", symbol: <Star className="w-3 h-3" /> };
@@ -56,16 +56,22 @@ const getDevelopmentalArchetype = (ageInWeeks: number): { name: string; symbol: 
   if (ageInWeeks < 39) return { name: "Sitter", symbol: <Sun className="w-3 h-3" /> };
   if (ageInWeeks < 52) return { name: "Mover", symbol: <Sparkles className="w-3 h-3" /> };
   if (ageInWeeks < 78) return { name: "Walker", symbol: <Star className="w-3 h-3" /> };
+  if (ageInWeeks < 104) return { name: "Climber", symbol: <Sun className="w-3 h-3" /> };
+  if (ageInWeeks < 130) return { name: "Runner", symbol: <Sparkles className="w-3 h-3" /> };
+  if (ageInWeeks < 156) return { name: "Imaginer", symbol: <Star className="w-3 h-3" /> };
   return { name: "Explorer", symbol: <Sparkles className="w-3 h-3" /> };
 };
 
-// Rhythm archetype based on nap patterns
+// Rhythm archetype based on sleep patterns
 const getRhythmArchetype = (ageInWeeks: number): { name: string; symbol: React.ReactNode } => {
   if (ageInWeeks < 8) return { name: "Catnapper", symbol: <Moon className="w-3 h-3" /> };
   if (ageInWeeks < 16) return { name: "Consolidator", symbol: <Moon className="w-3 h-3" /> };
   if (ageInWeeks < 39) return { name: "Rhythm-finder", symbol: <Sun className="w-3 h-3" /> };
   if (ageInWeeks < 52) return { name: "Steady", symbol: <Star className="w-3 h-3" /> };
-  return { name: "Independent", symbol: <Sparkles className="w-3 h-3" /> };
+  if (ageInWeeks < 78) return { name: "Transitioning", symbol: <Moon className="w-3 h-3" /> };
+  if (ageInWeeks < 104) return { name: "One-napper", symbol: <Sun className="w-3 h-3" /> };
+  if (ageInWeeks < 156) return { name: "May-skip", symbol: <Sparkles className="w-3 h-3" /> };
+  return { name: "Quiet-timer", symbol: <Star className="w-3 h-3" /> };
 };
 
 export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps) => {

@@ -1,4 +1,4 @@
-import { Moon, Sun, Sparkles, Heart, Hand, MessageCircle, Eye, Footprints, Star } from "lucide-react";
+import { Moon, Sun, Sparkles, Heart, Hand, MessageCircle, Eye, Footprints } from "lucide-react";
 
 interface DevelopmentTableProps {
   ageInWeeks: number;
@@ -12,6 +12,7 @@ interface TraitRow {
 }
 
 const getTraitRows = (ageInWeeks: number): TraitRow[] => {
+  // 0-4 weeks: Fourth trimester
   if (ageInWeeks < 4) {
     return [
       { sign: "Dreamer", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" />, house: 1 },
@@ -20,6 +21,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Reflex", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" />, house: 3 },
     ];
   }
+  // 4-8 weeks: Emerging awareness
   if (ageInWeeks < 8) {
     return [
       { sign: "Catnapper", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" />, house: 1 },
@@ -28,6 +30,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Lifter", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" /> },
     ];
   }
+  // 8-12 weeks: Social awakening
   if (ageInWeeks < 12) {
     return [
       { sign: "Consolidator", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
@@ -36,6 +39,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Noticer", planet: "EYES", planetSymbol: <Eye className="w-3 h-3" /> },
     ];
   }
+  // 12-16 weeks: Active engagement
   if (ageInWeeks < 16) {
     return [
       { sign: "Steady", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
@@ -44,6 +48,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Babbler", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" /> },
     ];
   }
+  // 16-26 weeks (4-6 months): Physical exploration
   if (ageInWeeks < 26) {
     return [
       { sign: "Three-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
@@ -52,6 +57,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Curious", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" />, house: 2 },
     ];
   }
+  // 26-39 weeks (6-9 months): Sitting & attachment
   if (ageInWeeks < 39) {
     return [
       { sign: "Two-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
@@ -60,6 +66,7 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Attached", planet: "HEART", planetSymbol: <Heart className="w-3 h-3" />, house: 2 },
     ];
   }
+  // 39-52 weeks (9-12 months): Mobility emerging
   if (ageInWeeks < 52) {
     return [
       { sign: "Two-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
@@ -68,11 +75,48 @@ const getTraitRows = (ageInWeeks: number): TraitRow[] => {
       { sign: "Pointer", planet: "HANDS", planetSymbol: <Hand className="w-3 h-3" /> },
     ];
   }
+  // 52-78 weeks (12-18 months): Early toddler
+  if (ageInWeeks < 78) {
+    return [
+      { sign: "Transitioning", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Walker", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "First-words", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Tester", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
+    ];
+  }
+  // 78-104 weeks (18-24 months): Toddler independence
+  if (ageInWeeks < 104) {
+    return [
+      { sign: "One-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Climber", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Word-collector", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Imitator", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
+    ];
+  }
+  // 104-130 weeks (24-30 months): Language explosion
+  if (ageInWeeks < 130) {
+    return [
+      { sign: "Steady-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Runner", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Phrase-maker", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Pretender", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
+    ];
+  }
+  // 130-156 weeks (30-36 months): Preschool readiness
+  if (ageInWeeks < 156) {
+    return [
+      { sign: "May-skip-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+      { sign: "Jumper", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+      { sign: "Storyteller", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+      { sign: "Imaginer", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
+    ];
+  }
+  // 3+ years
   return [
-    { sign: "One-nap", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
-    { sign: "Walker", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
-    { sign: "Talker", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
-    { sign: "Player", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
+    { sign: "Quiet-time", planet: "SLEEP", planetSymbol: <Moon className="w-3 h-3" /> },
+    { sign: "Adventurer", planet: "BODY", planetSymbol: <Footprints className="w-3 h-3" />, house: 1 },
+    { sign: "Questioner", planet: "VOICE", planetSymbol: <MessageCircle className="w-3 h-3" />, house: 2 },
+    { sign: "Creator", planet: "SPARK", planetSymbol: <Sparkles className="w-3 h-3" /> },
   ];
 };
 

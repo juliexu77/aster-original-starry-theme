@@ -30,45 +30,66 @@ interface DayBriefing {
 }
 
 const getDayBriefing = (ageInWeeks: number): DayBriefing => {
+  // 0-8 weeks
   if (ageInWeeks < 8) {
     return { 
       wakeWindowLabel: "around 45 min – 1¼ hours",
       napLabel: "4–5 naps"
     };
   }
+  // 8-16 weeks (2-4 months)
   if (ageInWeeks < 16) {
     return { 
       wakeWindowLabel: "around 1–1½ hours",
       napLabel: "about 4 naps"
     };
   }
+  // 16-26 weeks (4-6 months)
   if (ageInWeeks < 26) {
     return { 
       wakeWindowLabel: "around 1½–2 hours",
       napLabel: "about 3 naps"
     };
   }
+  // 26-39 weeks (6-9 months)
   if (ageInWeeks < 39) {
     return { 
       wakeWindowLabel: "around 2–2½ hours",
       napLabel: "about 3 naps"
     };
   }
+  // 39-52 weeks (9-12 months)
   if (ageInWeeks < 52) {
     return { 
       wakeWindowLabel: "around 2½–3½ hours",
       napLabel: "about 2 naps"
     };
   }
+  // 52-78 weeks (12-18 months)
   if (ageInWeeks < 78) {
     return { 
       wakeWindowLabel: "around 3–4 hours",
-      napLabel: "about 2 naps"
+      napLabel: "1–2 naps"
     };
   }
+  // 78-104 weeks (18-24 months)
+  if (ageInWeeks < 104) {
+    return { 
+      wakeWindowLabel: "around 4–5 hours",
+      napLabel: "1 nap"
+    };
+  }
+  // 104-156 weeks (2-3 years)
+  if (ageInWeeks < 156) {
+    return { 
+      wakeWindowLabel: "around 5–6 hours",
+      napLabel: "1 nap or quiet time"
+    };
+  }
+  // 3+ years
   return { 
-    wakeWindowLabel: "around 4–6 hours",
-    napLabel: "about 1 nap"
+    wakeWindowLabel: "full days awake",
+    napLabel: "quiet time if needed"
   };
 };
 
@@ -103,7 +124,7 @@ export const WakeWindowHero = ({ babyName, babyBirthday }: WakeWindowHeroProps) 
 
       {/* Primary briefing - calm, qualitative */}
       <div className="space-y-2">
-        <p className="text-xl text-foreground font-light">
+        <p className="text-xl text-foreground font-light font-serif">
           Wake windows {briefing.wakeWindowLabel}
         </p>
         <p className="text-lg text-muted-foreground">
