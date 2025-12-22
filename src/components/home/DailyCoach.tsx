@@ -1,7 +1,7 @@
-import { Sun, Moon, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand } from "lucide-react";
+import { Sun, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { WakeWindowHero } from "./WakeWindowHero";
-import { HourlyTimeline } from "./HourlyTimeline";
+import { DayRhythm } from "./DayRhythm";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 
 interface DailyCoachProps {
@@ -30,46 +30,38 @@ const getAgeInWeeks = (birthday?: string): number => {
   return Math.floor(diffDays / 7);
 };
 
+// Returns exactly 3 suggestions - icons as primary signal, short labels
 const getActivitySuggestions = (ageInWeeks: number): ActivitySuggestion[] => {
-  const activities: ActivitySuggestion[] = [];
-
   if (ageInWeeks < 8) {
-    activities.push(
-      { title: "Tummy time", description: "1–2 minutes on a firm surface", icon: <Baby className="w-4 h-4" /> },
-      { title: "Face gazing", description: "Hold baby 8–12 inches away", icon: <Eye className="w-4 h-4" /> },
-      { title: "Gentle singing", description: "Any song, your voice matters", icon: <Music className="w-4 h-4" /> }
-    );
+    return [
+      { title: "Tummy time", description: "", icon: <Baby className="w-5 h-5" /> },
+      { title: "Face gazing", description: "", icon: <Eye className="w-5 h-5" /> },
+      { title: "Gentle singing", description: "", icon: <Music className="w-5 h-5" /> }
+    ];
   } else if (ageInWeeks < 16) {
-    activities.push(
-      { title: "Tummy time", description: "Short sessions throughout the day", icon: <Baby className="w-4 h-4" /> },
-      { title: "High-contrast cards", description: "Black and white patterns", icon: <Eye className="w-4 h-4" /> },
-      { title: "Gentle movement", description: "Bicycle legs, arm stretches", icon: <Hand className="w-4 h-4" /> },
-      { title: "Talk and narrate", description: "Describe what you're doing", icon: <Music className="w-4 h-4" /> }
-    );
+    return [
+      { title: "Tummy time", description: "", icon: <Baby className="w-5 h-5" /> },
+      { title: "Contrast cards", description: "", icon: <Eye className="w-5 h-5" /> },
+      { title: "Talk & narrate", description: "", icon: <Music className="w-5 h-5" /> }
+    ];
   } else if (ageInWeeks < 26) {
-    activities.push(
-      { title: "Tummy time", description: "Longer sessions, reaching for toys", icon: <Baby className="w-4 h-4" /> },
-      { title: "Floor play", description: "Safe objects to grasp and explore", icon: <Hand className="w-4 h-4" /> },
-      { title: "Reading together", description: "Board books with simple pictures", icon: <BookOpen className="w-4 h-4" /> },
-      { title: "Mirror play", description: "Baby loves their reflection", icon: <Eye className="w-4 h-4" /> }
-    );
+    return [
+      { title: "Floor play", description: "", icon: <Hand className="w-5 h-5" /> },
+      { title: "Reading", description: "", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Mirror play", description: "", icon: <Eye className="w-5 h-5" /> }
+    ];
   } else if (ageInWeeks < 52) {
-    activities.push(
-      { title: "Floor exploration", description: "Safe space to move and discover", icon: <Footprints className="w-4 h-4" /> },
-      { title: "Cause and effect toys", description: "Buttons, rattles, stacking cups", icon: <Hand className="w-4 h-4" /> },
-      { title: "Reading together", description: "Point and name objects", icon: <BookOpen className="w-4 h-4" /> },
-      { title: "Outdoor time", description: "Fresh air and new sights", icon: <Sun className="w-4 h-4" /> }
-    );
-  } else {
-    activities.push(
-      { title: "Active play", description: "Crawling, cruising, or walking", icon: <Footprints className="w-4 h-4" /> },
-      { title: "Simple pretend play", description: "Feeding dolls, toy phones", icon: <Baby className="w-4 h-4" /> },
-      { title: "Books and songs", description: "Interactive reading time", icon: <BookOpen className="w-4 h-4" /> },
-      { title: "Outdoor exploration", description: "Park, backyard, neighborhood walk", icon: <Sun className="w-4 h-4" /> }
-    );
+    return [
+      { title: "Exploration", description: "", icon: <Footprints className="w-5 h-5" /> },
+      { title: "Reading", description: "", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Outdoor time", description: "", icon: <Sun className="w-5 h-5" /> }
+    ];
   }
-
-  return activities;
+  return [
+    { title: "Active play", description: "", icon: <Footprints className="w-5 h-5" /> },
+    { title: "Pretend play", description: "", icon: <Baby className="w-5 h-5" /> },
+    { title: "Outdoor time", description: "", icon: <Sun className="w-5 h-5" /> }
+  ];
 };
 
 const getMilestones = (ageInWeeks: number): MilestoneSet | null => {
@@ -187,31 +179,32 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
   return (
     <TimeOfDayBackground>
       <div className="space-y-4 pb-24">
-        {/* Hero Section - Weather app style */}
+        {/* Hero Section - calm daily briefing */}
         <WakeWindowHero babyName={displayName} babyBirthday={babyBirthday} />
 
-        {/* Hourly Timeline */}
-        <HourlyTimeline ageInWeeks={ageInWeeks} />
+        {/* Day Rhythm - shape not schedule */}
+        <DayRhythm ageInWeeks={ageInWeeks} />
 
-        {/* Activity Suggestions */}
+        {/* Things to Try - icons as primary signal */}
         <GlassCard className="mx-5">
           <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
             <p className="text-xs text-muted-foreground uppercase tracking-wide">Things to Try</p>
           </div>
-          <div className="p-4 space-y-3">
-            {activities.map((activity, index) => (
-              <div 
-                key={index} 
-                className="flex items-start gap-3"
-              >
-                <div className="text-primary mt-0.5 shrink-0">{activity.icon}</div>
-                <div>
-                  <p className="text-sm font-medium text-foreground">{activity.title}</p>
-                  <p className="text-sm text-muted-foreground">{activity.description}</p>
+          <div className="p-4">
+            <div className="flex justify-around">
+              {activities.map((activity, index) => (
+                <div 
+                  key={index} 
+                  className="flex flex-col items-center text-center"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
+                    {activity.icon}
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{activity.title}</p>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </GlassCard>
 

@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Moon, Sun } from "lucide-react";
 
 interface WakeWindowHeroProps {
   babyName: string;
@@ -16,42 +15,67 @@ const getAgeInWeeks = (birthday?: string): number => {
 };
 
 const getAgeLabel = (ageInWeeks: number): string => {
-  if (ageInWeeks < 4) return `${ageInWeeks} week${ageInWeeks !== 1 ? 's' : ''}`;
+  if (ageInWeeks < 4) return `${ageInWeeks} week${ageInWeeks !== 1 ? 's' : ''} old`;
   const months = Math.floor(ageInWeeks / 4.33);
-  if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
+  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} old`;
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
-  if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''}`;
-  return `${years}y ${remainingMonths}m`;
+  if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''} old`;
+  return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
 };
 
-interface WakeWindowInfo {
-  minMinutes: number;
-  maxMinutes: number;
-  napCount: number;
+interface DayBriefing {
+  wakeWindowLabel: string;
+  napLabel: string;
 }
 
-const getWakeWindowInfo = (ageInWeeks: number): WakeWindowInfo => {
-  if (ageInWeeks < 8) return { minMinutes: 45, maxMinutes: 75, napCount: 4 };
-  if (ageInWeeks < 16) return { minMinutes: 60, maxMinutes: 90, napCount: 4 };
-  if (ageInWeeks < 26) return { minMinutes: 90, maxMinutes: 120, napCount: 3 };
-  if (ageInWeeks < 39) return { minMinutes: 120, maxMinutes: 150, napCount: 3 };
-  if (ageInWeeks < 52) return { minMinutes: 150, maxMinutes: 210, napCount: 2 };
-  if (ageInWeeks < 78) return { minMinutes: 180, maxMinutes: 240, napCount: 2 };
-  return { minMinutes: 240, maxMinutes: 360, napCount: 1 };
-};
-
-const formatMinutes = (minutes: number): string => {
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+const getDayBriefing = (ageInWeeks: number): DayBriefing => {
+  if (ageInWeeks < 8) {
+    return { 
+      wakeWindowLabel: "around 45 min – 1¼ hours",
+      napLabel: "4–5 naps"
+    };
+  }
+  if (ageInWeeks < 16) {
+    return { 
+      wakeWindowLabel: "around 1–1½ hours",
+      napLabel: "about 4 naps"
+    };
+  }
+  if (ageInWeeks < 26) {
+    return { 
+      wakeWindowLabel: "around 1½–2 hours",
+      napLabel: "about 3 naps"
+    };
+  }
+  if (ageInWeeks < 39) {
+    return { 
+      wakeWindowLabel: "around 2–2½ hours",
+      napLabel: "about 3 naps"
+    };
+  }
+  if (ageInWeeks < 52) {
+    return { 
+      wakeWindowLabel: "around 2½–3½ hours",
+      napLabel: "about 2 naps"
+    };
+  }
+  if (ageInWeeks < 78) {
+    return { 
+      wakeWindowLabel: "around 3–4 hours",
+      napLabel: "about 2 naps"
+    };
+  }
+  return { 
+    wakeWindowLabel: "around 4–6 hours",
+    napLabel: "about 1 nap"
+  };
 };
 
 export const WakeWindowHero = ({ babyName, babyBirthday }: WakeWindowHeroProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
-  const wakeInfo = getWakeWindowInfo(ageInWeeks);
+  const briefing = getDayBriefing(ageInWeeks);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -60,46 +84,31 @@ export const WakeWindowHero = ({ babyName, babyBirthday }: WakeWindowHeroProps) 
     return "Good evening";
   }, []);
 
-  // Simulate current wake window progress (in a real app, this would come from tracked data)
-  const avgWakeWindow = (wakeInfo.minMinutes + wakeInfo.maxMinutes) / 2;
-
   return (
-    <div className="px-5 pt-8 pb-4 text-center">
-      {/* Baby name and age - Weather app style large text */}
+    <div className="px-5 pt-8 pb-6 text-center">
+      {/* Greeting */}
       <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
         {greeting}
       </p>
-      <h1 className="text-3xl font-serif text-foreground mb-0.5">
+      
+      {/* Baby name - large and prominent */}
+      <h1 className="text-4xl font-serif text-foreground mb-1">
         {babyName}
       </h1>
-      <p className="text-lg text-muted-foreground mb-6">
+      
+      {/* Age - secondary info */}
+      <p className="text-base text-muted-foreground mb-8">
         {ageLabel}
       </p>
 
-      {/* Wake window display - like temperature in Weather app */}
-      <div className="relative inline-flex flex-col items-center">
-        <div className="text-7xl font-light text-foreground tracking-tight mb-1">
-          {formatMinutes(avgWakeWindow)}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          typical wake window
+      {/* Primary briefing - calm, qualitative */}
+      <div className="space-y-2">
+        <p className="text-xl text-foreground font-light">
+          Wake windows {briefing.wakeWindowLabel}
         </p>
-      </div>
-
-      {/* Nap summary - like high/low in Weather app */}
-      <div className="flex justify-center gap-6 mt-6">
-        <div className="flex items-center gap-1.5">
-          <Sun className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {wakeInfo.napCount} nap{wakeInfo.napCount !== 1 ? 's' : ''} expected
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <Moon className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {formatMinutes(wakeInfo.minMinutes)}–{formatMinutes(wakeInfo.maxMinutes)}
-          </span>
-        </div>
+        <p className="text-lg text-muted-foreground">
+          {briefing.napLabel} today
+        </p>
       </div>
     </div>
   );
