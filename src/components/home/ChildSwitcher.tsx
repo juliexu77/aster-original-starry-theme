@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { MapPin, List } from "lucide-react";
+import { MapPin, Users, Settings } from "lucide-react";
 import { Baby } from "@/hooks/useBabies";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface ChildSwitcherProps {
   babies: Baby[];
@@ -24,8 +24,10 @@ export const ChildSwitcher = ({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const minSwipeDistance = 50;
+  const isHome = location.pathname === "/" || location.pathname === "/app";
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
@@ -62,17 +64,19 @@ export const ChildSwitcher = ({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {/* Translucent bar like Weather app */}
       <div className="mx-4 mb-4 rounded-full bg-muted/60 backdrop-blur-xl border border-border/30 flex items-center justify-between px-2 py-2">
-        {/* Left icon - Map/location style */}
+        {/* Left - Today tab (active) */}
         <button 
-          onClick={() => navigate("/settings")}
-          className="w-11 h-11 rounded-full bg-muted/80 flex items-center justify-center"
+          onClick={() => navigate("/")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+            isHome ? "bg-muted/80" : ""
+          }`}
         >
-          <MapPin className="w-5 h-5 text-foreground" />
+          <MapPin className="w-4 h-4 text-foreground" />
+          <span className="text-xs text-foreground">Today</span>
         </button>
 
-        {/* Center - Pagination dots with location indicator */}
+        {/* Center - Child pagination dots */}
         <div className="flex-1 flex justify-center items-center gap-1.5">
           {babies.map((baby, index) => (
             <button
@@ -82,23 +86,29 @@ export const ChildSwitcher = ({
               aria-label={`Switch to ${baby.name}`}
             >
               {index === currentIndex ? (
-                <div className="flex items-center gap-0.5">
-                  <MapPin className="w-3 h-3 text-foreground fill-foreground" />
-                </div>
+                <div className="w-2 h-2 bg-foreground rounded-full" />
               ) : (
-                <div className="w-2 h-2 bg-muted-foreground/50 rounded-full" />
+                <div className="w-2 h-2 bg-muted-foreground/40 rounded-full" />
               )}
             </button>
           ))}
         </div>
 
-        {/* Right icon - List/menu */}
-        <button 
-          onClick={onOpenMenu}
-          className="w-11 h-11 rounded-full bg-muted/80 flex items-center justify-center"
-        >
-          <List className="w-5 h-5 text-foreground" />
-        </button>
+        {/* Right side - Family and Settings */}
+        <div className="flex items-center gap-1">
+          <button 
+            onClick={() => navigate("/family")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors"
+          >
+            <Users className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button 
+            onClick={() => navigate("/settings")}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+          >
+            <Settings className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
       </div>
     </div>
   );

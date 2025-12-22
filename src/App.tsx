@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RouteGuard } from "@/components/RouteGuard";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import Index from "./pages/Index";
+import Family from "./pages/Family";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
@@ -37,6 +38,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/app" element={<Index />} />
+                    <Route path="/family" element={<Family />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/baby-setup" element={<BabySetup />} />
                     <Route path="/settings" element={<Settings />} />
