@@ -12,14 +12,7 @@ interface DailyCoachProps {
 
 interface ActivitySuggestion {
   title: string;
-  description: string;
   icon: React.ReactNode;
-}
-
-interface MilestoneSet {
-  emergingSkills: string[];
-  tribalTip?: string;
-  reminder?: string;
 }
 
 const getAgeInWeeks = (birthday?: string): number => {
@@ -31,135 +24,103 @@ const getAgeInWeeks = (birthday?: string): number => {
   return Math.floor(diffDays / 7);
 };
 
-// Returns exactly 3 suggestions - icons as primary signal, short labels
 const getActivitySuggestions = (ageInWeeks: number): ActivitySuggestion[] => {
   if (ageInWeeks < 8) {
     return [
-      { title: "Tummy time", description: "", icon: <Baby className="w-5 h-5" /> },
-      { title: "Face gazing", description: "", icon: <Eye className="w-5 h-5" /> },
-      { title: "Gentle singing", description: "", icon: <Music className="w-5 h-5" /> }
+      { title: "Tummy time", icon: <Baby className="w-5 h-5" /> },
+      { title: "Face gazing", icon: <Eye className="w-5 h-5" /> },
+      { title: "Soft singing", icon: <Music className="w-5 h-5" /> }
     ];
   } else if (ageInWeeks < 16) {
     return [
-      { title: "Tummy time", description: "", icon: <Baby className="w-5 h-5" /> },
-      { title: "Contrast cards", description: "", icon: <Eye className="w-5 h-5" /> },
-      { title: "Talk & narrate", description: "", icon: <Music className="w-5 h-5" /> }
+      { title: "Tummy time", icon: <Baby className="w-5 h-5" /> },
+      { title: "Contrast cards", icon: <Eye className="w-5 h-5" /> },
+      { title: "Talking", icon: <Music className="w-5 h-5" /> }
     ];
   } else if (ageInWeeks < 26) {
     return [
-      { title: "Floor play", description: "", icon: <Hand className="w-5 h-5" /> },
-      { title: "Reading", description: "", icon: <BookOpen className="w-5 h-5" /> },
-      { title: "Mirror play", description: "", icon: <Eye className="w-5 h-5" /> }
+      { title: "Floor play", icon: <Hand className="w-5 h-5" /> },
+      { title: "Reading", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Mirror time", icon: <Eye className="w-5 h-5" /> }
     ];
   } else if (ageInWeeks < 52) {
     return [
-      { title: "Exploration", description: "", icon: <Footprints className="w-5 h-5" /> },
-      { title: "Reading", description: "", icon: <BookOpen className="w-5 h-5" /> },
-      { title: "Outdoor time", description: "", icon: <Sun className="w-5 h-5" /> }
+      { title: "Exploring", icon: <Footprints className="w-5 h-5" /> },
+      { title: "Books", icon: <BookOpen className="w-5 h-5" /> },
+      { title: "Outside", icon: <Sun className="w-5 h-5" /> }
     ];
   }
   return [
-    { title: "Active play", description: "", icon: <Footprints className="w-5 h-5" /> },
-    { title: "Pretend play", description: "", icon: <Baby className="w-5 h-5" /> },
-    { title: "Outdoor time", description: "", icon: <Sun className="w-5 h-5" /> }
+    { title: "Active play", icon: <Footprints className="w-5 h-5" /> },
+    { title: "Pretend", icon: <Baby className="w-5 h-5" /> },
+    { title: "Outside", icon: <Sun className="w-5 h-5" /> }
   ];
 };
 
-const getMilestones = (ageInWeeks: number): MilestoneSet | null => {
+// Observational notes - not instructional
+const getObservations = (ageInWeeks: number): string[] => {
   if (ageInWeeks < 4) {
-    return {
-      emergingSkills: [
-        "Focusing on faces at close range",
-        "Responding to familiar voices",
-        "Brief moments of alertness"
-      ],
-      tribalTip: "Skin-to-skin contact helps regulate baby's temperature and heart rate.",
-      reminder: "Every baby develops at their own pace."
-    };
+    return [
+      "Drawn to faces up close",
+      "Comforted by familiar voices",
+      "Mostly sleeping and feeding"
+    ];
   } else if (ageInWeeks < 8) {
-    return {
-      emergingSkills: [
-        "Starting to track moving objects",
-        "Cooing sounds beginning",
-        "Stronger neck control during tummy time"
-      ],
-      tribalTip: "Respond to baby's coos — this back-and-forth builds language skills.",
-      reminder: "Fussy evenings are common and temporary."
-    };
+    return [
+      "Eyes following movement",
+      "Soft sounds emerging",
+      "Head lifting during tummy time"
+    ];
   } else if (ageInWeeks < 12) {
-    return {
-      emergingSkills: [
-        "Social smiles becoming more frequent",
-        "Bringing hands together",
-        "Lifting head during tummy time"
-      ],
-      tribalTip: "Smiling back reinforces social bonding.",
-      reminder: "Growth spurts may temporarily disrupt sleep."
-    };
+    return [
+      "Smiling back at you",
+      "Hands meeting in the middle",
+      "More alert, more curious"
+    ];
   } else if (ageInWeeks < 16) {
-    return {
-      emergingSkills: [
-        "Reaching for objects",
-        "Laughing out loud",
-        "Better head control"
-      ],
-      tribalTip: "Offer safe objects to grasp and explore.",
-      reminder: "Sleep may consolidate around this age."
-    };
+    return [
+      "Reaching for things",
+      "Laughing sometimes",
+      "Stronger and steadier"
+    ];
   } else if (ageInWeeks < 26) {
-    return {
-      emergingSkills: [
-        "Rolling from tummy to back",
-        "Recognizing familiar faces",
-        "Showing interest in solid foods"
-      ],
-      tribalTip: "Create safe floor time for rolling practice.",
-      reminder: "Every baby rolls at different times."
-    };
+    return [
+      "Rolling happening",
+      "Knows familiar faces",
+      "Interested in food"
+    ];
   } else if (ageInWeeks < 39) {
-    return {
-      emergingSkills: [
-        "Sitting with support",
-        "Babbling with consonant sounds",
-        "Passing objects between hands"
-      ],
-      tribalTip: "Narrate your day — babies absorb language constantly.",
-      reminder: "Separation anxiety may appear."
-    };
+    return [
+      "Sitting up",
+      "Babbling away",
+      "Attached to favorite people"
+    ];
   } else if (ageInWeeks < 52) {
-    return {
-      emergingSkills: [
-        "Crawling or scooting",
-        "Pulling to stand",
-        "Understanding simple words"
-      ],
-      tribalTip: "Baby-proof low spaces as mobility increases.",
-      reminder: "Some babies skip crawling — that's okay."
-    };
+    return [
+      "On the move",
+      "Understanding more words",
+      "Waving and gesturing"
+    ];
   } else {
-    return {
-      emergingSkills: [
-        "First words emerging",
-        "Walking with support or independently",
-        "Simple gestures like waving"
-      ],
-      tribalTip: "Celebrate communication attempts, even imperfect ones.",
-      reminder: "Language develops on a wide spectrum."
-    };
+    return [
+      "First words coming",
+      "Walking or nearly there",
+      "Pretending and imagining"
+    ];
   }
 };
 
 const getFeedingNote = (ageInWeeks: number): string => {
-  if (ageInWeeks < 12) return "Feed on demand. Frequent feeding is normal and expected.";
-  if (ageInWeeks < 26) return "Most babies this age still feed frequently, around 6–8 times per day.";
-  if (ageInWeeks < 52) return "Feeding patterns become more predictable. Solids may be starting.";
-  return "A mix of milk and solids throughout the day is typical.";
+  if (ageInWeeks < 12) return "Feeding often, on demand.";
+  if (ageInWeeks < 26) return "Still feeding frequently.";
+  if (ageInWeeks < 52) return "Milk and maybe solids.";
+  return "Mix of milk and meals.";
 };
 
 export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const activities = getActivitySuggestions(ageInWeeks);
-  const milestones = getMilestones(ageInWeeks);
+  const observations = getObservations(ageInWeeks);
   const displayName = babyName || "your baby";
 
   if (!babyBirthday) {
@@ -169,7 +130,7 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-serif text-foreground">Welcome</h1>
             <p className="text-muted-foreground">
-              Add your baby's birthday in settings to see personalized guidance.
+              Add your baby's birthday in settings to see their portrait.
             </p>
           </div>
         </div>
@@ -180,20 +141,20 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
   return (
     <TimeOfDayBackground>
       <div className="space-y-4 pb-24">
-        {/* Profile Card - identity and "signs" */}
+        {/* Profile Card */}
         <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
 
-        {/* Day Rhythm - shape not schedule */}
+        {/* Day's Shape */}
         <DayRhythm ageInWeeks={ageInWeeks} />
 
-        {/* Development Table - astrology-style profile */}
+        {/* Current Traits */}
         <DevelopmentTable ageInWeeks={ageInWeeks} />
 
-        {/* Things to Try - icons as primary signal */}
+        {/* Things to Try */}
         <GlassCard className="mx-5">
           <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">Things to Try</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Try</p>
           </div>
           <div className="p-4">
             <div className="flex justify-around">
@@ -212,43 +173,27 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
           </div>
         </GlassCard>
 
-        {/* What to Expect */}
-        {milestones && (
-          <GlassCard className="mx-5">
-            <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
-              <Baby className="w-4 h-4 text-primary" />
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">What to Expect</p>
+        {/* You Might Notice */}
+        <GlassCard className="mx-5">
+          <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
+            <Baby className="w-4 h-4 text-primary" />
+            <p className="text-xs text-muted-foreground uppercase tracking-wide">Noticing</p>
+          </div>
+          <div className="p-4">
+            <div className="flex flex-wrap gap-2">
+              {observations.map((observation, i) => (
+                <span 
+                  key={i} 
+                  className="inline-block px-3 py-1.5 rounded-full bg-muted/30 border border-border/20 text-xs text-foreground"
+                >
+                  {observation}
+                </span>
+              ))}
             </div>
-            <div className="p-4 space-y-4">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">You might notice</p>
-                <ul className="space-y-1.5">
-                  {milestones.emergingSkills.slice(0, 3).map((skill, i) => (
-                    <li key={i} className="text-sm text-foreground leading-relaxed">
-                      • {skill}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          </div>
+        </GlassCard>
 
-              {milestones.tribalTip && (
-                <div className="pt-3 border-t border-border/30">
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    💡 {milestones.tribalTip}
-                  </p>
-                </div>
-              )}
-
-              {milestones.reminder && (
-                <p className="text-xs text-muted-foreground/80 italic">
-                  {milestones.reminder}
-                </p>
-              )}
-            </div>
-          </GlassCard>
-        )}
-
-        {/* Feeding Note */}
+        {/* Feeding */}
         <GlassCard className="mx-5">
           <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
             <Coffee className="w-4 h-4 text-primary" />
@@ -261,10 +206,10 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
           </div>
         </GlassCard>
 
-        {/* Footer reassurance */}
+        {/* Affirming footer */}
         <div className="pt-4 text-center px-5">
           <p className="text-xs text-muted-foreground/70 italic">
-            You're doing great. Trust your instincts.
+            You know your baby best.
           </p>
         </div>
       </div>
