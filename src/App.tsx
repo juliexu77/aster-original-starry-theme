@@ -12,6 +12,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
                     <Route path="/app" element={<Index />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/baby-setup" element={<BabySetup />} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/login" element={<Auth />} />
                     <Route path="*" element={<NotFound />} />

@@ -58,10 +58,10 @@ const BabySetup = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
-            Let's meet your baby.
+            Let's meet your little one.
           </h1>
           <p className="text-sm text-muted-foreground font-light leading-relaxed">
-            So we can understand their rhythm and help you stay in tune.
+            We'll create a daily plan based on their age.
           </p>
         </div>
 
@@ -71,7 +71,7 @@ const BabySetup = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="babyName" className="text-sm font-medium">
-                  Baby's Name
+                  Name
                 </Label>
                 <Input
                   id="babyName"
@@ -102,7 +102,7 @@ const BabySetup = () => {
 
               <div className="pt-2">
                 <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">
-                  You can always change these later in Settings.
+                  You can add more children later in Settings.
                 </p>
                 <Button
                   type="submit"
