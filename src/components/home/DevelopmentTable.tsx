@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ChevronRight } from "lucide-react";
+import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ArrowRight } from "lucide-react";
 import { DomainDetailModal } from "./DomainDetailModal";
 
 interface DevelopmentTableProps {
@@ -8,178 +8,170 @@ interface DevelopmentTableProps {
   babyName?: string;
 }
 
+// Stage data structure
+export interface StageInfo {
+  stage: number;
+  name: string;
+  ageRangeWeeks: [number, number]; // [min, max] in weeks
+  description: string;
+}
+
 export interface DomainData {
   id: string;
   label: string;
   icon: React.ReactNode;
-  phrase: string;
-  status: "EMERGING" | "GROWING" | "STEADY" | "TRANSITIONING" | "CHALLENGING";
+  currentStage: number;
+  stageName: string;
+  stageDescription: string;
+  isEmerging: boolean;
+  totalStages: number;
 }
 
-export const getDomainData = (ageInWeeks: number): DomainData[] => {
-  // 0-4 weeks
-  if (ageInWeeks < 4) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Reflexes guiding", status: "EMERGING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands fisted", status: "EMERGING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Crying to communicate", status: "EMERGING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Seeking closeness", status: "EMERGING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Drawn to faces", status: "EMERGING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Finding comfort", status: "EMERGING" },
-    ];
+// Complete stage progressions (ages 0-5 years)
+const PHYSICAL_STAGES: StageInfo[] = [
+  { stage: 1, name: "Head Control", ageRangeWeeks: [0, 13], description: "Lifts head during tummy time, beginning to push up on arms, gains neck strength" },
+  { stage: 2, name: "Rolling", ageRangeWeeks: [13, 22], description: "Rolls from tummy to back, then back to tummy, pivots in circles" },
+  { stage: 3, name: "Sitting", ageRangeWeeks: [22, 30], description: "Sits independently without support, stable and can pivot to reach toys" },
+  { stage: 4, name: "Crawling", ageRangeWeeks: [30, 43], description: "Moves forward on hands and knees, may army crawl or scoot first" },
+  { stage: 5, name: "Pulling to Stand", ageRangeWeeks: [35, 43], description: "Pulls up on furniture, stands while holding on, bounces" },
+  { stage: 6, name: "Cruising", ageRangeWeeks: [39, 52], description: "Walks sideways while holding furniture, gains confidence" },
+  { stage: 7, name: "Walking", ageRangeWeeks: [43, 65], description: "Takes independent steps, walks without support, falls often" },
+  { stage: 8, name: "Running", ageRangeWeeks: [65, 104], description: "Runs with improving coordination, climbs stairs with support" },
+  { stage: 9, name: "Jumping", ageRangeWeeks: [104, 156], description: "Jumps with both feet, kicks ball, rides tricycle" },
+  { stage: 10, name: "Coordination", ageRangeWeeks: [156, 208], description: "Hops on one foot, catches ball, increasing agility" },
+  { stage: 11, name: "Advanced Movement", ageRangeWeeks: [208, 260], description: "Skips, climbs confidently, complex physical play" },
+];
+
+const FINE_MOTOR_STAGES: StageInfo[] = [
+  { stage: 1, name: "Reflexive Grasp", ageRangeWeeks: [0, 9], description: "Automatic hand closing when palm is touched, brings hands to mouth" },
+  { stage: 2, name: "Reaching", ageRangeWeeks: [9, 17], description: "Swipes at and bats hanging objects, discovers hands" },
+  { stage: 3, name: "Palmar Grasp", ageRangeWeeks: [17, 26], description: "Rakes objects into palm using whole hand, holds bottle" },
+  { stage: 4, name: "Transferring", ageRangeWeeks: [26, 35], description: "Passes objects from hand to hand, bangs objects together" },
+  { stage: 5, name: "Pincer Grasp", ageRangeWeeks: [35, 43], description: "Picks up small objects with thumb and forefinger" },
+  { stage: 6, name: "Self-Feeding", ageRangeWeeks: [43, 61], description: "Uses pincer grasp to feed self finger foods, holds spoon" },
+  { stage: 7, name: "Stacking", ageRangeWeeks: [52, 78], description: "Places objects on top of each other, scribbles with crayon" },
+  { stage: 8, name: "Turning Pages", ageRangeWeeks: [78, 104], description: "Turns pages in books, removes lids, simple puzzles" },
+  { stage: 9, name: "Drawing Shapes", ageRangeWeeks: [104, 156], description: "Draws circles and lines, uses scissors, strings beads" },
+  { stage: 10, name: "Pre-Writing", ageRangeWeeks: [156, 208], description: "Copies shapes, traces letters, improving pencil control" },
+  { stage: 11, name: "Writing Readiness", ageRangeWeeks: [208, 260], description: "Writes some letters and numbers, draws recognizable pictures, colors within lines" },
+];
+
+const LANGUAGE_STAGES: StageInfo[] = [
+  { stage: 1, name: "Cooing", ageRangeWeeks: [0, 13], description: "Makes vowel sounds: 'ooh,' 'aah,' responds to voices" },
+  { stage: 2, name: "Laughing", ageRangeWeeks: [13, 22], description: "Social laughter, vocal play, squealing, experimenting with sounds" },
+  { stage: 3, name: "Babbling", ageRangeWeeks: [26, 39], description: "Repetitive consonant sounds: 'ba-ba,' 'da-da' (no meaning yet), intonation changes" },
+  { stage: 4, name: "First Words", ageRangeWeeks: [39, 61], description: "'Mama,' 'dada' used with meaning, 1-5 words, understands simple commands" },
+  { stage: 5, name: "Word Explosion", ageRangeWeeks: [52, 78], description: "Vocabulary grows to 10-50 words, points and names objects, simple gestures" },
+  { stage: 6, name: "Two-Word Phrases", ageRangeWeeks: [78, 104], description: "Combines words: 'more milk,' 'bye-bye dog,' 50-200 words" },
+  { stage: 7, name: "Simple Sentences", ageRangeWeeks: [104, 156], description: "3-4 word sentences, asks questions, 200-1000 words" },
+  { stage: 8, name: "Complex Sentences", ageRangeWeeks: [156, 208], description: "Tells stories, uses pronouns correctly, asks 'why' constantly" },
+  { stage: 9, name: "Conversational", ageRangeWeeks: [208, 260], description: "Clear speech, complex grammar, vocabulary 1500+ words, sustained conversations" },
+];
+
+const SOCIAL_STAGES: StageInfo[] = [
+  { stage: 1, name: "Social Smile", ageRangeWeeks: [0, 13], description: "Smiles in response to faces and voices, beginning social engagement" },
+  { stage: 2, name: "Recognizing Caregivers", ageRangeWeeks: [13, 26], description: "Shows preference for familiar people, excited to see parents" },
+  { stage: 3, name: "Stranger Awareness", ageRangeWeeks: [26, 39], description: "Becomes wary of unfamiliar people, clings to caregivers" },
+  { stage: 4, name: "Attachment Behaviors", ageRangeWeeks: [30, 52], description: "Strong attachment to primary caregivers, separation protest, social referencing" },
+  { stage: 5, name: "Joint Attention", ageRangeWeeks: [43, 61], description: "Points to show things, follows others' gaze, shares interests" },
+  { stage: 6, name: "Parallel Play", ageRangeWeeks: [52, 78], description: "Plays alongside other children without direct interaction, observes peers" },
+  { stage: 7, name: "Imitation", ageRangeWeeks: [78, 104], description: "Copies others' actions, helps with simple tasks, beginning empathy" },
+  { stage: 8, name: "Interactive Play", ageRangeWeeks: [104, 156], description: "Plays with other children, shares toys (sometimes), turn-taking emerging" },
+  { stage: 9, name: "Cooperative Play", ageRangeWeeks: [156, 208], description: "Plays games with rules, has friends, role-playing" },
+  { stage: 10, name: "Friendship", ageRangeWeeks: [208, 260], description: "Forms friendships, understands social rules, negotiates with peers" },
+];
+
+const COGNITIVE_STAGES: StageInfo[] = [
+  { stage: 1, name: "Tracking", ageRangeWeeks: [0, 13], description: "Follows moving objects with eyes, focuses on faces" },
+  { stage: 2, name: "Cause & Effect", ageRangeWeeks: [13, 26], description: "Repeats actions to make things happen (shaking rattle), explores with mouth" },
+  { stage: 3, name: "Object Permanence", ageRangeWeeks: [26, 43], description: "Understands objects exist when out of sight, searches for hidden toys" },
+  { stage: 4, name: "Problem Solving", ageRangeWeeks: [39, 61], description: "Figures out how to overcome obstacles to reach goals, experiments" },
+  { stage: 5, name: "Tool Use", ageRangeWeeks: [52, 78], description: "Uses objects as tools (pulls blanket to get toy), understands container concepts" },
+  { stage: 6, name: "Symbolic Thinking", ageRangeWeeks: [78, 104], description: "Pretend play begins, understands one thing can represent another" },
+  { stage: 7, name: "Sorting & Matching", ageRangeWeeks: [104, 156], description: "Categorizes objects by color/shape, completes puzzles, understands 'big' and 'small'" },
+  { stage: 8, name: "Counting & Numbers", ageRangeWeeks: [156, 208], description: "Counts to 10, understands quantity, recognizes colors consistently" },
+  { stage: 9, name: "Pre-Academic", ageRangeWeeks: [208, 260], description: "Recognizes letters, counts to 20+, understands time concepts, logical reasoning" },
+];
+
+const EMOTIONAL_STAGES: StageInfo[] = [
+  { stage: 1, name: "Basic Emotions", ageRangeWeeks: [0, 13], description: "Shows contentment, distress, interest through facial expressions and crying" },
+  { stage: 2, name: "Social Emotions", ageRangeWeeks: [13, 26], description: "Expresses joy, surprise, frustration clearly, laughs and squeals" },
+  { stage: 3, name: "Separation Awareness", ageRangeWeeks: [26, 43], description: "Anxiety when separated from caregivers, distressed by unfamiliar situations" },
+  { stage: 4, name: "Emotional Communication", ageRangeWeeks: [39, 61], description: "Shows emotions clearly, seeks comfort when distressed, social referencing" },
+  { stage: 5, name: "Self-Soothing Beginning", ageRangeWeeks: [52, 78], description: "Starting to regulate emotions, finds comfort objects, can sometimes calm down" },
+  { stage: 6, name: "Tantrums", ageRangeWeeks: [78, 104], description: "Big emotions with limited regulation, frustration at inability to communicate or do things independently" },
+  { stage: 7, name: "Emotional Expression", ageRangeWeeks: [104, 156], description: "Names basic emotions ('happy,' 'sad'), expresses feelings with words, empathy emerging" },
+  { stage: 8, name: "Self-Regulation", ageRangeWeeks: [156, 208], description: "Better emotional control, uses strategies to calm down, understands others' feelings" },
+  { stage: 9, name: "Complex Emotions", ageRangeWeeks: [208, 260], description: "Shows embarrassment, pride, shame, guilt, negotiates and compromises, emotional awareness" },
+];
+
+// Get stages for a domain
+export const getStagesForDomain = (domainId: string): StageInfo[] => {
+  switch (domainId) {
+    case "physical": return PHYSICAL_STAGES;
+    case "fine_motor": return FINE_MOTOR_STAGES;
+    case "language": return LANGUAGE_STAGES;
+    case "social": return SOCIAL_STAGES;
+    case "cognitive": return COGNITIVE_STAGES;
+    case "emotional": return EMOTIONAL_STAGES;
+    default: return [];
   }
-  // 4-8 weeks
-  if (ageInWeeks < 8) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Lifting head", status: "EMERGING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands loosening", status: "EMERGING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Cooing softly", status: "EMERGING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Watching faces", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Tracking movement", status: "EMERGING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Calmed by voice", status: "STEADY" },
-    ];
-  }
-  // 8-12 weeks
-  if (ageInWeeks < 12) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Head steadier", status: "GROWING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands meeting", status: "EMERGING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Vowel sounds", status: "EMERGING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Smiling back", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Noticing patterns", status: "EMERGING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Expressing joy", status: "GROWING" },
-    ];
-  }
-  // 12-16 weeks
-  if (ageInWeeks < 16) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling attempts", status: "TRANSITIONING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Reaching out", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Babbling more", status: "GROWING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Laughing often", status: "STEADY" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Cause and effect", status: "EMERGING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Showing delight", status: "STEADY" },
-    ];
-  }
-  // 16-26 weeks (4-6 months)
-  if (ageInWeeks < 26) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling over", status: "GROWING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Grasping things", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Consonants coming", status: "GROWING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Knows family", status: "STEADY" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object curiosity", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Stranger awareness", status: "TRANSITIONING" },
-    ];
-  }
-  // 26-39 weeks (6-9 months)
-  if (ageInWeeks < 39) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sitting steady", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer emerging", status: "TRANSITIONING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Ma-ma, da-da", status: "EMERGING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Attached deeply", status: "STEADY" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object permanence", status: "EMERGING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Separation feelings", status: "CHALLENGING" },
-    ];
-  }
-  // 39-52 weeks (9-12 months)
-  if (ageInWeeks < 52) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Cruising around", status: "TRANSITIONING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer grip", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Understanding words", status: "GROWING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Waving, pointing", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Problem solving", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Testing reactions", status: "TRANSITIONING" },
-    ];
-  }
-  // 52-78 weeks (12-18 months)
-  if (ageInWeeks < 78) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Walking more", status: "TRANSITIONING" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Stacking, placing", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "First words", status: "EMERGING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Parallel play", status: "EMERGING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Exploring everything", status: "STEADY" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Big feelings arise", status: "CHALLENGING" },
-    ];
-  }
-  // 78-104 weeks (18-24 months)
-  if (ageInWeeks < 104) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running, climbing", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Scribbling away", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Words piling up", status: "GROWING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Copying others", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Sorting, matching", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Asserting will", status: "CHALLENGING" },
-    ];
-  }
-  // 104-156 weeks (2-3 years)
-  if (ageInWeeks < 156) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Jumping, balancing", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Using utensils", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Sentences forming", status: "GROWING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Taking turns", status: "TRANSITIONING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Asking why", status: "STEADY" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Naming feelings", status: "GROWING" },
-    ];
-  }
-  // 156-208 weeks (3-4 years)
-  if (ageInWeeks < 208) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running freely", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Cutting, drawing", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Storytelling", status: "STEADY" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Cooperative play", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Counting, sorting", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Empathy growing", status: "TRANSITIONING" },
-    ];
-  }
-  // 208-312 weeks (4-6 years)
-  if (ageInWeeks < 312) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sports ready", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing emerging", status: "TRANSITIONING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading starting", status: "TRANSITIONING" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Making friends", status: "GROWING" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Logical thinking", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Fairness matters", status: "STEADY" },
-    ];
-  }
-  // 312-416 weeks (6-8 years)
-  if (ageInWeeks < 416) {
-    return [
-      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Coordination refined", status: "STEADY" },
-      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing fluently", status: "GROWING" },
-      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading fluently", status: "STEADY" },
-      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Real friendships", status: "STEADY" },
-      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Strategic thinking", status: "GROWING" },
-      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Managing feelings", status: "TRANSITIONING" },
-    ];
-  }
-  // 416-520 weeks (8-10 years)
-  return [
-    { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Body changing", status: "TRANSITIONING" },
-    { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Complex skills", status: "STEADY" },
-    { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Abstract language", status: "STEADY" },
-    { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Identity forming", status: "TRANSITIONING" },
-    { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Independent learner", status: "STEADY" },
-    { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Navigating complexity", status: "CHALLENGING" },
-  ];
 };
 
-const getStatusStyle = (status: string): string => {
-  switch (status) {
-    case "EMERGING": return "text-muted-foreground/60";
-    case "GROWING": return "text-primary/80";
-    case "STEADY": return "text-foreground/70";
-    case "TRANSITIONING": return "text-amber-500/80 dark:text-amber-400/80";
-    case "CHALLENGING": return "text-rose-500/70 dark:text-rose-400/70";
-    default: return "text-muted-foreground";
+// Calculate current stage based on age
+const calculateStage = (stages: StageInfo[], ageInWeeks: number): { stage: number; stageName: string; description: string; isEmerging: boolean } => {
+  // Find the current or most recent stage
+  for (let i = stages.length - 1; i >= 0; i--) {
+    const stage = stages[i];
+    const [minAge, maxAge] = stage.ageRangeWeeks;
+    
+    // If age is within range or past it
+    if (ageInWeeks >= minAge) {
+      // Check if they're in the transition to next stage
+      const isEmerging = i < stages.length - 1 && ageInWeeks >= maxAge - 4;
+      
+      return {
+        stage: stage.stage,
+        stageName: stage.name,
+        description: stage.description,
+        isEmerging,
+      };
+    }
   }
+  
+  // Default to first stage
+  return {
+    stage: 1,
+    stageName: stages[0].name,
+    description: stages[0].description,
+    isEmerging: false,
+  };
+};
+
+// Get domain data with stage calculations
+export const getDomainData = (ageInWeeks: number): DomainData[] => {
+  const domains = [
+    { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, stages: PHYSICAL_STAGES },
+    { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, stages: FINE_MOTOR_STAGES },
+    { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, stages: LANGUAGE_STAGES },
+    { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, stages: SOCIAL_STAGES },
+    { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, stages: COGNITIVE_STAGES },
+    { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, stages: EMOTIONAL_STAGES },
+  ];
+
+  return domains.map(domain => {
+    const stageInfo = calculateStage(domain.stages, ageInWeeks);
+    return {
+      id: domain.id,
+      label: domain.label,
+      icon: domain.icon,
+      currentStage: stageInfo.stage,
+      stageName: stageInfo.stageName,
+      stageDescription: stageInfo.description,
+      isEmerging: stageInfo.isEmerging,
+      totalStages: domain.stages.length,
+    };
+  });
 };
 
 export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: DevelopmentTableProps) => {
@@ -195,10 +187,10 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
       <div className="mx-4 mt-8">
         {/* Section header */}
         <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] mb-4 text-center font-light">
-          {babyName ? `${babyName}'s Chart` : "Today's Chart"}
+          {babyName ? `${babyName}'s Development` : "Development"}
         </p>
 
-        {/* Table container with Co-Star style */}
+        {/* Table container */}
         <div className="relative">
           {/* Vertical DOMAINS label on left */}
           <div className="absolute -left-4 top-0 bottom-0 w-4 flex items-center justify-center">
@@ -210,13 +202,13 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
             </span>
           </div>
 
-          {/* Vertical PHASE label on right */}
+          {/* Vertical STAGE label on right */}
           <div className="absolute -right-4 top-0 bottom-0 w-4 flex items-center justify-center">
             <span 
               className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
               style={{ writingMode: 'vertical-rl' }}
             >
-              Phase
+              Stage
             </span>
           </div>
 
@@ -228,26 +220,30 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
                 onClick={() => setSelectedDomain(domain.id)}
                 className="w-full flex items-stretch border-b border-border/30 transition-colors hover:bg-muted/20 active:bg-muted/30"
               >
-                {/* Column 1: Domain phrase (left aligned) */}
-                <div className="flex-1 flex items-center py-4 px-4 border-r border-border/30 min-h-[52px]">
-                  <span className="text-[15px] font-normal text-foreground tracking-wide">
-                    {domain.phrase}
-                  </span>
-                </div>
-
-                {/* Column 2: Icon + Domain label (center) */}
-                <div className="w-32 flex items-center justify-start gap-2 py-4 px-3 border-r border-border/30">
+                {/* Column 1: Icon + Domain label (left) */}
+                <div className="w-28 flex items-center gap-2 py-4 px-3 border-r border-border/30">
                   <span className="text-muted-foreground/60">{domain.icon}</span>
-                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/80 font-normal">
+                  <span className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground/80 font-normal">
                     {domain.label}
                   </span>
                 </div>
 
-                {/* Column 3: Status (right aligned) */}
-                <div className="w-16 flex items-center justify-end py-4 pr-3 border-r border-border/30">
-                  <span className={`text-[13px] font-light tracking-wide ${getStatusStyle(domain.status)}`}>
-                    {getStatusNumber(domain.status)}
+                {/* Column 2: Stage name/description (middle) */}
+                <div className="flex-1 flex items-center py-4 px-4 border-r border-border/30 min-h-[52px]">
+                  <span className="text-[14px] font-normal text-foreground tracking-wide">
+                    {domain.stageName}
+                    {domain.isEmerging && (
+                      <span className="text-muted-foreground/60 ml-1 text-[12px]">emerging</span>
+                    )}
                   </span>
+                </div>
+
+                {/* Column 3: Stage number with arrow (right) */}
+                <div className="w-16 flex items-center justify-end gap-1.5 py-4 pr-3 border-r border-border/30">
+                  <span className="text-[14px] font-light tracking-wide text-foreground/80">
+                    {domain.currentStage}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
                 </div>
               </button>
             ))}
@@ -267,16 +263,4 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
       />
     </>
   );
-};
-
-// Convert status to numeric representation like Co-Star
-const getStatusNumber = (status: string): string => {
-  switch (status) {
-    case "EMERGING": return "1";
-    case "GROWING": return "2";
-    case "STEADY": return "3";
-    case "TRANSITIONING": return "4";
-    case "CHALLENGING": return "5";
-    default: return "—";
-  }
 };
