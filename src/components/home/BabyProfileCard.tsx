@@ -46,99 +46,74 @@ const getZodiacSign = (birthday?: string): { name: string; symbol: string } => {
   return { name: "Pisces", symbol: "♓" };
 };
 
-// Developmental "archetype" based on age - phrases instead of labels
-const getDevelopmentalArchetype = (ageInWeeks: number): { name: string; symbol: React.ReactNode } => {
-  if (ageInWeeks < 4) return { name: "Dreaming deeply", symbol: <Moon className="w-3 h-3" /> };
-  if (ageInWeeks < 8) return { name: "Watching closely", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 12) return { name: "Smiling freely", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 16) return { name: "Reaching out", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 26) return { name: "Rolling now", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 39) return { name: "Sitting steady", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 52) return { name: "Moving always", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 78) return { name: "Walking more", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 104) return { name: "Climbing everything", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 130) return { name: "Running freely", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 156) return { name: "Imagining richly", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 208) return { name: "Questioning all", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 260) return { name: "Creating boldly", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 312) return { name: "Learning eagerly", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 364) return { name: "Growing socially", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 416) return { name: "Thinking deeply", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 468) return { name: "Finding identity", symbol: <Star className="w-3 h-3" /> };
-  return { name: "Becoming themselves", symbol: <Sparkles className="w-3 h-3" /> };
-};
-
-// Rhythm archetype based on daily patterns - phrases instead of labels
-const getRhythmArchetype = (ageInWeeks: number): { name: string; symbol: React.ReactNode } => {
-  if (ageInWeeks < 8) return { name: "Napping often", symbol: <Moon className="w-3 h-3" /> };
-  if (ageInWeeks < 16) return { name: "Settling slowly", symbol: <Moon className="w-3 h-3" /> };
-  if (ageInWeeks < 39) return { name: "Finding rhythm", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 52) return { name: "Steady days", symbol: <Star className="w-3 h-3" /> };
-  if (ageInWeeks < 78) return { name: "Nap shifting", symbol: <Moon className="w-3 h-3" /> };
-  if (ageInWeeks < 104) return { name: "One nap now", symbol: <Sun className="w-3 h-3" /> };
-  if (ageInWeeks < 156) return { name: "May skip rest", symbol: <Sparkles className="w-3 h-3" /> };
-  if (ageInWeeks < 260) return { name: "Quiet time", symbol: <Star className="w-3 h-3" /> };
-  return { name: "Full days", symbol: <Sun className="w-3 h-3" /> };
+// Current phase based on age
+const getCurrentPhase = (ageInWeeks: number): string => {
+  if (ageInWeeks < 4) return "Fourth trimester";
+  if (ageInWeeks < 8) return "Awakening";
+  if (ageInWeeks < 12) return "Social smiling";
+  if (ageInWeeks < 16) return "Reaching out";
+  if (ageInWeeks < 26) return "Rolling days";
+  if (ageInWeeks < 39) return "Finding rhythm";
+  if (ageInWeeks < 52) return "On the move";
+  if (ageInWeeks < 78) return "First steps";
+  if (ageInWeeks < 104) return "Exploring all";
+  if (ageInWeeks < 130) return "Language burst";
+  if (ageInWeeks < 156) return "Imagination";
+  if (ageInWeeks < 208) return "Why phase";
+  if (ageInWeeks < 260) return "Making friends";
+  if (ageInWeeks < 312) return "School ready";
+  if (ageInWeeks < 364) return "Growing up";
+  if (ageInWeeks < 416) return "Finding self";
+  if (ageInWeeks < 468) return "Pre-teen shift";
+  return "Becoming";
 };
 
 export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
   const zodiac = getZodiacSign(babyBirthday);
-  const developmentalArchetype = getDevelopmentalArchetype(ageInWeeks);
-  const rhythmArchetype = getRhythmArchetype(ageInWeeks);
+  const currentPhase = getCurrentPhase(ageInWeeks);
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return "GOOD MORNING";
+    if (hour < 18) return "GOOD AFTERNOON";
+    return "GOOD EVENING";
   }, []);
 
   return (
     <div className="px-5 pt-8 pb-4">
-      {/* Greeting - small, muted */}
-      <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3 text-center">
+      {/* Greeting - uppercase, tracking */}
+      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mb-4 text-center">
         {greeting}
       </p>
       
       <div className="flex items-start gap-4">
-        {/* Avatar placeholder - circular with initial */}
-        <div className="w-16 h-16 rounded-full bg-muted/30 border border-border/30 flex items-center justify-center shrink-0 overflow-hidden">
-          <span className="text-2xl font-serif text-foreground/60">
+        {/* Avatar - circular with initial */}
+        <div className="w-14 h-14 rounded-full bg-muted/30 border border-border/40 flex items-center justify-center shrink-0">
+          <span className="text-xl font-serif text-foreground/70">
             {babyName.charAt(0).toUpperCase()}
           </span>
         </div>
 
-        {/* Name and signs */}
+        {/* Name and metadata */}
         <div className="flex-1 min-w-0">
-          {/* Baby name - prominent */}
-          <h1 className="text-2xl font-serif text-foreground truncate">
+          {/* Baby name - large, prominent */}
+          <h1 className="text-3xl font-serif text-foreground tracking-tight">
             {babyName}
           </h1>
           
-          {/* Signs row - Co-Star style: symbol + name inline */}
-          <div className="flex flex-wrap items-center gap-x-3 mt-1.5 text-muted-foreground text-xs">
-            {/* Zodiac sign */}
-            <span>
-              <span className="opacity-70 mr-0.5">{zodiac.symbol}</span> {zodiac.name}
+          {/* Subtitle row: zodiac · age · phase */}
+          <div className="flex flex-wrap items-center gap-x-2 mt-1 text-muted-foreground text-xs">
+            <span className="flex items-center gap-1">
+              <span className="text-sm">{zodiac.symbol}</span>
+              <span>{zodiac.name}</span>
             </span>
-            
-            {/* Developmental archetype */}
-            <span className="flex items-center gap-0.5">
-              <span className="opacity-70">{developmentalArchetype.symbol}</span> {developmentalArchetype.name}
-            </span>
-            
-            {/* Rhythm archetype */}
-            <span className="flex items-center gap-0.5">
-              <span className="opacity-70">{rhythmArchetype.symbol}</span> {rhythmArchetype.name}
-            </span>
+            <span className="opacity-40">·</span>
+            <span>{ageLabel}</span>
+            <span className="opacity-40">·</span>
+            <span className="italic">{currentPhase}</span>
           </div>
-          
-          {/* Age - tertiary info */}
-          <p className="text-xs text-muted-foreground/50 mt-1">
-            {ageLabel}
-          </p>
         </div>
       </div>
     </div>
