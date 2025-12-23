@@ -1,7 +1,6 @@
 import { Sun, Coffee, Baby, Sparkles, BookOpen, Music, Footprints, Eye, Hand, Palette, Puzzle, TreeDeciduous } from "lucide-react";
 import { GlassCard } from "./GlassCard";
 import { BabyProfileCard } from "./BabyProfileCard";
-import { DayRhythm } from "./DayRhythm";
 import { DevelopmentTable } from "./DevelopmentTable";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 
@@ -323,11 +322,8 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
         {/* Profile Card */}
         <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
 
-        {/* Day's Shape */}
-        <DayRhythm ageInWeeks={ageInWeeks} />
-
-        {/* Current Traits */}
-        <DevelopmentTable ageInWeeks={ageInWeeks} />
+        {/* Development Domains */}
+        <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} />
 
         {/* Ideas for the Day */}
         <GlassCard className="mx-5">
