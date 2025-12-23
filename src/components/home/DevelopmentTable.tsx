@@ -175,14 +175,14 @@ const calculateStage = (stages: StageInfo[], ageInWeeks: number): { stage: numbe
 // Get domain data with stage calculations
 export const getDomainData = (ageInWeeks: number): DomainData[] => {
   const domains = [
+    { id: "sleep", label: "SLEEP", icon: <Moon className="w-3.5 h-3.5" />, stages: SLEEP_STAGES },
+    { id: "feeding", label: "FEEDING", icon: <Utensils className="w-3.5 h-3.5" />, stages: FEEDING_STAGES },
     { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-3.5 h-3.5" />, stages: PHYSICAL_STAGES },
     { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-3.5 h-3.5" />, stages: FINE_MOTOR_STAGES },
     { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-3.5 h-3.5" />, stages: LANGUAGE_STAGES },
     { id: "social", label: "SOCIAL", icon: <Users className="w-3.5 h-3.5" />, stages: SOCIAL_STAGES },
     { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-3.5 h-3.5" />, stages: COGNITIVE_STAGES },
     { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-3.5 h-3.5" />, stages: EMOTIONAL_STAGES },
-    { id: "sleep", label: "SLEEP", icon: <Moon className="w-3.5 h-3.5" />, stages: SLEEP_STAGES },
-    { id: "feeding", label: "FEEDING", icon: <Utensils className="w-3.5 h-3.5" />, stages: FEEDING_STAGES },
   ];
 
   return domains.map(domain => {
@@ -210,7 +210,7 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
 
   return (
     <>
-      <div className="px-6 mt-8">
+      <div className="px-4 mt-8">
         {/* Section header */}
         <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] mb-4 text-center font-light">
           {babyName ? `${babyName}'s Development` : "Development"}
@@ -218,14 +218,16 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
 
         {/* Table container with side labels */}
         <div className="flex items-stretch">
-          {/* Vertical DOMAINS label on left */}
-          <div className="flex items-center justify-center w-4 mr-1">
-            <span 
-              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
-              style={{ writingMode: 'vertical-rl' }}
-            >
-              Domains
-            </span>
+          {/* Vertical DOMAINS label on left - stacked letters */}
+          <div className="flex flex-col items-center justify-center w-4 mr-1">
+            {"DOMAINS".split("").map((letter, i) => (
+              <span 
+                key={i}
+                className="text-[8px] text-muted-foreground/40 font-light leading-[1.1]"
+              >
+                {letter}
+              </span>
+            ))}
           </div>
 
           {/* Main table grid */}
@@ -265,14 +267,16 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
             ))}
           </div>
 
-          {/* Vertical STAGE label on right */}
-          <div className="flex items-center justify-center w-4 ml-1">
-            <span 
-              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
-              style={{ writingMode: 'vertical-rl' }}
-            >
-              Stage
-            </span>
+          {/* Vertical STAGE label on right - stacked letters */}
+          <div className="flex flex-col items-center justify-center w-4 ml-1">
+            {"STAGE".split("").map((letter, i) => (
+              <span 
+                key={i}
+                className="text-[8px] text-muted-foreground/40 font-light leading-[1.1]"
+              >
+                {letter}
+              </span>
+            ))}
           </div>
         </div>
       </div>
