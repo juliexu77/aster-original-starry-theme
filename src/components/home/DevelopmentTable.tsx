@@ -192,18 +192,18 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
 
   return (
     <>
-      <div className="mx-5 mt-6">
+      <div className="mx-4 mt-8">
         {/* Section header */}
-        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3 text-center">
-          {babyName ? `${babyName}'s Development` : "Today's Chart"}
+        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] mb-4 text-center font-light">
+          {babyName ? `${babyName}'s Chart` : "Today's Chart"}
         </p>
 
-        {/* Table container with labels */}
-        <div className="relative border border-border/40 rounded-sm">
+        {/* Table container with Co-Star style */}
+        <div className="relative">
           {/* Vertical DOMAINS label on left */}
-          <div className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center">
+          <div className="absolute -left-4 top-0 bottom-0 w-4 flex items-center justify-center">
             <span 
-              className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/50 font-medium"
+              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
               style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
             >
               Domains
@@ -211,46 +211,43 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
           </div>
 
           {/* Vertical PHASE label on right */}
-          <div className="absolute right-0 top-0 bottom-0 w-5 flex items-center justify-center">
+          <div className="absolute -right-4 top-0 bottom-0 w-4 flex items-center justify-center">
             <span 
-              className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/50 font-medium"
+              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
               style={{ writingMode: 'vertical-rl' }}
             >
               Phase
             </span>
           </div>
 
-          {/* Domain rows */}
-          <div className="mx-5">
-            {domains.map((domain, index) => (
+          {/* Main table grid */}
+          <div className="border-t border-l border-border/30">
+            {domains.map((domain) => (
               <button
                 key={domain.id}
                 onClick={() => setSelectedDomain(domain.id)}
-                className={`w-full flex items-center py-3.5 px-1 text-left transition-colors hover:bg-muted/30 active:bg-muted/50 ${
-                  index !== domains.length - 1 ? 'border-b border-border/20' : ''
-                }`}
+                className="w-full flex items-stretch border-b border-border/30 transition-colors hover:bg-muted/20 active:bg-muted/30"
               >
-                {/* Domain label with icon */}
-                <div className="flex items-center gap-2 w-28 shrink-0">
-                  <span className="text-muted-foreground/70">{domain.icon}</span>
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
-                    {domain.label}
-                  </span>
-                </div>
-
-                {/* Current state phrase */}
-                <div className="flex-1 min-w-0 px-2">
-                  <span className="text-sm font-medium text-foreground">
+                {/* Column 1: Domain phrase (left aligned) */}
+                <div className="flex-1 flex items-center py-4 px-4 border-r border-border/30 min-h-[52px]">
+                  <span className="text-[15px] font-normal text-foreground tracking-wide">
                     {domain.phrase}
                   </span>
                 </div>
 
-                {/* Status label */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className={`text-[9px] uppercase tracking-wide font-medium ${getStatusStyle(domain.status)}`}>
-                    {domain.status}
+                {/* Column 2: Icon + Domain label (center) */}
+                <div className="w-32 flex items-center justify-start gap-2 py-4 px-3 border-r border-border/30">
+                  <span className="text-muted-foreground/60">{domain.icon}</span>
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/80 font-normal">
+                    {domain.label}
                   </span>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40" />
+                </div>
+
+                {/* Column 3: Status (right aligned) */}
+                <div className="w-16 flex items-center justify-end py-4 pr-3 border-r border-border/30">
+                  <span className={`text-[13px] font-light tracking-wide ${getStatusStyle(domain.status)}`}>
+                    {getStatusNumber(domain.status)}
+                  </span>
                 </div>
               </button>
             ))}
@@ -270,4 +267,16 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
       />
     </>
   );
+};
+
+// Convert status to numeric representation like Co-Star
+const getStatusNumber = (status: string): string => {
+  switch (status) {
+    case "EMERGING": return "1";
+    case "GROWING": return "2";
+    case "STEADY": return "3";
+    case "TRANSITIONING": return "4";
+    case "CHALLENGING": return "5";
+    default: return "—";
+  }
 };
