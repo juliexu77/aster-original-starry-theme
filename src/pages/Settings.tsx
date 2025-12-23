@@ -1,25 +1,35 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   LogOut, 
   Key,
-  ChevronLeft
+  ChevronLeft,
+  Calendar,
+  Sparkles
 } from "lucide-react";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { getZodiacFromBirthday, getZodiacSymbol, getZodiacName } from "@/lib/zodiac";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
   const { babies, addBaby, updateBaby, archiveBaby } = useBabies();
+  const { userProfile, updateUserProfile, fetchUserProfile } = useUserProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [editingBirthday, setEditingBirthday] = useState(false);
+  const [birthdayInput, setBirthdayInput] = useState("");
+  const [savingBirthday, setSavingBirthday] = useState(false);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -46,8 +56,36 @@ export const Settings = () => {
   };
 
   const getUserDisplayName = () => {
-    const email = user?.email;
-    return email?.split('@')[0] || "User";
+    return userProfile?.display_name || user?.email?.split('@')[0] || "User";
+  };
+
+  const handleSaveBirthday = async () => {
+    if (!birthdayInput) return;
+    
+    setSavingBirthday(true);
+    try {
+      await updateUserProfile({ birthday: birthdayInput });
+      await fetchUserProfile();
+      setEditingBirthday(false);
+      toast({
+        title: "Birthday saved",
+        description: "Your zodiac sign is now visible in Family"
+      });
+    } catch (error) {
+      console.error('Error saving birthday:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save birthday",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingBirthday(false);
+    }
+  };
+
+  const handleStartEditBirthday = () => {
+    setBirthdayInput(userProfile?.birthday || "");
+    setEditingBirthday(true);
   };
 
   const handleAddBaby = async (name: string, birthday?: string) => {
@@ -61,6 +99,8 @@ export const Settings = () => {
   const handleArchiveBaby = async (babyId: string) => {
     await archiveBaby(babyId);
   };
+
+  const parentSign = getZodiacFromBirthday(userProfile?.birthday);
 
   return (
     <div className="min-h-screen bg-background">
@@ -97,6 +137,46 @@ export const Settings = () => {
               subtitle={user.email}
               showChevron={false}
             />
+            
+            {/* Birthday Row */}
+            {editingBirthday ? (
+              <div className="px-4 py-3 flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-muted-foreground" />
+                <div className="flex-1 flex items-center gap-2">
+                  <Input
+                    type="date"
+                    value={birthdayInput}
+                    onChange={(e) => setBirthdayInput(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleSaveBirthday}
+                    disabled={!birthdayInput || savingBirthday}
+                  >
+                    {savingBirthday ? "..." : "Save"}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost"
+                    onClick={() => setEditingBirthday(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <SettingsRow
+                icon={<Calendar className="w-5 h-5" />}
+                title="Your Birthday"
+                subtitle={
+                  parentSign 
+                    ? `${getZodiacSymbol(userProfile?.birthday)} ${getZodiacName(parentSign)}`
+                    : "Add for zodiac compatibility"
+                }
+                onClick={handleStartEditBirthday}
+              />
+            )}
           </SettingsSection>
         ) : (
           <SettingsSection>
