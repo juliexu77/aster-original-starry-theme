@@ -121,6 +121,34 @@ const getAstroFlavor = (domainId: string, sign: string): string => {
       Aquarius: "Aquarius energy processes feelings differently. Your baby may seem emotionally independent. Respect their unique style.",
       Pisces: "Pisces energy creates highly sensitive emotions. Your child absorbs feelings from the environment. Calm spaces help.",
     },
+    sleep: {
+      Aries: "Aries energy: Resists winding down, fights sleep like it's a challenge to conquer. Once asleep, sleeps deeply until ready to charge into the day.",
+      Taurus: "Taurus energy: Creature of comfort who loves routine and cozy sleep environments. Once settled into a good schedule, resists change.",
+      Gemini: "Gemini energy: Active mind makes winding down difficult. Needs variety in bedtime routines and may have inconsistent sleep patterns.",
+      Cancer: "Cancer energy: Sensitive sleeper who needs emotional security and comfort. Thrives on consistent routines and soothing environments.",
+      Leo: "Leo energy: Wants attention even at bedtime. Once asleep, rests like royalty and wakes ready to shine.",
+      Virgo: "Virgo energy: Benefits from precise routines and ordered sleep environment. May be sensitive to disruptions in schedule.",
+      Libra: "Libra energy: Needs balance and harmony for good sleep. May resist extremes - neither overly rigid nor chaotic schedules.",
+      Scorpio: "Scorpio energy: Intense about sleep needs. All or nothing - either fights sleep hard or crashes completely.",
+      Sagittarius: "Sagittarius energy: Free spirit who resists constraints of sleep schedules. Dreams big and wakes ready for adventure.",
+      Capricorn: "Capricorn energy: Appreciates structure and consistent sleep schedules. Once routine is established, maintains it reliably.",
+      Aquarius: "Aquarius energy: Unique sleep patterns that may not match the books. Independent sleeper who does things their own way.",
+      Pisces: "Pisces energy: Dreamy sleeper who needs gentle transitions and soothing bedtime rituals. May be sensitive to environment and emotions.",
+    },
+    feeding: {
+      Aries: "Aries energy: Enthusiastic eater who dives into new foods fearlessly. May eat quickly and messily, always ready for the next adventure.",
+      Taurus: "Taurus energy: Sensory-oriented eater who savors textures and flavors. May be particular about preferences but enjoys quality foods.",
+      Gemini: "Gemini energy: Curious taster who wants variety. May be easily distracted during meals and prefer grazing to structured eating.",
+      Cancer: "Cancer energy: Comfort-oriented eater who associates food with security and love. Prefers familiar foods and family meal times.",
+      Leo: "Leo energy: Enjoys the performance of eating and wants attention during meals. May be dramatic about likes and dislikes.",
+      Virgo: "Virgo energy: Particular about food textures and presentation. May have clear preferences and notices details others miss.",
+      Libra: "Libra energy: Social eater who enjoys company during meals. May be influenced by others' food choices and preferences.",
+      Scorpio: "Scorpio energy: Intense relationship with food. Either loves or refuses things - no middle ground. Deeply commits to favorites.",
+      Sagittarius: "Sagittarius energy: Adventurous eater willing to try anything once. May eat enthusiastically but lose interest in routine foods.",
+      Capricorn: "Capricorn energy: Steady, reliable eater who appreciates routine meal times. May be cautious with new foods but eventually accepts them.",
+      Aquarius: "Aquarius energy: Unconventional eater with unique preferences. May surprise you with food choices that defy expectations.",
+      Pisces: "Pisces energy: Intuitive eater who responds to emotional atmosphere at meals. May be sensitive to food textures and family dynamics.",
+    },
   };
 
   return flavors[domainId]?.[sign] || `${sign} brings unique qualities to this developmental area.`;
@@ -164,6 +192,18 @@ const getSupportTips = (domainId: string): string[] => {
       "Stay calm during big feelings",
       "Validate their experience before redirecting",
       "Create consistent, predictable routines",
+    ],
+    sleep: [
+      "Maintain consistent bedtime routine even when sleep is disrupted",
+      "Respond to night wakings calmly and briefly",
+      "Ensure good daytime naps to prevent overtiredness",
+      "Create a dark, quiet, and comfortable sleep environment",
+    ],
+    feeding: [
+      "Offer new foods alongside familiar favorites",
+      "Let them explore food with hands - mess is learning",
+      "Keep mealtimes pleasant, not battles",
+      "Respect their hunger and fullness cues",
     ],
   };
 
