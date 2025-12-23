@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ArrowRight } from "lucide-react";
+import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ArrowRight, Moon, Utensils } from "lucide-react";
 import { DomainDetailModal } from "./DomainDetailModal";
 
 interface DevelopmentTableProps {
@@ -105,6 +105,28 @@ const EMOTIONAL_STAGES: StageInfo[] = [
   { stage: 9, name: "Complex Emotions", ageRangeWeeks: [208, 260], description: "Shows embarrassment, pride, shame, guilt, negotiates and compromises, emotional awareness" },
 ];
 
+const SLEEP_STAGES: StageInfo[] = [
+  { stage: 1, name: "Newborn Sleep", ageRangeWeeks: [0, 13], description: "Sleeps 14-17 hours in short bursts, wakes every 2-3 hours to feed, day/night confusion" },
+  { stage: 2, name: "Longer Stretches", ageRangeWeeks: [13, 26], description: "Consolidating nighttime sleep, may sleep 6-8 hour stretches, 3-4 naps during day" },
+  { stage: 3, name: "Sleep Regression", ageRangeWeeks: [26, 43], description: "Object permanence and separation anxiety disrupt sleep, wakes more frequently, 2-3 naps" },
+  { stage: 4, name: "Two Naps", ageRangeWeeks: [43, 65], description: "Drops to two predictable naps (morning and afternoon), sleeps 10-12 hours at night" },
+  { stage: 5, name: "One Nap Transition", ageRangeWeeks: [65, 78], description: "Transitioning from two naps to one afternoon nap, schedule can be erratic during shift" },
+  { stage: 6, name: "One Nap", ageRangeWeeks: [78, 156], description: "Consistent single afternoon nap (1-3 hours), sleeps 10-12 hours at night" },
+  { stage: 7, name: "Dropping Nap", ageRangeWeeks: [156, 208], description: "Some days nap, some days don't, may need quiet time instead" },
+  { stage: 8, name: "No Nap", ageRangeWeeks: [208, 260], description: "Most children done napping, quiet rest time instead, sleeps 10-12 hours at night" },
+];
+
+const FEEDING_STAGES: StageInfo[] = [
+  { stage: 1, name: "Exclusive Milk", ageRangeWeeks: [0, 26], description: "Breast milk or formula only, feeding every 2-4 hours, establishing rhythm" },
+  { stage: 2, name: "Starting Solids", ageRangeWeeks: [26, 39], description: "Introduction to purees and soft foods, exploring textures and tastes, milk still primary nutrition" },
+  { stage: 3, name: "Finger Foods", ageRangeWeeks: [39, 52], description: "Self-feeding with hands, pincer grasp for small pieces, three meals plus milk feeds" },
+  { stage: 4, name: "Table Foods", ageRangeWeeks: [52, 78], description: "Eating modified family meals, using utensils with help, transitioning from bottles" },
+  { stage: 5, name: "Self-Feeding", ageRangeWeeks: [78, 104], description: "Uses spoon and fork independently, drinks from open cup, asserting food preferences" },
+  { stage: 6, name: "Picky Phase", ageRangeWeeks: [104, 156], description: "Common pickiness or food jags, may refuse previously liked foods, learning about hunger cues" },
+  { stage: 7, name: "Expanding Palate", ageRangeWeeks: [156, 208], description: "Trying new foods more willingly, eating larger portions, developing food preferences" },
+  { stage: 8, name: "Independent Eater", ageRangeWeeks: [208, 260], description: "Eats variety of foods, manages utensils well, can pour drinks, helps with meal prep" },
+];
+
 // Get stages for a domain
 export const getStagesForDomain = (domainId: string): StageInfo[] => {
   switch (domainId) {
@@ -114,6 +136,8 @@ export const getStagesForDomain = (domainId: string): StageInfo[] => {
     case "social": return SOCIAL_STAGES;
     case "cognitive": return COGNITIVE_STAGES;
     case "emotional": return EMOTIONAL_STAGES;
+    case "sleep": return SLEEP_STAGES;
+    case "feeding": return FEEDING_STAGES;
     default: return [];
   }
 };
@@ -151,12 +175,14 @@ const calculateStage = (stages: StageInfo[], ageInWeeks: number): { stage: numbe
 // Get domain data with stage calculations
 export const getDomainData = (ageInWeeks: number): DomainData[] => {
   const domains = [
-    { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, stages: PHYSICAL_STAGES },
-    { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, stages: FINE_MOTOR_STAGES },
-    { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, stages: LANGUAGE_STAGES },
-    { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, stages: SOCIAL_STAGES },
-    { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, stages: COGNITIVE_STAGES },
-    { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, stages: EMOTIONAL_STAGES },
+    { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-3.5 h-3.5" />, stages: PHYSICAL_STAGES },
+    { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-3.5 h-3.5" />, stages: FINE_MOTOR_STAGES },
+    { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-3.5 h-3.5" />, stages: LANGUAGE_STAGES },
+    { id: "social", label: "SOCIAL", icon: <Users className="w-3.5 h-3.5" />, stages: SOCIAL_STAGES },
+    { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-3.5 h-3.5" />, stages: COGNITIVE_STAGES },
+    { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-3.5 h-3.5" />, stages: EMOTIONAL_STAGES },
+    { id: "sleep", label: "SLEEP", icon: <Moon className="w-3.5 h-3.5" />, stages: SLEEP_STAGES },
+    { id: "feeding", label: "FEEDING", icon: <Utensils className="w-3.5 h-3.5" />, stages: FEEDING_STAGES },
   ];
 
   return domains.map(domain => {
@@ -193,10 +219,10 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
         {/* Table container with side labels */}
         <div className="flex items-stretch">
           {/* Vertical DOMAINS label on left */}
-          <div className="flex items-center justify-center w-5 mr-2">
+          <div className="flex items-center justify-center w-4 mr-1">
             <span 
-              className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground/50 font-light whitespace-nowrap"
-              style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
+              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
+              style={{ writingMode: 'vertical-rl' }}
             >
               Domains
             </span>
@@ -211,39 +237,39 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
                 className="w-full flex items-stretch border-b border-border/30 transition-colors hover:bg-muted/20 active:bg-muted/30"
               >
                 {/* Column 1: Icon + Domain label (left) */}
-                <div className="w-28 flex items-center gap-2 py-4 px-3 border-r border-border/30">
-                  <span className="text-muted-foreground/60">{domain.icon}</span>
-                  <span className="text-[9px] uppercase tracking-[0.1em] text-muted-foreground/80 font-normal">
+                <div className="w-24 flex items-center gap-1.5 py-3 px-2.5 border-r border-border/30">
+                  <span className="text-muted-foreground/50">{domain.icon}</span>
+                  <span className="text-[8px] uppercase tracking-[0.08em] text-muted-foreground/70 font-normal">
                     {domain.label}
                   </span>
                 </div>
 
                 {/* Column 2: Stage name/description (middle) */}
-                <div className="flex-1 flex items-center py-4 px-4 border-r border-border/30 min-h-[52px]">
-                  <span className="text-[14px] font-normal text-foreground tracking-wide">
+                <div className="flex-1 flex items-center py-3 px-3 border-r border-border/30 min-h-[44px]">
+                  <span className="text-[12px] font-normal text-foreground tracking-wide">
                     {domain.stageName}
                     {domain.isEmerging && (
-                      <span className="text-muted-foreground/60 ml-1 text-[12px]">emerging</span>
+                      <span className="text-muted-foreground/50 ml-1 text-[10px]">emerging</span>
                     )}
                   </span>
                 </div>
 
                 {/* Column 3: Stage number with arrow (right) */}
-                <div className="w-16 flex items-center justify-end gap-1.5 py-4 pr-3 border-r border-border/30">
-                  <span className="text-[14px] font-light tracking-wide text-foreground/80">
+                <div className="w-14 flex items-center justify-end gap-1 py-3 pr-2.5 border-r border-border/30">
+                  <span className="text-[12px] font-light tracking-wide text-foreground/70">
                     {domain.currentStage}
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50" />
+                  <ArrowRight className="w-3 h-3 text-muted-foreground/40" />
                 </div>
               </button>
             ))}
           </div>
 
           {/* Vertical STAGE label on right */}
-          <div className="flex items-center justify-center w-5 ml-2">
+          <div className="flex items-center justify-center w-4 ml-1">
             <span 
-              className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground/50 font-light whitespace-nowrap"
-              style={{ writingMode: 'vertical-lr' }}
+              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
+              style={{ writingMode: 'vertical-rl' }}
             >
               Stage
             </span>
