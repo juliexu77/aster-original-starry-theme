@@ -218,12 +218,12 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
 
         {/* Table container with side labels */}
         <div className="flex items-stretch">
-          {/* Vertical DOMAINS label on left - stacked letters */}
-          <div className="flex flex-col items-center justify-center w-4 mr-1">
+          {/* Vertical DOMAINS label on left - stacked letters at top */}
+          <div className="flex flex-col items-center justify-start w-4 mr-1 pt-1">
             {"DOMAINS".split("").map((letter, i) => (
               <span 
                 key={i}
-                className="text-[8px] text-muted-foreground/40 font-light leading-[1.1]"
+                className="text-[9px] text-muted-foreground/60 font-light leading-[1.2]"
               >
                 {letter}
               </span>
@@ -267,12 +267,12 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
             ))}
           </div>
 
-          {/* Vertical STAGE label on right - stacked letters */}
-          <div className="flex flex-col items-center justify-center w-4 ml-1">
+          {/* Vertical STAGE label on right - stacked letters at bottom */}
+          <div className="flex flex-col items-center justify-end w-4 ml-1 pb-1">
             {"STAGE".split("").map((letter, i) => (
               <span 
                 key={i}
-                className="text-[8px] text-muted-foreground/40 font-light leading-[1.1]"
+                className="text-[9px] text-muted-foreground/60 font-light leading-[1.2]"
               >
                 {letter}
               </span>
