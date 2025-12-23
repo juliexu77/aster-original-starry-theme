@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { MapPin, Users, Settings } from "lucide-react";
+import { Sparkles, Users, Settings } from "lucide-react";
 import { Baby } from "@/hooks/useBabies";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -65,15 +65,15 @@ export const ChildSwitcher = ({
       onTouchEnd={onTouchEnd}
     >
       <div className="mx-4 mb-4 rounded-full bg-muted/60 backdrop-blur-xl border border-border/30 flex items-center justify-between px-2 py-2">
-        {/* Left - Today tab (active) */}
+        {/* Left - Chart tab (active) */}
         <button 
           onClick={() => navigate("/")}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
             isHome ? "bg-muted/80" : ""
           }`}
         >
-          <MapPin className="w-4 h-4 text-foreground" />
-          <span className="text-xs text-foreground">Today</span>
+          <Sparkles className="w-4 h-4 text-foreground" />
+          <span className="text-xs text-foreground">Chart</span>
         </button>
 
         {/* Center - Child pagination dots */}

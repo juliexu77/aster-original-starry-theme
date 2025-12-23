@@ -145,7 +145,7 @@ const Family = () => {
           {/* Header */}
           <div className="px-5 pt-8 pb-2 text-center">
             <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-              Family Compatibility
+              Family Dynamics
             </p>
             <h1 className="font-serif text-2xl text-foreground">
               Cosmic Connections
@@ -201,21 +201,16 @@ const Family = () => {
             </div>
           </div>
 
-          {/* Parent Birthday Prompt */}
-          {!parentHasBirthday && showPrompt && (
-            <ParentBirthdayPrompt onSaved={handleBirthdaySaved} />
-          )}
-
-          {/* No compatibility message */}
+          {/* No connections message */}
           {compatibilityPairs.length === 0 && parentHasBirthday && childrenWithBirthdays.length === 0 && (
             <div className="mx-5 p-6 rounded-2xl bg-muted/30 border border-border/30 text-center">
               <p className="text-sm text-muted-foreground">
-                Add birthdays to your children in Settings to see compatibility insights.
+                Add birthdays to your children in Settings to see connection insights.
               </p>
             </div>
           )}
 
-          {/* Compatibility Cards */}
+          {/* Connection Cards */}
           <div className="px-5 space-y-4">
             {compatibilityPairs.map((pair, index) => {
               const compatibility = getCompatibility(pair.sign1, pair.sign2, pair.relationshipType);
@@ -235,6 +230,11 @@ const Family = () => {
               );
             })}
           </div>
+
+          {/* Parent Birthday Prompt - moved below connection cards */}
+          {!parentHasBirthday && showPrompt && (
+            <ParentBirthdayPrompt onSaved={handleBirthdaySaved} />
+          )}
 
           {/* Footer */}
           <div className="pt-4 text-center px-5">
