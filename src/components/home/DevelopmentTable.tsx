@@ -1,334 +1,273 @@
-import { Footprints, Hand, MessageCircle, Users, Brain, Heart, Star, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ChevronRight } from "lucide-react";
+import { DomainDetailModal } from "./DomainDetailModal";
 
 interface DevelopmentTableProps {
   ageInWeeks: number;
   birthday?: string;
+  babyName?: string;
 }
 
-interface DomainData {
-  domain: string;
+export interface DomainData {
+  id: string;
   label: string;
   icon: React.ReactNode;
   phrase: string;
-  stage: "emerging" | "growing" | "confident";
+  status: "EMERGING" | "GROWING" | "STEADY" | "TRANSITIONING" | "CHALLENGING";
 }
 
-// Get sun sign from birthday
-const getSunSign = (birthday: string): { sign: string; symbol: string } => {
-  const date = new Date(birthday);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return { sign: "Aries", symbol: "♈" };
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return { sign: "Taurus", symbol: "♉" };
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return { sign: "Gemini", symbol: "♊" };
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return { sign: "Cancer", symbol: "♋" };
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return { sign: "Leo", symbol: "♌" };
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return { sign: "Virgo", symbol: "♍" };
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return { sign: "Libra", symbol: "♎" };
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return { sign: "Scorpio", symbol: "♏" };
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return { sign: "Sagittarius", symbol: "♐" };
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return { sign: "Capricorn", symbol: "♑" };
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return { sign: "Aquarius", symbol: "♒" };
-  return { sign: "Pisces", symbol: "♓" };
-};
-
-// Get Chinese zodiac from birth year
-const getChineseZodiac = (birthday: string): { animal: string; symbol: string } => {
-  const year = new Date(birthday).getFullYear();
-  const animals = [
-    { animal: "Rat", symbol: "🐀" },
-    { animal: "Ox", symbol: "🐂" },
-    { animal: "Tiger", symbol: "🐅" },
-    { animal: "Rabbit", symbol: "🐇" },
-    { animal: "Dragon", symbol: "🐉" },
-    { animal: "Snake", symbol: "🐍" },
-    { animal: "Horse", symbol: "🐎" },
-    { animal: "Goat", symbol: "🐐" },
-    { animal: "Monkey", symbol: "🐒" },
-    { animal: "Rooster", symbol: "🐓" },
-    { animal: "Dog", symbol: "🐕" },
-    { animal: "Pig", symbol: "🐖" },
-  ];
-  return animals[(year - 4) % 12];
-};
-
-const getDomainData = (ageInWeeks: number): DomainData[] => {
+export const getDomainData = (ageInWeeks: number): DomainData[] => {
   // 0-4 weeks
   if (ageInWeeks < 4) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Reflexes guiding", stage: "emerging" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands fisted", stage: "emerging" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Crying to communicate", stage: "emerging" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Seeking closeness", stage: "emerging" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Drawn to faces", stage: "emerging" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Finding comfort", stage: "emerging" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Reflexes guiding", status: "EMERGING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands fisted", status: "EMERGING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Crying to communicate", status: "EMERGING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Seeking closeness", status: "EMERGING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Drawn to faces", status: "EMERGING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Finding comfort", status: "EMERGING" },
     ];
   }
   // 4-8 weeks
   if (ageInWeeks < 8) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Lifting head", stage: "emerging" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands loosening", stage: "emerging" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Cooing softly", stage: "emerging" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Watching faces", stage: "emerging" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Tracking movement", stage: "emerging" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Calmed by voice", stage: "emerging" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Lifting head", status: "EMERGING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands loosening", status: "EMERGING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Cooing softly", status: "EMERGING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Watching faces", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Tracking movement", status: "EMERGING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Calmed by voice", status: "STEADY" },
     ];
   }
   // 8-12 weeks
   if (ageInWeeks < 12) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Head steadier", stage: "growing" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands meeting", stage: "emerging" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Vowel sounds", stage: "emerging" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Smiling back", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Noticing patterns", stage: "emerging" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Expressing joy", stage: "emerging" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Head steadier", status: "GROWING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Hands meeting", status: "EMERGING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Vowel sounds", status: "EMERGING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Smiling back", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Noticing patterns", status: "EMERGING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Expressing joy", status: "GROWING" },
     ];
   }
   // 12-16 weeks
   if (ageInWeeks < 16) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling attempts", stage: "emerging" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Reaching out", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Babbling more", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Laughing often", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Cause and effect", stage: "emerging" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Showing delight", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling attempts", status: "TRANSITIONING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Reaching out", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Babbling more", status: "GROWING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Laughing often", status: "STEADY" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Cause and effect", status: "EMERGING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Showing delight", status: "STEADY" },
     ];
   }
   // 16-26 weeks (4-6 months)
   if (ageInWeeks < 26) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling over", stage: "growing" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Grasping things", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Consonants coming", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Knows family", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object curiosity", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Stranger awareness", stage: "emerging" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Rolling over", status: "GROWING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Grasping things", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Consonants coming", status: "GROWING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Knows family", status: "STEADY" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object curiosity", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Stranger awareness", status: "TRANSITIONING" },
     ];
   }
   // 26-39 weeks (6-9 months)
   if (ageInWeeks < 39) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sitting steady", stage: "growing" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer emerging", stage: "emerging" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Ma-ma, da-da", stage: "emerging" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Attached deeply", stage: "confident" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object permanence", stage: "emerging" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Separation feelings", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sitting steady", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer emerging", status: "TRANSITIONING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Ma-ma, da-da", status: "EMERGING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Attached deeply", status: "STEADY" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Object permanence", status: "EMERGING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Separation feelings", status: "CHALLENGING" },
     ];
   }
   // 39-52 weeks (9-12 months)
   if (ageInWeeks < 52) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Cruising around", stage: "growing" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer grip", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Understanding words", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Waving, pointing", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Problem solving", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Testing reactions", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Cruising around", status: "TRANSITIONING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Pincer grip", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Understanding words", status: "GROWING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Waving, pointing", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Problem solving", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Testing reactions", status: "TRANSITIONING" },
     ];
   }
   // 52-78 weeks (12-18 months)
   if (ageInWeeks < 78) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Walking more", stage: "growing" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Stacking, placing", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "First words", stage: "emerging" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Parallel play", stage: "emerging" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Exploring everything", stage: "confident" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Big feelings arise", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Walking more", status: "TRANSITIONING" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Stacking, placing", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "First words", status: "EMERGING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Parallel play", status: "EMERGING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Exploring everything", status: "STEADY" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Big feelings arise", status: "CHALLENGING" },
     ];
   }
   // 78-104 weeks (18-24 months)
   if (ageInWeeks < 104) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running, climbing", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Scribbling away", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Words piling up", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Copying others", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Sorting, matching", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Asserting will", stage: "confident" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running, climbing", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Scribbling away", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Words piling up", status: "GROWING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Copying others", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Sorting, matching", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Asserting will", status: "CHALLENGING" },
     ];
   }
-  // 104-130 weeks (24-30 months)
-  if (ageInWeeks < 130) {
-    return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Jumping, kicking", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Using utensils", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Two-word phrases", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Wanting friends", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Pretend play starts", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Tantrums peak", stage: "confident" },
-    ];
-  }
-  // 130-156 weeks (30-36 months)
+  // 104-156 weeks (2-3 years)
   if (ageInWeeks < 156) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Balancing better", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Drawing shapes", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Full sentences", stage: "confident" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Taking turns", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Asking why", stage: "confident" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Naming feelings", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Jumping, balancing", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Using utensils", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Sentences forming", status: "GROWING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Taking turns", status: "TRANSITIONING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Asking why", status: "STEADY" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Naming feelings", status: "GROWING" },
     ];
   }
   // 156-208 weeks (3-4 years)
   if (ageInWeeks < 208) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running freely", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Cutting, gluing", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Storytelling", stage: "confident" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Cooperative play", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Counting, sorting", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Empathy growing", stage: "growing" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Running freely", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Cutting, drawing", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Storytelling", status: "STEADY" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Cooperative play", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Counting, sorting", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Empathy growing", status: "TRANSITIONING" },
     ];
   }
-  // 208-260 weeks (4-5 years)
-  if (ageInWeeks < 260) {
-    return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Hopping, skipping", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing name", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Complex sentences", stage: "confident" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Making friends", stage: "confident" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Letters, numbers", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Self-regulation", stage: "growing" },
-    ];
-  }
-  // 260-312 weeks (5-6 years)
+  // 208-312 weeks (4-6 years)
   if (ageInWeeks < 312) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sports ready", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Drawing detailed", stage: "confident" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading starting", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Group dynamics", stage: "growing" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Logical thinking", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Fairness matters", stage: "confident" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Sports ready", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing emerging", status: "TRANSITIONING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading starting", status: "TRANSITIONING" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Making friends", status: "GROWING" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Logical thinking", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Fairness matters", status: "STEADY" },
     ];
   }
-  // 312-364 weeks (6-7 years)
-  if (ageInWeeks < 364) {
-    return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Coordination refined", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing fluently", stage: "growing" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading taking off", stage: "confident" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Real friendships", stage: "confident" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Abstract concepts", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Managing feelings", stage: "growing" },
-    ];
-  }
-  // 364-416 weeks (7-8 years)
+  // 312-416 weeks (6-8 years)
   if (ageInWeeks < 416) {
     return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Athletic skills", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Detailed crafts", stage: "confident" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Fluent reader", stage: "confident" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Peer-focused", stage: "confident" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Strategic thinking", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Deeper empathy", stage: "confident" },
+      { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Coordination refined", status: "STEADY" },
+      { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Writing fluently", status: "GROWING" },
+      { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Reading fluently", status: "STEADY" },
+      { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Real friendships", status: "STEADY" },
+      { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Strategic thinking", status: "GROWING" },
+      { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Managing feelings", status: "TRANSITIONING" },
     ];
   }
-  // 416-468 weeks (8-9 years)
-  if (ageInWeeks < 468) {
-    return [
-      { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Strength growing", stage: "confident" },
-      { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Precise work", stage: "confident" },
-      { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Expressive writing", stage: "growing" },
-      { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Social hierarchy", stage: "confident" },
-      { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Critical thinking", stage: "growing" },
-      { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Self-awareness", stage: "confident" },
-    ];
-  }
-  // 468-520 weeks (9-10 years)
+  // 416-520 weeks (8-10 years)
   return [
-    { domain: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Body changing", stage: "growing" },
-    { domain: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Complex skills", stage: "confident" },
-    { domain: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Abstract language", stage: "confident" },
-    { domain: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Identity forming", stage: "growing" },
-    { domain: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Independent learner", stage: "confident" },
-    { domain: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Navigating complexity", stage: "growing" },
+    { id: "physical", label: "PHYSICAL", icon: <Footprints className="w-4 h-4" />, phrase: "Body changing", status: "TRANSITIONING" },
+    { id: "fine_motor", label: "FINE MOTOR", icon: <Hand className="w-4 h-4" />, phrase: "Complex skills", status: "STEADY" },
+    { id: "language", label: "LANGUAGE", icon: <MessageCircle className="w-4 h-4" />, phrase: "Abstract language", status: "STEADY" },
+    { id: "social", label: "SOCIAL", icon: <Users className="w-4 h-4" />, phrase: "Identity forming", status: "TRANSITIONING" },
+    { id: "cognitive", label: "COGNITIVE", icon: <Brain className="w-4 h-4" />, phrase: "Independent learner", status: "STEADY" },
+    { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-4 h-4" />, phrase: "Navigating complexity", status: "CHALLENGING" },
   ];
 };
 
-const getStageOpacity = (stage: string): string => {
-  switch (stage) {
-    case "emerging": return "opacity-50";
-    case "growing": return "opacity-75";
-    case "confident": return "opacity-100";
-    default: return "opacity-60";
+const getStatusStyle = (status: string): string => {
+  switch (status) {
+    case "EMERGING": return "text-muted-foreground/60";
+    case "GROWING": return "text-primary/80";
+    case "STEADY": return "text-foreground/70";
+    case "TRANSITIONING": return "text-amber-500/80 dark:text-amber-400/80";
+    case "CHALLENGING": return "text-rose-500/70 dark:text-rose-400/70";
+    default: return "text-muted-foreground";
   }
 };
 
-export const DevelopmentTable = ({ ageInWeeks, birthday }: DevelopmentTableProps) => {
+export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: DevelopmentTableProps) => {
   const domains = getDomainData(ageInWeeks);
-  const sunSign = birthday ? getSunSign(birthday) : null;
-  const chineseZodiac = birthday ? getChineseZodiac(birthday) : null;
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+
+  const selectedDomainData = selectedDomain 
+    ? domains.find(d => d.id === selectedDomain) 
+    : null;
 
   return (
-    <div className="mx-5 mt-6">
-      {/* Zodiac header */}
-      {birthday && (
-        <div className="flex items-center justify-center gap-6 mb-4">
-          {sunSign && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Star className="w-3.5 h-3.5" />
-              <span className="text-xs uppercase tracking-wide">{sunSign.symbol} {sunSign.sign}</span>
-            </div>
-          )}
-          {chineseZodiac && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-xs uppercase tracking-wide">{chineseZodiac.symbol} {chineseZodiac.animal}</span>
-            </div>
-          )}
-        </div>
-      )}
+    <>
+      <div className="mx-5 mt-6">
+        {/* Section header */}
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3 text-center">
+          {babyName ? `${babyName}'s Development` : "Today's Chart"}
+        </p>
 
-      {/* 6-domain mosaic grid */}
-      <div className="grid grid-cols-2 gap-px bg-border/30 border border-border/40 rounded-sm overflow-hidden">
-        {domains.map((domain, index) => (
-          <div 
-            key={domain.domain}
-            className={`bg-background/80 p-4 ${getStageOpacity(domain.stage)}`}
-          >
-            {/* Domain icon and label */}
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-muted-foreground">{domain.icon}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
-                {domain.label}
-              </span>
-            </div>
-            
-            {/* Phrase */}
-            <p className="text-sm font-medium text-foreground leading-tight">
-              {domain.phrase}
-            </p>
-            
-            {/* Stage indicator */}
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground/70 mt-1.5 italic">
-              {domain.stage}
-            </p>
+        {/* Table container with labels */}
+        <div className="relative border border-border/40 rounded-sm">
+          {/* Vertical DOMAINS label on left */}
+          <div className="absolute left-0 top-0 bottom-0 w-5 flex items-center justify-center">
+            <span 
+              className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/50 font-medium"
+              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+            >
+              Domains
+            </span>
           </div>
-        ))}
+
+          {/* Vertical PHASE label on right */}
+          <div className="absolute right-0 top-0 bottom-0 w-5 flex items-center justify-center">
+            <span 
+              className="text-[9px] uppercase tracking-[0.15em] text-muted-foreground/50 font-medium"
+              style={{ writingMode: 'vertical-rl' }}
+            >
+              Phase
+            </span>
+          </div>
+
+          {/* Domain rows */}
+          <div className="mx-5">
+            {domains.map((domain, index) => (
+              <button
+                key={domain.id}
+                onClick={() => setSelectedDomain(domain.id)}
+                className={`w-full flex items-center py-3.5 px-1 text-left transition-colors hover:bg-muted/30 active:bg-muted/50 ${
+                  index !== domains.length - 1 ? 'border-b border-border/20' : ''
+                }`}
+              >
+                {/* Domain label with icon */}
+                <div className="flex items-center gap-2 w-28 shrink-0">
+                  <span className="text-muted-foreground/70">{domain.icon}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">
+                    {domain.label}
+                  </span>
+                </div>
+
+                {/* Current state phrase */}
+                <div className="flex-1 min-w-0 px-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {domain.phrase}
+                  </span>
+                </div>
+
+                {/* Status label */}
+                <div className="flex items-center gap-1 shrink-0">
+                  <span className={`text-[9px] uppercase tracking-wide font-medium ${getStatusStyle(domain.status)}`}>
+                    {domain.status}
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40" />
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-3">
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-foreground/50"></div>
-          <span className="text-[9px] uppercase tracking-wide text-muted-foreground">emerging</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-foreground/75"></div>
-          <span className="text-[9px] uppercase tracking-wide text-muted-foreground">growing</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-2 h-2 rounded-full bg-foreground"></div>
-          <span className="text-[9px] uppercase tracking-wide text-muted-foreground">confident</span>
-        </div>
-      </div>
-    </div>
+      {/* Domain Detail Modal */}
+      <DomainDetailModal
+        isOpen={!!selectedDomain}
+        onClose={() => setSelectedDomain(null)}
+        domain={selectedDomainData}
+        ageInWeeks={ageInWeeks}
+        birthday={birthday}
+        allDomains={domains}
+        onNavigate={(id) => setSelectedDomain(id)}
+      />
+    </>
   );
 };

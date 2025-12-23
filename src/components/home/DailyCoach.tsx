@@ -323,7 +323,7 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
         <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
 
         {/* Development Domains */}
-        <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} />
+        <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} babyName={displayName} />
 
         {/* Ideas for the Day */}
         <GlassCard className="mx-5">
