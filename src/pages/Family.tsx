@@ -1,25 +1,30 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies, Baby } from "@/hooks/useBabies";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { TimeOfDayBackground } from "@/components/home/TimeOfDayBackground";
-import { GlassCard } from "@/components/home/GlassCard";
 import { FamilyNav } from "@/components/family/FamilyNav";
-import { Users, Sparkles, Heart } from "lucide-react";
+import { CompatibilityCard } from "@/components/family/CompatibilityCard";
+import { ParentBirthdayPrompt } from "@/components/family/ParentBirthdayPrompt";
+import { 
+  getZodiacFromBirthday, 
+  getZodiacSymbol, 
+  getZodiacName, 
+  getCompatibility,
+  ZODIAC_DATA,
+  ZodiacSign
+} from "@/lib/zodiac";
 
-const getAgeInWeeks = (birthday?: string | null): number => {
-  if (!birthday) return 0;
+const getAgeLabel = (birthday?: string | null): string => {
+  if (!birthday) return "";
   const birthDate = new Date(birthday);
   const today = new Date();
   const diffTime = Math.abs(today.getTime() - birthDate.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return Math.floor(diffDays / 7);
-};
-
-const getAgeLabel = (birthday?: string | null): string => {
-  if (!birthday) return "";
-  const ageInWeeks = getAgeInWeeks(birthday);
+  const ageInWeeks = Math.floor(diffDays / 7);
+  
   if (ageInWeeks < 4) return `${ageInWeeks}w`;
   const months = Math.floor(ageInWeeks / 4.33);
   if (months < 12) return `${months}mo`;
@@ -29,124 +34,98 @@ const getAgeLabel = (birthday?: string | null): string => {
   return `${years}y ${remainingMonths}mo`;
 };
 
-const getZodiacSign = (birthday?: string | null): string => {
-  if (!birthday) return "";
-  const date = new Date(birthday);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "♈";
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "♉";
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return "♊";
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return "♋";
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "♌";
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return "♍";
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return "♎";
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return "♏";
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return "♐";
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return "♑";
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "♒";
-  return "♓";
-};
+interface FamilyMember {
+  id: string;
+  name: string;
+  birthday: string | null;
+  type: "parent" | "child";
+}
 
-// Generate family insights based on children
-const getFamilyInsights = (babies: Baby[]): string[] => {
-  const insights: string[] = [];
-  
-  if (babies.length === 0) return ["Your family story is just beginning."];
-  
-  if (babies.length === 1) {
-    const age = getAgeInWeeks(babies[0].birthday);
-    if (age < 12) {
-      insights.push("A season of closeness and discovery.");
-      insights.push("The world is new through their eyes.");
-    } else if (age < 26) {
-      insights.push("Curiosity is blooming.");
-      insights.push("Each day brings new expressions.");
-    } else if (age < 52) {
-      insights.push("Movement and wonder intertwined.");
-      insights.push("Connection deepening every week.");
-    } else {
-      insights.push("Independence emerging gently.");
-      insights.push("Personality shining through.");
-    }
-  } else {
-    // Multiple children dynamics
-    const ages = babies.map(b => getAgeInWeeks(b.birthday));
-    const youngest = Math.min(...ages);
-    const oldest = Math.max(...ages);
-    const gap = oldest - youngest;
-    
-    if (gap < 52) {
-      insights.push("Close in age, discovering together.");
-    } else if (gap < 104) {
-      insights.push("Learning flows both ways.");
-    } else {
-      insights.push("Different chapters, shared story.");
-    }
-    
-    if (babies.length === 2) {
-      insights.push("Two rhythms finding harmony.");
-    } else {
-      insights.push("A chorus of personalities.");
-    }
-    
-    // Energy insights
-    const hasInfant = ages.some(a => a < 16);
-    const hasToddler = ages.some(a => a >= 52);
-    
-    if (hasInfant && hasToddler) {
-      insights.push("Patience stretched, love multiplied.");
-    } else if (hasInfant) {
-      insights.push("The house holds tenderness.");
-    } else if (hasToddler) {
-      insights.push("Energy fills every corner.");
-    }
-  }
-  
-  return insights.slice(0, 3);
-};
-
-// Generate pairwise dynamics
-const getPairwiseDynamics = (babies: Baby[]): { pair: string; insight: string }[] => {
-  if (babies.length < 2) return [];
-  
-  const dynamics: { pair: string; insight: string }[] = [];
-  
-  for (let i = 0; i < babies.length; i++) {
-    for (let j = i + 1; j < babies.length; j++) {
-      const older = getAgeInWeeks(babies[i].birthday) >= getAgeInWeeks(babies[j].birthday) ? babies[i] : babies[j];
-      const younger = older === babies[i] ? babies[j] : babies[i];
-      const gap = Math.abs(getAgeInWeeks(babies[i].birthday) - getAgeInWeeks(babies[j].birthday));
-      
-      let insight = "";
-      if (gap < 52) {
-        insight = "Growing side by side, natural playmates.";
-      } else if (gap < 104) {
-        insight = "One leads, one follows, roles shift daily.";
-      } else {
-        insight = "Tenderness across the age gap.";
-      }
-      
-      dynamics.push({
-        pair: `${older.name} & ${younger.name}`,
-        insight
-      });
-    }
-  }
-  
-  return dynamics.slice(0, 3);
-};
+interface CompatibilityPair {
+  person1: FamilyMember;
+  person2: FamilyMember;
+  sign1: ZodiacSign;
+  sign2: ZodiacSign;
+  relationshipType: "parent-child" | "siblings";
+}
 
 const Family = () => {
   const { user, loading: authLoading } = useAuth();
   const { babies, loading: babiesLoading } = useBabies();
+  const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const navigate = useNavigate();
+  const [showPrompt, setShowPrompt] = useState(true);
 
-  const insights = useMemo(() => getFamilyInsights(babies), [babies]);
-  const dynamics = useMemo(() => getPairwiseDynamics(babies), [babies]);
+  const handleBirthdaySaved = useCallback(() => {
+    fetchUserProfile();
+    setShowPrompt(false);
+  }, [fetchUserProfile]);
 
-  if (authLoading || babiesLoading) {
+  // Build family members list
+  const familyMembers = useMemo((): FamilyMember[] => {
+    const members: FamilyMember[] = [];
+    
+    // Add parent if they have a birthday
+    if (userProfile?.birthday) {
+      members.push({
+        id: "parent",
+        name: userProfile.display_name || "You",
+        birthday: userProfile.birthday,
+        type: "parent"
+      });
+    }
+    
+    // Add children
+    babies.forEach((baby) => {
+      members.push({
+        id: baby.id,
+        name: baby.name,
+        birthday: baby.birthday || null,
+        type: "child"
+      });
+    });
+    
+    return members;
+  }, [userProfile, babies]);
+
+  // Generate all compatibility pairs
+  const compatibilityPairs = useMemo((): CompatibilityPair[] => {
+    const pairs: CompatibilityPair[] = [];
+    
+    for (let i = 0; i < familyMembers.length; i++) {
+      for (let j = i + 1; j < familyMembers.length; j++) {
+        const person1 = familyMembers[i];
+        const person2 = familyMembers[j];
+        
+        const sign1 = getZodiacFromBirthday(person1.birthday);
+        const sign2 = getZodiacFromBirthday(person2.birthday);
+        
+        // Skip if either doesn't have a valid sign
+        if (!sign1 || !sign2) continue;
+        
+        // Determine relationship type
+        const relationshipType: "parent-child" | "siblings" = 
+          (person1.type === "parent" || person2.type === "parent") 
+            ? "parent-child" 
+            : "siblings";
+        
+        pairs.push({
+          person1,
+          person2,
+          sign1,
+          sign2,
+          relationshipType
+        });
+      }
+    }
+    
+    return pairs;
+  }, [familyMembers]);
+
+  const parentHasBirthday = !!userProfile?.birthday;
+  const childrenWithBirthdays = babies.filter(b => b.birthday);
+
+  if (authLoading || babiesLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <LoadingSpinner />
@@ -163,26 +142,58 @@ const Family = () => {
     <div className="min-h-screen bg-background">
       <TimeOfDayBackground>
         <div className="space-y-4 pb-24">
-          {/* Family Identity Header */}
-          <div className="px-5 pt-8 pb-4 text-center">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">
-              Your family
+          {/* Header */}
+          <div className="px-5 pt-8 pb-2 text-center">
+            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
+              Family Compatibility
             </p>
-            
-            {/* Member avatars */}
-            <div className="flex justify-center gap-3 mb-4">
+            <h1 className="font-serif text-2xl text-foreground">
+              Cosmic Connections
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Zodiac insights for your family
+            </p>
+          </div>
+
+          {/* Family Members Overview */}
+          <div className="px-5">
+            <div className="flex justify-center flex-wrap gap-3">
+              {/* Parent */}
+              {userProfile?.birthday && (
+                <div className="flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mb-1.5">
+                    <span className="text-xl">
+                      {getZodiacSymbol(userProfile.birthday)}
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium text-foreground">
+                    {userProfile.display_name || "You"}
+                  </p>
+                  <span className="text-[10px] text-muted-foreground">
+                    {getZodiacName(getZodiacFromBirthday(userProfile.birthday)!)}
+                  </span>
+                </div>
+              )}
+              
+              {/* Children */}
               {babies.map((baby) => (
                 <div key={baby.id} className="flex flex-col items-center">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mb-1.5">
-                    <span className="text-lg font-serif text-primary/60">
-                      {baby.name.charAt(0).toUpperCase()}
-                    </span>
+                    {baby.birthday ? (
+                      <span className="text-xl">
+                        {getZodiacSymbol(baby.birthday)}
+                      </span>
+                    ) : (
+                      <span className="text-lg font-serif text-primary/60">
+                        {baby.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs font-medium text-foreground">{baby.name}</p>
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <span>{getAgeLabel(baby.birthday)}</span>
                     {baby.birthday && (
-                      <span className="opacity-60">{getZodiacSign(baby.birthday)}</span>
+                      <span>• {getZodiacName(getZodiacFromBirthday(baby.birthday)!)}</span>
                     )}
                   </div>
                 </div>
@@ -190,91 +201,50 @@ const Family = () => {
             </div>
           </div>
 
-          {/* Family Insights */}
-          <GlassCard className="mx-5">
-            <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">This season</p>
-            </div>
-            <div className="p-5 space-y-3">
-              {insights.map((insight, i) => (
-                <p key={i} className="text-base text-foreground font-light leading-relaxed text-center">
-                  {insight}
-                </p>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* Pairwise Dynamics */}
-          {dynamics.length > 0 && (
-            <GlassCard className="mx-5">
-              <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-primary" />
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Together</p>
-              </div>
-              <div className="p-4 space-y-4">
-                {dynamics.map((dynamic, i) => (
-                  <div key={i} className="text-center">
-                    <p className="text-xs font-medium text-muted-foreground mb-1">
-                      {dynamic.pair}
-                    </p>
-                    <p className="text-sm text-foreground leading-relaxed">
-                      {dynamic.insight}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
+          {/* Parent Birthday Prompt */}
+          {!parentHasBirthday && showPrompt && (
+            <ParentBirthdayPrompt onSaved={handleBirthdaySaved} />
           )}
 
-          {/* Family constellation visual */}
-          <GlassCard className="mx-5">
-            <div className="px-4 py-3 border-b border-border/30 flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary" />
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Constellation</p>
+          {/* No compatibility message */}
+          {compatibilityPairs.length === 0 && parentHasBirthday && childrenWithBirthdays.length === 0 && (
+            <div className="mx-5 p-6 rounded-2xl bg-muted/30 border border-border/30 text-center">
+              <p className="text-sm text-muted-foreground">
+                Add birthdays to your children in Settings to see compatibility insights.
+              </p>
             </div>
-            <div className="p-6">
-              <div className="relative h-32 flex items-center justify-center">
-                {/* Simple constellation visualization */}
-                {babies.map((baby, index) => {
-                  const angle = (index / Math.max(babies.length, 1)) * Math.PI * 2 - Math.PI / 2;
-                  const radius = babies.length > 1 ? 40 : 0;
-                  const x = Math.cos(angle) * radius;
-                  const y = Math.sin(angle) * radius;
-                  
-                  return (
-                    <div
-                      key={baby.id}
-                      className="absolute w-10 h-10 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center"
-                      style={{
-                        transform: `translate(${x}px, ${y}px)`,
-                      }}
-                    >
-                      <span className="text-sm font-serif text-primary/80">
-                        {baby.name.charAt(0)}
-                      </span>
-                    </div>
-                  );
-                })}
-                
-                {/* Center point for multiple children */}
-                {babies.length > 1 && (
-                  <div className="absolute w-2 h-2 rounded-full bg-primary/40" />
-                )}
-              </div>
-            </div>
-          </GlassCard>
+          )}
 
-          {/* Affirming footer */}
+          {/* Compatibility Cards */}
+          <div className="px-5 space-y-4">
+            {compatibilityPairs.map((pair, index) => {
+              const compatibility = getCompatibility(pair.sign1, pair.sign2, pair.relationshipType);
+              
+              return (
+                <CompatibilityCard
+                  key={`${pair.person1.id}-${pair.person2.id}`}
+                  person1Name={pair.person1.name}
+                  person1Sign={getZodiacName(pair.sign1)}
+                  person1Symbol={ZODIAC_DATA[pair.sign1].symbol}
+                  person2Name={pair.person2.name}
+                  person2Sign={getZodiacName(pair.sign2)}
+                  person2Symbol={ZODIAC_DATA[pair.sign2].symbol}
+                  compatibility={compatibility}
+                  relationshipType={pair.relationshipType}
+                />
+              );
+            })}
+          </div>
+
+          {/* Footer */}
           <div className="pt-4 text-center px-5">
             <p className="text-xs text-muted-foreground/70 italic">
-              Every family finds its own rhythm.
+              The stars illuminate, but love defines.
             </p>
           </div>
         </div>
       </TimeOfDayBackground>
 
-      {/* Family Navigation */}
       <FamilyNav />
     </div>
   );
