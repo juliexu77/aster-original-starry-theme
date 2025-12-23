@@ -184,36 +184,26 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
 
   return (
     <>
-      <div className="mx-4 mt-8">
+      <div className="px-6 mt-8">
         {/* Section header */}
         <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] mb-4 text-center font-light">
           {babyName ? `${babyName}'s Development` : "Development"}
         </p>
 
-        {/* Table container */}
-        <div className="relative">
+        {/* Table container with side labels */}
+        <div className="flex items-stretch">
           {/* Vertical DOMAINS label on left */}
-          <div className="absolute -left-4 top-0 bottom-0 w-4 flex items-center justify-center">
+          <div className="flex items-center justify-center w-5 mr-2">
             <span 
-              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
-              style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+              className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground/50 font-light whitespace-nowrap"
+              style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
             >
               Domains
             </span>
           </div>
 
-          {/* Vertical STAGE label on right */}
-          <div className="absolute -right-4 top-0 bottom-0 w-4 flex items-center justify-center">
-            <span 
-              className="text-[8px] uppercase tracking-[0.2em] text-muted-foreground/40 font-light"
-              style={{ writingMode: 'vertical-rl' }}
-            >
-              Stage
-            </span>
-          </div>
-
           {/* Main table grid */}
-          <div className="border-t border-l border-border/30">
+          <div className="flex-1 border-t border-l border-border/30">
             {domains.map((domain) => (
               <button
                 key={domain.id}
@@ -247,6 +237,16 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
                 </div>
               </button>
             ))}
+          </div>
+
+          {/* Vertical STAGE label on right */}
+          <div className="flex items-center justify-center w-5 ml-2">
+            <span 
+              className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground/50 font-light whitespace-nowrap"
+              style={{ writingMode: 'vertical-lr' }}
+            >
+              Stage
+            </span>
           </div>
         </div>
       </div>
