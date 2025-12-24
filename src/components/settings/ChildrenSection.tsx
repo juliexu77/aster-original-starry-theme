@@ -28,7 +28,7 @@ import { Baby as BabyType } from "@/hooks/useBabies";
 interface ChildrenSectionProps {
   babies: BabyType[];
   onAddBaby: (name: string, birthday?: string) => Promise<void>;
-  onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string }) => Promise<void>;
+  onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => Promise<void>;
   onArchiveBaby: (babyId: string) => Promise<void>;
 }
 
@@ -63,6 +63,7 @@ export const ChildrenSection = ({
   const [selectedBaby, setSelectedBaby] = useState<BabyType | null>(null);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [birthTime, setBirthTime] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleOpenAdd = () => {
@@ -75,6 +76,7 @@ export const ChildrenSection = ({
     setSelectedBaby(baby);
     setName(baby.name);
     setBirthday(baby.birthday || "");
+    setBirthTime(baby.birth_time || "");
     setShowEditModal(true);
   };
 
@@ -104,7 +106,8 @@ export const ChildrenSection = ({
     try {
       await onUpdateBaby(selectedBaby.id, { 
         name: name.trim(), 
-        birthday: birthday || undefined 
+        birthday: birthday || undefined,
+        birth_time: birthTime || null
       });
       toast({ title: "Updated" });
       setShowEditModal(false);
@@ -163,22 +166,24 @@ export const ChildrenSection = ({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="addName">Name</Label>
+              <Label htmlFor="addName" className="text-[11px] text-foreground/40 uppercase tracking-wider">Name</Label>
               <Input
                 id="addName"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Child's name"
                 autoFocus
+                className="text-[13px]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="addBirthday">Birthday</Label>
+              <Label htmlFor="addBirthday" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birthday</Label>
               <Input
                 id="addBirthday"
                 type="date"
                 value={birthday}
                 onChange={(e) => setBirthday(e.target.value)}
+                className="text-[13px]"
               />
             </div>
           </div>
@@ -186,7 +191,7 @@ export const ChildrenSection = ({
             <Button 
               onClick={handleAdd} 
               disabled={isSaving || !name.trim()}
-              className="w-full"
+              className="w-full text-[13px]"
             >
               {isSaving ? "Adding..." : "Add"}
             </Button>
@@ -202,21 +207,34 @@ export const ChildrenSection = ({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="editName">Name</Label>
+              <Label htmlFor="editName" className="text-[11px] text-foreground/40 uppercase tracking-wider">Name</Label>
               <Input
                 id="editName"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Child's name"
+                className="text-[13px]"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="editBirthday">Birthday</Label>
+              <Label htmlFor="editBirthday" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birthday</Label>
               <Input
                 id="editBirthday"
                 type="date"
                 value={birthday}
                 onChange={(e) => setBirthday(e.target.value)}
+                className="text-[13px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time <span className="normal-case opacity-60">(for moon sign)</span></Label>
+              <Input
+                id="editBirthTime"
+                type="time"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                placeholder="HH:MM"
+                className="text-[13px]"
               />
             </div>
           </div>
@@ -224,7 +242,7 @@ export const ChildrenSection = ({
             <Button 
               onClick={handleUpdate} 
               disabled={isSaving || !name.trim()}
-              className="w-full"
+              className="w-full text-[13px]"
             >
               {isSaving ? "Saving..." : "Save"}
             </Button>
@@ -232,7 +250,7 @@ export const ChildrenSection = ({
               <Button 
                 variant="ghost" 
                 onClick={() => setShowArchiveConfirm(true)}
-                className="w-full text-muted-foreground"
+                className="w-full text-foreground/40 text-[13px]"
               >
                 <Archive className="w-4 h-4 mr-2" />
                 Archive

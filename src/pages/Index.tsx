@@ -84,13 +84,13 @@ const Index = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background overflow-y-auto"
+      className="h-screen bg-background flex flex-col"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       {/* Main Content */}
-      <main className="pb-24">
+      <main className="flex-1 overflow-y-auto pb-24">
         {activeBaby && (
           <DailyCoach 
             babyName={activeBaby.name} 
