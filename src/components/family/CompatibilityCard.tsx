@@ -50,13 +50,12 @@ export const CompatibilityCard = ({
 
   return (
     <GlassCard className="overflow-hidden">
-      {/* Header with names and signs */}
+      {/* Header with names */}
       <div className="px-4 py-3 border-b border-border/30">
         <div className="flex items-center justify-center gap-3">
           <div className="flex flex-col items-center">
             <span className="text-2xl">{person1Symbol}</span>
             <span className="text-xs font-medium text-foreground">{person1Name}</span>
-            <span className="text-[10px] text-muted-foreground">{person1Sign}</span>
           </div>
           
           <Heart className="w-4 h-4 text-primary/60" />
@@ -64,7 +63,6 @@ export const CompatibilityCard = ({
           <div className="flex flex-col items-center">
             <span className="text-2xl">{person2Symbol}</span>
             <span className="text-xs font-medium text-foreground">{person2Name}</span>
-            <span className="text-[10px] text-muted-foreground">{person2Sign}</span>
           </div>
         </div>
         

@@ -40,13 +40,15 @@ serve(async (req) => {
       return `${c.name} (${ageLabel}, ${c.sunSign} Sun${c.moonSign ? `, ${c.moonSign} Moon` : ''})`;
     }).join(" and ");
 
-    const prompt = `You are an expert in astrology and child development. Analyze the sibling dynamics between these children:
+    const prompt = `You are an expert in personality-based child development. Analyze the sibling dynamics between these children:
 
 ${childDescriptions}
 
+IMPORTANT: Do NOT mention zodiac signs, sun signs, moon signs, or any astrological terminology in your response. Focus only on personality traits, behaviors, and practical insights. Write as if you're describing their natural temperaments.
+
 Provide insights in this JSON structure:
 {
-  "currentDynamic": "2-3 sentences about how they interact right now given their ages",
+  "currentDynamic": "2-3 sentences about how they interact right now given their ages and personalities",
   "whatEachBrings": [
     {"child": "name", "gifts": ["trait1", "trait2", "trait3"]}
   ],
@@ -57,7 +59,7 @@ Provide insights in this JSON structure:
   "teenYears": "2-3 sentences about teen dynamics"
 }
 
-Keep the tone warm, insightful, and practical. Focus on how their zodiac signs influence their sibling relationship. Be specific to their signs, not generic.`;
+Keep the tone warm, insightful, and practical. Focus on personality traits and how they interact - never reference astrology or zodiac signs. Be specific to their personalities, not generic.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
