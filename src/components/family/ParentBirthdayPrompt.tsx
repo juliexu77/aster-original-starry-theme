@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Clock, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/home/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   const [birthday, setBirthday] = useState("");
   const [birthTime, setBirthTime] = useState("");
+  const [birthLocation, setBirthLocation] = useState("");
   const [saving, setSaving] = useState(false);
   const { updateUserProfile } = useUserProfile();
   const { toast } = useToast();
@@ -21,7 +22,8 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
     try {
       await updateUserProfile({ 
         birthday,
-        birth_time: birthTime || undefined 
+        birth_time: birthTime || undefined,
+        birth_location: birthLocation || undefined
       });
       toast({
         title: "Birthday saved",
@@ -42,62 +44,81 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
 
   return (
     <GlassCard className="mx-5">
-      <div className="p-5 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-          <Sparkles className="w-6 h-6 text-primary" />
+      <div className="p-4 text-center space-y-3">
+        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+          <Sparkles className="w-5 h-5 text-primary" />
         </div>
         
         <div>
-          <h3 className="font-serif text-lg text-foreground mb-1">
+          <h3 className="font-serif text-base text-foreground mb-0.5">
             Unlock Family Dynamics
           </h3>
-          <p className="text-sm text-muted-foreground">
-            Add your birthday to see how your zodiac sign interacts with your children's signs
+          <p className="text-xs text-muted-foreground">
+            Add your birthday to see how you interact with your children
           </p>
         </div>
         
-        <div className="flex flex-col gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="parentBirthday" className="text-xs text-muted-foreground">Birthday</Label>
+        <div className="flex flex-col gap-2.5">
+          <div className="space-y-1">
+            <Label htmlFor="parentBirthday" className="text-[10px] text-muted-foreground uppercase tracking-wide">Birthday</Label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <Input
                 id="parentBirthday"
                 type="date"
                 value={birthday}
                 onChange={(e) => setBirthday(e.target.value)}
-                className="pl-10"
+                className="pl-8 h-9 text-sm"
               />
             </div>
           </div>
           
-          <div className="space-y-1.5">
-            <Label htmlFor="parentBirthTime" className="text-xs text-muted-foreground">
-              Birth time <span className="opacity-60">(optional, for moon sign)</span>
-            </Label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id="parentBirthTime"
-                type="time"
-                value={birthTime}
-                onChange={(e) => setBirthTime(e.target.value)}
-                className="pl-10"
-              />
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label htmlFor="parentBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                Time <span className="normal-case opacity-60">(optional)</span>
+              </Label>
+              <div className="relative">
+                <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  id="parentBirthTime"
+                  type="time"
+                  value={birthTime}
+                  onChange={(e) => setBirthTime(e.target.value)}
+                  className="pl-8 h-9 text-sm"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-1">
+              <Label htmlFor="parentBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                Location <span className="normal-case opacity-60">(optional)</span>
+              </Label>
+              <div className="relative">
+                <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  id="parentBirthLocation"
+                  type="text"
+                  placeholder="City"
+                  value={birthLocation}
+                  onChange={(e) => setBirthLocation(e.target.value)}
+                  className="pl-8 h-9 text-sm"
+                />
+              </div>
             </div>
           </div>
           
           <Button 
             onClick={handleSave} 
             disabled={!birthday || saving}
-            className="w-full"
+            className="w-full h-9 text-sm"
           >
             {saving ? "Saving..." : "Save Birthday"}
           </Button>
         </div>
         
-        <p className="text-xs text-muted-foreground/70">
-          This is optional and can be changed in Settings
+        <p className="text-[10px] text-muted-foreground/60">
+          Time & location help calculate your moon sign accurately
         </p>
       </div>
     </GlassCard>

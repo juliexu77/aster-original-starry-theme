@@ -8,6 +8,7 @@ export interface Baby {
   name: string;
   birthday: string | null;
   birth_time: string | null;
+  birth_location: string | null;
   photo_url: string | null;
   created_at: string;
   updated_at: string;
@@ -117,7 +118,7 @@ export const useBabies = () => {
     return data;
   };
 
-  const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => {
+  const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => {
     const { error } = await supabase
       .from('babies')
       .update(updates)

@@ -132,7 +132,7 @@ export const useHousehold = () => {
     }
   };
 
-  const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string) => {
+  const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string, babyBirthLocation?: string) => {
     if (!user) throw new Error('User must be authenticated');
 
     const newHouseholdId = crypto.randomUUID();
@@ -164,7 +164,8 @@ export const useHousehold = () => {
         household_id: newHouseholdId,
         name: babyName,
         birthday: babyBirthday || null,
-        birth_time: babyBirthTime || null
+        birth_time: babyBirthTime || null,
+        birth_location: babyBirthLocation || null
       }]);
 
     await fetchHousehold();

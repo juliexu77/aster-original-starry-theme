@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Baby, Plus, Archive } from "lucide-react";
+import { Baby, Plus, Archive, MapPin } from "lucide-react";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import { Baby as BabyType } from "@/hooks/useBabies";
 interface ChildrenSectionProps {
   babies: BabyType[];
   onAddBaby: (name: string, birthday?: string) => Promise<void>;
-  onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => Promise<void>;
+  onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => Promise<void>;
   onArchiveBaby: (babyId: string) => Promise<void>;
 }
 
@@ -64,6 +64,7 @@ export const ChildrenSection = ({
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [birthTime, setBirthTime] = useState("");
+  const [birthLocation, setBirthLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleOpenAdd = () => {
@@ -77,6 +78,7 @@ export const ChildrenSection = ({
     setName(baby.name);
     setBirthday(baby.birthday || "");
     setBirthTime(baby.birth_time || "");
+    setBirthLocation(baby.birth_location || "");
     setShowEditModal(true);
   };
 
@@ -107,7 +109,8 @@ export const ChildrenSection = ({
       await onUpdateBaby(selectedBaby.id, { 
         name: name.trim(), 
         birthday: birthday || undefined,
-        birth_time: birthTime || null
+        birth_time: birthTime || null,
+        birth_location: birthLocation || null
       });
       toast({ title: "Updated" });
       setShowEditModal(false);
@@ -226,17 +229,35 @@ export const ChildrenSection = ({
                 className="text-[13px]"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="editBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time <span className="normal-case opacity-60">(for moon sign)</span></Label>
-              <Input
-                id="editBirthTime"
-                type="time"
-                value={birthTime}
-                onChange={(e) => setBirthTime(e.target.value)}
-                placeholder="HH:MM"
-                className="text-[13px]"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="editBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
+                <Input
+                  id="editBirthTime"
+                  type="time"
+                  value={birthTime}
+                  onChange={(e) => setBirthTime(e.target.value)}
+                  className="text-[13px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="editBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                  <Input
+                    id="editBirthLocation"
+                    type="text"
+                    placeholder="City"
+                    value={birthLocation}
+                    onChange={(e) => setBirthLocation(e.target.value)}
+                    className="text-[13px] pl-8"
+                  />
+                </div>
+              </div>
             </div>
+            <p className="text-[10px] text-foreground/30">
+              Time & location help calculate moon sign accurately
+            </p>
           </div>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button 

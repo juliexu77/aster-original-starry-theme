@@ -12,6 +12,7 @@ interface UserProfile {
   photo_url?: string | null; // Alias for avatar_url
   birthday: string | null;
   birth_time: string | null;
+  birth_location: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -51,17 +52,18 @@ export const useUserProfile = () => {
     }
   };
 
-  const updateUserProfile = async (updates: { display_name?: string; avatar_url?: string; full_name?: string; photo_url?: string; birthday?: string; birth_time?: string }) => {
+  const updateUserProfile = async (updates: { display_name?: string; avatar_url?: string; full_name?: string; photo_url?: string; birthday?: string; birth_time?: string; birth_location?: string }) => {
     if (!user) throw new Error('User not authenticated');
 
     // Map aliases to actual column names
-    const mappedUpdates: { display_name?: string; avatar_url?: string; birthday?: string; birth_time?: string } = {};
+    const mappedUpdates: { display_name?: string; avatar_url?: string; birthday?: string; birth_time?: string; birth_location?: string } = {};
     if (updates.display_name !== undefined) mappedUpdates.display_name = updates.display_name;
     if (updates.full_name !== undefined) mappedUpdates.display_name = updates.full_name;
     if (updates.avatar_url !== undefined) mappedUpdates.avatar_url = updates.avatar_url;
     if (updates.photo_url !== undefined) mappedUpdates.avatar_url = updates.photo_url;
     if (updates.birthday !== undefined) mappedUpdates.birthday = updates.birthday;
     if (updates.birth_time !== undefined) mappedUpdates.birth_time = updates.birth_time;
+    if (updates.birth_location !== undefined) mappedUpdates.birth_location = updates.birth_location;
 
     const { data, error } = await supabase
       .from('profiles')
