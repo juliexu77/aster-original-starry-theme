@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Brain, Sparkles, Users, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -16,7 +16,7 @@ import { ParentChildCard } from "@/components/family/ParentChildCard";
 import { Button } from "@/components/ui/button";
 import { 
   getZodiacFromBirthday, 
-  getZodiacSymbol, 
+  getZodiacGlyph, 
   getZodiacName, 
   getMoonSignFromBirthDateTime,
   ZodiacSign
@@ -36,15 +36,50 @@ const getAgeMonths = (birthday?: string | null): number => {
   return Math.max(0, months);
 };
 
-const getAgeLabel = (birthday?: string | null): string => {
-  if (!birthday) return "";
-  const months = getAgeMonths(birthday);
-  if (months < 1) return "newborn";
-  if (months < 12) return `${months}mo`;
+const formatAgeWord = (months: number): string => {
+  if (months < 1) return "Newborn";
+  if (months === 1) return "One Month";
+  if (months < 12) {
+    const words = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven"];
+    return `${words[months]} Months`;
+  }
   const years = Math.floor(months / 12);
-  const remainingMonths = months % 12;
-  if (remainingMonths === 0) return `${years}y`;
-  return `${years}y ${remainingMonths}mo`;
+  const remaining = months % 12;
+  const yearWords = ["", "One", "Two", "Three", "Four", "Five"];
+  if (remaining === 0) return `${yearWords[years]} Year${years > 1 ? 's' : ''}`;
+  return `${yearWords[years]} Year${years > 1 ? 's' : ''}, ${remaining} Month${remaining > 1 ? 's' : ''}`;
+};
+
+// Co-Star style preview generators
+const getCoStarPreview = (sun: ZodiacSign, moon: ZodiacSign | null): string => {
+  const sunTraits = SUN_SIGN_CHILD_TRAITS[sun];
+  const coreTraits = sunTraits.core.slice(0, 3).join(". ") + ".";
+  if (moon) {
+    const moonNeed = MOON_SIGN_TRAITS[moon].needs.split(",")[0].trim();
+    return `${coreTraits} Needs ${moonNeed.toLowerCase()}.`;
+  }
+  return coreTraits;
+};
+
+const getCoStarAgePreview = (sun: ZodiacSign, ageMonths: number): string => {
+  const element = getElement(sun);
+  const elementDescriptors: Record<string, string> = {
+    fire: "Active. Physical. Learning through movement.",
+    earth: "Steady. Sensory. Building foundations.",
+    air: "Curious. Verbal. Processing through talk.",
+    water: "Feeling. Intuitive. Absorbing everything."
+  };
+  return elementDescriptors[element] || "";
+};
+
+const getElement = (sign: ZodiacSign): string => {
+  const elements: Record<ZodiacSign, string> = {
+    aries: 'fire', leo: 'fire', sagittarius: 'fire',
+    taurus: 'earth', virgo: 'earth', capricorn: 'earth',
+    gemini: 'air', libra: 'air', aquarius: 'air',
+    cancer: 'water', scorpio: 'water', pisces: 'water'
+  };
+  return elements[sign];
 };
 
 const Family = () => {
@@ -104,65 +139,32 @@ const Family = () => {
   const parentName = userProfile?.display_name || "You";
   const parentHasBirthday = !!userProfile?.birthday;
 
+  // Build minimal family line
+  const familyMembers: string[] = [];
+  if (parentHasBirthday && parentSun) {
+    familyMembers.push(`${parentName} ${getZodiacGlyph(parentSun)}`);
+  }
+  babies.forEach(baby => {
+    const sign = getZodiacFromBirthday(baby.birthday);
+    if (sign) {
+      familyMembers.push(`${baby.name} ${getZodiacGlyph(sign)}`);
+    }
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <TimeOfDayBackground>
         <div className="space-y-4 pb-24">
-          {/* Header */}
+          {/* Minimal Header */}
           <div className="px-5 pt-8 pb-2 text-center">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
-              Cosmic Connections
+            <p className="text-[11px] text-muted-foreground/50 uppercase tracking-[0.25em]">
+              Family
             </p>
-            <h1 className="font-serif text-2xl text-foreground">
-              Family Dynamics
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Zodiac insights for your family
-            </p>
-          </div>
-
-          {/* Family Constellation */}
-          <div className="px-5">
-            <div className="flex justify-center flex-wrap gap-4">
-              {/* Parent */}
-              {userProfile?.birthday && (
-                <div className="flex flex-col items-center">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mb-1.5">
-                    <span className="text-xl">{getZodiacSymbol(userProfile.birthday)}</span>
-                  </div>
-                  <p className="text-xs font-medium text-foreground">{parentName}</p>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                    <span>{getZodiacName(parentSun!)} ☉</span>
-                    {parentMoon && <span>• {getZodiacName(parentMoon)} ☽</span>}
-                  </div>
-                </div>
-              )}
-              
-              {/* Children */}
-              {babies.map((baby) => {
-                const childSun = getZodiacFromBirthday(baby.birthday);
-                const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
-                return (
-                  <div key={baby.id} className="flex flex-col items-center">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mb-1.5">
-                      {baby.birthday ? (
-                        <span className="text-xl">{getZodiacSymbol(baby.birthday)}</span>
-                      ) : (
-                        <span className="text-lg font-serif text-primary/60">
-                          {baby.name.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs font-medium text-foreground">{baby.name}</p>
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <span>{getAgeLabel(baby.birthday)}</span>
-                      {childSun && <span>• {getZodiacName(childSun)} ☉</span>}
-                      {childMoon && <span>{getZodiacName(childMoon)} ☽</span>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            {familyMembers.length > 0 && (
+              <p className="text-[13px] text-foreground/60 mt-3 tracking-wide">
+                {familyMembers.join(" · ")}
+              </p>
+            )}
           </div>
 
           {/* Cards */}
@@ -216,25 +218,27 @@ const Family = () => {
               const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const traits = SUN_SIGN_CHILD_TRAITS[childSun];
               const moonTraits = childMoon ? MOON_SIGN_TRAITS[childMoon] : null;
-              const synthesis = getSunMoonSynthesis(childSun, childMoon, baby.name);
+              const childGlyph = getZodiacGlyph(childSun);
+              const moonGlyph = childMoon ? getZodiacGlyph(childMoon) : null;
               
               return (
                 <CollapsibleCard
                   key={`understand-${baby.id}`}
-                  icon={<Brain className="w-4 h-4" />}
-                  title={`Understanding ${baby.name}`}
-                  subtitle={`${getZodiacName(childSun)} Sun${childMoon ? ` • ${getZodiacName(childMoon)} Moon` : ''}`}
-                  preview={synthesis}
+                  title={baby.name}
+                  subtitle={`${getZodiacName(childSun)} ${childGlyph}${childMoon ? ` · ${getZodiacName(childMoon)} ☽` : ''}`}
+                  preview={getCoStarPreview(childSun, childMoon)}
                 >
-                  <p className="text-sm text-foreground mb-4">{synthesis}</p>
+                  <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">
+                    {traits.core.slice(0, 4).join(". ")}. {childMoon ? MOON_SIGN_TRAITS[childMoon].needs.split(",")[0].trim() + " emotionally." : ""}
+                  </p>
                   
                   <div className="mb-4">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
-                      {getZodiacName(childSun)} Sun traits:
+                    <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-2">
+                      {getZodiacName(childSun)} ☉
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {traits.core.map((trait, i) => (
-                        <span key={i} className="text-xs px-2 py-1 rounded-full bg-primary/10 text-foreground/80">
+                        <span key={i} className="text-[13px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/60">
                           {trait}
                         </span>
                       ))}
@@ -242,11 +246,11 @@ const Family = () => {
                   </div>
 
                   {childMoon && moonTraits && (
-                    <CollapsibleSubsection title={`${getZodiacName(childMoon)} Moon`}>
-                      <p className="text-sm text-foreground/90 mb-2">{moonTraits.emotional}</p>
+                    <CollapsibleSubsection title={`${getZodiacName(childMoon)} ☽`}>
+                      <p className="text-[14px] text-foreground/60 mb-2">{moonTraits.needs}</p>
                       <div className="flex flex-wrap gap-2">
                         {moonTraits.traits.map((trait, i) => (
-                          <span key={i} className="text-xs px-2 py-1 rounded-full bg-muted text-foreground/70">
+                          <span key={i} className="text-[13px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/50">
                             {trait}
                           </span>
                         ))}
@@ -255,11 +259,11 @@ const Family = () => {
                   )}
 
                   <CollapsibleSubsection title="Strengths">
-                    <p className="text-sm text-foreground/90">{traits.strengths}</p>
+                    <p className="text-[14px] text-foreground/60">{traits.strengths}</p>
                   </CollapsibleSubsection>
 
-                  <CollapsibleSubsection title="Growth areas">
-                    <p className="text-sm text-foreground/90">{traits.challenges}</p>
+                  <CollapsibleSubsection title="Growth">
+                    <p className="text-[14px] text-foreground/60">{traits.challenges}</p>
                   </CollapsibleSubsection>
                 </CollapsibleCard>
               );
@@ -273,24 +277,24 @@ const Family = () => {
               const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const ageMonths = getAgeMonths(baby.birthday);
               const ageInsight = getAgeSignInsight(childSun, childMoon, ageMonths, baby.name);
+              const childGlyph = getZodiacGlyph(childSun);
               
               return (
                 <CollapsibleCard
                   key={`stage-${baby.id}`}
-                  icon={<Sparkles className="w-4 h-4" />}
-                  title={`${baby.name} Right Now`}
-                  subtitle={ageInsight.title}
-                  preview={ageInsight.content}
+                  title={`${baby.name} · ${formatAgeWord(ageMonths)}`}
+                  subtitle={`${getZodiacName(childSun)} ${childGlyph}`}
+                  preview={getCoStarAgePreview(childSun, ageMonths)}
                 >
-                  <p className="text-sm text-foreground mb-4">{ageInsight.content}</p>
+                  <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">{ageInsight.content}</p>
                   
                   <div className="space-y-3">
                     {Object.entries(ageInsight.areas).map(([area, content]) => (
                       <div key={area}>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                        <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-1">
                           {area}
                         </p>
-                        <p className="text-sm text-foreground/90">{content}</p>
+                        <p className="text-[14px] text-foreground/60">{content}</p>
                       </div>
                     ))}
                   </div>
@@ -301,19 +305,18 @@ const Family = () => {
             {/* Sibling Dynamics - AI Generated */}
             {babies.filter(b => b.birthday).length > 1 && (
               <CollapsibleCard
-                icon={<Users className="w-4 h-4" />}
                 title={babies.map(b => b.name).join(" + ")}
                 subtitle={dynamics?.compatibilityLabel || "Sibling dynamics"}
-                preview={dynamics?.compatibilityNote || "Tap to discover how your children interact."}
+                preview={dynamics?.compatibilityNote || "Loading..."}
               >
                 {dynamicsLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <LoadingSpinner />
-                    <span className="ml-2 text-sm text-muted-foreground">Generating insights...</span>
+                    <span className="ml-2 text-[14px] text-muted-foreground">Generating...</span>
                   </div>
                 ) : dynamicsError ? (
                   <div className="text-center py-4">
-                    <p className="text-sm text-muted-foreground mb-2">{dynamicsError}</p>
+                    <p className="text-[14px] text-muted-foreground mb-2">{dynamicsError}</p>
                     <Button
                       variant="outline"
                       size="sm"
@@ -325,36 +328,36 @@ const Family = () => {
                   </div>
                 ) : dynamics ? (
                   <>
-                    <p className="text-sm text-foreground mb-4">{dynamics.currentDynamic}</p>
+                    <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">{dynamics.currentDynamic}</p>
                     
                     <div className="mb-4">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
-                        What each brings:
+                      <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-2">
+                        What each brings
                       </p>
                       <div className="space-y-2">
                         {dynamics.whatEachBrings.map((item, i) => (
                           <div key={i}>
-                            <span className="text-sm font-medium text-foreground">{item.child}: </span>
-                            <span className="text-sm text-foreground/80">{item.gifts.join(", ")}</span>
+                            <span className="text-[14px] text-foreground/70">{item.child}: </span>
+                            <span className="text-[14px] text-foreground/50">{item.gifts.join(", ")}</span>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <CollapsibleSubsection title="Early childhood (now → 5)">
-                      <p className="text-sm text-foreground/90">{dynamics.earlyChildhood}</p>
+                    <CollapsibleSubsection title="Early childhood">
+                      <p className="text-[14px] text-foreground/60">{dynamics.earlyChildhood}</p>
                     </CollapsibleSubsection>
 
-                    <CollapsibleSubsection title="School years (6-12)">
-                      <p className="text-sm text-foreground/90">{dynamics.schoolYears}</p>
+                    <CollapsibleSubsection title="School years">
+                      <p className="text-[14px] text-foreground/60">{dynamics.schoolYears}</p>
                     </CollapsibleSubsection>
 
                     <CollapsibleSubsection title="Teen years">
-                      <p className="text-sm text-foreground/90">{dynamics.teenYears}</p>
+                      <p className="text-[14px] text-foreground/60">{dynamics.teenYears}</p>
                     </CollapsibleSubsection>
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Loading insights...</p>
+                  <p className="text-[14px] text-muted-foreground">Loading...</p>
                 )}
               </CollapsibleCard>
             )}
@@ -367,10 +370,10 @@ const Family = () => {
             </div>
           )}
 
-          {/* Footer */}
-          <div className="pt-4 text-center px-5">
-            <p className="text-xs text-muted-foreground/70 italic">
-              The stars illuminate, but love defines.
+          {/* Minimal Footer */}
+          <div className="pt-6 text-center px-5">
+            <p className="text-[11px] text-muted-foreground/40 tracking-wide">
+              Stars illuminate. Love defines.
             </p>
           </div>
         </div>

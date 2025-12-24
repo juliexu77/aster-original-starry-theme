@@ -98,6 +98,10 @@ export const getZodiacSymbol = (birthday: string | null | undefined): string => 
   return sign ? ZODIAC_DATA[sign].symbol : '';
 };
 
+export const getZodiacGlyph = (sign: ZodiacSign): string => {
+  return ZODIAC_DATA[sign].symbol;
+};
+
 export const getZodiacName = (sign: ZodiacSign): string => {
   return sign.charAt(0).toUpperCase() + sign.slice(1);
 };

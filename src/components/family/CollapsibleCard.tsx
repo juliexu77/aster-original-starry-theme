@@ -3,7 +3,6 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CollapsibleCardProps {
-  icon: ReactNode;
   title: string;
   subtitle: string;
   preview: string;
@@ -13,7 +12,6 @@ interface CollapsibleCardProps {
 }
 
 export const CollapsibleCard = ({
-  icon,
   title,
   subtitle,
   preview,
@@ -26,42 +24,36 @@ export const CollapsibleCard = ({
   return (
     <div 
       className={cn(
-        "rounded-2xl border border-border/30 bg-card/80 backdrop-blur-sm overflow-hidden transition-all duration-300",
+        "rounded-xl border border-border/20 bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300",
         className
       )}
     >
       {/* Header - Always visible, clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full text-left p-4 flex items-start gap-3 hover:bg-muted/30 transition-colors"
+        className="w-full text-left p-4 flex items-start gap-3 hover:bg-muted/20 transition-colors"
       >
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary/80">
-          {icon}
-        </div>
-        
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="font-medium text-foreground text-base">
-              {title}
-            </h3>
-          </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h3 className="text-[15px] text-foreground tracking-[0.3px]">
+            {title}
+          </h3>
+          <p className="text-[13px] text-muted-foreground/70 mt-0.5">
             {subtitle}
           </p>
           
           {/* Preview text - only shown when collapsed */}
           {!isExpanded && (
-            <p className="text-sm text-foreground/70 mt-2 line-clamp-2">
+            <p className="text-[14px] text-foreground/60 mt-2.5 leading-[1.5] line-clamp-2">
               {preview}
             </p>
           )}
         </div>
         
-        <div className="flex-shrink-0 text-muted-foreground">
+        <div className="flex-shrink-0 text-muted-foreground/50 mt-0.5">
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5" />
+            <ChevronUp className="w-4 h-4" />
           ) : (
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown className="w-4 h-4" />
           )}
         </div>
       </button>
