@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
 
 const BabySetup = () => {
   const navigate = useNavigate();
@@ -18,7 +17,6 @@ const BabySetup = () => {
   const [babyBirthday, setBabyBirthday] = useState("");
   const [babyBirthTime, setBabyBirthTime] = useState("");
 
-  // Redirect to auth if not logged in
   useEffect(() => {
     if (!user) {
       navigate('/auth');
@@ -36,16 +34,16 @@ const BabySetup = () => {
       await createHousehold(babyName, babyBirthday || undefined, babyBirthTime || undefined);
 
       toast({
-        title: "Profile created",
-        description: `Welcome to ${babyName}'s journey`,
+        title: "Ready",
+        description: `${babyName}'s chart is set`,
       });
 
       navigate("/");
     } catch (error: any) {
       console.error("Error creating baby profile:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create profile. Please try again",
+        title: "Something went wrong",
+        description: "Could not create profile",
         variant: "destructive",
       });
     } finally {
@@ -54,26 +52,30 @@ const BabySetup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-2xl font-serif font-semibold text-foreground leading-tight">
-            Let's meet your little one.
-          </h1>
-          <p className="text-sm text-muted-foreground font-light leading-relaxed">
-            We'll create a daily plan based on their age.
-          </p>
-        </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Minimal Header */}
+      <header className="px-5 pt-8 pb-4 text-center">
+        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+          Add Child
+        </p>
+      </header>
 
-        {/* Form */}
-        <Card className="border-border bg-card/50 backdrop-blur shadow-card">
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Main Content */}
+      <div className="flex-1 flex items-start justify-center px-5 pt-8">
+        <div className="w-full max-w-sm space-y-8">
+          
+          {/* Intro */}
+          <div className="text-center space-y-3">
+            <p className="text-[13px] text-foreground/50 leading-[1.7]">
+              We'll create a daily guide based on their age.
+            </p>
+          </div>
+
+          {/* Form */}
+          <div className="bg-card/50 rounded-xl p-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="babyName" className="text-sm font-medium">
-                  Name
-                </Label>
+                <Label htmlFor="babyName">Name</Label>
                 <Input
                   id="babyName"
                   type="text"
@@ -82,14 +84,12 @@ const BabySetup = () => {
                   placeholder="e.g., Emma"
                   required
                   disabled={isLoading}
-                  className="text-sm"
+                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="babyBirthday" className="text-sm font-medium">
-                  Birthday
-                </Label>
+                <Label htmlFor="babyBirthday">Birthday</Label>
                 <Input
                   id="babyBirthday"
                   type="date"
@@ -97,13 +97,13 @@ const BabySetup = () => {
                   onChange={(e) => setBabyBirthday(e.target.value)}
                   required
                   disabled={isLoading}
-                  className="text-sm"
+                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="babyBirthTime" className="text-sm font-medium">
-                  Birth time <span className="text-muted-foreground font-normal">(optional, for moon sign)</span>
+                <Label htmlFor="babyBirthTime">
+                  Birth time <span className="normal-case opacity-60">(for moon sign)</span>
                 </Label>
                 <Input
                   id="babyBirthTime"
@@ -111,25 +111,25 @@ const BabySetup = () => {
                   value={babyBirthTime}
                   onChange={(e) => setBabyBirthTime(e.target.value)}
                   disabled={isLoading}
-                  className="text-sm"
+                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
                 />
               </div>
 
-              <div className="pt-2">
-                <p className="text-xs text-muted-foreground italic mb-4 leading-relaxed">
-                  You can add more children later in Settings.
-                </p>
+              <div className="pt-4 space-y-4">
                 <Button
                   type="submit"
-                  className="w-full font-semibold"
-                  disabled={isLoading}
+                  className="w-full text-[13px]"
+                  disabled={isLoading || !babyName.trim()}
                 >
-                  {isLoading ? "Creating..." : "Continue"}
+                  {isLoading ? "..." : "Continue"}
                 </Button>
+                <p className="text-[10px] text-foreground/30 text-center">
+                  Add more children later in Settings
+                </p>
               </div>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
