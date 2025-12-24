@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Moon, Sun, Sparkles, Star } from "lucide-react";
+import { ZodiacIcon } from "@/components/ui/zodiac-icon";
+import { getZodiacFromBirthday, getZodiacName, ZodiacSign } from "@/lib/zodiac";
 
 interface BabyProfileCardProps {
   babyName: string;
@@ -25,28 +26,6 @@ const getAgeLabel = (ageInWeeks: number): string => {
   return `${years}y ${remainingMonths}m`;
 };
 
-const getZodiacSign = (birthday?: string): { name: string; symbol: string } => {
-  if (!birthday) return { name: "Starlight", symbol: "✦" };
-  
-  const date = new Date(birthday);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return { name: "Aries", symbol: "♈" };
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return { name: "Taurus", symbol: "♉" };
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return { name: "Gemini", symbol: "♊" };
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return { name: "Cancer", symbol: "♋" };
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return { name: "Leo", symbol: "♌" };
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return { name: "Virgo", symbol: "♍" };
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return { name: "Libra", symbol: "♎" };
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return { name: "Scorpio", symbol: "♏" };
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return { name: "Sagittarius", symbol: "♐" };
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return { name: "Capricorn", symbol: "♑" };
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return { name: "Aquarius", symbol: "♒" };
-  return { name: "Pisces", symbol: "♓" };
-};
-
-// Current phase based on age
 const getCurrentPhase = (ageInWeeks: number): string => {
   if (ageInWeeks < 4) return "Fourth trimester";
   if (ageInWeeks < 8) return "Awakening";
@@ -71,7 +50,8 @@ const getCurrentPhase = (ageInWeeks: number): string => {
 export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
-  const zodiac = getZodiacSign(babyBirthday);
+  const zodiacSign = getZodiacFromBirthday(babyBirthday);
+  const zodiacName = zodiacSign ? getZodiacName(zodiacSign) : null;
   const currentPhase = getCurrentPhase(ageInWeeks);
 
   const greeting = useMemo(() => {
@@ -82,37 +62,41 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
   }, []);
 
   return (
-    <div className="px-5 pt-8 pb-4">
-      {/* Greeting - uppercase, tracking */}
-      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.25em] mb-4 text-center">
+    <div className="px-5 pt-6 pb-4">
+      {/* Greeting */}
+      <p className="text-[10px] text-foreground/30 uppercase tracking-[0.25em] mb-3 text-center">
         {greeting}
       </p>
       
       <div className="flex items-start gap-4">
-        {/* Avatar - circular with initial */}
-        <div className="w-14 h-14 rounded-full bg-muted/30 border border-border/40 flex items-center justify-center shrink-0">
-          <span className="text-xl font-serif text-foreground/70">
-            {babyName.charAt(0).toUpperCase()}
-          </span>
+        {/* Avatar with zodiac icon */}
+        <div className="w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0">
+          {zodiacSign ? (
+            <ZodiacIcon sign={zodiacSign} size={20} strokeWidth={1.5} className="text-foreground/50" />
+          ) : (
+            <span className="text-lg font-serif text-foreground/50">
+              {babyName.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
 
         {/* Name and metadata */}
         <div className="flex-1 min-w-0">
-          {/* Baby name - large, prominent */}
-          <h1 className="text-3xl font-serif text-foreground tracking-tight">
+          <h1 className="text-2xl font-serif text-foreground/90 tracking-tight">
             {babyName}
           </h1>
           
-          {/* Subtitle row: zodiac · age · phase */}
-          <div className="flex flex-wrap items-center gap-x-2 mt-1 text-muted-foreground text-xs">
-            <span className="flex items-center gap-1">
-              <span className="text-sm">{zodiac.symbol}</span>
-              <span>{zodiac.name}</span>
-            </span>
-            <span className="opacity-40">·</span>
+          {/* Subtitle row */}
+          <div className="flex flex-wrap items-center gap-x-2 mt-0.5 text-foreground/40 text-[11px]">
+            {zodiacName && (
+              <>
+                <span>{zodiacName}</span>
+                <span className="opacity-40">·</span>
+              </>
+            )}
             <span>{ageLabel}</span>
             <span className="opacity-40">·</span>
-            <span className="italic">{currentPhase}</span>
+            <span>{currentPhase}</span>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { CollapsibleCard } from "./CollapsibleCard";
 import { CollapsibleSubsection } from "./CollapsibleSubsection";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { getZodiacName, getZodiacGlyph, ZodiacSign } from "@/lib/zodiac";
+import { getZodiacName, ZodiacSign } from "@/lib/zodiac";
 
 interface ParentChildDynamics {
   hook: string;
@@ -51,9 +51,6 @@ export const ParentChildCard = ({
       onGenerate();
     }
   }, [dynamics, loading, error, onGenerate]);
-
-  const parentGlyph = getZodiacGlyph(parentSun);
-  const childGlyph = getZodiacGlyph(childSun);
   
   // Co-Star style preview - no sign naming
   const preview = dynamics?.hook || "Natural fit. Intuitive connection.";
@@ -61,7 +58,7 @@ export const ParentChildCard = ({
   return (
     <CollapsibleCard
       title={`${parentName} + ${babyName}`}
-      subtitle={`${getZodiacName(parentSun)} ${parentGlyph} · ${getZodiacName(childSun)} ${childGlyph}`}
+      subtitle={`${getZodiacName(parentSun)} · ${getZodiacName(childSun)}`}
       preview={preview}
     >
       {loading ? (
