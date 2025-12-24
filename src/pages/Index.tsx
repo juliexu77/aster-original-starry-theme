@@ -84,7 +84,7 @@ const Index = () => {
 
   return (
     <div 
-      className="min-h-screen bg-background"
+      className="min-h-screen bg-background overflow-y-auto"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

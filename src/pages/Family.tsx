@@ -7,6 +7,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useSiblingDynamics } from "@/hooks/useSiblingDynamics";
 import { useParentChildDynamics } from "@/hooks/useParentChildDynamics";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { TimeOfDayBackground } from "@/components/home/TimeOfDayBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { CollapsibleCard } from "@/components/family/CollapsibleCard";
@@ -16,7 +17,6 @@ import { ParentChildCard } from "@/components/family/ParentChildCard";
 import { Button } from "@/components/ui/button";
 import { 
   getZodiacFromBirthday, 
-  getZodiacGlyph, 
   getZodiacName, 
   getMoonSignFromBirthDateTime,
   ZodiacSign
@@ -152,14 +152,14 @@ const Family = () => {
   const parentName = userProfile?.display_name || "You";
   const parentHasBirthday = !!userProfile?.birthday;
 
-  // Minimal family line with glyphs
-  const familyLine: string[] = [];
+  // Build family member data for header
+  const familyMembers: { name: string; sign: ZodiacSign }[] = [];
   if (parentHasBirthday && parentSun) {
-    familyLine.push(`${parentName} ${getZodiacGlyph(parentSun)}`);
+    familyMembers.push({ name: parentName, sign: parentSun });
   }
   babies.forEach(baby => {
     const sign = getZodiacFromBirthday(baby.birthday);
-    if (sign) familyLine.push(`${baby.name} ${getZodiacGlyph(sign)}`);
+    if (sign) familyMembers.push({ name: baby.name, sign });
   });
 
   // Prepare sibling data for preview
@@ -177,10 +177,15 @@ const Family = () => {
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
               Family
             </p>
-            {familyLine.length > 0 && (
-              <p className="text-[12px] text-foreground/40 mt-2 tracking-wide">
-                {familyLine.join(" · ")}
-              </p>
+            {familyMembers.length > 0 && (
+              <div className="flex items-center justify-center gap-3 mt-3">
+                {familyMembers.map((member, i) => (
+                  <div key={i} className="flex items-center gap-1 text-foreground/40">
+                    <ZodiacIcon sign={member.sign} size={12} strokeWidth={1.5} className="text-foreground/40" />
+                    <span className="text-[11px]">{member.name}</span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -235,13 +240,12 @@ const Family = () => {
               const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const traits = SUN_SIGN_CHILD_TRAITS[childSun];
               const moonTraits = childMoon ? MOON_SIGN_TRAITS[childMoon] : null;
-              const childGlyph = getZodiacGlyph(childSun);
               
               return (
                 <CollapsibleCard
                   key={`child-${baby.id}`}
                   title={baby.name}
-                  subtitle={`${getZodiacName(childSun)} ${childGlyph}${childMoon ? ` · ${getZodiacName(childMoon)} ☽` : ""}`}
+                  subtitle={`${getZodiacName(childSun)}${childMoon ? ` · ${getZodiacName(childMoon)} Moon` : ""}`}
                   preview={getChildPreview(childSun, childMoon)}
                 >
                   <CollapsibleSubsection title="Core" defaultExpanded>
@@ -275,13 +279,12 @@ const Family = () => {
               if (!childSun) return null;
               
               const ageMonths = getAgeMonths(baby.birthday);
-              const childGlyph = getZodiacGlyph(childSun);
               
               return (
                 <CollapsibleCard
                   key={`age-${baby.id}`}
                   title={formatAgeWord(ageMonths)}
-                  subtitle={`${getZodiacName(childSun)} ${childGlyph}`}
+                  subtitle={getZodiacName(childSun)}
                   preview={getAgePreview(childSun, ageMonths)}
                 >
                   <CollapsibleSubsection title="Physical" defaultExpanded>
