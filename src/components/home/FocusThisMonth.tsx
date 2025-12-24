@@ -869,10 +869,10 @@ export const FocusThisMonth = ({ babyName, ageInWeeks, birthday }: FocusThisMont
           value={selectedDomain}
           onValueChange={(value) => setSelectedDomain(value as DomainKey)}
         >
-          <SelectTrigger className="w-[140px] h-8 text-xs bg-background/50 border-border/30">
+          <SelectTrigger className="w-[140px] h-8 text-xs bg-card border-border/50">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-background border-border">
+          <SelectContent>
             {DOMAIN_OPTIONS.map((option) => (
               <SelectItem 
                 key={option.value} 
