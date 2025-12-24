@@ -1,10 +1,26 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ChevronDown, Check } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacFromBirthday, getZodiacName, ZodiacSign } from "@/lib/zodiac";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface Baby {
+  id: string;
+  name: string;
+  birthday: string | null;
+}
 
 interface BabyProfileCardProps {
   babyName: string;
   babyBirthday?: string;
+  babies?: Baby[];
+  activeBabyId?: string;
+  onSwitchBaby?: (babyId: string) => void;
 }
 
 const getAgeInWeeks = (birthday?: string): number => {
@@ -47,12 +63,19 @@ const getCurrentPhase = (ageInWeeks: number): string => {
   return "Becoming";
 };
 
-export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps) => {
+export const BabyProfileCard = ({ 
+  babyName, 
+  babyBirthday,
+  babies = [],
+  activeBabyId,
+  onSwitchBaby
+}: BabyProfileCardProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
   const zodiacSign = getZodiacFromBirthday(babyBirthday);
   const zodiacName = zodiacSign ? getZodiacName(zodiacSign) : null;
   const currentPhase = getCurrentPhase(ageInWeeks);
+  const hasMultipleBabies = babies.length > 1 && onSwitchBaby;
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
@@ -61,6 +84,40 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
     return "GOOD EVENING";
   }, []);
 
+  const profileContent = (
+    <div className={`flex items-start gap-4 ${hasMultipleBabies ? 'cursor-pointer' : ''}`}>
+      {/* Avatar with zodiac icon */}
+      <div className="w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0">
+        {zodiacSign ? (
+          <ZodiacIcon sign={zodiacSign} size={20} strokeWidth={1.5} className="text-foreground/50" />
+        ) : (
+          <span className="text-lg font-serif text-foreground/50">
+            {babyName.charAt(0).toUpperCase()}
+          </span>
+        )}
+      </div>
+
+      {/* Name and metadata */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1">
+          <h1 className="text-2xl font-serif text-foreground/90 tracking-tight">
+            {babyName}
+          </h1>
+          {hasMultipleBabies && (
+            <ChevronDown className="w-4 h-4 text-foreground/40 mt-1" />
+          )}
+        </div>
+        
+        {/* Subtitle row */}
+        <div className="flex flex-wrap items-center gap-x-1.5 mt-0.5 text-foreground/40 text-[11px]">
+          <span>{ageLabel}</span>
+          {currentPhase && <span className="opacity-40">·</span>}
+          {currentPhase && <span>{currentPhase}</span>}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="px-5 pt-6 pb-4">
       {/* Greeting */}
@@ -68,32 +125,44 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
         {greeting}
       </p>
       
-      <div className="flex items-start gap-4">
-        {/* Avatar with zodiac icon */}
-        <div className="w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0">
-          {zodiacSign ? (
-            <ZodiacIcon sign={zodiacSign} size={20} strokeWidth={1.5} className="text-foreground/50" />
-          ) : (
-            <span className="text-lg font-serif text-foreground/50">
-              {babyName.charAt(0).toUpperCase()}
-            </span>
-          )}
-        </div>
-
-        {/* Name and metadata */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-serif text-foreground/90 tracking-tight">
-            {babyName}
-          </h1>
-          
-          {/* Subtitle row */}
-          <div className="flex flex-wrap items-center gap-x-1.5 mt-0.5 text-foreground/40 text-[11px]">
-            <span>{ageLabel}</span>
-            {currentPhase && <span className="opacity-40">·</span>}
-            {currentPhase && <span>{currentPhase}</span>}
-          </div>
-        </div>
-      </div>
+      {hasMultipleBabies ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger className="w-full text-left outline-none">
+            {profileContent}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="start" 
+            className="w-56 bg-popover border border-border shadow-lg z-50"
+          >
+            {babies.map((baby) => {
+              const babyZodiac = getZodiacFromBirthday(baby.birthday || undefined);
+              return (
+                <DropdownMenuItem
+                  key={baby.id}
+                  onClick={() => onSwitchBaby(baby.id)}
+                  className="flex items-center gap-3 py-2.5 cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0">
+                    {babyZodiac ? (
+                      <ZodiacIcon sign={babyZodiac} size={14} strokeWidth={1.5} className="text-foreground/50" />
+                    ) : (
+                      <span className="text-sm font-serif text-foreground/50">
+                        {baby.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex-1 text-sm">{baby.name}</span>
+                  {baby.id === activeBabyId && (
+                    <Check className="w-4 h-4 text-primary" />
+                  )}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        profileContent
+      )}
     </div>
   );
 };
