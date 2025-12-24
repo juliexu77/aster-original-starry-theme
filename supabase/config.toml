@@ -1,1 +1,4 @@
 project_id = "pvsuqbmcivemnfedmncm"
+
+[functions.generate-sibling-dynamics]
+verify_jwt = false

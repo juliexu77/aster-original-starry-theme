@@ -15,6 +15,7 @@ interface Baby {
   household_id: string;
   name: string;
   birthday: string | null;
+  birth_time: string | null;
   photo_url: string | null;
 }
 
@@ -131,7 +132,7 @@ export const useHousehold = () => {
     }
   };
 
-  const createHousehold = async (babyName: string, babyBirthday?: string) => {
+  const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string) => {
     if (!user) throw new Error('User must be authenticated');
 
     const newHouseholdId = crypto.randomUUID();
@@ -162,7 +163,8 @@ export const useHousehold = () => {
       .insert([{
         household_id: newHouseholdId,
         name: babyName,
-        birthday: babyBirthday || null
+        birthday: babyBirthday || null,
+        birth_time: babyBirthTime || null
       }]);
 
     await fetchHousehold();

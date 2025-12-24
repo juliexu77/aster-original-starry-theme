@@ -7,6 +7,7 @@ export interface Baby {
   household_id: string;
   name: string;
   birthday: string | null;
+  birth_time: string | null;
   photo_url: string | null;
   created_at: string;
   updated_at: string;

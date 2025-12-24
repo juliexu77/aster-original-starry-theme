@@ -16,6 +16,7 @@ const BabySetup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
+  const [babyBirthTime, setBabyBirthTime] = useState("");
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -32,7 +33,7 @@ const BabySetup = () => {
     setIsLoading(true);
 
     try {
-      await createHousehold(babyName, babyBirthday || undefined);
+      await createHousehold(babyName, babyBirthday || undefined, babyBirthTime || undefined);
 
       toast({
         title: "Profile created",
@@ -95,6 +96,20 @@ const BabySetup = () => {
                   value={babyBirthday}
                   onChange={(e) => setBabyBirthday(e.target.value)}
                   required
+                  disabled={isLoading}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="babyBirthTime" className="text-sm font-medium">
+                  Birth time <span className="text-muted-foreground font-normal">(optional, for moon sign)</span>
+                </Label>
+                <Input
+                  id="babyBirthTime"
+                  type="time"
+                  value={babyBirthTime}
+                  onChange={(e) => setBabyBirthTime(e.target.value)}
                   disabled={isLoading}
                   className="text-sm"
                 />
