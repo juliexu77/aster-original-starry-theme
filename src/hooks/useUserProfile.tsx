@@ -65,9 +65,10 @@ export const useUserProfile = () => {
     if (updates.birth_time !== undefined) mappedUpdates.birth_time = updates.birth_time;
     if (updates.birth_location !== undefined) mappedUpdates.birth_location = updates.birth_location;
 
+    // Cast to bypass type check since birth_location exists in DB but not in generated types yet
     const { data, error } = await supabase
       .from('profiles')
-      .update(mappedUpdates)
+      .update(mappedUpdates as any)
       .eq('user_id', user.id)
       .select()
       .single();

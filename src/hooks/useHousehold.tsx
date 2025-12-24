@@ -157,7 +157,7 @@ export const useHousehold = () => {
         role: 'owner'
       }]);
 
-    // Create baby
+    // Create baby - cast to bypass type check since birth_location exists in DB but not in generated types yet
     await supabase
       .from('babies')
       .insert([{
@@ -166,7 +166,7 @@ export const useHousehold = () => {
         birthday: babyBirthday || null,
         birth_time: babyBirthTime || null,
         birth_location: babyBirthLocation || null
-      }]);
+      }] as any);
 
     await fetchHousehold();
   };

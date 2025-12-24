@@ -49,10 +49,73 @@ export const getZodiacFromBirthday = (birthday: string | null | undefined): Zodi
   return 'pisces';
 };
 
+// Simple city to UTC offset mapping for common cities
+// Positive = ahead of UTC, Negative = behind UTC
+const CITY_TIMEZONE_OFFSETS: Record<string, number> = {
+  // North America
+  'new york': -5, 'nyc': -5, 'manhattan': -5, 'brooklyn': -5,
+  'los angeles': -8, 'la': -8, 'hollywood': -8,
+  'san francisco': -8, 'sf': -8, 'oakland': -8, 'berkeley': -8,
+  'seattle': -8, 'portland': -8,
+  'denver': -7, 'phoenix': -7, 'salt lake': -7,
+  'chicago': -6, 'dallas': -6, 'houston': -6, 'austin': -6,
+  'miami': -5, 'atlanta': -5, 'boston': -5, 'philadelphia': -5,
+  'toronto': -5, 'montreal': -5, 'vancouver': -8,
+  'mexico city': -6,
+  
+  // Europe
+  'london': 0, 'edinburgh': 0, 'dublin': 0,
+  'paris': 1, 'berlin': 1, 'amsterdam': 1, 'brussels': 1, 'vienna': 1,
+  'rome': 1, 'milan': 1, 'madrid': 1, 'barcelona': 1,
+  'stockholm': 1, 'oslo': 1, 'copenhagen': 1,
+  'athens': 2, 'istanbul': 3, 'moscow': 3,
+  
+  // Asia
+  'tokyo': 9, 'osaka': 9, 'kyoto': 9,
+  'seoul': 9, 'busan': 9,
+  'beijing': 8, 'shanghai': 8, 'guangzhou': 8, 'shenzhen': 8,
+  'hong kong': 8, 'taipei': 8, 'singapore': 8,
+  'bangkok': 7, 'jakarta': 7, 'ho chi minh': 7, 'hanoi': 7,
+  'mumbai': 5.5, 'delhi': 5.5, 'bangalore': 5.5, 'chennai': 5.5,
+  'dubai': 4, 'abu dhabi': 4,
+  'tel aviv': 2, 'jerusalem': 2,
+  
+  // Oceania
+  'sydney': 10, 'melbourne': 10, 'brisbane': 10,
+  'perth': 8, 'auckland': 12, 'wellington': 12,
+  
+  // South America
+  'sao paulo': -3, 'rio de janeiro': -3, 'buenos aires': -3,
+  'lima': -5, 'bogota': -5, 'santiago': -4,
+  
+  // Africa
+  'cairo': 2, 'johannesburg': 2, 'cape town': 2, 'nairobi': 3, 'lagos': 1,
+};
+
+// Get timezone offset from city name (returns hours from UTC)
+const getTimezoneOffset = (birthLocation: string | null | undefined): number => {
+  if (!birthLocation) return 0; // Assume UTC if no location
+  
+  const normalizedLocation = birthLocation.toLowerCase().trim();
+  
+  // Check for exact matches or partial matches
+  for (const [city, offset] of Object.entries(CITY_TIMEZONE_OFFSETS)) {
+    if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
+      return offset;
+    }
+  }
+  
+  return 0; // Default to UTC if city not found
+};
+
 // Approximate moon sign calculation
 // Note: This is an approximation. Accurate moon sign requires precise astronomical calculations.
 // The moon changes signs roughly every 2.5 days.
-export const getMoonSignFromBirthDateTime = (birthday: string | null | undefined, birthTime: string | null | undefined): ZodiacSign | null => {
+export const getMoonSignFromBirthDateTime = (
+  birthday: string | null | undefined, 
+  birthTime: string | null | undefined,
+  birthLocation?: string | null | undefined
+): ZodiacSign | null => {
   if (!birthday) return null;
   
   const date = new Date(birthday);
@@ -67,14 +130,18 @@ export const getMoonSignFromBirthDateTime = (birthday: string | null | undefined
     hours = h + (m / 60);
   }
   
+  // Adjust for timezone - convert local time to UTC
+  const timezoneOffset = getTimezoneOffset(birthLocation);
+  const utcHours = hours - timezoneOffset;
+  
   // Julian day calculation (simplified)
   const a = Math.floor((14 - (month + 1)) / 12);
   const y = year + 4800 - a;
   const m = (month + 1) + 12 * a - 3;
   const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
   
-  // Add time component
-  const jdWithTime = jd + (hours - 12) / 24;
+  // Add time component (using UTC hours)
+  const jdWithTime = jd + (utcHours - 12) / 24;
   
   // Moon's mean longitude (simplified calculation)
   // Based on lunar cycle of approximately 27.3 days through 360 degrees
