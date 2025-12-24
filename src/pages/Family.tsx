@@ -58,46 +58,43 @@ const getElement = (sign: ZodiacSign): string => {
   return elements[sign];
 };
 
-// Co-Star style declarative previews
+// Co-Star style declarative previews - no sign naming (already in subtitle)
 const getChildPreview = (sun: ZodiacSign, moon: ZodiacSign | null): string => {
-  const traits = SUN_SIGN_CHILD_TRAITS[sun].core.slice(0, 2);
+  const traits = SUN_SIGN_CHILD_TRAITS[sun].core.slice(0, 3);
   if (moon) {
     const moonElement = getElement(moon);
-    const exteriorInterior: Record<string, string> = {
-      fire: "fiery interior",
-      earth: "steady interior", 
-      air: "restless interior",
-      water: "deep interior"
+    const interiorStyle: Record<string, string> = {
+      fire: "fiery inside",
+      earth: "steady inside", 
+      air: "restless inside",
+      water: "deep inside"
     };
-    return `${getZodiacName(sun)} Sun, ${getZodiacName(moon)} Moon. ${traits[0].charAt(0).toUpperCase() + traits[0].slice(1)} exterior, ${exteriorInterior[moonElement]}.`;
+    return `${traits[0].charAt(0).toUpperCase() + traits[0].slice(1)} exterior. ${interiorStyle[moonElement].charAt(0).toUpperCase() + interiorStyle[moonElement].slice(1)}.`;
   }
-  return `${getZodiacName(sun)} Sun. ${traits.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(". ")}.`;
+  return `${traits.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(". ")}.`;
 };
 
 const getAgePreview = (sun: ZodiacSign, ageMonths: number): string => {
-  const signName = getZodiacName(sun);
-  if (ageMonths < 6) return `${signName} at ${ageMonths} months. Temperament emerging. Rhythms forming.`;
-  if (ageMonths < 12) return `${signName} at ${ageMonths} months. Physical leaps. Sleep resistance. Mobility.`;
-  if (ageMonths < 24) return `${signName} at ${Math.floor(ageMonths / 12)} year. Autonomy drive. Big feelings. Language.`;
-  return `${signName} at ${Math.floor(ageMonths / 12)} years. Personality crystallizing. Social awareness.`;
+  if (ageMonths < 6) return "Temperament emerging. Rhythms forming.";
+  if (ageMonths < 12) return "Physical leaps. Sleep resistance. Mobility.";
+  if (ageMonths < 24) return "Autonomy drive. Big feelings. Language.";
+  return "Personality crystallizing. Social awareness.";
 };
 
 const getSiblingPreview = (children: { name: string; sun: ZodiacSign }[]): string => {
   if (children.length < 2) return "";
   const elements = children.map(c => getElement(c.sun));
-  const first = getZodiacName(children[0].sun);
-  const second = getZodiacName(children[1].sun);
   
   if (elements[0] === elements[1]) {
-    return `${first} and ${second}. Same element. Natural understanding.`;
+    return "Same element. Natural understanding.";
   }
   if ((elements[0] === "fire" && elements[1] === "air") || (elements[0] === "air" && elements[1] === "fire")) {
-    return `${first} and ${second}. Fire and air. High energy together.`;
+    return "Fire and air. High energy together.";
   }
   if ((elements[0] === "earth" && elements[1] === "water") || (elements[0] === "water" && elements[1] === "earth")) {
-    return `${first} and ${second}. Earth and water. Nurturing bond.`;
+    return "Earth and water. Nurturing bond.";
   }
-  return `${first} and ${second}. Different rhythms. Growth through contrast.`;
+  return "Different rhythms. Growth through contrast.";
 };
 
 const Family = () => {
