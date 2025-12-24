@@ -87,8 +87,8 @@ const Family = () => {
 
   const parentSun = useMemo(() => getZodiacFromBirthday(userProfile?.birthday), [userProfile?.birthday]);
   const parentMoon = useMemo(
-    () => getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time),
-    [userProfile?.birthday, userProfile?.birth_time]
+    () => getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time, userProfile?.birth_location),
+    [userProfile?.birthday, userProfile?.birth_time, userProfile?.birth_location]
   );
 
   const childrenForDynamics = useMemo(() => {
@@ -98,7 +98,7 @@ const Family = () => {
         name: baby.name,
         sunSign: getZodiacName(getZodiacFromBirthday(baby.birthday)!),
         moonSign: baby.birth_time 
-          ? getZodiacName(getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time)!)
+          ? getZodiacName(getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time, baby.birth_location)!)
           : null,
         ageMonths: getAgeMonths(baby.birthday)
       }));
@@ -175,7 +175,7 @@ const Family = () => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
+              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time, baby.birth_location);
               const ageMonths = getAgeMonths(baby.birthday);
               const { dynamics: pcDynamics, loading: pcLoading, error: pcError } = getDynamicsForChild(baby.id);
               
@@ -216,7 +216,7 @@ const Family = () => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
+              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time, baby.birth_location);
               const traits = SUN_SIGN_CHILD_TRAITS[childSun];
               const moonTraits = childMoon ? MOON_SIGN_TRAITS[childMoon] : null;
               

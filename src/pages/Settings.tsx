@@ -132,7 +132,7 @@ export const Settings = () => {
   };
 
   const parentSign = getZodiacFromBirthday(userProfile?.birthday);
-  const parentMoon = getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time);
+  const parentMoon = getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time, userProfile?.birth_location);
 
   return (
     <div className="min-h-screen bg-background">
