@@ -55,8 +55,8 @@ export const ParentChildCard = ({
   const parentGlyph = getZodiacGlyph(parentSun);
   const childGlyph = getZodiacGlyph(childSun);
   
-  // Co-Star style preview
-  const preview = dynamics?.hook || `${getZodiacName(parentSun)} meets ${getZodiacName(childSun)}.`;
+  // Co-Star style preview - no sign naming
+  const preview = dynamics?.hook || "Natural fit. Intuitive connection.";
 
   return (
     <CollapsibleCard
