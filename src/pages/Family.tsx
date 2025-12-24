@@ -43,9 +43,10 @@ const formatAgeWord = (months: number): string => {
   }
   const years = Math.floor(months / 12);
   const remaining = months % 12;
-  const yearWords = ["", "One", "Two", "Three", "Four", "Five"];
-  if (remaining === 0) return `${yearWords[years]} Year${years > 1 ? "s" : ""}`;
-  return `${yearWords[years]}y ${remaining}m`;
+  const yearWords = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+  const yearWord = yearWords[years] || String(years);
+  if (remaining === 0) return `${yearWord} Year${years > 1 ? "s" : ""}`;
+  return `${yearWord} Year${years > 1 ? "s" : ""}, ${remaining}m`;
 };
 
 const getElement = (sign: ZodiacSign): string => {
