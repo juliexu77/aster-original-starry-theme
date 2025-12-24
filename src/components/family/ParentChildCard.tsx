@@ -15,6 +15,9 @@ interface ParentChildDynamics {
   currentPhaseInsight: string;
   friction: string[];
   deepConnection: string;
+  cultivationTips?: string[];
+  dailyRituals?: string[];
+  signStrengthsToNurture?: string[];
 }
 
 interface ParentChildCardProps {
@@ -78,44 +81,81 @@ export const ParentChildCard = ({
         <>
           <p className="text-[13px] text-foreground/60 leading-[1.6]">{dynamics.hook}</p>
           
-          <CollapsibleSubsection title="Qualities">
+          <CollapsibleSubsection title="Your Qualities">
             <div className="space-y-1">
-              {dynamics.parentQualities.slice(0, 4).map((q, i) => (
+              {dynamics.parentQualities.slice(0, 5).map((q, i) => (
                 <p key={i} className="text-[13px] text-foreground/50">{q}</p>
               ))}
             </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Approach">
+          <CollapsibleSubsection title="You're The Parent Who">
             <div className="space-y-1">
-              {dynamics.youreTheParentWho.slice(0, 3).map((item, i) => (
+              {dynamics.youreTheParentWho.slice(0, 4).map((item, i) => (
                 <p key={i} className="text-[13px] text-foreground/50">{item}</p>
               ))}
             </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Needs">
+          <CollapsibleSubsection title={`What ${babyName} Needs`}>
             <div className="space-y-1">
-              {dynamics.whatChildNeeds.slice(0, 3).map((need, i) => (
+              {dynamics.whatChildNeeds.slice(0, 5).map((need, i) => (
                 <p key={i} className="text-[13px] text-foreground/50">{need}</p>
               ))}
             </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Phase">
-            <p className="text-[13px] text-foreground/50">{dynamics.currentPhaseInsight}</p>
+          <CollapsibleSubsection title="What You Already Give">
+            <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.whatYouAlreadyGive}</p>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Friction">
+          <CollapsibleSubsection title="Right Now">
+            <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.currentPhaseInsight}</p>
+          </CollapsibleSubsection>
+
+          {/* Cultivation Tips - New Section */}
+          {dynamics.cultivationTips && dynamics.cultivationTips.length > 0 && (
+            <CollapsibleSubsection title="How To Cultivate">
+              <div className="space-y-2">
+                {dynamics.cultivationTips.slice(0, 5).map((tip, i) => (
+                  <p key={i} className="text-[13px] text-foreground/50 leading-[1.6]">{tip}</p>
+                ))}
+              </div>
+            </CollapsibleSubsection>
+          )}
+
+          {/* Daily Rituals - New Section */}
+          {dynamics.dailyRituals && dynamics.dailyRituals.length > 0 && (
+            <CollapsibleSubsection title="Daily Rituals">
+              <div className="space-y-2">
+                {dynamics.dailyRituals.slice(0, 4).map((ritual, i) => (
+                  <p key={i} className="text-[13px] text-foreground/50 leading-[1.6]">{ritual}</p>
+                ))}
+              </div>
+            </CollapsibleSubsection>
+          )}
+
+          {/* Strengths to Nurture - New Section */}
+          {dynamics.signStrengthsToNurture && dynamics.signStrengthsToNurture.length > 0 && (
+            <CollapsibleSubsection title="Strengths To Nurture">
+              <div className="space-y-2">
+                {dynamics.signStrengthsToNurture.slice(0, 4).map((strength, i) => (
+                  <p key={i} className="text-[13px] text-foreground/50 leading-[1.6]">{strength}</p>
+                ))}
+              </div>
+            </CollapsibleSubsection>
+          )}
+
+          <CollapsibleSubsection title="Friction Points">
             <div className="space-y-1">
-              {dynamics.friction.slice(0, 2).map((f, i) => (
+              {dynamics.friction.slice(0, 3).map((f, i) => (
                 <p key={i} className="text-[13px] text-foreground/50">{f}</p>
               ))}
             </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Connection">
-            <p className="text-[13px] text-foreground/50">{dynamics.deepConnection}</p>
+          <CollapsibleSubsection title="Deep Connection">
+            <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.deepConnection}</p>
           </CollapsibleSubsection>
         </>
       ) : null}
