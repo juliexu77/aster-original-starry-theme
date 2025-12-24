@@ -11,43 +11,51 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/20">
-        <div className="flex items-center justify-between px-4 py-3">
-          <span className="text-lg font-sans font-bold text-primary tracking-tight">
-            BABYRHYTHM
-          </span>
-          <ThemeToggle showText={false} />
-        </div>
+      {/* Minimal Header */}
+      <header className="flex items-center justify-between px-5 py-4">
+        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+          BabyRhythm
+        </p>
+        <ThemeToggle showText={false} />
       </header>
       
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="max-w-md mx-auto text-center space-y-10">
+      <div className="flex-1 flex items-center justify-center px-5 py-12">
+        <div className="max-w-sm mx-auto text-center space-y-12">
 
           {/* Welcome Message */}
-          <div className="space-y-8">
-            <h1 className="text-[22px] md:text-[36px] font-serif font-medium tracking-tight text-foreground" style={{ lineHeight: '1.25' }}>
+          <div className="space-y-6">
+            <h1 className="text-[13px] text-foreground/50 leading-[1.7]">
               Your daily guide for baby care
             </h1>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal mt-8 text-foreground/80">
-              BabyRhythm tells you what to do today based on your baby's age — nap timing, activity suggestions, and developmental milestones.
-            </p>
-            <p className="text-[15px] md:text-[16px] leading-[1.6] font-normal text-foreground/80">
-              No tracking required. Just open the app and know what's next.
+            <p className="text-[13px] text-foreground/40 leading-[1.7]">
+              What to expect today based on age. Naps. Activities. Milestones. No tracking required.
             </p>
           </div>
 
+          {/* Minimal tagline */}
+          <p className="text-[10px] text-foreground/20 tracking-[0.2em] uppercase">
+            Open. Know what's next.
+          </p>
+
           {/* CTA */}
-          <div className="pt-6">
+          <div className="pt-4">
             <Button
               onClick={handleGetStarted}
-              className="w-full rounded-full py-[14px] px-8 text-base font-semibold"
+              variant="ghost"
+              className="text-[11px] text-foreground/40 hover:text-foreground/60 uppercase tracking-wider"
             >
               Get Started
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pb-8 text-center">
+        <p className="text-[10px] text-foreground/15 tracking-[0.15em]">
+          Rhythm. Not rules.
+        </p>
       </div>
     </div>
   );
