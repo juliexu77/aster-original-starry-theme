@@ -123,7 +123,7 @@ export const Settings = () => {
     await addBaby(name, birthday);
   };
 
-  const handleUpdateBaby = async (babyId: string, updates: { name?: string; birthday?: string }) => {
+  const handleUpdateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => {
     await updateBaby(babyId, updates);
   };
 

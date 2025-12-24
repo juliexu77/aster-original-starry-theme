@@ -117,7 +117,7 @@ export const useBabies = () => {
     return data;
   };
 
-  const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string }) => {
+  const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => {
     const { error } = await supabase
       .from('babies')
       .update(updates)
