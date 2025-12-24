@@ -3,9 +3,18 @@ import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 
+interface Baby {
+  id: string;
+  name: string;
+  birthday: string | null;
+}
+
 interface DailyCoachProps {
   babyName?: string;
   babyBirthday?: string;
+  babies?: Baby[];
+  activeBabyId?: string;
+  onSwitchBaby?: (babyId: string) => void;
 }
 
 const getAgeInWeeks = (birthday?: string): number => {
@@ -17,7 +26,13 @@ const getAgeInWeeks = (birthday?: string): number => {
   return Math.floor(diffDays / 7);
 };
 
-export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
+export const DailyCoach = ({ 
+  babyName, 
+  babyBirthday,
+  babies = [],
+  activeBabyId,
+  onSwitchBaby
+}: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const displayName = babyName || "your baby";
 
@@ -41,7 +56,13 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
       <TimeOfDayBackground>
         {/* Sticky Profile Card */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-          <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
+          <BabyProfileCard 
+            babyName={displayName} 
+            babyBirthday={babyBirthday}
+            babies={babies}
+            activeBabyId={activeBabyId}
+            onSwitchBaby={onSwitchBaby}
+          />
         </div>
 
         <div className="pb-24 space-y-4 pt-4">
