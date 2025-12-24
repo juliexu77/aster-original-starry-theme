@@ -16,6 +16,7 @@ const BabySetup = () => {
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
   const [babyBirthTime, setBabyBirthTime] = useState("");
+  const [babyBirthLocation, setBabyBirthLocation] = useState("");
 
   useEffect(() => {
     if (!user) {
@@ -31,7 +32,7 @@ const BabySetup = () => {
     setIsLoading(true);
 
     try {
-      await createHousehold(babyName, babyBirthday || undefined, babyBirthTime || undefined);
+      await createHousehold(babyName, babyBirthday || undefined, babyBirthTime || undefined, babyBirthLocation || undefined);
 
       toast({
         title: "Ready",
@@ -101,19 +102,40 @@ const BabySetup = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="babyBirthTime">
-                  Birth time <span className="normal-case opacity-60">(for moon sign)</span>
-                </Label>
-                <Input
-                  id="babyBirthTime"
-                  type="time"
-                  value={babyBirthTime}
-                  onChange={(e) => setBabyBirthTime(e.target.value)}
-                  disabled={isLoading}
-                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="babyBirthTime">
+                    Birth time <span className="normal-case opacity-60">(optional)</span>
+                  </Label>
+                  <Input
+                    id="babyBirthTime"
+                    type="time"
+                    value={babyBirthTime}
+                    onChange={(e) => setBabyBirthTime(e.target.value)}
+                    disabled={isLoading}
+                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="babyBirthLocation">
+                    Birth location <span className="normal-case opacity-60">(optional)</span>
+                  </Label>
+                  <Input
+                    id="babyBirthLocation"
+                    type="text"
+                    placeholder="City"
+                    value={babyBirthLocation}
+                    onChange={(e) => setBabyBirthLocation(e.target.value)}
+                    disabled={isLoading}
+                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                  />
+                </div>
               </div>
+
+              <p className="text-[10px] text-foreground/30 pt-1">
+                Time & location help calculate moon sign accurately
+              </p>
 
               <div className="pt-4 space-y-4">
                 <Button

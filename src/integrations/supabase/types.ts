@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       babies: {
         Row: {
+          birth_location: string | null
           birth_time: string | null
           birthday: string | null
           created_at: string
@@ -26,6 +27,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          birth_location?: string | null
           birth_time?: string | null
           birthday?: string | null
           created_at?: string
@@ -36,6 +38,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          birth_location?: string | null
           birth_time?: string | null
           birthday?: string | null
           created_at?: string
@@ -114,6 +117,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          birth_location: string | null
           birth_time: string | null
           birthday: string | null
           created_at: string
@@ -125,6 +129,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          birth_location?: string | null
           birth_time?: string | null
           birthday?: string | null
           created_at?: string
@@ -136,6 +141,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          birth_location?: string | null
           birth_time?: string | null
           birthday?: string | null
           created_at?: string
