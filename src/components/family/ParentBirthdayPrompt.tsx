@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { Calendar, Sparkles } from "lucide-react";
+import { Calendar, Clock, Sparkles } from "lucide-react";
 import { GlassCard } from "@/components/home/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToast } from "@/hooks/use-toast";
 
 export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   const [birthday, setBirthday] = useState("");
+  const [birthTime, setBirthTime] = useState("");
   const [saving, setSaving] = useState(false);
   const { updateUserProfile } = useUserProfile();
   const { toast } = useToast();
@@ -17,10 +19,13 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
     
     setSaving(true);
     try {
-      await updateUserProfile({ birthday });
+      await updateUserProfile({ 
+        birthday,
+        birth_time: birthTime || undefined 
+      });
       toast({
         title: "Birthday saved",
-        description: "Now we can show you compatibility insights!"
+        description: "Now we can show you cosmic insights!"
       });
       onSaved?.();
     } catch (error) {
@@ -44,7 +49,7 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
         
         <div>
           <h3 className="font-serif text-lg text-foreground mb-1">
-            Unlock Family Compatibility
+            Unlock Family Dynamics
           </h3>
           <p className="text-sm text-muted-foreground">
             Add your birthday to see how your zodiac sign interacts with your children's signs
@@ -52,15 +57,34 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
         </div>
         
         <div className="flex flex-col gap-3">
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="date"
-              value={birthday}
-              onChange={(e) => setBirthday(e.target.value)}
-              className="pl-10"
-              placeholder="Your birthday"
-            />
+          <div className="space-y-1.5">
+            <Label htmlFor="parentBirthday" className="text-xs text-muted-foreground">Birthday</Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="parentBirthday"
+                type="date"
+                value={birthday}
+                onChange={(e) => setBirthday(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-1.5">
+            <Label htmlFor="parentBirthTime" className="text-xs text-muted-foreground">
+              Birth time <span className="opacity-60">(optional, for moon sign)</span>
+            </Label>
+            <div className="relative">
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="parentBirthTime"
+                type="time"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
           
           <Button 

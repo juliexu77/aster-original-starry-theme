@@ -1,19 +1,22 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Heart, Brain, Sparkles, Moon, Users } from "lucide-react";
+import { Heart, Brain, Sparkles, Users, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useSiblingDynamics } from "@/hooks/useSiblingDynamics";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { TimeOfDayBackground } from "@/components/home/TimeOfDayBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { CollapsibleCard } from "@/components/family/CollapsibleCard";
 import { CollapsibleSubsection } from "@/components/family/CollapsibleSubsection";
 import { ParentBirthdayPrompt } from "@/components/family/ParentBirthdayPrompt";
+import { Button } from "@/components/ui/button";
 import { 
   getZodiacFromBirthday, 
   getZodiacSymbol, 
   getZodiacName, 
+  getMoonSignFromBirthDateTime,
   ZODIAC_DATA,
   ZodiacSign
 } from "@/lib/zodiac";
@@ -48,11 +51,36 @@ const Family = () => {
   const { user, loading: authLoading } = useAuth();
   const { babies, loading: babiesLoading } = useBabies();
   const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
+  const { dynamics, loading: dynamicsLoading, error: dynamicsError, generateDynamics } = useSiblingDynamics();
   const navigate = useNavigate();
   const [showPrompt, setShowPrompt] = useState(true);
 
   const parentSun = useMemo(() => getZodiacFromBirthday(userProfile?.birthday), [userProfile?.birthday]);
-  const parentMoon: ZodiacSign | null = null; // Will be calculated when birth_time is available
+  const parentMoon = useMemo(
+    () => getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time),
+    [userProfile?.birthday, userProfile?.birth_time]
+  );
+
+  // Prepare children data for sibling dynamics
+  const childrenForDynamics = useMemo(() => {
+    return babies
+      .filter(b => b.birthday)
+      .map(baby => ({
+        name: baby.name,
+        sunSign: getZodiacName(getZodiacFromBirthday(baby.birthday)!),
+        moonSign: baby.birth_time 
+          ? getZodiacName(getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time)!)
+          : null,
+        ageMonths: getAgeMonths(baby.birthday)
+      }));
+  }, [babies]);
+
+  // Generate sibling dynamics when there are 2+ children
+  useEffect(() => {
+    if (childrenForDynamics.length >= 2 && !dynamics && !dynamicsLoading) {
+      generateDynamics(childrenForDynamics);
+    }
+  }, [childrenForDynamics, dynamics, dynamicsLoading, generateDynamics]);
 
   const handleBirthdaySaved = () => {
     fetchUserProfile();
@@ -104,6 +132,7 @@ const Family = () => {
                   <p className="text-xs font-medium text-foreground">{parentName}</p>
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <span>{getZodiacName(parentSun!)} ☉</span>
+                    {parentMoon && <span>• {getZodiacName(parentMoon)} ☽</span>}
                   </div>
                 </div>
               )}
@@ -111,6 +140,7 @@ const Family = () => {
               {/* Children */}
               {babies.map((baby) => {
                 const childSun = getZodiacFromBirthday(baby.birthday);
+                const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
                 return (
                   <div key={baby.id} className="flex flex-col items-center">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mb-1.5">
@@ -126,6 +156,7 @@ const Family = () => {
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                       <span>{getAgeLabel(baby.birthday)}</span>
                       {childSun && <span>• {getZodiacName(childSun)} ☉</span>}
+                      {childMoon && <span>{getZodiacName(childMoon)} ☽</span>}
                     </div>
                   </div>
                 );
@@ -140,9 +171,8 @@ const Family = () => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon: ZodiacSign | null = null;
+              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const insight = getParentChildInsight(parentSun, parentMoon, childSun, childMoon, baby.name);
-              const ageMonths = getAgeMonths(baby.birthday);
               
               return (
                 <CollapsibleCard
@@ -195,8 +225,9 @@ const Family = () => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon: ZodiacSign | null = null;
+              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const traits = SUN_SIGN_CHILD_TRAITS[childSun];
+              const moonTraits = childMoon ? MOON_SIGN_TRAITS[childMoon] : null;
               const synthesis = getSunMoonSynthesis(childSun, childMoon, baby.name);
               
               return (
@@ -204,7 +235,7 @@ const Family = () => {
                   key={`understand-${baby.id}`}
                   icon={<Brain className="w-4 h-4" />}
                   title={`Understanding ${baby.name}`}
-                  subtitle={`${getZodiacName(childSun)} Sun`}
+                  subtitle={`${getZodiacName(childSun)} Sun${childMoon ? ` • ${getZodiacName(childMoon)} Moon` : ''}`}
                   preview={synthesis}
                 >
                   <p className="text-sm text-foreground mb-4">{synthesis}</p>
@@ -222,6 +253,19 @@ const Family = () => {
                     </div>
                   </div>
 
+                  {childMoon && moonTraits && (
+                    <CollapsibleSubsection title={`${getZodiacName(childMoon)} Moon`}>
+                      <p className="text-sm text-foreground/90 mb-2">{moonTraits.emotional}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {moonTraits.traits.map((trait, i) => (
+                          <span key={i} className="text-xs px-2 py-1 rounded-full bg-muted text-foreground/70">
+                            {trait}
+                          </span>
+                        ))}
+                      </div>
+                    </CollapsibleSubsection>
+                  )}
+
                   <CollapsibleSubsection title="Strengths">
                     <p className="text-sm text-foreground/90">{traits.strengths}</p>
                   </CollapsibleSubsection>
@@ -238,7 +282,7 @@ const Family = () => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon: ZodiacSign | null = null;
+              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const ageMonths = getAgeMonths(baby.birthday);
               const ageInsight = getAgeSignInsight(childSun, childMoon, ageMonths, baby.name);
               
@@ -266,17 +310,64 @@ const Family = () => {
               );
             })}
 
-            {/* Sibling Dynamics - only if multiple children */}
+            {/* Sibling Dynamics - AI Generated */}
             {babies.filter(b => b.birthday).length > 1 && (
               <CollapsibleCard
                 icon={<Users className="w-4 h-4" />}
                 title={babies.map(b => b.name).join(" + ")}
-                subtitle="Sibling dynamics"
-                preview="How your children interact and complement each other."
+                subtitle={dynamics?.compatibilityLabel || "Sibling dynamics"}
+                preview={dynamics?.compatibilityNote || "Tap to discover how your children interact."}
               >
-                <p className="text-sm text-foreground">
-                  Your children bring different energies to the family dynamic. Watch how they learn from each other's differences.
-                </p>
+                {dynamicsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <LoadingSpinner />
+                    <span className="ml-2 text-sm text-muted-foreground">Generating insights...</span>
+                  </div>
+                ) : dynamicsError ? (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-muted-foreground mb-2">{dynamicsError}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => generateDynamics(childrenForDynamics)}
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Try again
+                    </Button>
+                  </div>
+                ) : dynamics ? (
+                  <>
+                    <p className="text-sm text-foreground mb-4">{dynamics.currentDynamic}</p>
+                    
+                    <div className="mb-4">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                        What each brings:
+                      </p>
+                      <div className="space-y-2">
+                        {dynamics.whatEachBrings.map((item, i) => (
+                          <div key={i}>
+                            <span className="text-sm font-medium text-foreground">{item.child}: </span>
+                            <span className="text-sm text-foreground/80">{item.gifts.join(", ")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <CollapsibleSubsection title="Early childhood (now → 5)">
+                      <p className="text-sm text-foreground/90">{dynamics.earlyChildhood}</p>
+                    </CollapsibleSubsection>
+
+                    <CollapsibleSubsection title="School years (6-12)">
+                      <p className="text-sm text-foreground/90">{dynamics.schoolYears}</p>
+                    </CollapsibleSubsection>
+
+                    <CollapsibleSubsection title="Teen years">
+                      <p className="text-sm text-foreground/90">{dynamics.teenYears}</p>
+                    </CollapsibleSubsection>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Loading insights...</p>
+                )}
               </CollapsibleCard>
             )}
           </div>

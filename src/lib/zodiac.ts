@@ -49,6 +49,50 @@ export const getZodiacFromBirthday = (birthday: string | null | undefined): Zodi
   return 'pisces';
 };
 
+// Approximate moon sign calculation
+// Note: This is an approximation. Accurate moon sign requires precise astronomical calculations.
+// The moon changes signs roughly every 2.5 days.
+export const getMoonSignFromBirthDateTime = (birthday: string | null | undefined, birthTime: string | null | undefined): ZodiacSign | null => {
+  if (!birthday) return null;
+  
+  const date = new Date(birthday);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  // Get time in hours (0-24)
+  let hours = 12; // Default to noon if no time provided
+  if (birthTime) {
+    const [h, m] = birthTime.split(':').map(Number);
+    hours = h + (m / 60);
+  }
+  
+  // Julian day calculation (simplified)
+  const a = Math.floor((14 - (month + 1)) / 12);
+  const y = year + 4800 - a;
+  const m = (month + 1) + 12 * a - 3;
+  const jd = day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  
+  // Add time component
+  const jdWithTime = jd + (hours - 12) / 24;
+  
+  // Moon's mean longitude (simplified calculation)
+  // Based on lunar cycle of approximately 27.3 days through 360 degrees
+  const daysSinceEpoch = jdWithTime - 2451545.0; // Days since J2000.0
+  const moonLongitude = (218.32 + 13.176396 * daysSinceEpoch) % 360;
+  const normalizedLongitude = moonLongitude < 0 ? moonLongitude + 360 : moonLongitude;
+  
+  // Convert longitude to zodiac sign (30 degrees each)
+  const signIndex = Math.floor(normalizedLongitude / 30);
+  const signs: ZodiacSign[] = [
+    'aries', 'taurus', 'gemini', 'cancer', 
+    'leo', 'virgo', 'libra', 'scorpio', 
+    'sagittarius', 'capricorn', 'aquarius', 'pisces'
+  ];
+  
+  return signs[signIndex % 12];
+};
+
 export const getZodiacSymbol = (birthday: string | null | undefined): string => {
   const sign = getZodiacFromBirthday(birthday);
   return sign ? ZODIAC_DATA[sign].symbol : '';
