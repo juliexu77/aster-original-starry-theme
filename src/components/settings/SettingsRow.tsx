@@ -25,20 +25,20 @@ export const SettingsRow = ({
   return (
     <div 
       className={`flex items-center justify-between py-3 px-4 ${
-        isClickable ? 'cursor-pointer hover:bg-muted/50 active:bg-muted' : ''
+        isClickable ? 'cursor-pointer hover:bg-foreground/5 active:bg-foreground/10 transition-colors' : ''
       }`}
       onClick={onClick}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {icon && (
-          <div className="text-muted-foreground">
+          <div className="text-foreground/30">
             {icon}
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <div className="text-sm text-foreground font-medium">{title}</div>
+          <div className="text-[13px] text-foreground/70">{title}</div>
           {subtitle && (
-            <div className="text-xs text-muted-foreground">{subtitle}</div>
+            <div className="text-[11px] text-foreground/40">{subtitle}</div>
           )}
         </div>
       </div>
@@ -46,10 +46,10 @@ export const SettingsRow = ({
       <div className="flex items-center gap-2 flex-shrink-0">
         {children}
         {value && (
-          <div className="text-muted-foreground text-xs">{value}</div>
+          <div className="text-foreground/40 text-[11px]">{value}</div>
         )}
         {isClickable && showChevron && (
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          <ChevronRight className="w-4 h-4 text-foreground/20" />
         )}
       </div>
     </div>
