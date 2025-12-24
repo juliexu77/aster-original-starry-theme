@@ -87,16 +87,12 @@ export const BabyProfileCard = ({ babyName, babyBirthday }: BabyProfileCardProps
           </h1>
           
           {/* Subtitle row */}
-          <div className="flex flex-wrap items-center gap-x-2 mt-0.5 text-foreground/40 text-[11px]">
-            {zodiacName && (
-              <>
-                <span>{zodiacName}</span>
-                <span className="opacity-40">·</span>
-              </>
-            )}
+          <div className="flex flex-wrap items-center gap-x-1.5 mt-0.5 text-foreground/40 text-[11px]">
+            {zodiacName && <span>{zodiacName}</span>}
+            {zodiacName && <span className="opacity-40">·</span>}
             <span>{ageLabel}</span>
-            <span className="opacity-40">·</span>
-            <span>{currentPhase}</span>
+            {currentPhase && <span className="opacity-40">·</span>}
+            {currentPhase && <span>{currentPhase}</span>}
           </div>
         </div>
       </div>
