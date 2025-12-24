@@ -24,8 +24,6 @@ import {
 import {
   SUN_SIGN_CHILD_TRAITS,
   MOON_SIGN_TRAITS,
-  getSunMoonSynthesis,
-  getAgeSignInsight
 } from "@/lib/zodiac-content";
 
 const getAgeMonths = (birthday?: string | null): number => {
@@ -46,40 +44,60 @@ const formatAgeWord = (months: number): string => {
   const years = Math.floor(months / 12);
   const remaining = months % 12;
   const yearWords = ["", "One", "Two", "Three", "Four", "Five"];
-  if (remaining === 0) return `${yearWords[years]} Year${years > 1 ? 's' : ''}`;
-  return `${yearWords[years]} Year${years > 1 ? 's' : ''}, ${remaining} Month${remaining > 1 ? 's' : ''}`;
-};
-
-// Co-Star style preview generators
-const getCoStarPreview = (sun: ZodiacSign, moon: ZodiacSign | null): string => {
-  const sunTraits = SUN_SIGN_CHILD_TRAITS[sun];
-  const coreTraits = sunTraits.core.slice(0, 3).join(". ") + ".";
-  if (moon) {
-    const moonNeed = MOON_SIGN_TRAITS[moon].needs.split(",")[0].trim();
-    return `${coreTraits} Needs ${moonNeed.toLowerCase()}.`;
-  }
-  return coreTraits;
-};
-
-const getCoStarAgePreview = (sun: ZodiacSign, ageMonths: number): string => {
-  const element = getElement(sun);
-  const elementDescriptors: Record<string, string> = {
-    fire: "Active. Physical. Learning through movement.",
-    earth: "Steady. Sensory. Building foundations.",
-    air: "Curious. Verbal. Processing through talk.",
-    water: "Feeling. Intuitive. Absorbing everything."
-  };
-  return elementDescriptors[element] || "";
+  if (remaining === 0) return `${yearWords[years]} Year${years > 1 ? "s" : ""}`;
+  return `${yearWords[years]}y ${remaining}m`;
 };
 
 const getElement = (sign: ZodiacSign): string => {
   const elements: Record<ZodiacSign, string> = {
-    aries: 'fire', leo: 'fire', sagittarius: 'fire',
-    taurus: 'earth', virgo: 'earth', capricorn: 'earth',
-    gemini: 'air', libra: 'air', aquarius: 'air',
-    cancer: 'water', scorpio: 'water', pisces: 'water'
+    aries: "fire", leo: "fire", sagittarius: "fire",
+    taurus: "earth", virgo: "earth", capricorn: "earth",
+    gemini: "air", libra: "air", aquarius: "air",
+    cancer: "water", scorpio: "water", pisces: "water"
   };
   return elements[sign];
+};
+
+// Co-Star style declarative previews
+const getChildPreview = (sun: ZodiacSign, moon: ZodiacSign | null): string => {
+  const traits = SUN_SIGN_CHILD_TRAITS[sun].core.slice(0, 2);
+  if (moon) {
+    const moonElement = getElement(moon);
+    const exteriorInterior: Record<string, string> = {
+      fire: "fiery interior",
+      earth: "steady interior", 
+      air: "restless interior",
+      water: "deep interior"
+    };
+    return `${getZodiacName(sun)} Sun, ${getZodiacName(moon)} Moon. ${traits[0].charAt(0).toUpperCase() + traits[0].slice(1)} exterior, ${exteriorInterior[moonElement]}.`;
+  }
+  return `${getZodiacName(sun)} Sun. ${traits.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(". ")}.`;
+};
+
+const getAgePreview = (sun: ZodiacSign, ageMonths: number): string => {
+  const signName = getZodiacName(sun);
+  if (ageMonths < 6) return `${signName} at ${ageMonths} months. Temperament emerging. Rhythms forming.`;
+  if (ageMonths < 12) return `${signName} at ${ageMonths} months. Physical leaps. Sleep resistance. Mobility.`;
+  if (ageMonths < 24) return `${signName} at ${Math.floor(ageMonths / 12)} year. Autonomy drive. Big feelings. Language.`;
+  return `${signName} at ${Math.floor(ageMonths / 12)} years. Personality crystallizing. Social awareness.`;
+};
+
+const getSiblingPreview = (children: { name: string; sun: ZodiacSign }[]): string => {
+  if (children.length < 2) return "";
+  const elements = children.map(c => getElement(c.sun));
+  const first = getZodiacName(children[0].sun);
+  const second = getZodiacName(children[1].sun);
+  
+  if (elements[0] === elements[1]) {
+    return `${first} and ${second}. Same element. Natural understanding.`;
+  }
+  if ((elements[0] === "fire" && elements[1] === "air") || (elements[0] === "air" && elements[1] === "fire")) {
+    return `${first} and ${second}. Fire and air. High energy together.`;
+  }
+  if ((elements[0] === "earth" && elements[1] === "water") || (elements[0] === "water" && elements[1] === "earth")) {
+    return `${first} and ${second}. Earth and water. Nurturing bond.`;
+  }
+  return `${first} and ${second}. Different rhythms. Growth through contrast.`;
 };
 
 const Family = () => {
@@ -97,7 +115,6 @@ const Family = () => {
     [userProfile?.birthday, userProfile?.birth_time]
   );
 
-  // Prepare children data for sibling dynamics
   const childrenForDynamics = useMemo(() => {
     return babies
       .filter(b => b.birthday)
@@ -111,7 +128,6 @@ const Family = () => {
       }));
   }, [babies]);
 
-  // Generate sibling dynamics when there are 2+ children
   useEffect(() => {
     if (childrenForDynamics.length >= 2 && !dynamics && !dynamicsLoading) {
       generateDynamics(childrenForDynamics);
@@ -139,37 +155,41 @@ const Family = () => {
   const parentName = userProfile?.display_name || "You";
   const parentHasBirthday = !!userProfile?.birthday;
 
-  // Build minimal family line
-  const familyMembers: string[] = [];
+  // Minimal family line with glyphs
+  const familyLine: string[] = [];
   if (parentHasBirthday && parentSun) {
-    familyMembers.push(`${parentName} ${getZodiacGlyph(parentSun)}`);
+    familyLine.push(`${parentName} ${getZodiacGlyph(parentSun)}`);
   }
   babies.forEach(baby => {
     const sign = getZodiacFromBirthday(baby.birthday);
-    if (sign) {
-      familyMembers.push(`${baby.name} ${getZodiacGlyph(sign)}`);
-    }
+    if (sign) familyLine.push(`${baby.name} ${getZodiacGlyph(sign)}`);
   });
+
+  // Prepare sibling data for preview
+  const siblingData = babies
+    .filter(b => b.birthday)
+    .map(b => ({ name: b.name, sun: getZodiacFromBirthday(b.birthday)! }))
+    .filter(b => b.sun);
 
   return (
     <div className="min-h-screen bg-background">
       <TimeOfDayBackground>
-        <div className="space-y-4 pb-24">
+        <div className="space-y-3 pb-24">
           {/* Minimal Header */}
-          <div className="px-5 pt-8 pb-2 text-center">
-            <p className="text-[11px] text-muted-foreground/50 uppercase tracking-[0.25em]">
+          <div className="px-5 pt-8 pb-3 text-center">
+            <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
               Family
             </p>
-            {familyMembers.length > 0 && (
-              <p className="text-[13px] text-foreground/60 mt-3 tracking-wide">
-                {familyMembers.join(" · ")}
+            {familyLine.length > 0 && (
+              <p className="text-[12px] text-foreground/40 mt-2 tracking-wide">
+                {familyLine.join(" · ")}
               </p>
             )}
           </div>
 
           {/* Cards */}
-          <div className="px-5 space-y-3">
-            {/* Parent-Child Dynamics Cards - AI Generated */}
+          <div className="px-5 space-y-2">
+            {/* Parent-Child Cards */}
             {parentSun && babies.filter(b => b.birthday).map((baby) => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
@@ -210,7 +230,7 @@ const Family = () => {
               );
             })}
 
-            {/* Child Understanding Cards */}
+            {/* Child Cards */}
             {babies.filter(b => b.birthday).map((baby) => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
@@ -219,160 +239,146 @@ const Family = () => {
               const traits = SUN_SIGN_CHILD_TRAITS[childSun];
               const moonTraits = childMoon ? MOON_SIGN_TRAITS[childMoon] : null;
               const childGlyph = getZodiacGlyph(childSun);
-              const moonGlyph = childMoon ? getZodiacGlyph(childMoon) : null;
               
               return (
                 <CollapsibleCard
-                  key={`understand-${baby.id}`}
+                  key={`child-${baby.id}`}
                   title={baby.name}
-                  subtitle={`${getZodiacName(childSun)} ${childGlyph}${childMoon ? ` · ${getZodiacName(childMoon)} ☽` : ''}`}
-                  preview={getCoStarPreview(childSun, childMoon)}
+                  subtitle={`${getZodiacName(childSun)} ${childGlyph}${childMoon ? ` · ${getZodiacName(childMoon)} ☽` : ""}`}
+                  preview={getChildPreview(childSun, childMoon)}
                 >
-                  <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">
-                    {traits.core.slice(0, 4).join(". ")}. {childMoon ? MOON_SIGN_TRAITS[childMoon].needs.split(",")[0].trim() + " emotionally." : ""}
-                  </p>
-                  
-                  <div className="mb-4">
-                    <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-2">
-                      {getZodiacName(childSun)} ☉
+                  <CollapsibleSubsection title="Core" defaultExpanded>
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
+                      {traits.core.slice(0, 3).map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(". ")}.
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {traits.core.map((trait, i) => (
-                        <span key={i} className="text-[13px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/60">
-                          {trait}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+                  </CollapsibleSubsection>
 
-                  {childMoon && moonTraits && (
-                    <CollapsibleSubsection title={`${getZodiacName(childMoon)} ☽`}>
-                      <p className="text-[14px] text-foreground/60 mb-2">{moonTraits.needs}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {moonTraits.traits.map((trait, i) => (
-                          <span key={i} className="text-[13px] px-2 py-1 rounded-full bg-foreground/5 text-foreground/50">
-                            {trait}
-                          </span>
-                        ))}
-                      </div>
+                  {moonTraits && (
+                    <CollapsibleSubsection title="Emotional">
+                      <p className="text-[13px] text-foreground/50 leading-[1.6]">
+                        {moonTraits.needs}
+                      </p>
                     </CollapsibleSubsection>
                   )}
 
                   <CollapsibleSubsection title="Strengths">
-                    <p className="text-[14px] text-foreground/60">{traits.strengths}</p>
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">{traits.strengths}</p>
                   </CollapsibleSubsection>
 
                   <CollapsibleSubsection title="Growth">
-                    <p className="text-[14px] text-foreground/60">{traits.challenges}</p>
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">{traits.challenges}</p>
                   </CollapsibleSubsection>
                 </CollapsibleCard>
               );
             })}
 
-            {/* Stage + Sign Cards */}
+            {/* Age Cards */}
             {babies.filter(b => b.birthday).map((baby) => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
-              const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
               const ageMonths = getAgeMonths(baby.birthday);
-              const ageInsight = getAgeSignInsight(childSun, childMoon, ageMonths, baby.name);
               const childGlyph = getZodiacGlyph(childSun);
               
               return (
                 <CollapsibleCard
-                  key={`stage-${baby.id}`}
-                  title={`${baby.name} · ${formatAgeWord(ageMonths)}`}
+                  key={`age-${baby.id}`}
+                  title={formatAgeWord(ageMonths)}
                   subtitle={`${getZodiacName(childSun)} ${childGlyph}`}
-                  preview={getCoStarAgePreview(childSun, ageMonths)}
+                  preview={getAgePreview(childSun, ageMonths)}
                 >
-                  <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">{ageInsight.content}</p>
-                  
-                  <div className="space-y-3">
-                    {Object.entries(ageInsight.areas).map(([area, content]) => (
-                      <div key={area}>
-                        <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-1">
-                          {area}
-                        </p>
-                        <p className="text-[14px] text-foreground/60">{content}</p>
-                      </div>
-                    ))}
-                  </div>
+                  <CollapsibleSubsection title="Physical" defaultExpanded>
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
+                      {ageMonths < 6 ? "Motor patterns emerging. Reaching. Grasping." :
+                       ageMonths < 12 ? "Mobility accelerating. Cruising. Object permanence." :
+                       ageMonths < 24 ? "Walking. Climbing. Testing limits." :
+                       "Running. Jumping. Coordination refining."}
+                    </p>
+                  </CollapsibleSubsection>
+
+                  <CollapsibleSubsection title="Sleep">
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
+                      {ageMonths < 6 ? "Rhythms forming. Night stretches lengthening." :
+                       ageMonths < 12 ? "Regressions possible. Separation awareness." :
+                       ageMonths < 24 ? "Nap transitions. Bedtime resistance." :
+                       "Single nap. Nighttime fears emerging."}
+                    </p>
+                  </CollapsibleSubsection>
+
+                  <CollapsibleSubsection title="Feeding">
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
+                      {ageMonths < 6 ? "Milk primary. Hunger cues developing." :
+                       ageMonths < 12 ? "Solids beginning. Pincer grasp emerging." :
+                       ageMonths < 24 ? "Self-feeding. Preferences forming. Mess." :
+                       "Utensil use. Food opinions strong."}
+                    </p>
+                  </CollapsibleSubsection>
                 </CollapsibleCard>
               );
             })}
 
-            {/* Sibling Dynamics - AI Generated */}
-            {babies.filter(b => b.birthday).length > 1 && (
+            {/* Sibling Card */}
+            {siblingData.length > 1 && (
               <CollapsibleCard
                 title={babies.map(b => b.name).join(" + ")}
-                subtitle={dynamics?.compatibilityLabel || "Sibling dynamics"}
-                preview={dynamics?.compatibilityNote || "Loading..."}
+                subtitle={dynamics?.compatibilityLabel || "Siblings"}
+                preview={dynamics?.compatibilityNote || getSiblingPreview(siblingData)}
               >
                 {dynamicsLoading ? (
-                  <div className="flex items-center justify-center py-4">
+                  <div className="flex items-center gap-2 py-2">
                     <LoadingSpinner />
-                    <span className="ml-2 text-[14px] text-muted-foreground">Generating...</span>
+                    <span className="text-[13px] text-foreground/40">Generating...</span>
                   </div>
                 ) : dynamicsError ? (
-                  <div className="text-center py-4">
-                    <p className="text-[14px] text-muted-foreground mb-2">{dynamicsError}</p>
+                  <div className="py-2">
+                    <p className="text-[13px] text-foreground/40 mb-2">{dynamicsError}</p>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => generateDynamics(childrenForDynamics)}
+                      className="text-foreground/40 hover:text-foreground/60"
                     >
                       <RefreshCw className="w-3 h-3 mr-1" />
-                      Try again
+                      Retry
                     </Button>
                   </div>
                 ) : dynamics ? (
                   <>
-                    <p className="text-[14px] text-foreground/70 mb-4 leading-[1.5]">{dynamics.currentDynamic}</p>
+                    <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.currentDynamic}</p>
                     
-                    <div className="mb-4">
-                      <p className="text-[12px] text-muted-foreground/50 uppercase tracking-wide mb-2">
-                        What each brings
-                      </p>
-                      <div className="space-y-2">
+                    <CollapsibleSubsection title="Each Brings">
+                      <div className="space-y-1">
                         {dynamics.whatEachBrings.map((item, i) => (
-                          <div key={i}>
-                            <span className="text-[14px] text-foreground/70">{item.child}: </span>
-                            <span className="text-[14px] text-foreground/50">{item.gifts.join(", ")}</span>
-                          </div>
+                          <p key={i} className="text-[13px] text-foreground/50">
+                            {item.child}: {item.gifts.slice(0, 3).join(", ")}
+                          </p>
                         ))}
                       </div>
-                    </div>
-
-                    <CollapsibleSubsection title="Early childhood">
-                      <p className="text-[14px] text-foreground/60">{dynamics.earlyChildhood}</p>
                     </CollapsibleSubsection>
 
-                    <CollapsibleSubsection title="School years">
-                      <p className="text-[14px] text-foreground/60">{dynamics.schoolYears}</p>
+                    <CollapsibleSubsection title="Now">
+                      <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.earlyChildhood}</p>
                     </CollapsibleSubsection>
 
-                    <CollapsibleSubsection title="Teen years">
-                      <p className="text-[14px] text-foreground/60">{dynamics.teenYears}</p>
+                    <CollapsibleSubsection title="Later">
+                      <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.teenYears}</p>
                     </CollapsibleSubsection>
                   </>
-                ) : (
-                  <p className="text-[14px] text-muted-foreground">Loading...</p>
-                )}
+                ) : null}
               </CollapsibleCard>
             )}
           </div>
 
           {/* Parent Birthday Prompt */}
           {!parentHasBirthday && showPrompt && (
-            <div className="px-5">
+            <div className="px-5 pt-2">
               <ParentBirthdayPrompt onSaved={handleBirthdaySaved} />
             </div>
           )}
 
           {/* Minimal Footer */}
-          <div className="pt-6 text-center px-5">
-            <p className="text-[11px] text-muted-foreground/40 tracking-wide">
+          <div className="pt-8 text-center px-5">
+            <p className="text-[10px] text-foreground/20 tracking-[0.2em]">
               Stars illuminate. Love defines.
             </p>
           </div>

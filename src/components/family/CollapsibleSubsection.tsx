@@ -18,23 +18,23 @@ export const CollapsibleSubsection = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (
-    <div className={cn("border-t border-border/10 pt-3 mt-3", className)}>
+    <div className={cn("", className)}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-muted-foreground/60 hover:text-foreground/70 transition-colors w-full text-left"
+        className="flex items-center gap-1.5 text-foreground/30 hover:text-foreground/50 transition-colors w-full text-left"
       >
         {isExpanded ? (
-          <ChevronDown className="w-3.5 h-3.5" />
+          <ChevronDown className="w-2.5 h-2.5" strokeWidth={1.5} />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-2.5 h-2.5" strokeWidth={1.5} />
         )}
-        <span className="text-[13px] tracking-[0.2px]">{title}</span>
+        <span className="text-[12px] tracking-[0.3px] uppercase">{title}</span>
       </button>
       
       <div
         className={cn(
-          "overflow-hidden transition-all duration-200 ease-out",
-          isExpanded ? "max-h-[1000px] opacity-100 mt-3" : "max-h-0 opacity-0"
+          "overflow-hidden transition-all duration-150 ease-out",
+          isExpanded ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
         )}
       >
         {children}
