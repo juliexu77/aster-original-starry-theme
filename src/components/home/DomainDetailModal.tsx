@@ -265,10 +265,20 @@ export const DomainDetailModal = ({
     }
   };
 
+  // Stop touch events from propagating to parent to prevent child switching
+  const handleTouchEvent = (e: React.TouchEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="max-h-[90vh]">
-        <div className="flex flex-col h-full max-h-[85vh]">
+        <div 
+          className="flex flex-col h-full max-h-[85vh]"
+          onTouchStart={handleTouchEvent}
+          onTouchMove={handleTouchEvent}
+          onTouchEnd={handleTouchEvent}
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/30">
             <div className="flex items-center gap-3">
