@@ -65,11 +65,16 @@ export const useUserProfile = () => {
     if (updates.birth_time !== undefined) mappedUpdates.birth_time = updates.birth_time;
     if (updates.birth_location !== undefined) mappedUpdates.birth_location = updates.birth_location;
 
-    // Cast to bypass type check since birth_location exists in DB but not in generated types yet
+    // Use upsert to handle case where profile doesn't exist yet
     const { data, error } = await supabase
       .from('profiles')
-      .update(mappedUpdates as any)
-      .eq('user_id', user.id)
+      .upsert({
+        user_id: user.id,
+        email: user.email,
+        ...mappedUpdates
+      } as any, {
+        onConflict: 'user_id'
+      })
       .select()
       .single();
 
