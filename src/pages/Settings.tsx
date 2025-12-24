@@ -12,14 +12,15 @@ import {
   Key,
   ChevronLeft,
   Calendar,
-  Sparkles
+  Clock
 } from "lucide-react";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getZodiacFromBirthday, getZodiacSymbol, getZodiacName } from "@/lib/zodiac";
+import { getZodiacFromBirthday, getZodiacName, getMoonSignFromBirthDateTime } from "@/lib/zodiac";
+import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
@@ -28,8 +29,11 @@ export const Settings = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [editingBirthday, setEditingBirthday] = useState(false);
+  const [editingBirthTime, setEditingBirthTime] = useState(false);
   const [birthdayInput, setBirthdayInput] = useState("");
+  const [birthTimeInput, setBirthTimeInput] = useState("");
   const [savingBirthday, setSavingBirthday] = useState(false);
+  const [savingBirthTime, setSavingBirthTime] = useState(false);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -83,9 +87,36 @@ export const Settings = () => {
     }
   };
 
+  const handleSaveBirthTime = async () => {
+    setSavingBirthTime(true);
+    try {
+      await updateUserProfile({ birth_time: birthTimeInput || null });
+      await fetchUserProfile();
+      setEditingBirthTime(false);
+      toast({
+        title: "Birth time saved",
+        description: birthTimeInput ? "Your moon sign is now calculated" : "Birth time cleared"
+      });
+    } catch (error) {
+      console.error('Error saving birth time:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save birth time",
+        variant: "destructive"
+      });
+    } finally {
+      setSavingBirthTime(false);
+    }
+  };
+
   const handleStartEditBirthday = () => {
     setBirthdayInput(userProfile?.birthday || "");
     setEditingBirthday(true);
+  };
+
+  const handleStartEditBirthTime = () => {
+    setBirthTimeInput(userProfile?.birth_time || "");
+    setEditingBirthTime(true);
   };
 
   const handleAddBaby = async (name: string, birthday?: string) => {
@@ -101,20 +132,24 @@ export const Settings = () => {
   };
 
   const parentSign = getZodiacFromBirthday(userProfile?.birthday);
+  const parentMoon = getMoonSignFromBirthDateTime(userProfile?.birthday, userProfile?.birth_time);
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-3">
+      <div className="max-w-md mx-auto px-5 py-4 space-y-4">
+        {/* Minimal Header */}
+        <div className="flex items-center justify-between pt-4 pb-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/")}
+            className="text-foreground/40 hover:text-foreground/60"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-serif font-semibold text-foreground flex-1">Settings</h1>
+          <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+            Settings
+          </p>
           <ThemeToggle showText={false} />
         </div>
 
@@ -141,18 +176,19 @@ export const Settings = () => {
             {/* Birthday Row */}
             {editingBirthday ? (
               <div className="px-4 py-3 flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-muted-foreground" />
+                <Calendar className="w-5 h-5 text-foreground/30" />
                 <div className="flex-1 flex items-center gap-2">
                   <Input
                     type="date"
                     value={birthdayInput}
                     onChange={(e) => setBirthdayInput(e.target.value)}
-                    className="flex-1"
+                    className="flex-1 text-[13px]"
                   />
                   <Button 
                     size="sm" 
                     onClick={handleSaveBirthday}
                     disabled={!birthdayInput || savingBirthday}
+                    className="text-[11px]"
                   >
                     {savingBirthday ? "..." : "Save"}
                   </Button>
@@ -160,6 +196,7 @@ export const Settings = () => {
                     size="sm" 
                     variant="ghost"
                     onClick={() => setEditingBirthday(false)}
+                    className="text-[11px]"
                   >
                     Cancel
                   </Button>
@@ -167,15 +204,60 @@ export const Settings = () => {
               </div>
             ) : (
               <SettingsRow
-                icon={<Calendar className="w-5 h-5" />}
-                title="Your Birthday"
+                icon={parentSign ? <ZodiacIcon sign={parentSign} size={18} strokeWidth={1.5} /> : <Calendar className="w-5 h-5" />}
+                title="Birthday"
                 subtitle={
                   parentSign 
-                    ? `${getZodiacSymbol(userProfile?.birthday)} ${getZodiacName(parentSign)}`
-                    : "Add for zodiac compatibility"
+                    ? getZodiacName(parentSign)
+                    : "Add for zodiac features"
                 }
                 onClick={handleStartEditBirthday}
               />
+            )}
+
+            {/* Birth Time Row - only show if birthday is set */}
+            {userProfile?.birthday && (
+              editingBirthTime ? (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-foreground/30" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <Input
+                      type="time"
+                      value={birthTimeInput}
+                      onChange={(e) => setBirthTimeInput(e.target.value)}
+                      className="flex-1 text-[13px]"
+                      placeholder="HH:MM"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSaveBirthTime}
+                      disabled={savingBirthTime}
+                      className="text-[11px]"
+                    >
+                      {savingBirthTime ? "..." : "Save"}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setEditingBirthTime(false)}
+                      className="text-[11px]"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <SettingsRow
+                  icon={parentMoon ? <ZodiacIcon sign={parentMoon} size={18} strokeWidth={1.5} /> : <Clock className="w-5 h-5" />}
+                  title="Birth Time"
+                  subtitle={
+                    parentMoon 
+                      ? `${getZodiacName(parentMoon)} Moon`
+                      : "Add for moon sign"
+                  }
+                  onClick={handleStartEditBirthTime}
+                />
+              )
             )}
           </SettingsSection>
         ) : (
