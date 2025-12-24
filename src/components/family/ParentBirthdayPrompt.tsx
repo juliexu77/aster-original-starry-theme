@@ -43,8 +43,8 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   };
 
   return (
-    <GlassCard className="mx-5">
-      <div className="p-4 text-center space-y-3">
+    <GlassCard className="mx-4">
+      <div className="p-5 text-center space-y-4">
         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
           <Sparkles className="w-5 h-5 text-primary" />
         </div>
@@ -58,60 +58,58 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
           </p>
         </div>
         
-        <div className="flex flex-col gap-2.5">
-          <div className="space-y-1">
+        <div className="flex flex-col gap-4 text-left">
+          <div className="space-y-1.5">
             <Label htmlFor="parentBirthday" className="text-[10px] text-muted-foreground uppercase tracking-wide">Birthday</Label>
             <div className="relative">
-              <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
               <Input
                 id="parentBirthday"
                 type="date"
                 value={birthday}
                 onChange={(e) => setBirthday(e.target.value)}
-                className="pl-8 h-9 text-sm"
+                className="pl-10 h-10 text-sm"
               />
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <Label htmlFor="parentBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Time <span className="normal-case opacity-60">(optional)</span>
-              </Label>
-              <div className="relative">
-                <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
-                  id="parentBirthTime"
-                  type="time"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  className="pl-8 h-9 text-sm"
-                />
-              </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="parentBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+              Time <span className="normal-case opacity-60">(optional)</span>
+            </Label>
+            <div className="relative">
+              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                id="parentBirthTime"
+                type="time"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                className="pl-10 h-10 text-sm"
+              />
             </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="parentBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
-                Location <span className="normal-case opacity-60">(optional)</span>
-              </Label>
-              <div className="relative">
-                <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
-                  id="parentBirthLocation"
-                  type="text"
-                  placeholder="City"
-                  value={birthLocation}
-                  onChange={(e) => setBirthLocation(e.target.value)}
-                  className="pl-8 h-9 text-sm"
-                />
-              </div>
+          </div>
+          
+          <div className="space-y-1.5">
+            <Label htmlFor="parentBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+              Location <span className="normal-case opacity-60">(optional)</span>
+            </Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                id="parentBirthLocation"
+                type="text"
+                placeholder="City, Country"
+                value={birthLocation}
+                onChange={(e) => setBirthLocation(e.target.value)}
+                className="pl-10 h-10 text-sm"
+              />
             </div>
           </div>
           
           <Button 
             onClick={handleSave} 
             disabled={!birthday || saving}
-            className="w-full h-9 text-sm"
+            className="w-full h-10 text-sm mt-1"
           >
             {saving ? "Saving..." : "Save Birthday"}
           </Button>
