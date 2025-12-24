@@ -1,4 +1,7 @@
 project_id = "pvsuqbmcivemnfedmncm"
 
+[functions.generate-parent-child-dynamics]
+verify_jwt = false
+
 [functions.generate-sibling-dynamics]
 verify_jwt = false

@@ -5,25 +5,25 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useSiblingDynamics } from "@/hooks/useSiblingDynamics";
+import { useParentChildDynamics } from "@/hooks/useParentChildDynamics";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { TimeOfDayBackground } from "@/components/home/TimeOfDayBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { CollapsibleCard } from "@/components/family/CollapsibleCard";
 import { CollapsibleSubsection } from "@/components/family/CollapsibleSubsection";
 import { ParentBirthdayPrompt } from "@/components/family/ParentBirthdayPrompt";
+import { ParentChildCard } from "@/components/family/ParentChildCard";
 import { Button } from "@/components/ui/button";
 import { 
   getZodiacFromBirthday, 
   getZodiacSymbol, 
   getZodiacName, 
   getMoonSignFromBirthDateTime,
-  ZODIAC_DATA,
   ZodiacSign
 } from "@/lib/zodiac";
 import {
   SUN_SIGN_CHILD_TRAITS,
   MOON_SIGN_TRAITS,
-  getParentChildInsight,
   getSunMoonSynthesis,
   getAgeSignInsight
 } from "@/lib/zodiac-content";
@@ -52,6 +52,7 @@ const Family = () => {
   const { babies, loading: babiesLoading } = useBabies();
   const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const { dynamics, loading: dynamicsLoading, error: dynamicsError, generateDynamics } = useSiblingDynamics();
+  const { getDynamicsForChild, generateDynamics: generateParentChildDynamics } = useParentChildDynamics();
   const navigate = useNavigate();
   const [showPrompt, setShowPrompt] = useState(true);
 
@@ -166,57 +167,44 @@ const Family = () => {
 
           {/* Cards */}
           <div className="px-5 space-y-3">
-            {/* Parent-Child Dynamics Cards */}
+            {/* Parent-Child Dynamics Cards - AI Generated */}
             {parentSun && babies.filter(b => b.birthday).map((baby) => {
               const childSun = getZodiacFromBirthday(baby.birthday);
               if (!childSun) return null;
               
               const childMoon = getMoonSignFromBirthDateTime(baby.birthday, baby.birth_time);
-              const insight = getParentChildInsight(parentSun, parentMoon, childSun, childMoon, baby.name);
+              const ageMonths = getAgeMonths(baby.birthday);
+              const { dynamics: pcDynamics, loading: pcLoading, error: pcError } = getDynamicsForChild(baby.id);
               
               return (
-                <CollapsibleCard
+                <ParentChildCard
                   key={`parent-${baby.id}`}
-                  icon={<Heart className="w-4 h-4" />}
-                  title={`${parentName} + ${baby.name}`}
-                  subtitle={`${getZodiacName(parentSun)} parent • ${getZodiacName(childSun)} child`}
-                  preview={insight.hook}
-                >
-                  <p className="text-sm text-foreground mb-4">{insight.hook}</p>
-                  
-                  <div className="mb-4">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
-                      Your {getZodiacName(parentSun)} gives you:
-                    </p>
-                    <ul className="space-y-1">
-                      {insight.parentQualities.slice(0, 5).map((q, i) => (
-                        <li key={i} className="text-sm text-foreground/90 pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-primary/50">
-                          {q}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <CollapsibleSubsection title={`What ${baby.name} needs`}>
-                    <ul className="space-y-1">
-                      {insight.whatChildNeeds.map((need, i) => (
-                        <li key={i} className="text-sm text-foreground/90 pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-primary/50">
-                          {need}
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleSubsection>
-
-                  <CollapsibleSubsection title="Where to watch for friction">
-                    <ul className="space-y-1">
-                      {insight.friction.map((f, i) => (
-                        <li key={i} className="text-sm text-foreground/90 pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-primary/50">
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </CollapsibleSubsection>
-                </CollapsibleCard>
+                  babyId={baby.id}
+                  babyName={baby.name}
+                  parentName={parentName}
+                  parentSun={parentSun}
+                  parentMoon={parentMoon}
+                  childSun={childSun}
+                  childMoon={childMoon}
+                  ageMonths={ageMonths}
+                  dynamics={pcDynamics}
+                  loading={pcLoading}
+                  error={pcError}
+                  onGenerate={() => generateParentChildDynamics(
+                    baby.id,
+                    {
+                      name: parentName,
+                      sunSign: getZodiacName(parentSun),
+                      moonSign: parentMoon ? getZodiacName(parentMoon) : null,
+                    },
+                    {
+                      name: baby.name,
+                      sunSign: getZodiacName(childSun),
+                      moonSign: childMoon ? getZodiacName(childMoon) : null,
+                      ageMonths,
+                    }
+                  )}
+                />
               );
             })}
 
