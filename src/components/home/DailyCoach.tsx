@@ -38,29 +38,27 @@ export const DailyCoach = ({ babyName, babyBirthday }: DailyCoachProps) => {
 
   return (
     <TimeOfDayBackground>
-      <div className="pb-24">
-        {/* Sticky Profile Card */}
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md">
-          <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
-        </div>
+      {/* Sticky Profile Card - positioned outside scrollable content */}
+      <div className="sticky top-0 z-20 backdrop-blur-md bg-background/70 border-b border-border/10">
+        <BabyProfileCard babyName={displayName} babyBirthday={babyBirthday} />
+      </div>
 
-        <div className="space-y-4 pt-4">
-          {/* Development Domains */}
-          <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} babyName={displayName} />
+      <div className="pb-24 space-y-4 pt-4">
+        {/* Development Domains */}
+        <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} babyName={displayName} />
 
-          {/* Focus This Month */}
-          <FocusThisMonth 
-            babyName={displayName} 
-            ageInWeeks={ageInWeeks} 
-            birthday={babyBirthday} 
-          />
+        {/* Focus This Month */}
+        <FocusThisMonth 
+          babyName={displayName} 
+          ageInWeeks={ageInWeeks} 
+          birthday={babyBirthday} 
+        />
 
-          {/* Affirming footer */}
-          <div className="pt-4 text-center px-5">
-            <p className="text-xs text-muted-foreground/70 italic font-serif">
-              You know your child best.
-            </p>
-          </div>
+        {/* Affirming footer */}
+        <div className="pt-4 text-center px-5">
+          <p className="text-xs text-muted-foreground/70 italic font-serif">
+            You know your child best.
+          </p>
         </div>
       </div>
     </TimeOfDayBackground>
