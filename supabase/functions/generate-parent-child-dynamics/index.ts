@@ -61,10 +61,13 @@ Provide deeply personalized insights in this JSON structure. Use ${child.name}'s
   "whatYouAlreadyGive": "2-3 sentences affirming that the parent already provides what the child needs most",
   "currentPhaseInsight": "2-3 sentences about how this child's signs manifest at their current age (${ageLabel}), with specific developmental observations",
   "friction": ["List 3-4 potential friction points between these two charts and how to navigate them"],
-  "deepConnection": "2-3 sentences about the profound cosmic connection between this parent-child pair"
+  "deepConnection": "2-3 sentences about the profound cosmic connection between this parent-child pair",
+  "cultivationTips": ["List 5-6 specific, actionable parenting tips for cultivating this child's unique gifts based on their chart. Each tip should be practical and tied to their zodiac qualities. Examples: 'Give them solo exploration time - Aquarius needs independence to develop their unique perspective', 'Create sensory-rich experiences - their Taurus moon craves texture, taste, and touch'"],
+  "dailyRituals": ["List 3-4 simple daily rituals or practices that honor this child's astrological nature. Examples: 'Morning movement time - let their fire energy burn before expecting focus', 'Bedtime stories with imaginative elements for their Pisces dreaminess'"],
+  "signStrengthsToNurture": ["List 4-5 innate strengths from their chart that you can actively nurture, with brief how-to. Examples: 'Natural leadership (Leo Sun) - give them age-appropriate responsibilities', 'Emotional intuition (Cancer Moon) - validate their feelings without fixing'"]
 }
 
-Be specific to their signs, not generic. Reference the actual astrological qualities. The tone should be warm, insightful, and reassuring—helping the parent understand why they're exactly right for this child.`;
+Be specific to their signs, not generic. Reference the actual astrological qualities. The tone should be warm, insightful, and reassuring—helping the parent understand why they're exactly right for this child and giving them practical guidance.`;
 
     console.log("Generating parent-child dynamics for:", parentDesc, "and", childDesc);
 

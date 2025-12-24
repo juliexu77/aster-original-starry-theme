@@ -34,21 +34,6 @@ const getAgeMonths = (birthday?: string | null): number => {
   return Math.max(0, months);
 };
 
-const formatAgeWord = (months: number): string => {
-  if (months < 1) return "Newborn";
-  if (months === 1) return "One Month";
-  if (months < 12) {
-    const words = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven"];
-    return `${words[months]} Months`;
-  }
-  const years = Math.floor(months / 12);
-  const remaining = months % 12;
-  const yearWords = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
-  const yearWord = yearWords[years] || String(years);
-  if (remaining === 0) return `${yearWord} Year${years > 1 ? "s" : ""}`;
-  return `${yearWord} Year${years > 1 ? "s" : ""}, ${remaining}m`;
-};
-
 const getElement = (sign: ZodiacSign): string => {
   const elements: Record<ZodiacSign, string> = {
     aries: "fire", leo: "fire", sagittarius: "fire",
@@ -73,13 +58,6 @@ const getChildPreview = (sun: ZodiacSign, moon: ZodiacSign | null): string => {
     return `${traits[0].charAt(0).toUpperCase() + traits[0].slice(1)} exterior. ${interiorStyle[moonElement].charAt(0).toUpperCase() + interiorStyle[moonElement].slice(1)}.`;
   }
   return `${traits.map(t => t.charAt(0).toUpperCase() + t.slice(1)).join(". ")}.`;
-};
-
-const getAgePreview = (sun: ZodiacSign, ageMonths: number): string => {
-  if (ageMonths < 6) return "Temperament emerging. Rhythms forming.";
-  if (ageMonths < 12) return "Physical leaps. Sleep resistance. Mobility.";
-  if (ageMonths < 24) return "Autonomy drive. Big feelings. Language.";
-  return "Personality crystallizing. Social awareness.";
 };
 
 const getSiblingPreview = (children: { name: string; sun: ZodiacSign }[]): string => {
@@ -274,49 +252,6 @@ const Family = () => {
               );
             })}
 
-            {/* Age Cards */}
-            {babies.filter(b => b.birthday).map((baby) => {
-              const childSun = getZodiacFromBirthday(baby.birthday);
-              if (!childSun) return null;
-              
-              const ageMonths = getAgeMonths(baby.birthday);
-              
-              return (
-                <CollapsibleCard
-                  key={`age-${baby.id}`}
-                  title={formatAgeWord(ageMonths)}
-                  subtitle={getZodiacName(childSun)}
-                  preview={getAgePreview(childSun, ageMonths)}
-                >
-                  <CollapsibleSubsection title="Physical" defaultExpanded>
-                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
-                      {ageMonths < 6 ? "Motor patterns emerging. Reaching. Grasping." :
-                       ageMonths < 12 ? "Mobility accelerating. Cruising. Object permanence." :
-                       ageMonths < 24 ? "Walking. Climbing. Testing limits." :
-                       "Running. Jumping. Coordination refining."}
-                    </p>
-                  </CollapsibleSubsection>
-
-                  <CollapsibleSubsection title="Sleep">
-                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
-                      {ageMonths < 6 ? "Rhythms forming. Night stretches lengthening." :
-                       ageMonths < 12 ? "Regressions possible. Separation awareness." :
-                       ageMonths < 24 ? "Nap transitions. Bedtime resistance." :
-                       "Single nap. Nighttime fears emerging."}
-                    </p>
-                  </CollapsibleSubsection>
-
-                  <CollapsibleSubsection title="Feeding">
-                    <p className="text-[13px] text-foreground/50 leading-[1.6]">
-                      {ageMonths < 6 ? "Milk primary. Hunger cues developing." :
-                       ageMonths < 12 ? "Solids beginning. Pincer grasp emerging." :
-                       ageMonths < 24 ? "Self-feeding. Preferences forming. Mess." :
-                       "Utensil use. Food opinions strong."}
-                    </p>
-                  </CollapsibleSubsection>
-                </CollapsibleCard>
-              );
-            })}
 
             {/* Sibling Card */}
             {siblingData.length > 1 && (
