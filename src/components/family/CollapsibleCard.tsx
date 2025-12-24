@@ -24,36 +24,36 @@ export const CollapsibleCard = ({
   return (
     <div 
       className={cn(
-        "rounded-xl border border-border/20 bg-card/60 backdrop-blur-sm overflow-hidden transition-all duration-300",
+        "rounded-lg border border-foreground/5 bg-foreground/[0.02] overflow-hidden",
         className
       )}
     >
       {/* Header - Always visible, clickable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full text-left p-4 flex items-start gap-3 hover:bg-muted/20 transition-colors"
+        className="w-full text-left p-4 flex items-start gap-3"
       >
         <div className="flex-1 min-w-0">
-          <h3 className="text-[15px] text-foreground tracking-[0.3px]">
+          <h3 className="text-[15px] text-foreground/80 tracking-[0.3px]">
             {title}
           </h3>
-          <p className="text-[13px] text-muted-foreground/70 mt-0.5">
+          <p className="text-[12px] text-foreground/40 mt-0.5 tracking-wide">
             {subtitle}
           </p>
           
           {/* Preview text - only shown when collapsed */}
           {!isExpanded && (
-            <p className="text-[14px] text-foreground/60 mt-2.5 leading-[1.5] line-clamp-2">
+            <p className="text-[13px] text-foreground/50 mt-3 leading-[1.6] line-clamp-2">
               {preview}
             </p>
           )}
         </div>
         
-        <div className="flex-shrink-0 text-muted-foreground/50 mt-0.5">
+        <div className="flex-shrink-0 text-foreground/20 mt-1">
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
+            <ChevronUp className="w-3 h-3" strokeWidth={1.5} />
           ) : (
-            <ChevronDown className="w-4 h-4" />
+            <ChevronDown className="w-3 h-3" strokeWidth={1.5} />
           )}
         </div>
       </button>
@@ -61,11 +61,11 @@ export const CollapsibleCard = ({
       {/* Expandable content */}
       <div
         className={cn(
-          "overflow-hidden transition-all duration-300 ease-out",
+          "overflow-hidden transition-all duration-200 ease-out",
           isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
         )}
       >
-        <div className="px-4 pb-4 pt-0">
+        <div className="px-4 pb-5 pt-0 space-y-5">
           {children}
         </div>
       </div>

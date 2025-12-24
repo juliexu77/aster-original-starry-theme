@@ -46,16 +46,17 @@ export const ParentChildCard = ({
   error,
   onGenerate,
 }: ParentChildCardProps) => {
-  // Auto-generate on mount if no dynamics yet
   useEffect(() => {
     if (!dynamics && !loading && !error) {
       onGenerate();
     }
   }, [dynamics, loading, error, onGenerate]);
 
-  const preview = dynamics?.hook || "Loading...";
   const parentGlyph = getZodiacGlyph(parentSun);
   const childGlyph = getZodiacGlyph(childSun);
+  
+  // Co-Star style preview
+  const preview = dynamics?.hook || `${getZodiacName(parentSun)} meets ${getZodiacName(childSun)}.`;
 
   return (
     <CollapsibleCard
@@ -64,77 +65,63 @@ export const ParentChildCard = ({
       preview={preview}
     >
       {loading ? (
-        <div className="flex items-center justify-center py-4">
+        <div className="flex items-center gap-2 py-2">
           <LoadingSpinner />
-          <span className="ml-2 text-[14px] text-muted-foreground">Generating...</span>
+          <span className="text-[13px] text-foreground/40">Generating...</span>
         </div>
       ) : error ? (
-        <div className="text-center py-4">
-          <p className="text-[14px] text-muted-foreground mb-2">{error}</p>
-          <Button variant="outline" size="sm" onClick={onGenerate}>
+        <div className="py-2">
+          <p className="text-[13px] text-foreground/40 mb-2">{error}</p>
+          <Button variant="ghost" size="sm" onClick={onGenerate} className="text-foreground/40 hover:text-foreground/60">
             <RefreshCw className="w-3 h-3 mr-1" />
-            Try again
+            Retry
           </Button>
         </div>
       ) : dynamics ? (
         <>
-          <p className="text-[14px] text-foreground/80 mb-4 leading-[1.5]">{dynamics.hook}</p>
+          <p className="text-[13px] text-foreground/60 leading-[1.6]">{dynamics.hook}</p>
           
-          <div className="mb-4">
-            <p className="text-[12px] text-muted-foreground/60 uppercase tracking-wide mb-2">
-              {getZodiacName(parentSun)}{parentMoon ? ` + ${getZodiacName(parentMoon)} ☽` : ''} gives you
-            </p>
-            <ul className="space-y-1">
-              {dynamics.parentQualities.slice(0, 6).map((q, i) => (
-                <li key={i} className="text-[14px] text-foreground/70 pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/30">
-                  {q}
-                </li>
+          <CollapsibleSubsection title="Qualities">
+            <div className="space-y-1">
+              {dynamics.parentQualities.slice(0, 4).map((q, i) => (
+                <p key={i} className="text-[13px] text-foreground/50">{q}</p>
               ))}
-            </ul>
-          </div>
-
-          <CollapsibleSubsection title="You're the parent who">
-            <ul className="space-y-1">
-              {dynamics.youreTheParentWho.map((item, i) => (
-                <li key={i} className="text-[14px] text-foreground/70 pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/30">
-                  {item}
-                </li>
-              ))}
-            </ul>
+            </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title={`What ${babyName} needs`}>
-            <ul className="space-y-1">
-              {dynamics.whatChildNeeds.map((need, i) => (
-                <li key={i} className="text-[14px] text-foreground/70 pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/30">
-                  {need}
-                </li>
+          <CollapsibleSubsection title="Approach">
+            <div className="space-y-1">
+              {dynamics.youreTheParentWho.slice(0, 3).map((item, i) => (
+                <p key={i} className="text-[13px] text-foreground/50">{item}</p>
               ))}
-            </ul>
-            <p className="text-[14px] text-foreground/60 mt-3">{dynamics.whatYouAlreadyGive}</p>
+            </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Current phase">
-            <p className="text-[14px] text-foreground/70">{dynamics.currentPhaseInsight}</p>
-          </CollapsibleSubsection>
-
-          <CollapsibleSubsection title="Friction points">
-            <ul className="space-y-1">
-              {dynamics.friction.map((f, i) => (
-                <li key={i} className="text-[14px] text-foreground/70 pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-foreground/30">
-                  {f}
-                </li>
+          <CollapsibleSubsection title="Needs">
+            <div className="space-y-1">
+              {dynamics.whatChildNeeds.slice(0, 3).map((need, i) => (
+                <p key={i} className="text-[13px] text-foreground/50">{need}</p>
               ))}
-            </ul>
+            </div>
           </CollapsibleSubsection>
 
-          <CollapsibleSubsection title="Deep connection">
-            <p className="text-[14px] text-foreground/70">{dynamics.deepConnection}</p>
+          <CollapsibleSubsection title="Phase">
+            <p className="text-[13px] text-foreground/50">{dynamics.currentPhaseInsight}</p>
+          </CollapsibleSubsection>
+
+          <CollapsibleSubsection title="Friction">
+            <div className="space-y-1">
+              {dynamics.friction.slice(0, 2).map((f, i) => (
+                <p key={i} className="text-[13px] text-foreground/50">{f}</p>
+              ))}
+            </div>
+          </CollapsibleSubsection>
+
+          <CollapsibleSubsection title="Connection">
+            <p className="text-[13px] text-foreground/50">{dynamics.deepConnection}</p>
           </CollapsibleSubsection>
         </>
-      ) : (
-        <p className="text-[14px] text-muted-foreground">Loading...</p>
-      )}
+      ) : null}
     </CollapsibleCard>
   );
 };
