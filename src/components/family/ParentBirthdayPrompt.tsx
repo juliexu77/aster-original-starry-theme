@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Sparkles, User, Users } from "lucide-react";
 import { GlassCard } from "@/components/home/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,23 +37,23 @@ const CITIES = [
   "Bangkok, Thailand", "Jakarta, Indonesia", "Manila, Philippines", "Kuala Lumpur, Malaysia"
 ];
 
-export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
-  const [birthday, setBirthday] = useState("");
-  const [birthTime, setBirthTime] = useState("");
-  const [birthLocation, setBirthLocation] = useState("");
-  const [saving, setSaving] = useState(false);
+interface LocationInputProps {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}
+
+const LocationInput = ({ id, value, onChange, placeholder = "Start typing a city..." }: LocationInputProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const { updateUserProfile } = useUserProfile();
-  const { toast } = useToast();
 
-  // Filter cities based on input
   useEffect(() => {
-    if (birthLocation.length >= 2) {
+    if (value.length >= 2) {
       const filtered = CITIES.filter(city => 
-        city.toLowerCase().includes(birthLocation.toLowerCase())
+        city.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 6);
       setFilteredCities(filtered);
       setShowSuggestions(filtered.length > 0);
@@ -61,9 +61,8 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
       setFilteredCities([]);
       setShowSuggestions(false);
     }
-  }, [birthLocation]);
+  }, [value]);
 
-  // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -80,36 +79,96 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   }, []);
 
   const handleSelectCity = (city: string) => {
-    setBirthLocation(city);
+    onChange(city);
     setShowSuggestions(false);
   };
 
+  return (
+    <div className="relative">
+      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
+      <Input
+        ref={inputRef}
+        id={id}
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => value.length >= 2 && filteredCities.length > 0 && setShowSuggestions(true)}
+        className="pl-10 h-10 text-sm"
+        autoComplete="off"
+      />
+      {showSuggestions && (
+        <div 
+          ref={suggestionsRef}
+          className="absolute top-full left-0 right-0 mt-1 rounded-md border border-border shadow-lg z-50 max-h-48 overflow-y-auto"
+          style={{ backgroundColor: 'hsl(var(--card))' }}
+        >
+          {filteredCities.map((city) => (
+            <button
+              key={city}
+              type="button"
+              onClick={() => handleSelectCity(city)}
+              className="w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center gap-2"
+            >
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              {city}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
+  // Your info
+  const [birthday, setBirthday] = useState("");
+  const [birthTime, setBirthTime] = useState("");
+  const [birthLocation, setBirthLocation] = useState("");
+  
+  // Partner info
+  const [partnerName, setPartnerName] = useState("");
+  const [partnerBirthday, setPartnerBirthday] = useState("");
+  const [partnerBirthTime, setPartnerBirthTime] = useState("");
+  const [partnerBirthLocation, setPartnerBirthLocation] = useState("");
+  
+  const [saving, setSaving] = useState(false);
+  const { updateUserProfile } = useUserProfile();
+  const { toast } = useToast();
+
   const handleSave = async () => {
-    if (!birthday) return;
+    // At least one person's birthday is required
+    if (!birthday && !partnerBirthday) return;
     
     setSaving(true);
     try {
       await updateUserProfile({ 
-        birthday,
+        birthday: birthday || undefined,
         birth_time: birthTime || undefined,
-        birth_location: birthLocation || undefined
+        birth_location: birthLocation || undefined,
+        partner_name: partnerName || undefined,
+        partner_birthday: partnerBirthday || undefined,
+        partner_birth_time: partnerBirthTime || undefined,
+        partner_birth_location: partnerBirthLocation || undefined
       });
       toast({
-        title: "Birthday saved",
+        title: "Saved",
         description: "Now we can show you cosmic insights!"
       });
       onSaved?.();
     } catch (error) {
-      console.error("Error saving birthday:", error);
+      console.error("Error saving:", error);
       toast({
         title: "Error",
-        description: "Failed to save birthday",
+        description: "Failed to save",
         variant: "destructive"
       });
     } finally {
       setSaving(false);
     }
   };
+
+  const hasAnyData = birthday || partnerBirthday;
 
   return (
     <GlassCard className="mx-4">
@@ -123,91 +182,144 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
             Unlock Family Dynamics
           </h3>
           <p className="text-xs text-muted-foreground">
-            Add your birthday to see how you interact with your children
+            Add your birth info to see how you interact with your children
           </p>
         </div>
         
-        <div className="flex flex-col gap-4 text-left">
-          <div className="space-y-1.5">
-            <Label htmlFor="parentBirthday" className="text-[10px] text-muted-foreground uppercase tracking-wide">Birthday</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input
-                id="parentBirthday"
-                type="date"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="pl-10 h-10 text-sm"
-              />
-            </div>
+        {/* Your Info Section */}
+        <div className="space-y-4 text-left">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <User className="w-3.5 h-3.5" />
+            Your Info <span className="normal-case opacity-60">(optional)</span>
           </div>
           
-          <div className="space-y-1.5">
-            <Label htmlFor="parentBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              Time <span className="normal-case opacity-60">(optional)</span>
-            </Label>
-            <div className="relative">
-              <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-              <Input
-                id="parentBirthTime"
-                type="time"
-                value={birthTime}
-                onChange={(e) => setBirthTime(e.target.value)}
-                className="pl-10 h-10 text-sm"
-              />
+          <div className="space-y-3 pl-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="parentBirthday" className="text-[10px] text-muted-foreground uppercase tracking-wide">Birthday</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="parentBirthday"
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  className="pl-10 h-10 text-sm"
+                />
+              </div>
             </div>
-          </div>
-          
-          <div className="space-y-1.5">
-            <Label htmlFor="parentBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
-              Location <span className="normal-case opacity-60">(optional)</span>
-            </Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10" />
-              <Input
-                ref={inputRef}
-                id="parentBirthLocation"
-                type="text"
-                placeholder="Start typing a city..."
-                value={birthLocation}
-                onChange={(e) => setBirthLocation(e.target.value)}
-                onFocus={() => birthLocation.length >= 2 && filteredCities.length > 0 && setShowSuggestions(true)}
-                className="pl-10 h-10 text-sm"
-                autoComplete="off"
-              />
-              {showSuggestions && (
-                <div 
-                  ref={suggestionsRef}
-                  className="absolute top-full left-0 right-0 mt-1 rounded-md border border-border shadow-lg z-50 max-h-48 overflow-y-auto"
-                  style={{ backgroundColor: 'hsl(var(--card))' }}
-                >
-                  {filteredCities.map((city) => (
-                    <button
-                      key={city}
-                      type="button"
-                      onClick={() => handleSelectCity(city)}
-                      className="w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center gap-2"
-                    >
-                      <MapPin className="w-3 h-3 text-muted-foreground" />
-                      {city}
-                    </button>
-                  ))}
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="parentBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Time
+                </Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="parentBirthTime"
+                    type="time"
+                    value={birthTime}
+                    onChange={(e) => setBirthTime(e.target.value)}
+                    className="pl-10 h-10 text-sm"
+                  />
                 </div>
-              )}
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="parentBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Location
+                </Label>
+                <LocationInput
+                  id="parentBirthLocation"
+                  value={birthLocation}
+                  onChange={setBirthLocation}
+                />
+              </div>
             </div>
           </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-border/50 my-4" />
+
+        {/* Partner Info Section */}
+        <div className="space-y-4 text-left">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <Users className="w-3.5 h-3.5" />
+            Partner's Info <span className="normal-case opacity-60">(optional)</span>
+          </div>
           
-          <Button 
-            onClick={handleSave} 
-            disabled={!birthday || saving}
-            className="w-full h-10 text-sm mt-1"
-          >
-            {saving ? "Saving..." : "Save Birthday"}
-          </Button>
+          <div className="space-y-3 pl-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="partnerName" className="text-[10px] text-muted-foreground uppercase tracking-wide">Name</Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="partnerName"
+                  type="text"
+                  placeholder="Partner's name"
+                  value={partnerName}
+                  onChange={(e) => setPartnerName(e.target.value)}
+                  className="pl-10 h-10 text-sm"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="partnerBirthday" className="text-[10px] text-muted-foreground uppercase tracking-wide">Birthday</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  id="partnerBirthday"
+                  type="date"
+                  value={partnerBirthday}
+                  onChange={(e) => setPartnerBirthday(e.target.value)}
+                  className="pl-10 h-10 text-sm"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="partnerBirthTime" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Time
+                </Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <Input
+                    id="partnerBirthTime"
+                    type="time"
+                    value={partnerBirthTime}
+                    onChange={(e) => setPartnerBirthTime(e.target.value)}
+                    className="pl-10 h-10 text-sm"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label htmlFor="partnerBirthLocation" className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                  Location
+                </Label>
+                <LocationInput
+                  id="partnerBirthLocation"
+                  value={partnerBirthLocation}
+                  onChange={setPartnerBirthLocation}
+                />
+              </div>
+            </div>
+          </div>
         </div>
         
+        <Button 
+          onClick={handleSave} 
+          disabled={!hasAnyData || saving}
+          className="w-full h-10 text-sm mt-2"
+        >
+          {saving ? "Saving..." : "Save"}
+        </Button>
+        
         <p className="text-[10px] text-muted-foreground/60">
-          Time & location help calculate your moon sign accurately
+          Time & location help calculate moon signs accurately
         </p>
       </div>
     </GlassCard>
