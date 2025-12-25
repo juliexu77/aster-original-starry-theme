@@ -62,21 +62,42 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => {
-  // Get the current theme class from document.documentElement
+  // Get the current theme and compute background color directly
+  const [bgColor, setBgColor] = React.useState("");
+  const [textColor, setTextColor] = React.useState("");
+  const [borderColor, setBorderColor] = React.useState("");
   const [themeClass, setThemeClass] = React.useState("");
   
   React.useEffect(() => {
     const htmlElement = document.documentElement;
+    const computedStyle = getComputedStyle(htmlElement);
+    
     const getTheme = () => {
       if (htmlElement.classList.contains("dusk")) return "dusk";
       if (htmlElement.classList.contains("dark")) return "dark";
       return "";
     };
-    setThemeClass(getTheme());
+    
+    const updateColors = () => {
+      const theme = getTheme();
+      setThemeClass(theme);
+      
+      // Get computed CSS variable values
+      const cardVar = computedStyle.getPropertyValue('--card').trim();
+      const cardFgVar = computedStyle.getPropertyValue('--card-foreground').trim();
+      const borderVar = computedStyle.getPropertyValue('--border').trim();
+      
+      if (cardVar) setBgColor(`hsl(${cardVar})`);
+      if (cardFgVar) setTextColor(`hsl(${cardFgVar})`);
+      if (borderVar) setBorderColor(`hsl(${borderVar})`);
+    };
+    
+    updateColors();
     
     // Watch for theme changes
     const observer = new MutationObserver(() => {
-      setThemeClass(getTheme());
+      // Need to wait a tick for CSS variables to update
+      requestAnimationFrame(updateColors);
     });
     observer.observe(htmlElement, { attributes: true, attributeFilter: ["class"] });
     
@@ -89,7 +110,7 @@ const SelectContent = React.forwardRef<
         ref={ref}
         className={cn(
           themeClass,
-          "relative z-[100] max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-border shadow-lg",
+          "relative z-[100] max-h-96 min-w-[8rem] overflow-hidden rounded-md shadow-lg",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
@@ -97,8 +118,11 @@ const SelectContent = React.forwardRef<
         )}
         position={position}
         style={{ 
-          backgroundColor: 'hsl(var(--card))',
-          color: 'hsl(var(--card-foreground))'
+          backgroundColor: bgColor || '#23232D',
+          color: textColor || '#eceae7',
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: borderColor || 'hsl(280 12% 25%)'
         }}
         {...props}
       >
