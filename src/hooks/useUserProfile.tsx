@@ -13,6 +13,10 @@ interface UserProfile {
   birthday: string | null;
   birth_time: string | null;
   birth_location: string | null;
+  partner_name: string | null;
+  partner_birthday: string | null;
+  partner_birth_time: string | null;
+  partner_birth_location: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -52,11 +56,33 @@ export const useUserProfile = () => {
     }
   };
 
-  const updateUserProfile = async (updates: { display_name?: string; avatar_url?: string; full_name?: string; photo_url?: string; birthday?: string; birth_time?: string; birth_location?: string }) => {
+  const updateUserProfile = async (updates: { 
+    display_name?: string; 
+    avatar_url?: string; 
+    full_name?: string; 
+    photo_url?: string; 
+    birthday?: string; 
+    birth_time?: string; 
+    birth_location?: string;
+    partner_name?: string;
+    partner_birthday?: string;
+    partner_birth_time?: string;
+    partner_birth_location?: string;
+  }) => {
     if (!user) throw new Error('User not authenticated');
 
     // Map aliases to actual column names
-    const mappedUpdates: { display_name?: string; avatar_url?: string; birthday?: string; birth_time?: string; birth_location?: string } = {};
+    const mappedUpdates: { 
+      display_name?: string; 
+      avatar_url?: string; 
+      birthday?: string; 
+      birth_time?: string; 
+      birth_location?: string;
+      partner_name?: string;
+      partner_birthday?: string;
+      partner_birth_time?: string;
+      partner_birth_location?: string;
+    } = {};
     if (updates.display_name !== undefined) mappedUpdates.display_name = updates.display_name;
     if (updates.full_name !== undefined) mappedUpdates.display_name = updates.full_name;
     if (updates.avatar_url !== undefined) mappedUpdates.avatar_url = updates.avatar_url;
@@ -64,6 +90,10 @@ export const useUserProfile = () => {
     if (updates.birthday !== undefined) mappedUpdates.birthday = updates.birthday;
     if (updates.birth_time !== undefined) mappedUpdates.birth_time = updates.birth_time;
     if (updates.birth_location !== undefined) mappedUpdates.birth_location = updates.birth_location;
+    if (updates.partner_name !== undefined) mappedUpdates.partner_name = updates.partner_name;
+    if (updates.partner_birthday !== undefined) mappedUpdates.partner_birthday = updates.partner_birthday;
+    if (updates.partner_birth_time !== undefined) mappedUpdates.partner_birth_time = updates.partner_birth_time;
+    if (updates.partner_birth_location !== undefined) mappedUpdates.partner_birth_location = updates.partner_birth_location;
 
     // Use upsert to handle case where profile doesn't exist yet
     const { data, error } = await supabase

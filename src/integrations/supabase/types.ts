@@ -124,6 +124,10 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          partner_birth_location: string | null
+          partner_birth_time: string | null
+          partner_birthday: string | null
+          partner_name: string | null
           updated_at: string
           user_id: string
         }
@@ -136,6 +140,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          partner_birth_location?: string | null
+          partner_birth_time?: string | null
+          partner_birthday?: string | null
+          partner_name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -148,6 +156,10 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          partner_birth_location?: string | null
+          partner_birth_time?: string | null
+          partner_birthday?: string | null
+          partner_name?: string | null
           updated_at?: string
           user_id?: string
         }
