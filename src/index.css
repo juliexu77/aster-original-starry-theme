@@ -13,22 +13,6 @@
     --font-serif: "Source Serif 4", Georgia, Cambria, "Times New Roman", serif;
     --font-num: "DM Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     
-    /* ═══════════════════════════════════════════════════════════════════
-       RARE BEAUTY COLOR PALETTE - Rose-Clay-Beige Family
-       ═══════════════════════════════════════════════════════════════════ */
-    
-    /* Primary accent colors */
-    --rb-terracotta-rose: 8 45% 60%; /* #C47A6A - Primary accent */
-    --rb-berry-mauve: 350 35% 46%; /* #9C4F52 - Deep accent */
-    --rb-dusty-blush: 15 45% 76%; /* #E4B8A6 - Soft accent */
-    --rb-rose-clay: 12 50% 81%; /* #E8C4BA - Card surfaces */
-    
-    /* Neutral warm beiges */
-    --rb-warm-beige: 20 40% 93%; /* #F5E7DF - Background */
-    --rb-soft-beige: 18 45% 91%; /* #F2DED5 - Background gradient end */
-    --rb-cream: 22 50% 96%; /* Lightest surface */
-    --rb-taupe: 18 25% 52%; /* Warm neutral for muted text */
-    
     /* Spacing scale (8pt grid with generous padding) */
     --s-1: 4px;
     --s-2: 8px;
@@ -39,225 +23,10 @@
     --s-7: 40px;
     
     /* ═══════════════════════════════════════════════════════════════════
-       LIGHT MODE - Warm Rose-Beige World
+       DUSK MODE - Default Theme
+       Overnight tranquil theme with liquid glass effects
        ═══════════════════════════════════════════════════════════════════ */
     
-    /* ═══════════════════════════════════════════════════════════════════
-       LIGHT MODE - Warm Almond Rose-Beige World (Rare Beauty)
-       Shifted from peachy pink → warm almond with rose undertone
-       ═══════════════════════════════════════════════════════════════════ */
-    
-    --bg: 25 35% 89%; /* Warm almond-beige (darker, less pink) */
-    --surface: 20 40% 93%; /* Rose-clay cream for cards */
-    --surface-muted: 22 38% 87%; /* Deeper warm beige */
-    --text: 15 35% 22%; /* Deep clay-brown text */
-    --text-muted: 20 22% 45%; /* Warm clay-brown muted text */
-    --divider: 18 30% 82%; /* Soft clay border */
-    
-    /* Card surfaces - unified rose-clay tone (tactile, object-like) */
-    --card-ombre-1: 18 42% 90%; /* Rose-clay (unified tone) */
-    --card-ombre-1-dark: 15 45% 85%; /* Deeper rose-clay */
-    --card-ombre-2: 18 42% 90%; /* Same rose-clay */
-    --card-ombre-2-dark: 15 45% 85%;
-    --card-ombre-3: 18 42% 90%;
-    --card-ombre-3-dark: 15 45% 85%;
-    --card-ombre-4: 18 42% 90%;
-    --card-ombre-4-dark: 15 45% 85%;
-    
-    /* Legacy aliases */
-    --pp-burgundy: var(--rb-berry-mauve);
-    --pp-dusty-mauve: var(--rb-dusty-blush);
-    --pp-rose-clay: var(--rb-rose-clay);
-    --pp-warm-taupe: var(--rb-taupe);
-    --pp-coral-peach: var(--rb-dusty-blush);
-    
-    /* Activity accents - cinnamon-rose and dusty neutrals */
-    --accent-1: 15 40% 72%; /* Cinnamon-rose */
-    --accent-2: 18 38% 78%; /* Dusty rose-neutral */
-    --chart-feed: 12 40% 55%; /* Clay brown */
-    --chart-sleep: 18 35% 72%; /* Dusty rose */
-    
-    /* ═══════════════════════════════════════════════════════════════════
-       DEPTH & GLOW - Living, breathing interface
-       ═══════════════════════════════════════════════════════════════════ */
-    
-    --elev-shadow: 
-      0 2px 4px -1px hsla(15, 50%, 40%, 0.04),
-      0 4px 12px -2px hsla(15, 50%, 40%, 0.08),
-      0 8px 24px -4px hsla(15, 50%, 40%, 0.06);
-    --card-radius: 28px;
-    
-    /* Glow effects - soft luminosity */
-    --glow-primary: 0 0 20px -4px hsla(350, 40%, 55%, 0.25);
-    --glow-accent: 0 0 24px -6px hsla(8, 50%, 60%, 0.3);
-    --glow-soft: 0 0 30px -8px hsla(15, 45%, 70%, 0.2);
-    --glow-warm: 0 4px 20px -4px hsla(20, 50%, 65%, 0.25);
-    
-    /* Inner highlight - top light effect */
-    --inner-highlight: inset 0 1px 0 0 hsla(30, 60%, 98%, 0.5);
-    --inner-glow: inset 0 0 20px 0 hsla(30, 50%, 95%, 0.3);
-    
-    /* Transitions - gentle & cinematic */
-    --transition-smooth: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    
-    /* ═══════════════════════════════════════════════════════════════════
-       TAILWIND COMPATIBILITY
-       ═══════════════════════════════════════════════════════════════════ */
-    
-    --background: var(--bg);
-    --foreground: var(--text);
-    --card: var(--surface);
-    --card-foreground: var(--text);
-    --popover: var(--surface);
-    --popover-foreground: var(--text);
-    --primary: var(--rb-berry-mauve);
-    --primary-foreground: 30 50% 97%; /* Warm cream instead of pure white */
-    --secondary: var(--rb-dusty-blush);
-    --secondary-foreground: 350 35% 20%;
-    --muted: var(--surface-muted);
-    --muted-foreground: var(--text-muted);
-    --accent: var(--rb-rose-clay);
-    --accent-foreground: 350 35% 20%;
-    --destructive: 0 50% 55%;
-    --destructive-foreground: 30 50% 97%; /* Warm cream */
-    --border: var(--divider);
-    --input: var(--surface-muted);
-    --ring: var(--rb-terracotta-rose);
-    --radius: 24px;
-    
-    /* CTA gradient - rich terracotta with glow */
-    --cta-gradient-start: 8 45% 55%;
-    --cta-gradient-end: 350 40% 42%;
-    --cta-shadow: 0 6px 20px hsla(8, 50%, 45%, 0.25), 0 0 30px -5px hsla(350, 45%, 50%, 0.2);
-    
-    /* Activity colors - rose-clay family */
-    --feed-color: var(--rb-berry-mauve);
-    --diaper-color: var(--rb-taupe);
-    --nap-color: var(--rb-dusty-blush);
-    --note-color: 350 30% 35%;
-    --chat-color: var(--rb-terracotta-rose);
-    
-    /* Gradients - soft photography-inspired */
-    --gradient-primary: linear-gradient(145deg, hsl(8 45% 58%), hsl(350 40% 44%));
-    --gradient-feed: linear-gradient(145deg, hsl(var(--rb-berry-mauve)), hsl(350 38% 50%));
-    --gradient-diaper: linear-gradient(145deg, hsl(var(--rb-taupe)), hsl(20 22% 58%));
-    --gradient-nap: linear-gradient(145deg, hsl(var(--rb-dusty-blush)), hsl(15 40% 70%));
-    --gradient-note: linear-gradient(145deg, hsl(350 30% 38%), hsl(350 35% 32%));
-    --gradient-chat: linear-gradient(145deg, hsl(var(--rb-terracotta-rose)), hsl(350 40% 48%));
-    
-    /* Shadows - diffused cinematic with depth layers */
-    --shadow-soft: 
-      0 2px 6px -1px hsla(15, 45%, 40%, 0.05),
-      0 4px 12px -2px hsla(15, 45%, 40%, 0.08);
-    --shadow-card: 
-      0 1px 2px 0 hsla(15, 50%, 40%, 0.03),
-      0 2px 4px -1px hsla(15, 50%, 40%, 0.04),
-      0 6px 16px -3px hsla(15, 50%, 40%, 0.08),
-      0 12px 32px -6px hsla(15, 50%, 40%, 0.06);
-    --shadow-elevated: 
-      0 2px 4px -1px hsla(15, 50%, 35%, 0.05),
-      0 8px 20px -4px hsla(15, 50%, 40%, 0.12),
-      0 16px 40px -8px hsla(15, 50%, 40%, 0.1);
-    
-    /* Icon opacity for softer look */
-    --icon-opacity: 0.88;
-    
-    /* Sidebar */
-    --sidebar-background: var(--bg);
-    --sidebar-foreground: var(--text);
-    --sidebar-primary: var(--rb-berry-mauve);
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: var(--surface-muted);
-    --sidebar-accent-foreground: var(--text);
-    --sidebar-border: var(--divider);
-    --sidebar-ring: var(--rb-terracotta-rose);
-  }
-
-  .dark {
-    /* Dark Mode - "Confident & Data-Driven" */
-    --bg: 0 0% 7%; /* #121212 */
-    --surface: 0 0% 12%; /* #1E1E1E */
-    --surface-muted: 0 0% 9%; /* #161616 */
-    --text: 0 0% 100%; /* #FFFFFF */
-    --text-muted: 0 0% 62%; /* #9E9E9E */
-    --divider: 0 0% 20%; /* #333333 */
-    
-    /* Card ombré progression (dark mode: all same lighter black) */
-    --card-ombre-1: 0 0% 10%; /* Consistent lighter black for all cards */
-    --card-ombre-2: 0 0% 10%; /* Same as card 1 */
-    --card-ombre-3: 0 0% 10%; /* Same as card 1 */
-    --card-ombre-4: 0 0% 10%; /* Same as card 1 */
-    --accent-1: var(--pp-mint); /* feeding */
-    --accent-2: var(--pp-lavender); /* sleep/insights */
-    --chart-feed: 164 82% 68%; /* #36E2AE - brighter mint */
-    --chart-sleep: 264 40% 75%; /* #B095D1 - brighter lavender */
-    
-    /* Card elevation - flat design */
-    --elev-shadow: none;
-    --card-radius: 8px;
-    
-    /* Transitions - Dark Mode: crisp */
-    --transition-smooth: all 140ms ease-out;
-    
-    /* Tailwind compatibility */
-    --background: var(--bg);
-    --foreground: var(--text);
-    --card: var(--surface);
-    --card-foreground: var(--text);
-    --popover: var(--surface);
-    --popover-foreground: var(--text);
-    --primary: var(--pp-mint);
-    --primary-foreground: 0 0% 0%;
-    --secondary: var(--pp-lavender);
-    --secondary-foreground: 0 0% 100%;
-    --muted: var(--surface-muted);
-    --muted-foreground: var(--text-muted);
-    --accent: var(--pp-lavender);
-    --accent-foreground: 0 0% 100%;
-    --destructive: var(--pp-coral);
-    --destructive-foreground: 0 0% 100%;
-    --border: var(--divider);
-    --input: var(--surface-muted);
-    --ring: var(--pp-mint);
-    --radius: 8px;
-    
-    /* Primary CTA gradient */
-    --cta-gradient-start: 315 20% 70%;
-    --cta-gradient-end: 315 20% 57%;
-    --cta-shadow: 0 0 18px rgba(185, 159, 178, 0.4);
-    
-    /* Activity colors */
-    --feed-color: var(--pp-mint);
-    --diaper-color: var(--pp-lavender);
-    --nap-color: var(--pp-lavender);
-    --note-color: 190 100% 55%;
-    --chat-color: var(--pp-mint);
-    
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
-    --gradient-feed: linear-gradient(135deg, hsl(var(--chart-feed)), hsl(164 75% 75%));
-    --gradient-diaper: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
-    --gradient-nap: linear-gradient(135deg, hsl(var(--chart-sleep)), hsl(264 35% 80%));
-    --gradient-note: linear-gradient(135deg, hsl(190 100% 55%), hsl(190 90% 65%));
-    --gradient-chat: linear-gradient(135deg, hsl(var(--pp-mint)), hsl(153 45% 65%));
-    
-    /* Shadows - flat design */
-    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
-    
-    /* Sidebar */
-    --sidebar-background: var(--bg);
-    --sidebar-foreground: var(--text);
-    --sidebar-primary: var(--pp-mint);
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: var(--surface-muted);
-    --sidebar-accent-foreground: var(--text);
-    --sidebar-border: var(--divider);
-    --sidebar-ring: var(--pp-mint);
-  }
-
-  .dusk {
-    /* Dusk Mode - Overnight tranquil theme with liquid glass effects */
     /* Background: Gradient from charcoal-plum to deep ink blue */
     --bg: 250 10% 17%; /* #262630 - Muted charcoal-plum */
     --bg-bottom: 225 35% 9%; /* #101622 - Deep ink blue night sky */
@@ -289,10 +58,13 @@
     --elev-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 8px 32px 0 rgba(0, 0, 0, 0.4);
     --card-radius: 12px;
     
-    /* Transitions - Dusk Mode: smooth */
+    /* Transitions - smooth */
     --transition-smooth: all 200ms ease-in-out;
     
-    /* Tailwind compatibility */
+    /* ═══════════════════════════════════════════════════════════════════
+       TAILWIND COMPATIBILITY
+       ═══════════════════════════════════════════════════════════════════ */
+    
     --background: var(--bg);
     --foreground: var(--text);
     --card: var(--surface);
@@ -307,7 +79,7 @@
     --muted-foreground: 0 0% 55%; /* Muted grey */
     --accent: var(--accent-1);
     --accent-foreground: 0 0% 92%;
-    --destructive: var(--pp-coral);
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 92%;
     --border: var(--divider);
     --input: var(--surface-muted);
@@ -338,6 +110,9 @@
     --shadow-soft: 0 8px 8px rgba(0, 0, 0, 0.2);
     --shadow-card: inset 0 1px 0 0 rgba(255, 255, 255, 0.03), 0 8px 8px 2px rgba(0, 0, 0, 0.2);
     
+    /* Icon opacity for softer look */
+    --icon-opacity: 0.88;
+    
     /* Sidebar */
     --sidebar-background: var(--bg);
     --sidebar-foreground: var(--text);
@@ -348,6 +123,7 @@
     --sidebar-border: var(--divider);
     --sidebar-ring: var(--accent-1);
   }
+
 }
 
 @layer base {
@@ -366,13 +142,34 @@
     font-feature-settings: "tnum" 1;
     overflow-x: hidden;
     width: 100%;
-    /* Rare Beauty warm almond-beige gradient (less pink, more almond) */
-    background: linear-gradient(
-      180deg, 
-      hsl(25, 35%, 89%) 0%,    /* Warm almond top */
-      hsl(22, 38%, 86%) 50%,   /* Soft clay middle */
-      hsl(20, 40%, 84%) 100%   /* Rose-beige bottom */
-    );
+    /* Dusk mode - "Inverted Twilight with nightlight glow" */
+    background:
+      /* Neutral grain overlay: organic texture to break up banding */
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.015'/%3E%3C/svg%3E"),
+      /* Texture: low-frequency noise */
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E"),
+      /* Nightlight glow: neutral warm light around outer edge bottom 2/3 - brighter */
+      radial-gradient(ellipse 85% 50% at 50% 55%, 
+        transparent 0%, 
+        transparent 55%, 
+        rgba(220,210,200,0.10) 70%,
+        rgba(220,210,200,0.07) 88%, 
+        transparent 100%
+      ),
+      /* Edge vignette: top and sides for dimensional moody field */
+      radial-gradient(ellipse 85% 90% at 50% 50%, transparent 0%, transparent 45%, rgba(0,0,0,0.2) 100%),
+      /* Blue overlay tint: binds warm and cool into cohesive night air */
+      linear-gradient(180deg, rgba(10,15,25,0.25) 0%, rgba(10,15,25,0.25) 100%),
+      /* Low radial bloom: residual scattered light above horizon (60-65% Y) */
+      radial-gradient(ellipse 140% 60% at 50% 62%, 
+        rgba(240,230,220,0.05) 0%, 
+        rgba(240,230,220,0.03) 40%, 
+        transparent 75%
+      ),
+      /* Base gradient: inverted luminance (darkest top → warm horizon bottom) */
+      linear-gradient(170deg, #0B0E14 0%, #171B24 55%, #2A2725 100%);
+    background-attachment: fixed;
+    background-blend-mode: overlay, normal, soft-light, normal, multiply, screen, normal;
     font-weight: 400;
     line-height: 1.6;
   }
@@ -432,53 +229,17 @@
   #root {
     overflow-x: hidden;
     width: 100%;
-    background: transparent;
-  }
-
-  /* Dusk mode - transparent root container to show gradient */
-  .dusk #root {
     background: transparent !important;
   }
   
-  /* Dusk mode - transparent backgrounds to show body gradient */
-  .dusk .bg-background {
+  /* Transparent backgrounds to show body gradient */
+  .bg-background {
     background: transparent !important;
   }
   
-  /* Dusk mode - header should blend with gradient background */
-  .dusk .sticky.top-0 {
+  /* Header should blend with gradient background */
+  .sticky.top-0 {
     background: transparent !important;
-  }
-
-  /* Dusk mode - "Inverted Twilight with nightlight glow" */
-  .dusk body {
-    background:
-      /* Neutral grain overlay: organic texture to break up banding */
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.015'/%3E%3C/svg%3E"),
-      /* Texture: low-frequency noise */
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E"),
-      /* Nightlight glow: neutral warm light around outer edge bottom 2/3 - brighter */
-      radial-gradient(ellipse 85% 50% at 50% 55%, 
-        transparent 0%, 
-        transparent 55%, 
-        rgba(220,210,200,0.10) 70%,
-        rgba(220,210,200,0.07) 88%, 
-        transparent 100%
-      ),
-      /* Edge vignette: top and sides for dimensional moody field */
-      radial-gradient(ellipse 85% 90% at 50% 50%, transparent 0%, transparent 45%, rgba(0,0,0,0.2) 100%),
-      /* Blue overlay tint: binds warm and cool into cohesive night air */
-      linear-gradient(180deg, rgba(10,15,25,0.25) 0%, rgba(10,15,25,0.25) 100%),
-      /* Low radial bloom: residual scattered light above horizon (60-65% Y) */
-      radial-gradient(ellipse 140% 60% at 50% 62%, 
-        rgba(240,230,220,0.05) 0%, 
-        rgba(240,230,220,0.03) 40%, 
-        transparent 75%
-      ),
-      /* Base gradient: inverted luminance (darkest top → warm horizon bottom) */
-      linear-gradient(170deg, #0B0E14 0%, #171B24 55%, #2A2725 100%);
-    background-attachment: fixed;
-    background-blend-mode: overlay, normal, soft-light, normal, multiply, screen, normal;
   }
 
   /* Typography utilities */
@@ -488,17 +249,9 @@
     font-feature-settings: "tnum" 1;
   }
 
-  /* Component base styles */
-  .card {
-    background: linear-gradient(to bottom, hsl(var(--card-ombre-3)), hsl(var(--card-ombre-3-dark)));
-    backdrop-filter: blur(8px);
-    border-radius: var(--card-radius);
-    box-shadow: var(--elev-shadow);
-  }
-
-  /* Dark mode - Clear Liquid Glass Effect (matches dusk) */
-  .dark .card,
-  .dark .liquid-glass {
+  /* Component base styles - Clear Liquid Glass Effect */
+  .card,
+  .liquid-glass {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     backdrop-filter: blur(4px) !important;
@@ -512,8 +265,8 @@
   }
   
   /* Subtle top edge highlight for light catch */
-  .dark .card::before,
-  .dark .liquid-glass::before {
+  .card::before,
+  .liquid-glass::before {
     content: '';
     position: absolute;
     top: 0;
@@ -524,81 +277,13 @@
     border-radius: var(--card-radius) var(--card-radius) 0 0;
   }
 
-  /* Dark mode - Remove light mode gradients from card ombre classes */
-  .dark .bg-gradient-to-b:not(.backdrop-blur-md),
-  .dark .bg-gradient-to-br:not(.backdrop-blur-md),
-  .dark .bg-gradient-to-t:not(.backdrop-blur-md),
-  .dark .bg-gradient-to-r:not(.backdrop-blur-md),
-  .dark .bg-gradient-to-l:not(.backdrop-blur-md) {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 
-      0 8px 20px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18);
-    border-radius: var(--card-radius);
-  }
-
-  /* Dark mode - Story modal cards keep semi-transparent backgrounds */
-  .dark .backdrop-blur-md[class*="bg-background"] {
-    background: rgba(28, 30, 36, 0.50) !important;
-    backdrop-filter: blur(12px) saturate(100%);
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    border-radius: var(--card-radius);
-  }
-
-  /* Dark mode - Ensure inner backgrounds don't override card styling */
-  .dark .card .bg-background,
-  .dark .card .bg-card,
-  .dark .bg-gradient-to-b .bg-background,
-  .dark .bg-gradient-to-br .bg-background {
-    background: transparent !important;
-  }
-
-  /* Dark mode - Override bg-card for non-story elements */
-  .dark .bg-card:not(.backdrop-blur-md) {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: var(--card-radius);
-  }
-
-  /* Dusk mode - Clear Liquid Glass Effect */
-  .dusk .card,
-  .dusk .liquid-glass {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
-    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
-    backdrop-filter: blur(4px) !important;
-    -webkit-backdrop-filter: blur(4px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    box-shadow: 
-      0 8px 20px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
-    border-radius: var(--card-radius);
-    position: relative;
-  }
-  
-  /* Subtle top edge highlight for light catch */
-  .dusk .card::before,
-  .dusk .liquid-glass::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
-    border-radius: var(--card-radius) var(--card-radius) 0 0;
-  }
-
-  /* Dusk mode - Remove light mode gradients from card ombre classes */
+  /* Remove light mode gradients from card ombre classes */
   /* Exclude story photo overlays and dialog content from this rule */
-  .dusk .bg-gradient-to-b:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
-  .dusk .bg-gradient-to-br:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
-  .dusk .bg-gradient-to-t:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
-  .dusk .bg-gradient-to-r:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
-  .dusk .bg-gradient-to-l:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *) {
+  .bg-gradient-to-b:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
+  .bg-gradient-to-br:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
+  .bg-gradient-to-t:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
+  .bg-gradient-to-r:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *),
+  .bg-gradient-to-l:not(.backdrop-blur-md):not([class*="from-[#"]):not([class*="from-black"]):not([data-radix-dialog-content] *) {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     backdrop-filter: blur(4px);
@@ -609,90 +294,90 @@
     border-radius: var(--card-radius);
   }
 
-  /* Dusk mode - Story modal cards keep semi-transparent backgrounds */
-  .dusk .backdrop-blur-md[class*="bg-background"] {
+  /* Story modal cards keep semi-transparent backgrounds */
+  .backdrop-blur-md[class*="bg-background"] {
     background: rgba(28, 30, 36, 0.50) !important;
     backdrop-filter: blur(12px) saturate(100%);
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: var(--card-radius);
   }
 
-  /* Dusk mode - Ensure inner backgrounds don't override card styling */
-  .dusk .card .bg-background,
-  .dusk .card .bg-card,
-  .dusk .bg-gradient-to-b .bg-background,
-  .dusk .bg-gradient-to-br .bg-background {
+  /* Ensure inner backgrounds don't override card styling */
+  .card .bg-background,
+  .card .bg-card,
+  .bg-gradient-to-b .bg-background,
+  .bg-gradient-to-br .bg-background {
     background: transparent !important;
   }
 
-  /* Dusk mode - Override bg-card for non-story elements */
-  .dusk .bg-card:not(.backdrop-blur-md) {
+  /* Override bg-card for non-story elements */
+  .bg-card:not(.backdrop-blur-md) {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02)) !important;
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--card-radius);
   }
 
-  /* Dusk mode - Transparent tabs */
-  .dusk [role="tablist"] {
+
+  /* Transparent tabs */
+  [role="tablist"] {
     background: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .dusk [role="tab"][data-state="active"] {
+  [role="tab"][data-state="active"] {
     background: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Dusk mode - Transparent inputs */
-  .dusk input:not([type="checkbox"]):not([type="radio"]),
-  .dusk textarea {
+  /* Transparent inputs */
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea {
     background: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
-  .dusk input:focus:not([type="checkbox"]):not([type="radio"]),
-  .dusk textarea:focus {
+  input:focus:not([type="checkbox"]):not([type="radio"]),
+  textarea:focus {
     background: transparent !important;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
-
-  /* Dusk - Google auth button */
-  .dusk .google-auth-btn {
+  /* Google auth button */
+  .google-auth-btn {
     background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;
     color: #F2EDEB !important;
     border-color: rgba(255, 255, 255, 0.12) !important;
   }
-  .dusk .google-auth-btn:hover {
+  .google-auth-btn:hover {
     filter: brightness(1.05);
   }
 
-  /* Dusk - Auth page icon */
-  .dusk .auth-icon {
+  /* Auth page icon */
+  .auth-icon {
     color: hsl(0 0% 70%) !important;
   }
 
-  /* Dusk mode - Primary buttons */
-  .dusk .bg-primary,
-  .dusk button.bg-primary {
+  /* Primary buttons */
+  .bg-primary,
+  button.bg-primary {
     background: linear-gradient(180deg, #6E646D 0%, #5D565E 100%) !important;
     color: #F2EDEB !important;
   }
 
-  .dusk .bg-primary:hover {
+  .bg-primary:hover {
     background: linear-gradient(180deg, #6A5D66 0%, #554953 100%) !important;
   }
 
-  /* Dusk mode - Moonlight glow effect */
-  .dusk .moonlight-glow {
+  /* Moonlight glow effect */
+  .moonlight-glow {
     text-shadow: 0 0 12px hsla(330, 8%, 52%, 0.35), 
                  0 0 20px hsla(280, 15%, 45%, 0.18);
   }
 
-  /* Dusk mode - Story circles with ethereal glow */
-  .dusk .story-circle {
+  /* Story circles with ethereal glow */
+  .story-circle {
     background: radial-gradient(
       circle at 35% 30%,
       rgba(180, 190, 205, 0.25) 0%,    /* Cool moonlight center */
@@ -708,31 +393,10 @@
       0 4px 12px rgba(0, 0, 0, 0.5);
   }
 
-  /* Dusk mode - Active tab styling */
-  .dusk [role="tablist"] button[data-state="active"] {
+  /* Active tab styling */
+  [role="tablist"] button[data-state="active"] {
     background: rgba(138, 124, 131, 0.15) !important;
     backdrop-filter: blur(8px);
-  }
-
-  /* Badge variants */
-  .badge--mint {
-    background: color-mix(in srgb, hsl(var(--pp-mint)) 12%, #fff);
-    color: hsl(var(--pp-mint));
-  }
-
-  .dark .badge--mint {
-    background: hsl(var(--pp-mint));
-    color: #fff;
-  }
-
-  .badge--lavender {
-    background: color-mix(in srgb, hsl(var(--pp-lavender)) 12%, #fff);
-    color: hsl(var(--pp-lavender));
-  }
-
-  .dark .badge--lavender {
-    background: hsl(var(--pp-lavender));
-    color: #fff;
   }
 
   /* Value highlighting */
@@ -754,11 +418,7 @@
     font-family: var(--font-serif);
     font-size: 32px;
     line-height: 38px;
-    font-weight: 600; /* Light mode: SemiBold */
-  }
-  
-  .dark .text-h1 {
-    font-weight: 700; /* Dark mode: Bold */
+    font-weight: 600;
   }
   
   .text-h2 {
@@ -768,10 +428,6 @@
     font-weight: 600;
   }
   
-  .dark .text-h2 {
-    font-weight: 700;
-  }
-  
   .text-h3 {
     font-family: var(--font-serif);
     font-size: 20px;
@@ -779,18 +435,10 @@
     font-weight: 600;
   }
   
-  .dark .text-h3 {
-    font-weight: 700;
-  }
-  
   .text-body {
     font-size: 16px;
     line-height: 22px;
-    font-weight: 400; /* Light mode: Regular */
-  }
-  
-  .dark .text-body {
-    font-weight: 500; /* Dark mode: Medium */
+    font-weight: 400;
   }
   
   .text-caption {
@@ -806,26 +454,17 @@
   /* Numeric text with monospace font */
   .text-numeric {
     font-family: var(--font-num);
-    font-weight: 500; /* Light mode: Medium */
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
   }
-  
-  .dark .text-numeric {
-    font-weight: 700; /* Dark mode: Bold */
-  }
 
-  /* Light mode utilities - calm and supportive */
+  /* Utilities */
   .gentle-fade {
     transition: var(--transition-smooth);
   }
   
   .supportive-card {
-    background: linear-gradient(to bottom, hsl(var(--card-ombre-2)), hsl(var(--card-ombre-2-dark)));
-    @apply rounded-2xl shadow-card border border-border/20 backdrop-blur-sm;
-  }
-  
-  .dark .supportive-card {
     background: transparent;
     backdrop-filter: blur(24px) saturate(100%);
     border-radius: 12px;
@@ -838,24 +477,26 @@
   }
   
   .confidence-badge {
-    @apply badge--mint rounded-full px-3 py-2 text-label font-medium;
+    @apply rounded-full px-3 py-2 text-label font-medium;
+    background: hsl(var(--accent-1));
+    color: #fff;
   }
 
-  /* Performance dashboard utilities for dark mode */
+  /* Performance dashboard utilities */
   .data-highlight {
-    @apply dark:animate-flash dark:text-primary;
+    @apply animate-flash text-primary;
   }
   
   .prediction-glow {
-    @apply dark:animate-glow;
+    @apply animate-glow;
   }
   
   .performance-card {
-    @apply dark:rounded-lg dark:border dark:border-border;
+    @apply rounded-lg border border-border;
   }
   
   .metric-text {
-    @apply dark:font-bold dark:text-primary;
+    @apply font-bold text-primary;
   }
 
   /* Today's Story animations */
@@ -1406,19 +1047,12 @@
   
   /* Component utilities */
   .pp-card {
-    background: linear-gradient(to bottom, hsl(var(--card-ombre-3)), hsl(var(--card-ombre-3-dark)));
-    backdrop-filter: blur(8px);
-    border-radius: var(--card-radius);
-    box-shadow: var(--elev-shadow);
-    padding: var(--s-4) var(--s-5);
-  }
-  
-  .dark .pp-card {
     background: transparent;
     backdrop-filter: blur(24px) saturate(100%);
     border-radius: 12px;
     box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.02), 0 4px 16px 0 rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: var(--s-4) var(--s-5);
   }
   
   .pp-divider {

@@ -80,34 +80,6 @@ export const ParentChildCard = ({
       ) : dynamics ? (
         <>
           <p className="text-[13px] text-foreground/60 leading-[1.6]">{dynamics.hook}</p>
-          
-          <CollapsibleSubsection title="Your Qualities">
-            <div className="space-y-1">
-              {dynamics.parentQualities.slice(0, 5).map((q, i) => (
-                <p key={i} className="text-[13px] text-foreground/50">{q}</p>
-              ))}
-            </div>
-          </CollapsibleSubsection>
-
-          <CollapsibleSubsection title="You're The Parent Who">
-            <div className="space-y-1">
-              {dynamics.youreTheParentWho.slice(0, 4).map((item, i) => (
-                <p key={i} className="text-[13px] text-foreground/50">{item}</p>
-              ))}
-            </div>
-          </CollapsibleSubsection>
-
-          <CollapsibleSubsection title={`What ${babyName} Needs`}>
-            <div className="space-y-1">
-              {dynamics.whatChildNeeds.slice(0, 5).map((need, i) => (
-                <p key={i} className="text-[13px] text-foreground/50">{need}</p>
-              ))}
-            </div>
-          </CollapsibleSubsection>
-
-          <CollapsibleSubsection title="What You Already Give">
-            <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.whatYouAlreadyGive}</p>
-          </CollapsibleSubsection>
 
           <CollapsibleSubsection title="Right Now">
             <p className="text-[13px] text-foreground/50 leading-[1.6]">{dynamics.currentPhaseInsight}</p>
