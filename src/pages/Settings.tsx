@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -150,7 +149,7 @@ export const Settings = () => {
           <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
             Settings
           </p>
-          <ThemeToggle showText={false} />
+          <div className="w-10" /> {/* Spacer for alignment */}
         </div>
 
         {/* Children Section */}
