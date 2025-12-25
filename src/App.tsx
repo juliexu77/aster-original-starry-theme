@@ -23,9 +23,8 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
-        enableSystem
-        themes={["light", "dark", "dusk"]}
+        defaultTheme="dusk"
+        themes={["dusk"]}
         disableTransitionOnChange
       >
         <AuthProvider>

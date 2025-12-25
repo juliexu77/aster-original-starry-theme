@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -12,11 +11,10 @@ const Onboarding = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Minimal Header */}
-      <header className="flex items-center justify-between px-5 py-4">
+      <header className="flex items-center justify-center px-5 py-4">
         <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
           BabyRhythm
         </p>
-        <ThemeToggle showText={false} />
       </header>
       
       {/* Main Content */}
