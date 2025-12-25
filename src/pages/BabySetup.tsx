@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LocationInput } from "@/components/ui/LocationInput";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useToast } from "@/hooks/use-toast";
@@ -121,12 +122,11 @@ const BabySetup = () => {
                   <Label htmlFor="babyBirthLocation">
                     Birth location <span className="normal-case opacity-60">(optional)</span>
                   </Label>
-                  <Input
+                  <LocationInput
                     id="babyBirthLocation"
-                    type="text"
                     placeholder="City"
                     value={babyBirthLocation}
-                    onChange={(e) => setBabyBirthLocation(e.target.value)}
+                    onChange={setBabyBirthLocation}
                     disabled={isLoading}
                     className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
                   />
