@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { AstrologyGrid } from "./AstrologyGrid";
 import { BirthChartDiagram } from "./BirthChartDiagram";
+import { BirthChartModal } from "./BirthChartModal";
 import { ChartSelectorSheet } from "./ChartSelectorSheet";
 import { 
   getZodiacFromBirthday, 
@@ -57,6 +58,7 @@ export const ChildView = ({
 }: ChildViewProps) => {
   const [showSelector, setShowSelector] = useState(false);
   const [showPulse, setShowPulse] = useState(false);
+  const [showChartModal, setShowChartModal] = useState(false);
   
   // Build all family members list (children + parents)
   const allMembers = useMemo(() => {
@@ -202,8 +204,11 @@ export const ChildView = ({
         )}
       </div>
 
-      {/* Birth Chart Diagram */}
-      <div className="px-5">
+      {/* Birth Chart Diagram - Tappable */}
+      <div 
+        className="px-5 cursor-pointer"
+        onClick={() => setShowChartModal(true)}
+      >
         <BirthChartDiagram
           sunSign={signs.sun}
           moonSign={signs.moon}
@@ -228,6 +233,16 @@ export const ChildView = ({
         selectedMemberId={selectedMember.id}
         onSelectMember={onSelectMember}
         onAddChild={onAddChild}
+      />
+
+      {/* Birth Chart Modal */}
+      <BirthChartModal
+        open={showChartModal}
+        onOpenChange={setShowChartModal}
+        name={selectedMember.name}
+        sunSign={signs.sun}
+        moonSign={signs.moon}
+        risingSign={signs.rising}
       />
     </div>
   );
