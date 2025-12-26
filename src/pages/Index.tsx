@@ -95,6 +95,7 @@ const Index = () => {
           <DailyCoach 
             babyName={activeBaby.name} 
             babyBirthday={activeBaby.birthday || undefined}
+            babyId={activeBaby.id}
             babies={babies}
             activeBabyId={activeBaby.id}
             onSwitchBaby={switchBaby}
