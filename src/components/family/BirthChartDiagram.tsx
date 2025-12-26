@@ -1,5 +1,22 @@
 import { useMemo } from "react";
 import { ZodiacSign, ZODIAC_DATA } from "@/lib/zodiac";
+import {
+  IconZodiacAries,
+  IconZodiacTaurus,
+  IconZodiacGemini,
+  IconZodiacCancer,
+  IconZodiacLeo,
+  IconZodiacVirgo,
+  IconZodiacLibra,
+  IconZodiacScorpio,
+  IconZodiacSagittarius,
+  IconZodiacCapricorn,
+  IconZodiacAquarius,
+  IconZodiacPisces,
+  IconSun,
+  IconMoon,
+} from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
 
 interface BirthChartDiagramProps {
   sunSign: ZodiacSign;
@@ -9,20 +26,20 @@ interface BirthChartDiagramProps {
   moonDegree?: number;
 }
 
-// Zodiac sign symbols in order
-const ZODIAC_SYMBOLS: Record<ZodiacSign, string> = {
-  aries: '♈',
-  taurus: '♉',
-  gemini: '♊',
-  cancer: '♋',
-  leo: '♌',
-  virgo: '♍',
-  libra: '♎',
-  scorpio: '♏',
-  sagittarius: '♐',
-  capricorn: '♑',
-  aquarius: '♒',
-  pisces: '♓',
+// Zodiac icon components map
+const ZODIAC_ICONS: Record<ZodiacSign, Icon> = {
+  aries: IconZodiacAries,
+  taurus: IconZodiacTaurus,
+  gemini: IconZodiacGemini,
+  cancer: IconZodiacCancer,
+  leo: IconZodiacLeo,
+  virgo: IconZodiacVirgo,
+  libra: IconZodiacLibra,
+  scorpio: IconZodiacScorpio,
+  sagittarius: IconZodiacSagittarius,
+  capricorn: IconZodiacCapricorn,
+  aquarius: IconZodiacAquarius,
+  pisces: IconZodiacPisces,
 };
 
 const ZODIAC_ORDER: ZodiacSign[] = [
@@ -194,7 +211,7 @@ export const BirthChartDiagram = ({
       
       return {
         sign,
-        symbol: ZODIAC_SYMBOLS[sign],
+        IconComponent: ZODIAC_ICONS[sign],
         x: center + Math.cos(angleRad) * radius,
         y: center + Math.sin(angleRad) * radius,
         rotation: chartAngle + 90,
@@ -310,20 +327,19 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Symbols */}
-        {zodiacPositions.map(({ sign, symbol, x, y }) => (
-          <text
+        {/* Zodiac Icons */}
+        {zodiacPositions.map(({ sign, IconComponent, x, y }) => (
+          <foreignObject
             key={sign}
-            x={x}
-            y={y}
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill={GOLD}
-            opacity={0.9}
-            style={{ fontSize: '14px', fontFamily: 'serif' }}
+            x={x - 10}
+            y={y - 10}
+            width={20}
+            height={20}
           >
-            {symbol}
-          </text>
+            <div className="flex items-center justify-center w-full h-full">
+              <IconComponent size={16} strokeWidth={1.5} color={GOLD} style={{ opacity: 0.9 }} />
+            </div>
+          </foreignObject>
         ))}
         
         {/* Planet Positions */}
@@ -331,6 +347,9 @@ export const BirthChartDiagram = ({
           const angleRad = planet.angle * (Math.PI / 180);
           const x = center + Math.cos(angleRad) * planet.radius;
           const y = center + Math.sin(angleRad) * planet.radius;
+          
+          // Use Tabler icons for Sun and Moon, text symbols for others
+          const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
           
           return (
             <g key={i}>
@@ -350,17 +369,34 @@ export const BirthChartDiagram = ({
                 strokeWidth={1}
                 opacity={0.7}
               />
-              {/* Planet symbol */}
-              <text
-                x={x}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill={GOLD}
-                style={{ fontSize: '12px', fontFamily: 'serif' }}
-              >
-                {planet.symbol}
-              </text>
+              {/* Planet icon or symbol */}
+              {isSunOrMoon ? (
+                <foreignObject
+                  x={x - 8}
+                  y={y - 8}
+                  width={16}
+                  height={16}
+                >
+                  <div className="flex items-center justify-center w-full h-full">
+                    {planet.label === 'Sun' ? (
+                      <IconSun size={14} strokeWidth={1.5} color={GOLD} />
+                    ) : (
+                      <IconMoon size={14} strokeWidth={1.5} color={GOLD} />
+                    )}
+                  </div>
+                </foreignObject>
+              ) : (
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill={GOLD}
+                  style={{ fontSize: '12px', fontFamily: 'serif' }}
+                >
+                  {planet.symbol}
+                </text>
+              )}
             </g>
           );
         })}
