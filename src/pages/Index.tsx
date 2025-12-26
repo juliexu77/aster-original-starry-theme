@@ -7,7 +7,7 @@ import { ChildSwitcher } from "@/components/home/ChildSwitcher";
 import { GuideMenu } from "@/components/GuideMenu";
 import { GuideSectionView } from "@/components/GuideSectionView";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
+import { FamilyNav } from "@/components/family/FamilyNav";
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { 
@@ -103,17 +103,8 @@ const Index = () => {
         )}
       </main>
 
-      {/* Child Switcher - fixed at bottom like Weather app */}
-      {activeBaby && (
-        <ChildSwitcher
-          babies={babies}
-          activeBaby={activeBaby}
-          onSwitch={switchBaby}
-          onNext={switchToNextBaby}
-          onPrev={switchToPrevBaby}
-          onOpenMenu={() => setMenuOpen(true)}
-        />
-      )}
+      {/* Bottom Navigation */}
+      <FamilyNav />
 
       {/* Guide Menu */}
       <GuideMenu 
