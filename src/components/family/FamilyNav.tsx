@@ -10,44 +10,38 @@ export const FamilyNav = () => {
   const isSettings = location.pathname === "/settings";
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40">
-      <div className="mx-4 mb-4 rounded-full bg-muted/60 backdrop-blur-xl border border-border/30 flex items-center justify-around px-2 py-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-xl border-t border-border/20">
+      <div className="flex items-center justify-around py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <button 
           onClick={() => navigate("/family")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-colors ${
-            isFamily ? "bg-muted/80" : ""
-          }`}
+          className="flex flex-col items-center gap-1 px-6 py-1"
         >
-          <Users className={`w-4 h-4 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-xs ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
+          <Users className={`w-5 h-5 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
             Child
           </span>
         </button>
 
         <button 
           onClick={() => navigate("/")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-colors ${
-            isChart ? "bg-muted/80" : ""
-          }`}
+          className="flex flex-col items-center gap-1 px-6 py-1"
         >
-          <Sparkles className={`w-4 h-4 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-xs ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
+          <Sparkles className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
             Chart
           </span>
         </button>
 
         <button 
           onClick={() => navigate("/settings")}
-          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-colors ${
-            isSettings ? "bg-muted/80" : ""
-          }`}
+          className="flex flex-col items-center gap-1 px-6 py-1"
         >
-          <Settings className={`w-4 h-4 ${isSettings ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-xs ${isSettings ? "text-foreground" : "text-muted-foreground"}`}>
+          <Settings className={`w-5 h-5 ${isSettings ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isSettings ? "text-foreground" : "text-muted-foreground"}`}>
             Settings
           </span>
         </button>
       </div>
-    </div>
+    </nav>
   );
 };
