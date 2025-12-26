@@ -39,6 +39,29 @@ export const useUserProfile = () => {
 
       if (error) throw error;
       
+      // If profile exists but display_name is just the email handle, try to update with full name
+      if (data && (!data.display_name || data.display_name === user.email?.split('@')[0])) {
+        const fullName = user.user_metadata?.full_name ?? user.user_metadata?.name;
+        if (fullName && fullName !== data.display_name) {
+          const { data: updatedData } = await supabase
+            .from('profiles')
+            .update({ display_name: fullName })
+            .eq('user_id', user.id)
+            .select()
+            .single();
+          
+          if (updatedData) {
+            const profile: UserProfile = {
+              ...updatedData,
+              full_name: updatedData.display_name,
+              photo_url: updatedData.avatar_url
+            };
+            setUserProfile(profile);
+            return profile;
+          }
+        }
+      }
+      
       // Map fields with aliases
       const profile: UserProfile | null = data ? {
         ...data,
@@ -95,12 +118,19 @@ export const useUserProfile = () => {
     if (updates.partner_birth_time !== undefined) mappedUpdates.partner_birth_time = updates.partner_birth_time;
     if (updates.partner_birth_location !== undefined) mappedUpdates.partner_birth_location = updates.partner_birth_location;
 
+    // Get display name from user metadata if not provided
+    const displayName = mappedUpdates.display_name ?? 
+      user.user_metadata?.full_name ?? 
+      user.user_metadata?.name ??
+      undefined;
+
     // Use upsert to handle case where profile doesn't exist yet
     const { data, error } = await supabase
       .from('profiles')
       .upsert({
         user_id: user.id,
         email: user.email,
+        ...(displayName && { display_name: displayName }),
         ...mappedUpdates
       } as any, {
         onConflict: 'user_id'
