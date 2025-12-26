@@ -348,7 +348,7 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }
             {"DOMAINS".split("").map((letter, i) => (
               <span 
                 key={i}
-                className="text-[9px] text-muted-foreground/60 font-light leading-[1.2]"
+                className="text-[9px] text-foreground/60 font-light leading-[1.2]"
               >
                 {letter}
               </span>
@@ -400,7 +400,7 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }
             {"STAGE".split("").map((letter, i) => (
               <span 
                 key={i}
-                className="text-[9px] text-muted-foreground/60 font-light leading-[1.2]"
+                className="text-[9px] text-foreground/60 font-light leading-[1.2]"
               >
                 {letter}
               </span>
