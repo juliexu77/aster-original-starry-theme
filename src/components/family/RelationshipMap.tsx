@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
-import { ZodiacSign, getZodiacFromBirthday, getMoonSignFromBirthDateTime, getZodiacName } from "@/lib/zodiac";
+import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
 
 interface FamilyMember {
   id: string;
@@ -11,125 +11,126 @@ interface FamilyMember {
   birth_location?: string | null;
 }
 
-interface Connection {
-  from: FamilyMember;
-  to: FamilyMember;
-  type: 'parent-child' | 'parent-partner' | 'sibling';
-}
-
 interface RelationshipMapProps {
   members: FamilyMember[];
+  selectedConnection: { from: FamilyMember; to: FamilyMember } | null;
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Constellation positions for different family sizes
-const getPositions = (memberCount: number, size: number) => {
-  const center = size / 2;
-  const radius = size * 0.32;
+// Sagittarius constellation star positions (normalized 0-1 coordinates)
+// Based on actual astronomical positions of key stars
+const SAGITTARIUS_STARS = [
+  { id: 'kaus-australis', x: 0.45, y: 0.72, size: 3.5, label: 'Kaus Australis' }, // Brightest - epsilon Sgr
+  { id: 'nunki', x: 0.68, y: 0.38, size: 3, label: 'Nunki' }, // sigma Sgr
+  { id: 'ascella', x: 0.55, y: 0.55, size: 2.5, label: 'Ascella' }, // zeta Sgr
+  { id: 'kaus-media', x: 0.38, y: 0.58, size: 2.5, label: 'Kaus Media' }, // delta Sgr
+  { id: 'kaus-borealis', x: 0.28, y: 0.45, size: 2.5, label: 'Kaus Borealis' }, // lambda Sgr
+  { id: 'albaldah', x: 0.52, y: 0.25, size: 2, label: 'Albaldah' }, // pi Sgr
+  { id: 'phi', x: 0.72, y: 0.58, size: 2, label: 'Phi' }, // phi Sgr
+  { id: 'tau', x: 0.62, y: 0.68, size: 2, label: 'Tau' }, // tau Sgr
+];
+
+// Constellation lines connecting the stars (teapot asterism)
+const CONSTELLATION_LINES = [
+  ['kaus-australis', 'kaus-media'],
+  ['kaus-media', 'kaus-borealis'],
+  ['kaus-australis', 'ascella'],
+  ['ascella', 'phi'],
+  ['phi', 'nunki'],
+  ['nunki', 'albaldah'],
+  ['ascella', 'tau'],
+  ['tau', 'kaus-australis'],
+];
+
+// Map family member positions to specific stars based on their role
+const getMemberStarPositions = (members: FamilyMember[]) => {
+  const positions: { member: FamilyMember; star: typeof SAGITTARIUS_STARS[0] }[] = [];
   
-  if (memberCount === 2) {
-    return [
-      { x: center, y: center - radius * 0.8 }, // Parent top
-      { x: center, y: center + radius * 0.8 }, // Child bottom
-    ];
-  }
+  // Priority star assignments
+  const starAssignments = [
+    'kaus-australis', // Parent (brightest)
+    'nunki',          // First child or partner
+    'kaus-borealis',  // Second child
+    'albaldah',       // Third child
+    'phi',            // Fourth child
+    'tau',            // Fifth child
+  ];
   
-  if (memberCount === 3) {
-    return [
-      { x: center, y: center - radius * 0.9 }, // Parent top
-      { x: center - radius * 0.8, y: center + radius * 0.6 }, // Bottom left
-      { x: center + radius * 0.8, y: center + radius * 0.6 }, // Bottom right
-    ];
-  }
-  
-  if (memberCount === 4) {
-    return [
-      { x: center, y: center - radius }, // Top
-      { x: center - radius * 0.9, y: center + radius * 0.3 }, // Left
-      { x: center + radius * 0.9, y: center + radius * 0.3 }, // Right
-      { x: center, y: center + radius }, // Bottom
-    ];
-  }
-  
-  // 5+ members: distribute in a circle
-  return Array.from({ length: memberCount }, (_, i) => {
-    const angle = -Math.PI / 2 + (i * 2 * Math.PI) / memberCount;
-    return {
-      x: center + Math.cos(angle) * radius,
-      y: center + Math.sin(angle) * radius,
-    };
+  // Sort: parents first, then partners, then children
+  const sorted = [...members].sort((a, b) => {
+    const order = { parent: 0, partner: 1, child: 2 };
+    return order[a.type] - order[b.type];
   });
+  
+  sorted.forEach((member, idx) => {
+    const starId = starAssignments[idx] || starAssignments[starAssignments.length - 1];
+    const star = SAGITTARIUS_STARS.find(s => s.id === starId);
+    if (star) {
+      positions.push({ member, star });
+    }
+  });
+  
+  return positions;
 };
 
-// Generate star background
-const generateStars = (count: number, size: number) => {
+// Generate random background stars
+const generateBackgroundStars = (count: number) => {
   const stars = [];
   for (let i = 0; i < count; i++) {
     stars.push({
-      x: Math.random() * size,
-      y: Math.random() * size,
-      r: 0.3 + Math.random() * 0.5,
-      opacity: 0.1 + Math.random() * 0.2,
+      x: Math.random(),
+      y: Math.random(),
+      size: 0.5 + Math.random() * 1,
+      opacity: 0.05 + Math.random() * 0.12,
     });
   }
   return stars;
 };
 
-export const RelationshipMap = ({ members, onConnectionTap }: RelationshipMapProps) => {
-  const size = 340;
-  const positions = useMemo(() => getPositions(members.length, size), [members.length]);
-  const stars = useMemo(() => generateStars(30, size), []);
+export const RelationshipMap = ({ members, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
+  const width = 340;
+  const height = 300;
+  const padding = 50;
   
-  // Build connections (parent to each child, partner pairs)
+  const memberPositions = useMemo(() => getMemberStarPositions(members), [members]);
+  const backgroundStars = useMemo(() => generateBackgroundStars(25), []);
+  
+  // Build connections between family members
   const connections = useMemo(() => {
-    const conns: { from: number; to: number; fromMember: FamilyMember; toMember: FamilyMember }[] = [];
+    const conns: { from: typeof memberPositions[0]; to: typeof memberPositions[0] }[] = [];
     
-    const parents = members.filter(m => m.type === 'parent' || m.type === 'partner');
-    const children = members.filter(m => m.type === 'child');
-    
-    // Parent to each child
-    parents.forEach(parent => {
-      const parentIdx = members.indexOf(parent);
-      children.forEach(child => {
-        const childIdx = members.indexOf(child);
-        conns.push({ from: parentIdx, to: childIdx, fromMember: parent, toMember: child });
-      });
-    });
-    
-    // Parent to partner
-    if (parents.length === 2) {
-      conns.push({ 
-        from: members.indexOf(parents[0]), 
-        to: members.indexOf(parents[1]),
-        fromMember: parents[0],
-        toMember: parents[1]
-      });
-    }
-    
-    // Siblings
-    for (let i = 0; i < children.length; i++) {
-      for (let j = i + 1; j < children.length; j++) {
+    for (let i = 0; i < memberPositions.length; i++) {
+      for (let j = i + 1; j < memberPositions.length; j++) {
         conns.push({
-          from: members.indexOf(children[i]),
-          to: members.indexOf(children[j]),
-          fromMember: children[i],
-          toMember: children[j]
+          from: memberPositions[i],
+          to: memberPositions[j],
         });
       }
     }
     
     return conns;
-  }, [members]);
-  
+  }, [memberPositions]);
+
+  const toPixelX = (normalized: number) => padding + normalized * (width - padding * 2);
+  const toPixelY = (normalized: number) => padding * 0.5 + normalized * (height - padding);
+
   const getMemberSign = (member: FamilyMember): ZodiacSign | null => {
     return getZodiacFromBirthday(member.birthday);
+  };
+
+  const isConnectionSelected = (from: FamilyMember, to: FamilyMember) => {
+    if (!selectedConnection) return false;
+    return (
+      (selectedConnection.from.id === from.id && selectedConnection.to.id === to.id) ||
+      (selectedConnection.from.id === to.id && selectedConnection.to.id === from.id)
+    );
   };
 
   if (members.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-[13px] text-foreground/40">
-          Add family members to see your relationship constellation.
+          Add family members to see your constellation.
         </p>
       </div>
     );
@@ -137,128 +138,182 @@ export const RelationshipMap = ({ members, onConnectionTap }: RelationshipMapPro
 
   return (
     <div className="w-full max-w-[340px] mx-auto">
-      <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+        <defs>
+          {/* Glow filter for member nodes */}
+          <filter id="memberGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          {/* Subtle glow for stars */}
+          <radialGradient id="starGlow">
+            <stop offset="0%" stopColor="#C4A574" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#C4A574" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        
         {/* Background stars */}
-        {stars.map((star, i) => (
+        {backgroundStars.map((star, i) => (
           <circle
-            key={`star-${i}`}
-            cx={star.x}
-            cy={star.y}
-            r={star.r}
+            key={`bg-star-${i}`}
+            cx={toPixelX(star.x)}
+            cy={toPixelY(star.y)}
+            r={star.size}
             fill="#C4A574"
             opacity={star.opacity}
           />
         ))}
         
-        {/* Connection lines */}
+        {/* Sagittarius constellation stars (background) */}
+        {SAGITTARIUS_STARS.map((star) => (
+          <circle
+            key={`const-star-${star.id}`}
+            cx={toPixelX(star.x)}
+            cy={toPixelY(star.y)}
+            r={star.size * 0.6}
+            fill="#4A4742"
+            opacity={0.3}
+          />
+        ))}
+        
+        {/* Sagittarius constellation lines (very subtle) */}
+        {CONSTELLATION_LINES.map(([fromId, toId], i) => {
+          const fromStar = SAGITTARIUS_STARS.find(s => s.id === fromId);
+          const toStar = SAGITTARIUS_STARS.find(s => s.id === toId);
+          if (!fromStar || !toStar) return null;
+          
+          return (
+            <line
+              key={`const-line-${i}`}
+              x1={toPixelX(fromStar.x)}
+              y1={toPixelY(fromStar.y)}
+              x2={toPixelX(toStar.x)}
+              y2={toPixelY(toStar.y)}
+              stroke="#2A2A2A"
+              strokeWidth={0.5}
+              strokeDasharray="2,3"
+              opacity={0.5}
+            />
+          );
+        })}
+        
+        {/* Family relationship connection lines */}
         {connections.map((conn, i) => {
-          const fromPos = positions[conn.from];
-          const toPos = positions[conn.to];
-          if (!fromPos || !toPos) return null;
+          const fromX = toPixelX(conn.from.star.x);
+          const fromY = toPixelY(conn.from.star.y);
+          const toX = toPixelX(conn.to.star.x);
+          const toY = toPixelY(conn.to.star.y);
+          const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
           return (
             <g key={`conn-${i}`}>
-              {/* Clickable hit area */}
+              {/* Invisible hit area */}
               <line
-                x1={fromPos.x}
-                y1={fromPos.y}
-                x2={toPos.x}
-                y2={toPos.y}
+                x1={fromX}
+                y1={fromY}
+                x2={toX}
+                y2={toY}
                 stroke="transparent"
-                strokeWidth={30}
+                strokeWidth={44}
                 style={{ cursor: 'pointer' }}
-                onClick={() => onConnectionTap(conn.fromMember, conn.toMember)}
+                onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
               {/* Visible line */}
               <line
-                x1={fromPos.x}
-                y1={fromPos.y}
-                x2={toPos.x}
-                y2={toPos.y}
-                stroke="#C4A574"
-                strokeWidth={1}
-                opacity={0.4}
-                strokeDasharray="4,4"
-                className="pointer-events-none"
+                x1={fromX}
+                y1={fromY}
+                x2={toX}
+                y2={toY}
+                stroke={isSelected ? "#D4A574" : "#C4A574"}
+                strokeWidth={isSelected ? 2 : 1.5}
+                opacity={isSelected ? 0.9 : 0.5}
+                strokeDasharray={isSelected ? "none" : "4,4"}
+                className="pointer-events-none transition-all duration-300"
               />
             </g>
           );
         })}
         
-        {/* Member nodes */}
-        {members.map((member, i) => {
-          const pos = positions[i];
-          if (!pos) return null;
-          
+        {/* Family member nodes */}
+        {memberPositions.map(({ member, star }) => {
+          const x = toPixelX(star.x);
+          const y = toPixelY(star.y);
           const sign = getMemberSign(member);
+          const isInSelected = selectedConnection && 
+            (selectedConnection.from.id === member.id || selectedConnection.to.id === member.id);
           
           return (
             <g key={member.id}>
-              {/* Glow effect */}
+              {/* Outer glow */}
               <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={24}
-                fill="url(#nodeGlow)"
-                opacity={0.3}
+                cx={x}
+                cy={y}
+                r={28}
+                fill="url(#starGlow)"
+                opacity={isInSelected ? 0.6 : 0.4}
+                className="transition-opacity duration-300"
               />
               
               {/* Node circle */}
               <circle
-                cx={pos.x}
-                cy={pos.y}
-                r={20}
-                fill="#252525"
-                stroke="#C4A574"
-                strokeWidth={1}
-                opacity={0.8}
+                cx={x}
+                cy={y}
+                r={22}
+                fill="none"
+                stroke={isInSelected ? "#D4A574" : "#C4A574"}
+                strokeWidth={isInSelected ? 2.5 : 2}
+                opacity={isInSelected ? 1 : 0.8}
+                className="transition-all duration-300"
               />
               
               {/* Zodiac icon */}
               {sign && (
                 <foreignObject
-                  x={pos.x - 10}
-                  y={pos.y - 10}
+                  x={x - 10}
+                  y={y - 10}
                   width={20}
                   height={20}
                 >
                   <div className="w-full h-full flex items-center justify-center">
-                    <ZodiacIcon sign={sign} size={16} className="text-[#C4A574]" />
+                    <ZodiacIcon 
+                      sign={sign} 
+                      size={16} 
+                      className={isInSelected ? "text-[#D4A574]" : "text-[#C4A574]"}
+                    />
                   </div>
                 </foreignObject>
               )}
               
               {/* Name label */}
               <text
-                x={pos.x}
-                y={pos.y + 35}
+                x={x}
+                y={y + 38}
                 textAnchor="middle"
-                fill="#8A8A8A"
+                fill={isInSelected ? "#B8A080" : "#999"}
                 style={{ 
-                  fontSize: '11px', 
+                  fontSize: '12px', 
                   fontFamily: 'DM Sans, sans-serif',
                   letterSpacing: '0.02em'
                 }}
+                className="transition-all duration-300"
               >
                 {member.name}
               </text>
             </g>
           );
         })}
-        
-        {/* Gradient definitions */}
-        <defs>
-          <radialGradient id="nodeGlow">
-            <stop offset="0%" stopColor="#C4A574" />
-            <stop offset="100%" stopColor="#C4A574" stopOpacity="0" />
-          </radialGradient>
-        </defs>
       </svg>
       
-      {/* Tap hint */}
-      <p className="text-[10px] text-foreground/30 text-center mt-4 tracking-wide">
-        Tap a connection to explore
-      </p>
+      {/* Tap hint - only show when no connection selected */}
+      {!selectedConnection && (
+        <p className="text-[11px] text-foreground/25 text-center mt-3 tracking-wide">
+          Tap a connection to explore
+        </p>
+      )}
     </div>
   );
 };

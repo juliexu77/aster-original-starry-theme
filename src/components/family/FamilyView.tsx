@@ -1,13 +1,8 @@
 import { useMemo, useState } from "react";
-import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ParentBirthdayPrompt } from "./ParentBirthdayPrompt";
 import { RelationshipMap } from "./RelationshipMap";
 import { RelationshipDetail } from "./RelationshipDetail";
-import { 
-  getZodiacFromBirthday, 
-  getMoonSignFromBirthDateTime,
-  ZodiacSign 
-} from "@/lib/zodiac";
+import { getZodiacFromBirthday } from "@/lib/zodiac";
 
 interface Baby {
   id: string;
@@ -98,6 +93,14 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
   }, [babies, userProfile, parentHasBirthday, parentName]);
 
   const handleConnectionTap = (from: FamilyMember, to: FamilyMember) => {
+    // If same connection tapped again, close it
+    if (selectedConnection && 
+        ((selectedConnection.from.id === from.id && selectedConnection.to.id === to.id) ||
+         (selectedConnection.from.id === to.id && selectedConnection.to.id === from.id))) {
+      setSelectedConnection(null);
+      return;
+    }
+    
     // Always put parent/partner first for consistent display
     if (to.type === 'parent' || to.type === 'partner') {
       setSelectedConnection({ from: to, to: from });
@@ -106,28 +109,15 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
     }
   };
 
-  const handleBack = () => {
+  const handleClose = () => {
     setSelectedConnection(null);
   };
 
-  // Show detail view when a connection is selected
-  if (selectedConnection) {
-    return (
-      <div className="px-5">
-        <RelationshipDetail
-          from={selectedConnection.from}
-          to={selectedConnection.to}
-          onBack={handleBack}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Constellation Header */}
       <div className="px-5 pt-6 text-center">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] mb-8">
+        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] mb-6">
           Your Constellation
         </p>
       </div>
@@ -137,6 +127,7 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         {familyMembers.length > 0 ? (
           <RelationshipMap
             members={familyMembers}
+            selectedConnection={selectedConnection}
             onConnectionTap={handleConnectionTap}
           />
         ) : (
@@ -148,6 +139,17 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         )}
       </div>
 
+      {/* Relationship Detail - shown inline below the map */}
+      {selectedConnection && (
+        <div className="px-5">
+          <RelationshipDetail
+            from={selectedConnection.from}
+            to={selectedConnection.to}
+            onClose={handleClose}
+          />
+        </div>
+      )}
+
       {/* Parent Birthday Prompt */}
       {!parentHasBirthday && (
         <div className="px-5 pt-2">
@@ -156,8 +158,8 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
       )}
 
       {/* Subtle hint about evolving content */}
-      {familyMembers.length > 1 && (
-        <div className="px-5 pt-4 text-center">
+      {familyMembers.length > 1 && !selectedConnection && (
+        <div className="px-5 pt-2 text-center">
           <p className="text-[10px] text-foreground/20 tracking-wide">
             Insights evolve monthly with your child's growth
           </p>
