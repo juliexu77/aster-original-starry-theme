@@ -190,7 +190,7 @@ export const BirthChartDiagram = ({
         label: 'Moon',
         displayAngle: moonDisplayAngle,
         trueAngle: moonTrueAngle,
-        radius: planetRing - 25,
+        radius: planetRing,
         sign: moonSign,
         degree: moonDegree,
         house: Math.floor((moonAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
@@ -220,7 +220,7 @@ export const BirthChartDiagram = ({
         label: planet.label,
         displayAngle,
         trueAngle,
-        radius: planetRing + (idx % 2 === 0 ? 0 : -20),
+        radius: planetRing,
         sign: planetSign,
         degree: degInSign,
         house: Math.floor((absDeg - ascendantDegree + 360) / 30) % 12 + 1,
@@ -295,24 +295,25 @@ export const BirthChartDiagram = ({
     });
   }, [center, innerRadius, outerRadius]);
 
-  // Generate zodiac sign positions (labels inside the ring like Co-Star)
+  // Generate zodiac sign positions (labels inside the ring like Co-Star - radial text)
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
       // Position in the middle of each 30° segment
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      // Labels positioned inside the ring, closer to outer edge
-      const labelRadius = outerRadius - 12;
+      // Labels positioned in the middle of the ring
+      const labelRadius = (outerRadius + innerRadius) / 2;
       
       return {
         sign,
         labelX: center + Math.cos(angleRad) * labelRadius,
         labelY: center + Math.sin(angleRad) * labelRadius,
-        labelRotation: chartAngle,
+        // Radial rotation - text reads outward from center
+        labelRotation: chartAngle + 90,
       };
     });
-  }, [ascendantDegree, center, outerRadius]);
+  }, [ascendantDegree, center, outerRadius, innerRadius]);
 
 
   // Get selected planet details
@@ -412,8 +413,8 @@ export const BirthChartDiagram = ({
         
         {/* Zodiac Sign Labels (inside the ring like Co-Star) */}
         {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
-          // Rotate text to follow the curve, flip for readability
-          const adjustedRotation = labelRotation > 90 || labelRotation < -90 
+          // Flip text for bottom half so it reads correctly (outward from center)
+          const adjustedRotation = (labelRotation > 180 || labelRotation < 0) 
             ? labelRotation + 180 
             : labelRotation;
           
@@ -427,9 +428,9 @@ export const BirthChartDiagram = ({
               fill={CHART_COLOR}
               opacity={0.85}
               style={{ 
-                fontSize: '8px', 
+                fontSize: '9px', 
                 fontFamily: 'DM Sans, sans-serif',
-                letterSpacing: '0.12em',
+                letterSpacing: '0.08em',
                 fontWeight: 500,
               }}
               transform={`rotate(${adjustedRotation}, ${labelX}, ${labelY})`}
@@ -455,35 +456,25 @@ export const BirthChartDiagram = ({
               onClick={() => setSelectedPlanet(isSelected ? null : planet.label)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Planet marker dot */}
-              <circle
-                cx={x}
-                cy={y}
-                r={12}
-                fill="hsl(var(--background))"
-              />
-              <circle
-                cx={x}
-                cy={y}
-                r={12}
-                fill="none"
-                stroke={CHART_COLOR}
-                strokeWidth={isSelected ? 2 : 1}
-                opacity={isSelected ? 1 : 0.7}
-              />
-              {/* Planet icon or symbol */}
+              {/* Planet symbol only - no circular outline */}
               {isSunOrMoon ? (
                 <foreignObject
-                  x={x - 8}
-                  y={y - 8}
-                  width={16}
-                  height={16}
+                  x={x - 10}
+                  y={y - 10}
+                  width={20}
+                  height={20}
                 >
-                  <div className="flex items-center justify-center w-full h-full" style={{ color: CHART_COLOR }}>
+                  <div 
+                    className="flex items-center justify-center w-full h-full" 
+                    style={{ 
+                      color: CHART_COLOR,
+                      opacity: isSelected ? 1 : 0.9 
+                    }}
+                  >
                     {planet.label === 'Sun' ? (
-                      <IconSun size={14} strokeWidth={1.5} />
+                      <IconSun size={18} strokeWidth={1.5} />
                     ) : (
-                      <IconMoon size={14} strokeWidth={1.5} />
+                      <IconMoon size={18} strokeWidth={1.5} />
                     )}
                   </div>
                 </foreignObject>
@@ -494,7 +485,8 @@ export const BirthChartDiagram = ({
                   textAnchor="middle"
                   dominantBaseline="central"
                   fill={CHART_COLOR}
-                  style={{ fontSize: '12px', fontFamily: 'serif' }}
+                  opacity={isSelected ? 1 : 0.9}
+                  style={{ fontSize: '16px', fontFamily: 'serif' }}
                 >
                   {planet.symbol}
                 </text>
