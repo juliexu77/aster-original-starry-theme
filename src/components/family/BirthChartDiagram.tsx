@@ -151,54 +151,44 @@ export const BirthChartDiagram = ({
     return Math.floor(absDegree % 30);
   };
 
-  // Calculate planet positions with snapped display angles
+  // Calculate planet positions - true positions, all on same radius
   const planets = useMemo(() => {
     const placements: { 
       symbol: string; 
       label: string; 
-      displayAngle: number; // Snapped to center of sign
-      trueAngle: number; // Actual position
-      radius: number;
+      angle: number; // True angular position on chart
       sign: ZodiacSign;
       degree: number;
       house: number;
     }[] = [];
     
-    // Sun position - snap to center of its sign
+    // Sun position - use actual degree within sign
     const sunAbsDegree = signToAbsoluteDegree(sunSign, sunDegree);
-    const sunSignCenter = ZODIAC_ORDER.indexOf(sunSign) * 30 + 15; // Center of sign
-    const sunDisplayAngle = degreeToChartAngle(sunSignCenter, ascendantDegree);
-    const sunTrueAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
+    const sunChartAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
     placements.push({
       symbol: PLANET_SYMBOLS.sun,
       label: 'Sun',
-      displayAngle: sunDisplayAngle,
-      trueAngle: sunTrueAngle,
-      radius: planetRing,
+      angle: sunChartAngle,
       sign: sunSign,
       degree: sunDegree,
       house: Math.floor((sunAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
     });
     
-    // Moon position - snap to center of its sign
+    // Moon position - use actual degree within sign
     if (moonSign) {
       const moonAbsDegree = signToAbsoluteDegree(moonSign, moonDegree);
-      const moonSignCenter = ZODIAC_ORDER.indexOf(moonSign) * 30 + 15;
-      const moonDisplayAngle = degreeToChartAngle(moonSignCenter, ascendantDegree);
-      const moonTrueAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
+      const moonChartAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
       placements.push({
         symbol: PLANET_SYMBOLS.moon,
         label: 'Moon',
-        displayAngle: moonDisplayAngle,
-        trueAngle: moonTrueAngle,
-        radius: planetRing,
+        angle: moonChartAngle,
         sign: moonSign,
         degree: moonDegree,
         house: Math.floor((moonAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
       });
     }
     
-    // Add other planets - also snapped
+    // Add other planets with offset positions from sun
     const otherPlanets = [
       { symbol: PLANET_SYMBOLS.mercury, label: 'Mercury', offsetFromSun: 15 },
       { symbol: PLANET_SYMBOLS.venus, label: 'Venus', offsetFromSun: 45 },
@@ -207,21 +197,17 @@ export const BirthChartDiagram = ({
       { symbol: PLANET_SYMBOLS.saturn, label: 'Saturn', offsetFromSun: 240 },
     ];
     
-    otherPlanets.forEach((planet, idx) => {
-      const trueAngle = sunTrueAngle + planet.offsetFromSun;
-      // Convert angle back to absolute degree to find sign
-      const absDeg = (ascendantDegree + (180 - trueAngle) + 360) % 360;
+    otherPlanets.forEach((planet) => {
+      // Calculate absolute degree based on offset from sun
+      const absDeg = (sunAbsDegree + planet.offsetFromSun) % 360;
+      const chartAngle = degreeToChartAngle(absDeg, ascendantDegree);
       const planetSign = getSignFromDegree(absDeg);
       const degInSign = getDegreeInSign(absDeg);
-      const signCenter = ZODIAC_ORDER.indexOf(planetSign) * 30 + 15;
-      const displayAngle = degreeToChartAngle(signCenter, ascendantDegree);
       
       placements.push({
         symbol: planet.symbol,
         label: planet.label,
-        displayAngle,
-        trueAngle,
-        radius: planetRing,
+        angle: chartAngle,
         sign: planetSign,
         degree: degInSign,
         house: Math.floor((absDeg - ascendantDegree + 360) / 30) % 12 + 1,
@@ -246,8 +232,8 @@ export const BirthChartDiagram = ({
         const planet1 = planets[i];
         const planet2 = planets[j];
         
-        // Calculate angular difference using true angles for accuracy
-        let angleDiff = Math.abs(planet1.trueAngle - planet2.trueAngle) % 360;
+        // Calculate angular difference
+        let angleDiff = Math.abs(planet1.angle - planet2.angle) % 360;
         if (angleDiff > 180) angleDiff = 360 - angleDiff;
         
         // Determine aspect type with orb tolerance (±8°)
@@ -264,9 +250,8 @@ export const BirthChartDiagram = ({
         }
         
         if (aspectType) {
-          // Use display angles for visual positioning
-          const angle1Rad = planet1.displayAngle * (Math.PI / 180);
-          const angle2Rad = planet2.displayAngle * (Math.PI / 180);
+          const angle1Rad = planet1.angle * (Math.PI / 180);
+          const angle2Rad = planet2.angle * (Math.PI / 180);
           
           aspects.push({
             x1: center + Math.cos(angle1Rad) * aspectRadius,
@@ -438,7 +423,7 @@ export const BirthChartDiagram = ({
         
         {/* Planet Positions - tappable */}
         {planets.map((planet, i) => {
-          const angleRad = planet.displayAngle * (Math.PI / 180);
+          const angleRad = planet.angle * (Math.PI / 180);
           // Use fixed planetRing radius for ALL planets to ensure same circle
           const x = center + Math.cos(angleRad) * planetRing;
           const y = center + Math.sin(angleRad) * planetRing;
