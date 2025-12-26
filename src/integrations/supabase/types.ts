@@ -58,6 +58,66 @@ export type Database = {
           },
         ]
       }
+      baby_calibrations: {
+        Row: {
+          baby_id: string
+          created_at: string
+          current_challenge: string | null
+          emerging_early_flags: Json | null
+          feeding_solids: string | null
+          household_id: string
+          id: string
+          language_sounds: string | null
+          physical_skills: string[] | null
+          sleep_naps: string | null
+          social_separation: string | null
+          updated_at: string
+        }
+        Insert: {
+          baby_id: string
+          created_at?: string
+          current_challenge?: string | null
+          emerging_early_flags?: Json | null
+          feeding_solids?: string | null
+          household_id: string
+          id?: string
+          language_sounds?: string | null
+          physical_skills?: string[] | null
+          sleep_naps?: string | null
+          social_separation?: string | null
+          updated_at?: string
+        }
+        Update: {
+          baby_id?: string
+          created_at?: string
+          current_challenge?: string | null
+          emerging_early_flags?: Json | null
+          feeding_solids?: string | null
+          household_id?: string
+          id?: string
+          language_sounds?: string | null
+          physical_skills?: string[] | null
+          sleep_naps?: string | null
+          social_separation?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "baby_calibrations_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: true
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "baby_calibrations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           household_id: string

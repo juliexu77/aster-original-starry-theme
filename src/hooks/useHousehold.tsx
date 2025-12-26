@@ -132,10 +132,11 @@ export const useHousehold = () => {
     }
   };
 
-  const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string, babyBirthLocation?: string) => {
+  const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string, babyBirthLocation?: string): Promise<{ household: { id: string }; baby: { id: string } }> => {
     if (!user) throw new Error('User must be authenticated');
 
     const newHouseholdId = crypto.randomUUID();
+    const newBabyId = crypto.randomUUID();
 
     // Create household
     const { error: householdError } = await supabase
@@ -161,6 +162,7 @@ export const useHousehold = () => {
     await supabase
       .from('babies')
       .insert([{
+        id: newBabyId,
         household_id: newHouseholdId,
         name: babyName,
         birthday: babyBirthday || null,
@@ -169,6 +171,11 @@ export const useHousehold = () => {
       }] as any);
 
     await fetchHousehold();
+
+    return {
+      household: { id: newHouseholdId },
+      baby: { id: newBabyId }
+    };
   };
 
   const updateHousehold = async (updates: { baby_name?: string; baby_birthday?: string; baby_photo_url?: string; baby_sex?: string }) => {

@@ -4,20 +4,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationInput } from "@/components/ui/LocationInput";
+import { CalibrationFlow } from "@/components/calibration/CalibrationFlow";
+import { ChartGenerating } from "@/components/calibration/ChartGenerating";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
+import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
 import { useToast } from "@/hooks/use-toast";
+
+type SetupPhase = 'details' | 'calibration' | 'generating';
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { createHousehold } = useHousehold();
+  const { saveCalibration } = useCalibration();
   const { toast } = useToast();
+  
+  const [phase, setPhase] = useState<SetupPhase>('details');
   const [isLoading, setIsLoading] = useState(false);
   const [babyName, setBabyName] = useState("");
   const [babyBirthday, setBabyBirthday] = useState("");
   const [babyBirthTime, setBabyBirthTime] = useState("");
   const [babyBirthLocation, setBabyBirthLocation] = useState("");
+  
+  // Store created baby/household IDs for calibration save
+  const [createdBabyId, setCreatedBabyId] = useState<string | null>(null);
+  const [createdHouseholdId, setCreatedHouseholdId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -25,7 +37,7 @@ const BabySetup = () => {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) return;
@@ -33,14 +45,24 @@ const BabySetup = () => {
     setIsLoading(true);
 
     try {
-      await createHousehold(babyName, babyBirthday || undefined, babyBirthTime || undefined, babyBirthLocation || undefined);
+      const result = await createHousehold(
+        babyName, 
+        babyBirthday || undefined, 
+        babyBirthTime || undefined, 
+        babyBirthLocation || undefined
+      );
+      
+      // Store IDs for calibration
+      setCreatedBabyId(result.baby.id);
+      setCreatedHouseholdId(result.household.id);
 
-      toast({
-        title: "Ready",
-        description: `${babyName}'s chart is set`,
-      });
-
-      navigate("/");
+      // Move to calibration phase if we have a birthday
+      if (babyBirthday) {
+        setPhase('calibration');
+      } else {
+        // Skip calibration if no birthday (can't calculate age-based logic)
+        finishSetup();
+      }
     } catch (error: any) {
       console.error("Error creating baby profile:", error);
       toast({
@@ -52,6 +74,54 @@ const BabySetup = () => {
       setIsLoading(false);
     }
   };
+
+  const handleCalibrationComplete = async (
+    data: CalibrationData, 
+    emergingFlags: Record<string, boolean>
+  ) => {
+    if (createdBabyId && createdHouseholdId) {
+      try {
+        await saveCalibration(createdBabyId, createdHouseholdId, data, emergingFlags);
+      } catch (error) {
+        console.error("Error saving calibration:", error);
+        // Don't block navigation on calibration save failure
+      }
+    }
+    setPhase('generating');
+  };
+
+  const handleCalibrationSkip = () => {
+    setPhase('generating');
+  };
+
+  const finishSetup = () => {
+    toast({
+      title: "Ready",
+      description: `${babyName}'s chart is set`,
+    });
+    navigate("/");
+  };
+
+  // Render based on phase
+  if (phase === 'calibration' && babyBirthday) {
+    return (
+      <CalibrationFlow
+        babyName={babyName}
+        babyBirthday={babyBirthday}
+        onComplete={handleCalibrationComplete}
+        onSkip={handleCalibrationSkip}
+      />
+    );
+  }
+
+  if (phase === 'generating') {
+    return (
+      <ChartGenerating
+        babyName={babyName}
+        onComplete={finishSetup}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -75,7 +145,7 @@ const BabySetup = () => {
 
           {/* Form */}
           <div className="bg-card/50 rounded-xl p-6">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleDetailsSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="babyName">Name</Label>
                 <Input
