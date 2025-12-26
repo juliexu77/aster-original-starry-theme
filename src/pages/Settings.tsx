@@ -82,7 +82,8 @@ export const Settings = () => {
   };
 
   const getUserDisplayName = () => {
-    return userProfile?.display_name || user?.email?.split('@')[0] || "User";
+    const fullName = userProfile?.display_name || user?.email?.split('@')[0] || "User";
+    return fullName.split(' ')[0]; // Return just the first name
   };
 
   const handleSaveBirthday = async () => {
