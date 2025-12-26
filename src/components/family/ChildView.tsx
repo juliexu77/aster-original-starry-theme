@@ -58,25 +58,56 @@ export const ChildView = ({
   const [showSelector, setShowSelector] = useState(false);
   const [showPulse, setShowPulse] = useState(false);
   
-  // Build children list only (no parents in this view)
-  const children = useMemo(() => {
-    return babies
+  // Build all family members list (children + parents)
+  const allMembers = useMemo(() => {
+    const members: FamilyMember[] = [];
+    
+    // Add children
+    babies
       .filter(baby => baby.birthday)
-      .map(baby => ({
-        id: baby.id,
-        name: baby.name,
-        type: 'child' as const,
-        birthday: baby.birthday,
-        birth_time: baby.birth_time,
-        birth_location: baby.birth_location,
-      }));
-  }, [babies]);
+      .forEach(baby => {
+        members.push({
+          id: baby.id,
+          name: baby.name,
+          type: 'child' as const,
+          birthday: baby.birthday,
+          birth_time: baby.birth_time,
+          birth_location: baby.birth_location,
+        });
+      });
+    
+    // Add parent (user)
+    if (userProfile?.birthday) {
+      members.push({
+        id: 'parent',
+        name: userProfile.display_name || 'You',
+        type: 'parent' as const,
+        birthday: userProfile.birthday,
+        birth_time: userProfile.birth_time,
+        birth_location: userProfile.birth_location,
+      });
+    }
+    
+    // Add partner
+    if (userProfile?.partner_birthday) {
+      members.push({
+        id: 'partner',
+        name: userProfile.partner_name || 'Partner',
+        type: 'partner' as const,
+        birthday: userProfile.partner_birthday,
+        birth_time: userProfile.partner_birth_time,
+        birth_location: userProfile.partner_birth_location,
+      });
+    }
+    
+    return members;
+  }, [babies, userProfile]);
 
-  const hasMultipleChildren = children.length > 1;
+  const hasMultipleMembers = allMembers.length > 1;
   
-  // Show pulse animation on first visit with multiple children
+  // Show pulse animation on first visit with multiple members
   useEffect(() => {
-    if (hasMultipleChildren) {
+    if (hasMultipleMembers) {
       const hasSeenPulse = localStorage.getItem('chart-selector-seen');
       if (!hasSeenPulse) {
         setShowPulse(true);
@@ -87,32 +118,32 @@ export const ChildView = ({
         return () => clearTimeout(timer);
       }
     }
-  }, [hasMultipleChildren]);
+  }, [hasMultipleMembers]);
 
-  const selectedChild = useMemo(() => {
+  const selectedMember = useMemo(() => {
     if (selectedMemberId) {
-      return children.find(c => c.id === selectedMemberId);
+      return allMembers.find(m => m.id === selectedMemberId);
     }
-    return children[0];
-  }, [children, selectedMemberId]);
+    return allMembers[0];
+  }, [allMembers, selectedMemberId]);
 
   const signs = useMemo(() => {
-    if (!selectedChild?.birthday) return null;
+    if (!selectedMember?.birthday) return null;
     
-    const sun = getZodiacFromBirthday(selectedChild.birthday);
+    const sun = getZodiacFromBirthday(selectedMember.birthday);
     const moon = getMoonSignFromBirthDateTime(
-      selectedChild.birthday, 
-      selectedChild.birth_time, 
-      selectedChild.birth_location
+      selectedMember.birthday, 
+      selectedMember.birth_time, 
+      selectedMember.birth_location
     );
     const rising = getRisingSign(
-      selectedChild.birthday, 
-      selectedChild.birth_time, 
-      selectedChild.birth_location
+      selectedMember.birthday, 
+      selectedMember.birth_time, 
+      selectedMember.birth_location
     );
     
     return { sun, moon, rising };
-  }, [selectedChild]);
+  }, [selectedMember]);
 
   const getSignsSubtitle = (): string => {
     if (!signs?.sun) return '';
@@ -124,11 +155,11 @@ export const ChildView = ({
     return parts.join(' • ');
   };
 
-  if (!selectedChild || !signs?.sun) {
+  if (!selectedMember || !signs?.sun) {
     return (
       <div className="px-5 py-12 text-center">
         <p className="text-[13px] text-foreground/40">
-          Add a child with their birthday to see their astrological profile.
+          Add a family member with their birthday to see their astrological profile.
         </p>
       </div>
     );
@@ -136,21 +167,21 @@ export const ChildView = ({
 
   return (
     <div className="space-y-6">
-      {/* Header with Child Name */}
+      {/* Header with Member Name */}
       <div className="px-5 pt-6 text-center">
-        {hasMultipleChildren ? (
+        {hasMultipleMembers ? (
           <button
             onClick={() => setShowSelector(true)}
             className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
           >
             <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedChild.name}</span>
+            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
             <ChevronDown className="w-4 h-4 text-foreground/30" />
           </button>
         ) : (
           <div className="inline-flex items-center gap-2">
             <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedChild.name}</span>
+            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
           </div>
         )}
         
@@ -189,12 +220,12 @@ export const ChildView = ({
         />
       </div>
 
-      {/* Child Selector Sheet */}
+      {/* Member Selector Sheet */}
       <ChartSelectorSheet
         open={showSelector}
         onOpenChange={setShowSelector}
-        members={children}
-        selectedMemberId={selectedChild.id}
+        members={allMembers}
+        selectedMemberId={selectedMember.id}
         onSelectMember={onSelectMember}
         onAddChild={onAddChild}
       />
