@@ -354,8 +354,19 @@ export const BirthChartDiagram = ({
           opacity={0.7}
         />
         
-        {/* Aspect Lines - hidden */}
-        
+        {/* Aspect Lines - subtle */}
+        {aspectLines.map((aspect, i) => (
+          <line
+            key={`aspect-${i}`}
+            x1={aspect.x1}
+            y1={aspect.y1}
+            x2={aspect.x2}
+            y2={aspect.y2}
+            stroke={CHART_COLOR}
+            strokeWidth={0.5}
+            opacity={0.25}
+          />
+        ))}
         {/* Zodiac Section Divisions */}
         {Array.from({ length: 12 }, (_, i) => {
           const signDegree = i * 30;
@@ -428,23 +439,23 @@ export const BirthChartDiagram = ({
               {/* Planet symbol */}
               {isSunOrMoon ? (
                 <foreignObject
-                  x={x - 12}
-                  y={y - 12}
-                  width={24}
-                  height={24}
+                  x={x - 14}
+                  y={y - 14}
+                  width={28}
+                  height={28}
                   style={{ pointerEvents: 'none' }}
                 >
                   <div 
                     className="flex items-center justify-center w-full h-full" 
                     style={{ 
-                      color: isSelected ? '#FFFFFF' : '#E8E8E8',
+                      color: isSelected ? '#FFFFFF' : '#F0F0F0',
                       transition: 'color 0.2s ease',
                     }}
                   >
                     {planet.label === 'Sun' ? (
-                      <IconSun size={22} strokeWidth={1.5} />
+                      <IconSun size={26} strokeWidth={1.5} />
                     ) : (
-                      <IconMoon size={22} strokeWidth={1.5} />
+                      <IconMoon size={26} strokeWidth={1.5} />
                     )}
                   </div>
                 </foreignObject>
@@ -454,9 +465,9 @@ export const BirthChartDiagram = ({
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill={isSelected ? '#FFFFFF' : '#E8E8E8'}
+                  fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
                   style={{ 
-                    fontSize: '20px', 
+                    fontSize: '24px', 
                     fontFamily: 'serif',
                     pointerEvents: 'none',
                     transition: 'fill 0.2s ease',
