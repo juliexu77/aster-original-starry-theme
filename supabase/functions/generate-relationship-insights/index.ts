@@ -46,67 +46,61 @@ serve(async (req) => {
     // Developmental stage context
     let developmentalContext = "";
     if (child.ageMonths < 3) {
-      developmentalContext = "newborn phase: bonding, feeding rhythms, sleep patterns";
+      developmentalContext = "newborn phase (0-3 months): focused on bonding, feeding rhythms, sleep patterns, sensory development";
     } else if (child.ageMonths < 6) {
-      developmentalContext = "early infancy: emerging personality, social smiles, exploring";
+      developmentalContext = "early infancy (3-6 months): emerging personality, social smiles, beginning to explore, sleep consolidation";
     } else if (child.ageMonths < 9) {
-      developmentalContext = "mid-infancy: sitting, beginning solids, separation awareness";
+      developmentalContext = "mid-infancy (6-9 months): sitting, beginning solids, separation awareness, babbling";
     } else if (child.ageMonths < 12) {
-      developmentalContext = "late infancy: pre-walking, first words emerging, strong preferences";
+      developmentalContext = "late infancy (9-12 months): pre-walking, first words emerging, strong preferences, object permanence";
     } else if (child.ageMonths < 18) {
-      developmentalContext = "early toddlerhood: walking, vocabulary explosion, independence emerging";
+      developmentalContext = "early toddlerhood (12-18 months): walking, vocabulary explosion, independence emerging, parallel play";
     } else if (child.ageMonths < 24) {
-      developmentalContext = "toddlerhood: running, two-word phrases, testing boundaries";
+      developmentalContext = "toddlerhood (18-24 months): running, two-word phrases, testing boundaries, big emotions";
     } else if (child.ageMonths < 36) {
-      developmentalContext = "late toddlerhood: sentences, imaginative play, asserting self";
+      developmentalContext = "late toddlerhood (2-3 years): sentences, imaginative play, potty training, asserting self";
     } else if (child.ageMonths < 48) {
-      developmentalContext = "preschool age: complex play, friendships beginning, many questions";
+      developmentalContext = "preschool age (3-4 years): complex play, friendships beginning, questions about everything, emotional regulation developing";
     } else if (child.ageMonths < 60) {
-      developmentalContext = "pre-kindergarten: school readiness, cooperative play, empathy developing";
+      developmentalContext = "pre-kindergarten (4-5 years): school readiness, cooperative play, empathy developing, identity forming";
     } else {
-      developmentalContext = "school age: independence growing, peer relationships important";
+      developmentalContext = "school age (5+ years): independence growing, peer relationships important, academic skills, complex reasoning";
     }
 
-    const prompt = `Generate relationship insights for a parent named ${parent.name} and their child ${child.name} who is ${ageLabel} old.
+    const parentDesc = `${parent.name} (${parent.sunSign} Sun${parent.moonSign ? `, ${parent.moonSign} Moon` : ''})`;
+    const childDesc = `${child.name} (${ageLabel} old, ${child.sunSign} Sun${child.moonSign ? `, ${child.moonSign} Moon` : ''})`;
 
-Context for generating insights (DO NOT mention these signs directly in your output):
-- Parent's astrological profile: ${parent.sunSign} Sun${parent.moonSign ? `, ${parent.moonSign} Moon` : ''}
-- Child's astrological profile: ${child.sunSign} Sun${child.moonSign ? `, ${child.moonSign} Moon` : ''}
-- Current developmental stage: ${developmentalContext}
+    const prompt = `You are an expert in astrology AND child development. Generate relationship insights for:
 
-CRITICAL RULES:
-1. NEVER use phrases like "Your Sagittarius nature", "His Aries energy", "Cancer Sun", etc.
-2. NEVER name zodiac signs in the output - describe the BEHAVIOR, not the astrological cause
-3. Use the child's name (${child.name}) naturally
-4. Focus on observable behaviors and practical advice
-5. Keep each insight to 2-3 punchy sentences max
-6. Be specific to THIS age/developmental stage
+Parent: ${parentDesc}
+Child: ${childDesc}
+Current developmental stage: ${developmentalContext}
 
-Generate insights in this JSON structure:
+Generate insights in this EXACT JSON structure. Each insight should be 2-3 punchy sentences max. Be SPECIFIC to their exact signs AND the child's current age/developmental stage. Use ${child.name}'s name. The tone should feel like consulting a wise guide who knows both astrology and child development.
 
 {
-  "currentStrength": "What's working RIGHT NOW between you two. Focus on behavior, not astrology. Example: 'You roll with the unpredictable. When sleep falls apart, you adapt instead of panic. He needs that flexibility right now.'",
+  "currentStrength": "What's working RIGHT NOW between these two signs at this specific age. Example: 'At 8 months, your Sag adaptability helps you roll with his Aries sleep regressions. Your fire meets his fire—you get each other's restlessness.'",
   
-  "currentFriction": "Where you clash RIGHT NOW. Focus on behavior. Example: 'You want to help. He wants to struggle. His "do it myself" phase is real—stepping back feels wrong but builds his confidence.'",
+  "currentFriction": "Where they clash RIGHT NOW given the child's developmental stage. Example: 'His Aries 'do it myself' is emerging now—your Sag tendency to swoop in and help may spark frustration. He needs to fail safely.'",
   
-  "actionableInsight": "One specific thing to try this week. Example: 'Let him lead during play. Watch instead of direct. He needs to feel powerful.'",
+  "actionableInsight": "One specific thing to try this week. Example: 'Let him lead during tummy time. He needs to feel powerful. Your job is to witness, not direct.'",
   
-  "sleepDynamic": "How you two navigate sleep AT THIS AGE. Example: 'He processes the day through dreams. Your calm presence at bedtime helps him release the intensity.'",
+  "sleepDynamic": "How their signs interact around sleep AT THIS AGE. Example: 'His Scorpio intensity means he processes the day through dreams. Your calm Taurus presence at bedtime helps him release.'",
   
-  "feedingDynamic": "How you two navigate feeding/meals AT THIS AGE. Example: 'He wants control of the spoon. Embrace the mess—it's how he learns.'",
+  "feedingDynamic": "How their signs interact around feeding/meals AT THIS AGE. Example: 'Aries babies want control. Let him grab the spoon. Your Virgo nature may want order—embrace the mess.'",
   
-  "communicationStyle": "How you two communicate AT THIS STAGE. Example: 'He can't say it yet but his body shows everything. You catch what he can't articulate.'",
+  "communicationStyle": "How they communicate AT THIS STAGE. Example: 'He's pre-verbal but his Gemini moon makes him expressive. Mirror his sounds back. Your Pisces intuition catches what he can't say.'",
   
-  "whatThisPhaseTeaches": "What THIS phase is teaching you. Example: 'This is your lesson in patience. Milestones come on his schedule, not yours.'",
+  "whatThisPhaseTeaches": "What THIS SPECIFIC PHASE is teaching the parent. Example: 'This is your lesson in patience. His Capricorn rising means milestones come on his schedule, not yours.'",
   
-  "whatsComingNext": "What to expect in the next 1-2 months. Example: 'His independence will surge soon. Prepare for more boundary testing. Your humor will be your best tool.'",
+  "whatsComingNext": "Predictive insight about the next 1-2 months. Example: 'Around 9 months, his Aries independence will surge. Prepare for more boundary testing. Your Sag humor will be your best tool.'",
   
-  "longTermEvolution": "How this relationship will evolve. Example: 'The intensity that challenges you now becomes your greatest bond as he grows. You're building a partnership.'"
+  "longTermEvolution": "How this relationship will evolve over years. Example: 'Two fire signs means lifelong adventure together. The intensity that challenges you now becomes your greatest bond as he grows.'"
 }
 
-Be warm, practical, and specific. Never generic. The parent should feel seen and guided without needing to understand astrology.`;
+Be specific, warm, and practical. Never generic. Reference actual sign qualities. The parent should feel seen and guided.`;
 
-    console.log("Generating relationship insights for:", parent.name, "and", child.name);
+    console.log("Generating relationship insights for:", parentDesc, "and", childDesc);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -119,7 +113,7 @@ Be warm, practical, and specific. Never generic. The parent should feel seen and
         messages: [
           { 
             role: "system", 
-            content: "You are a parenting insight expert. You understand child development deeply. You NEVER mention zodiac signs in your output—you describe behaviors and dynamics only. Respond with valid JSON only." 
+            content: "You are an astrology expert who also deeply understands child development stages. You combine cosmic wisdom with practical parenting insights. Respond only with valid JSON. Be warm, specific, and age-appropriate." 
           },
           { role: "user", content: prompt }
         ],

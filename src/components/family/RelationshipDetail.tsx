@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,6 @@ interface RelationshipDetailProps {
   from: FamilyMember;
   to: FamilyMember;
   onBack: () => void;
-  inline?: boolean;
 }
 
 type TabType = 'dynamics' | 'daily' | 'growth';
@@ -51,13 +50,13 @@ const getAgeLabel = (birthday: string | null): string => {
                  (today.getMonth() - birthDate.getMonth());
   
   if (months < 1) return 'newborn';
-  if (months < 12) return `${months} month${months === 1 ? '' : 's'}`;
+  if (months < 12) return `${months} month${months === 1 ? '' : 's'} old`;
   
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
   
-  if (remainingMonths === 0) return `${years} year${years === 1 ? '' : 's'}`;
-  return `${years}y ${remainingMonths}m`;
+  if (remainingMonths === 0) return `${years} year${years === 1 ? '' : 's'} old`;
+  return `${years}y ${remainingMonths}m old`;
 };
 
 const getAgeMonths = (birthday: string | null): number => {
@@ -68,7 +67,7 @@ const getAgeMonths = (birthday: string | null): number => {
          (today.getMonth() - birthDate.getMonth());
 };
 
-export const RelationshipDetail = ({ from, to, onBack, inline = false }: RelationshipDetailProps) => {
+export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps) => {
   const [activeTab, setActiveTab] = useState<TabType>('dynamics');
   const [insights, setInsights] = useState<RelationshipInsights | null>(null);
   const [loading, setLoading] = useState(false);
@@ -142,11 +141,11 @@ export const RelationshipDetail = ({ from, to, onBack, inline = false }: Relatio
     if (!content) return null;
     
     return (
-      <div className="bg-[#252525]/50 rounded-lg p-4 border border-foreground/5">
-        <p className="text-[10px] text-foreground/40 uppercase tracking-[0.15em] mb-2">
+      <div className="bg-[#252525] rounded-lg p-5 border border-[#3a3a3a]/30">
+        <p className="text-[10px] text-[#8A8A8A] uppercase tracking-[0.15em] mb-3">
           {header}
         </p>
-        <p className="text-[14px] text-foreground/70 leading-[1.7]">
+        <p className="text-[15px] text-foreground/80 leading-[1.7]">
           {content}
         </p>
       </div>
@@ -154,40 +153,55 @@ export const RelationshipDetail = ({ from, to, onBack, inline = false }: Relatio
   };
 
   const renderDynamicsTab = () => (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {renderInsightCard('Right Now', insights?.currentStrength)}
-      {renderInsightCard('Friction', insights?.currentFriction)}
+      {renderInsightCard('Where You Clash', insights?.currentFriction)}
       {renderInsightCard('Try This', insights?.actionableInsight)}
     </div>
   );
 
   const renderDailyTab = () => (
-    <div className="space-y-3">
-      {renderInsightCard('Sleep', insights?.sleepDynamic)}
-      {renderInsightCard('Feeding', insights?.feedingDynamic)}
+    <div className="space-y-4">
+      {renderInsightCard('Sleep Patterns', insights?.sleepDynamic)}
+      {renderInsightCard('Feeding Dynamics', insights?.feedingDynamic)}
       {renderInsightCard('Communication', insights?.communicationStyle)}
     </div>
   );
 
   const renderGrowthTab = () => (
-    <div className="space-y-3">
-      {renderInsightCard('This Phase Teaches', insights?.whatThisPhaseTeaches)}
-      {renderInsightCard("Coming Next", insights?.whatsComingNext)}
-      {renderInsightCard('Long-Term', insights?.longTermEvolution)}
+    <div className="space-y-4">
+      {renderInsightCard('What This Phase Teaches You', insights?.whatThisPhaseTeaches)}
+      {renderInsightCard("What's Coming", insights?.whatsComingNext)}
+      {renderInsightCard('Long-Term Evolution', insights?.longTermEvolution)}
     </div>
   );
 
   return (
-    <div>
-      {/* Header - simplified for inline view */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-1">
-          {fromSign && <ZodiacIcon sign={fromSign} size={16} className="text-[#C4A574]" />}
-          <span className="text-[16px] text-foreground/80" style={{ fontFamily: 'Source Serif 4, serif' }}>
+    <div className="min-h-screen">
+      {/* Back button */}
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1 text-foreground/40 hover:text-foreground/60 transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-[12px] uppercase tracking-wide">Back</span>
+      </button>
+      
+      {/* Hero section */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          {fromSign && <ZodiacIcon sign={fromSign} size={20} className="text-[#C4A574]" />}
+          <h1 className="text-[24px] text-foreground/90" style={{ fontFamily: 'Source Serif 4, serif' }}>
             {from.name} → {to.name}
-          </span>
+          </h1>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <p className="text-[13px] text-foreground/50">
+            {fromSign && getZodiacName(fromSign)} → {toSign && getZodiacName(toSign)}
+          </p>
           {ageLabel && (
-            <span className="text-[11px] text-foreground/30 ml-auto">
+            <span className="text-[11px] text-foreground/30">
               {ageLabel}
             </span>
           )}
@@ -195,12 +209,12 @@ export const RelationshipDetail = ({ from, to, onBack, inline = false }: Relatio
       </div>
       
       {/* Tabs */}
-      <div className="flex items-center gap-4 mb-4 border-b border-foreground/10 pb-2">
+      <div className="flex items-center gap-6 mb-6 border-b border-foreground/10 pb-3">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`text-[10px] uppercase tracking-[0.1em] pb-1 transition-all ${
+            className={`text-[11px] uppercase tracking-[0.12em] pb-1 transition-all ${
               activeTab === tab.id
                 ? 'text-foreground/70 border-b border-[#C4A574]'
                 : 'text-foreground/30 hover:text-foreground/50'
@@ -213,12 +227,12 @@ export const RelationshipDetail = ({ from, to, onBack, inline = false }: Relatio
       
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-8">
+        <div className="flex items-center justify-center py-12">
           <LoadingSpinner />
         </div>
       ) : error ? (
-        <div className="text-center py-8">
-          <p className="text-[12px] text-foreground/40 mb-3">{error}</p>
+        <div className="text-center py-12">
+          <p className="text-[13px] text-foreground/40 mb-4">{error}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -230,20 +244,20 @@ export const RelationshipDetail = ({ from, to, onBack, inline = false }: Relatio
           </Button>
         </div>
       ) : insights ? (
-        <div className="pb-4">
+        <div className="pb-8">
           {activeTab === 'dynamics' && renderDynamicsTab()}
           {activeTab === 'daily' && renderDailyTab()}
           {activeTab === 'growth' && renderGrowthTab()}
           
           {/* Update indicator */}
-          <p className="text-[9px] text-foreground/20 text-center mt-6 tracking-wide">
+          <p className="text-[10px] text-foreground/20 text-center mt-8 tracking-wide">
             Updated for {ageLabel || 'current age'}
           </p>
         </div>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-[12px] text-foreground/40">
-            Add birth dates to see insights.
+        <div className="text-center py-12">
+          <p className="text-[13px] text-foreground/40">
+            Add birth dates to see relationship insights.
           </p>
         </div>
       )}

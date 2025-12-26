@@ -1,5 +1,4 @@
 import { useMemo, useState } from "react";
-import { X } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ParentBirthdayPrompt } from "./ParentBirthdayPrompt";
 import { RelationshipMap } from "./RelationshipMap";
@@ -107,15 +106,28 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
     }
   };
 
-  const handleClearSelection = () => {
+  const handleBack = () => {
     setSelectedConnection(null);
   };
+
+  // Show detail view when a connection is selected
+  if (selectedConnection) {
+    return (
+      <div className="px-5">
+        <RelationshipDetail
+          from={selectedConnection.from}
+          to={selectedConnection.to}
+          onBack={handleBack}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Constellation Header */}
       <div className="px-5 pt-6 text-center">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] mb-4">
+        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] mb-8">
           Your Constellation
         </p>
       </div>
@@ -136,28 +148,6 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         )}
       </div>
 
-      {/* Inline Relationship Detail - shows below constellation when a connection is selected */}
-      {selectedConnection && (
-        <div className="px-5 pt-4">
-          {/* Close button */}
-          <div className="flex justify-end mb-2">
-            <button
-              onClick={handleClearSelection}
-              className="p-1.5 rounded-full text-foreground/30 hover:text-foreground/50 hover:bg-foreground/5 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <RelationshipDetail
-            from={selectedConnection.from}
-            to={selectedConnection.to}
-            onBack={handleClearSelection}
-            inline={true}
-          />
-        </div>
-      )}
-
       {/* Parent Birthday Prompt */}
       {!parentHasBirthday && (
         <div className="px-5 pt-2">
@@ -166,7 +156,7 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
       )}
 
       {/* Subtle hint about evolving content */}
-      {familyMembers.length > 1 && !selectedConnection && (
+      {familyMembers.length > 1 && (
         <div className="px-5 pt-4 text-center">
           <p className="text-[10px] text-foreground/20 tracking-wide">
             Insights evolve monthly with your child's growth
