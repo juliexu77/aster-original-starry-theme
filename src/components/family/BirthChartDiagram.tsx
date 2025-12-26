@@ -248,28 +248,24 @@ export const BirthChartDiagram = ({
     });
   }, [center, innerRadius, outerRadius]);
 
-  // Generate zodiac sign positions (for icons in the ring)
+  // Generate zodiac sign positions (labels inside the ring like Co-Star)
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
       // Position in the middle of each 30° segment
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      const iconRadius = (outerRadius + innerRadius) / 2;
-      const labelRadius = outerRadius + 25; // Outside the outer circle
+      // Labels positioned inside the ring, closer to outer edge
+      const labelRadius = outerRadius - 12;
       
       return {
         sign,
-        IconComponent: ZODIAC_ICONS[sign],
-        iconX: center + Math.cos(angleRad) * iconRadius,
-        iconY: center + Math.sin(angleRad) * iconRadius,
         labelX: center + Math.cos(angleRad) * labelRadius,
         labelY: center + Math.sin(angleRad) * labelRadius,
-        rotation: chartAngle + 90,
         labelRotation: chartAngle,
       };
     });
-  }, [ascendantDegree, center, outerRadius, innerRadius]);
+  }, [ascendantDegree, center, outerRadius]);
 
   // Calculate AC and MC positions
   const acPosition = useMemo(() => {
@@ -377,9 +373,9 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Sign Labels (outer edge) */}
+        {/* Zodiac Sign Labels (inside the ring like Co-Star) */}
         {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
-          // Adjust rotation so text reads correctly (flip for bottom half)
+          // Rotate text to follow the curve, flip for readability
           const adjustedRotation = labelRotation > 90 || labelRotation < -90 
             ? labelRotation + 180 
             : labelRotation;
@@ -392,12 +388,12 @@ export const BirthChartDiagram = ({
               textAnchor="middle"
               dominantBaseline="central"
               fill={CHART_COLOR}
-              opacity={0.7}
+              opacity={0.85}
               style={{ 
-                fontSize: '9px', 
+                fontSize: '8px', 
                 fontFamily: 'DM Sans, sans-serif',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                fontWeight: 500,
               }}
               transform={`rotate(${adjustedRotation}, ${labelX}, ${labelY})`}
             >
@@ -405,21 +401,6 @@ export const BirthChartDiagram = ({
             </text>
           );
         })}
-        
-        {/* Zodiac Icons (in the ring) */}
-        {zodiacPositions.map(({ sign, IconComponent, iconX, iconY }) => (
-          <foreignObject
-            key={sign}
-            x={iconX - 10}
-            y={iconY - 10}
-            width={20}
-            height={20}
-          >
-            <div className="flex items-center justify-center w-full h-full" style={{ color: CHART_COLOR, opacity: 0.9 }}>
-              <IconComponent size={16} strokeWidth={1.5} />
-            </div>
-          </foreignObject>
-        ))}
         
         {/* Planet Positions */}
         {planets.map((planet, i) => {
