@@ -103,11 +103,9 @@ export const BirthChartDiagram = ({
 }: BirthChartDiagramProps) => {
   const size = 600;
   const center = size / 2;
-  const outerRadius = 270;
-  const zodiacRingOuter = 240;
-  const zodiacRingInner = 200;
-  const innerCircle = 160;
-  const planetRing = 130;
+  const outerRadius = 240;      // Single outer ring
+  const innerRadius = 200;      // Inner edge of zodiac ring
+  const planetRing = 140;       // Where planets are placed
   
   // Calculate ascendant degree (start of rising sign)
   const ascendantDegree = useMemo(() => {
@@ -186,19 +184,19 @@ export const BirthChartDiagram = ({
     return placements;
   }, [sunSign, moonSign, sunDegree, moonDegree, ascendantDegree]);
 
-  // Generate house lines (12 divisions)
+  // Generate house lines (12 divisions from inner to outer)
   const houseLines = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const angle = (i * 30 - 90) * (Math.PI / 180); // Start from top
       return {
-        x1: center + Math.cos(angle) * innerCircle,
-        y1: center + Math.sin(angle) * innerCircle,
+        x1: center + Math.cos(angle) * innerRadius,
+        y1: center + Math.sin(angle) * innerRadius,
         x2: center + Math.cos(angle) * outerRadius,
         y2: center + Math.sin(angle) * outerRadius,
         house: i + 1,
       };
     });
-  }, [center, innerCircle, outerRadius]);
+  }, [center, innerRadius, outerRadius]);
 
   // Generate zodiac sign positions (for icons in the ring)
   const zodiacPositions = useMemo(() => {
@@ -207,8 +205,8 @@ export const BirthChartDiagram = ({
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      const iconRadius = (zodiacRingOuter + zodiacRingInner) / 2;
-      const labelRadius = outerRadius + 28; // Outside the outer circle
+      const iconRadius = (outerRadius + innerRadius) / 2;
+      const labelRadius = outerRadius + 25; // Outside the outer circle
       
       return {
         sign,
@@ -221,7 +219,7 @@ export const BirthChartDiagram = ({
         labelRotation: chartAngle,
       };
     });
-  }, [ascendantDegree, center, zodiacRingOuter, zodiacRingInner, outerRadius]);
+  }, [ascendantDegree, center, outerRadius, innerRadius]);
 
   // Calculate AC and MC positions
   const acPosition = useMemo(() => {
@@ -252,33 +250,11 @@ export const BirthChartDiagram = ({
           <BackgroundStar key={i} {...star} />
         ))}
         
-        {/* Outer Circle */}
+        {/* Outer Circle (zodiac ring) */}
         <circle
           cx={center}
           cy={center}
           r={outerRadius}
-          fill="none"
-          stroke={CHART_COLOR}
-          strokeWidth={1}
-          opacity={0.5}
-        />
-        
-        {/* Zodiac Ring Outer */}
-        <circle
-          cx={center}
-          cy={center}
-          r={zodiacRingOuter}
-          fill="none"
-          stroke={CHART_COLOR}
-          strokeWidth={1}
-          opacity={0.6}
-        />
-        
-        {/* Zodiac Ring Inner */}
-        <circle
-          cx={center}
-          cy={center}
-          r={zodiacRingInner}
           fill="none"
           stroke={CHART_COLOR}
           strokeWidth={1}
@@ -289,29 +265,14 @@ export const BirthChartDiagram = ({
         <circle
           cx={center}
           cy={center}
-          r={innerCircle}
+          r={innerRadius}
           fill="none"
           stroke={CHART_COLOR}
           strokeWidth={1}
-          opacity={0.4}
+          opacity={0.5}
         />
         
-        {/* House Division Lines */}
-        {houseLines.map((line, i) => (
-          <g key={i}>
-            <line
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
-              stroke={CHART_COLOR}
-              strokeWidth={0.5}
-              opacity={0.35}
-            />
-          </g>
-        ))}
-        
-        {/* Zodiac Ring Divisions */}
+        {/* Zodiac Section Divisions */}
         {Array.from({ length: 12 }, (_, i) => {
           const signDegree = i * 30;
           const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
@@ -320,13 +281,13 @@ export const BirthChartDiagram = ({
           return (
             <line
               key={`zodiac-div-${i}`}
-              x1={center + Math.cos(angleRad) * zodiacRingInner}
-              y1={center + Math.sin(angleRad) * zodiacRingInner}
-              x2={center + Math.cos(angleRad) * zodiacRingOuter}
-              y2={center + Math.sin(angleRad) * zodiacRingOuter}
+              x1={center + Math.cos(angleRad) * innerRadius}
+              y1={center + Math.sin(angleRad) * innerRadius}
+              x2={center + Math.cos(angleRad) * outerRadius}
+              y2={center + Math.sin(angleRad) * outerRadius}
               stroke={CHART_COLOR}
               strokeWidth={0.75}
-              opacity={0.5}
+              opacity={0.4}
             />
           );
         })}
@@ -437,7 +398,7 @@ export const BirthChartDiagram = ({
         {/* Ascendant (AC) Marker */}
         <g>
           <line
-            x1={center - innerCircle}
+            x1={center - innerRadius}
             y1={center}
             x2={center - outerRadius - 8}
             y2={center}
@@ -465,7 +426,7 @@ export const BirthChartDiagram = ({
         <g>
           <line
             x1={center}
-            y1={center - innerCircle}
+            y1={center - innerRadius}
             x2={center}
             y2={center - outerRadius - 8}
             stroke={CHART_COLOR}
