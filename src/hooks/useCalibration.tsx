@@ -91,6 +91,7 @@ export function useCalibration(babyId?: string) {
       social_separation: data.socialSeparation,
       current_challenge: data.currentChallenge,
       emerging_early_flags: emergingFlags,
+      updated_at: new Date().toISOString(),
     };
 
     const { error: upsertError } = await supabase

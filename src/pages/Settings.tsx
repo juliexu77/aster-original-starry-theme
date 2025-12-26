@@ -12,8 +12,10 @@ import {
   Key,
   ChevronLeft,
   Calendar,
-  Clock
+  Clock,
+  MapPin
 } from "lucide-react";
+import { LocationInput } from "@/components/ui/LocationInput";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
@@ -33,21 +35,27 @@ export const Settings = () => {
   // Your info editing state
   const [editingBirthday, setEditingBirthday] = useState(false);
   const [editingBirthTime, setEditingBirthTime] = useState(false);
+  const [editingBirthLocation, setEditingBirthLocation] = useState(false);
   const [birthdayInput, setBirthdayInput] = useState("");
   const [birthTimeInput, setBirthTimeInput] = useState("");
+  const [birthLocationInput, setBirthLocationInput] = useState("");
   const [savingBirthday, setSavingBirthday] = useState(false);
   const [savingBirthTime, setSavingBirthTime] = useState(false);
+  const [savingBirthLocation, setSavingBirthLocation] = useState(false);
   
   // Partner info editing state
   const [editingPartnerName, setEditingPartnerName] = useState(false);
   const [editingPartnerBirthday, setEditingPartnerBirthday] = useState(false);
   const [editingPartnerBirthTime, setEditingPartnerBirthTime] = useState(false);
+  const [editingPartnerBirthLocation, setEditingPartnerBirthLocation] = useState(false);
   const [partnerNameInput, setPartnerNameInput] = useState("");
   const [partnerBirthdayInput, setPartnerBirthdayInput] = useState("");
   const [partnerBirthTimeInput, setPartnerBirthTimeInput] = useState("");
+  const [partnerBirthLocationInput, setPartnerBirthLocationInput] = useState("");
   const [savingPartnerName, setSavingPartnerName] = useState(false);
   const [savingPartnerBirthday, setSavingPartnerBirthday] = useState(false);
   const [savingPartnerBirthTime, setSavingPartnerBirthTime] = useState(false);
+  const [savingPartnerBirthLocation, setSavingPartnerBirthLocation] = useState(false);
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -109,6 +117,21 @@ export const Settings = () => {
     }
   };
 
+  const handleSaveBirthLocation = async () => {
+    setSavingBirthLocation(true);
+    try {
+      await updateUserProfile({ birth_location: birthLocationInput || null });
+      await fetchUserProfile();
+      setEditingBirthLocation(false);
+      toast({ title: birthLocationInput ? "Birth location saved" : "Birth location cleared" });
+    } catch (error) {
+      console.error('Error saving birth location:', error);
+      toast({ title: "Error", description: "Failed to save birth location", variant: "destructive" });
+    } finally {
+      setSavingBirthLocation(false);
+    }
+  };
+
   const handleSavePartnerName = async () => {
     setSavingPartnerName(true);
     try {
@@ -166,6 +189,11 @@ export const Settings = () => {
     setEditingBirthTime(true);
   };
 
+  const handleStartEditBirthLocation = () => {
+    setBirthLocationInput(userProfile?.birth_location || "");
+    setEditingBirthLocation(true);
+  };
+
   const handleStartEditPartnerName = () => {
     setPartnerNameInput(userProfile?.partner_name || "");
     setEditingPartnerName(true);
@@ -179,6 +207,26 @@ export const Settings = () => {
   const handleStartEditPartnerBirthTime = () => {
     setPartnerBirthTimeInput(userProfile?.partner_birth_time || "");
     setEditingPartnerBirthTime(true);
+  };
+
+  const handleStartEditPartnerBirthLocation = () => {
+    setPartnerBirthLocationInput(userProfile?.partner_birth_location || "");
+    setEditingPartnerBirthLocation(true);
+  };
+
+  const handleSavePartnerBirthLocation = async () => {
+    setSavingPartnerBirthLocation(true);
+    try {
+      await updateUserProfile({ partner_birth_location: partnerBirthLocationInput || null });
+      await fetchUserProfile();
+      setEditingPartnerBirthLocation(false);
+      toast({ title: partnerBirthLocationInput ? "Partner birth location saved" : "Partner birth location cleared" });
+    } catch (error) {
+      console.error('Error saving partner birth location:', error);
+      toast({ title: "Error", description: "Failed to save", variant: "destructive" });
+    } finally {
+      setSavingPartnerBirthLocation(false);
+    }
   };
 
   const handleAddBaby = async (name: string, birthday?: string) => {
@@ -324,6 +372,47 @@ export const Settings = () => {
                 />
               )
             )}
+
+            {/* Birth Location Row - only show if birth time is set */}
+            {userProfile?.birth_time && (
+              editingBirthLocation ? (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-foreground/30" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <LocationInput
+                      id="user-birth-location"
+                      value={birthLocationInput}
+                      onChange={setBirthLocationInput}
+                      placeholder="City, Country"
+                      className="flex-1 text-[13px]"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSaveBirthLocation}
+                      disabled={savingBirthLocation}
+                      className="text-[11px]"
+                    >
+                      {savingBirthLocation ? "..." : "Save"}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setEditingBirthLocation(false)}
+                      className="text-[11px]"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <SettingsRow
+                  icon={<MapPin className="w-5 h-5" />}
+                  title="Birth Location"
+                  subtitle={userProfile?.birth_location || "Add for rising sign"}
+                  onClick={handleStartEditBirthLocation}
+                />
+              )
+            )}
           </SettingsSection>
 
           {/* Partner Section */}
@@ -450,6 +539,47 @@ export const Settings = () => {
                       : "Add for moon sign"
                   }
                   onClick={handleStartEditPartnerBirthTime}
+                />
+              )
+            )}
+
+            {/* Partner Birth Location Row - only show if partner birth time is set */}
+            {userProfile?.partner_birth_time && (
+              editingPartnerBirthLocation ? (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-foreground/30" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <LocationInput
+                      id="partner-birth-location"
+                      value={partnerBirthLocationInput}
+                      onChange={setPartnerBirthLocationInput}
+                      placeholder="City, Country"
+                      className="flex-1 text-[13px]"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSavePartnerBirthLocation}
+                      disabled={savingPartnerBirthLocation}
+                      className="text-[11px]"
+                    >
+                      {savingPartnerBirthLocation ? "..." : "Save"}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setEditingPartnerBirthLocation(false)}
+                      className="text-[11px]"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <SettingsRow
+                  icon={<MapPin className="w-5 h-5" />}
+                  title="Birth Location"
+                  subtitle={userProfile?.partner_birth_location || "Add for rising sign"}
+                  onClick={handleStartEditPartnerBirthLocation}
                 />
               )
             )}
