@@ -91,8 +91,8 @@ const BackgroundStar = ({ cx, cy, opacity }: StarProps) => (
   />
 );
 
-// Gold accent color for chart elements
-const GOLD = '#D4B896';
+// Silver/muted color for chart elements (matches app text styling)
+const CHART_COLOR = '#A0A0A0';
 
 export const BirthChartDiagram = ({ 
   sunSign, 
@@ -254,7 +254,7 @@ export const BirthChartDiagram = ({
           cy={center}
           r={outerRadius}
           fill="none"
-          stroke={GOLD}
+          stroke={CHART_COLOR}
           strokeWidth={1}
           opacity={0.5}
         />
@@ -265,7 +265,7 @@ export const BirthChartDiagram = ({
           cy={center}
           r={zodiacRingOuter}
           fill="none"
-          stroke={GOLD}
+          stroke={CHART_COLOR}
           strokeWidth={1}
           opacity={0.6}
         />
@@ -276,7 +276,7 @@ export const BirthChartDiagram = ({
           cy={center}
           r={zodiacRingInner}
           fill="none"
-          stroke={GOLD}
+          stroke={CHART_COLOR}
           strokeWidth={1}
           opacity={0.6}
         />
@@ -287,7 +287,7 @@ export const BirthChartDiagram = ({
           cy={center}
           r={innerCircle}
           fill="none"
-          stroke={GOLD}
+          stroke={CHART_COLOR}
           strokeWidth={1}
           opacity={0.4}
         />
@@ -300,7 +300,7 @@ export const BirthChartDiagram = ({
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke={GOLD}
+              stroke={CHART_COLOR}
               strokeWidth={0.5}
               opacity={0.35}
             />
@@ -320,7 +320,7 @@ export const BirthChartDiagram = ({
               y1={center + Math.sin(angleRad) * zodiacRingInner}
               x2={center + Math.cos(angleRad) * zodiacRingOuter}
               y2={center + Math.sin(angleRad) * zodiacRingOuter}
-              stroke={GOLD}
+              stroke={CHART_COLOR}
               strokeWidth={0.75}
               opacity={0.5}
             />
@@ -336,7 +336,7 @@ export const BirthChartDiagram = ({
             width={20}
             height={20}
           >
-            <div className="flex items-center justify-center w-full h-full" style={{ color: GOLD, opacity: 0.9 }}>
+            <div className="flex items-center justify-center w-full h-full" style={{ color: CHART_COLOR, opacity: 0.9 }}>
               <IconComponent size={16} strokeWidth={1.5} />
             </div>
           </foreignObject>
@@ -365,7 +365,7 @@ export const BirthChartDiagram = ({
                 cy={y}
                 r={12}
                 fill="none"
-                stroke={GOLD}
+                stroke={CHART_COLOR}
                 strokeWidth={1}
                 opacity={0.7}
               />
@@ -377,7 +377,7 @@ export const BirthChartDiagram = ({
                   width={16}
                   height={16}
                 >
-                  <div className="flex items-center justify-center w-full h-full" style={{ color: GOLD }}>
+                  <div className="flex items-center justify-center w-full h-full" style={{ color: CHART_COLOR }}>
                     {planet.label === 'Sun' ? (
                       <IconSun size={14} strokeWidth={1.5} />
                     ) : (
@@ -391,7 +391,7 @@ export const BirthChartDiagram = ({
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill={GOLD}
+                  fill={CHART_COLOR}
                   style={{ fontSize: '12px', fontFamily: 'serif' }}
                 >
                   {planet.symbol}
@@ -408,7 +408,7 @@ export const BirthChartDiagram = ({
             y1={center}
             x2={center - outerRadius - 8}
             y2={center}
-            stroke={GOLD}
+            stroke={CHART_COLOR}
             strokeWidth={1.5}
             opacity={0.8}
           />
@@ -417,7 +417,7 @@ export const BirthChartDiagram = ({
             y={acPosition.y}
             textAnchor="end"
             dominantBaseline="central"
-            fill={GOLD}
+            fill={CHART_COLOR}
             style={{ 
               fontSize: '11px', 
               fontFamily: 'Source Serif 4, serif',
@@ -435,7 +435,7 @@ export const BirthChartDiagram = ({
             y1={center - innerCircle}
             x2={center}
             y2={center - outerRadius - 8}
-            stroke={GOLD}
+            stroke={CHART_COLOR}
             strokeWidth={1.5}
             opacity={0.8}
           />
@@ -444,7 +444,7 @@ export const BirthChartDiagram = ({
             y={mcPosition.y - 5}
             textAnchor="middle"
             dominantBaseline="auto"
-            fill={GOLD}
+            fill={CHART_COLOR}
             style={{ 
               fontSize: '11px', 
               fontFamily: 'Source Serif 4, serif',
@@ -461,7 +461,7 @@ export const BirthChartDiagram = ({
           y={center}
           textAnchor="start"
           dominantBaseline="central"
-          fill={GOLD}
+          fill={CHART_COLOR}
           opacity={0.6}
           style={{ 
             fontSize: '9px', 
@@ -478,7 +478,7 @@ export const BirthChartDiagram = ({
           y={center + outerRadius + 18}
           textAnchor="middle"
           dominantBaseline="hanging"
-          fill={GOLD}
+          fill={CHART_COLOR}
           opacity={0.6}
           style={{ 
             fontSize: '9px', 
@@ -494,7 +494,7 @@ export const BirthChartDiagram = ({
           cx={center}
           cy={center}
           r={3}
-          fill={GOLD}
+          fill={CHART_COLOR}
           opacity={0.6}
         />
       </svg>
