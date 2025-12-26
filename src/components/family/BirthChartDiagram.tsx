@@ -314,22 +314,6 @@ export const BirthChartDiagram = ({
     });
   }, [ascendantDegree, center, outerRadius]);
 
-  // Calculate AC and MC positions
-  const acPosition = useMemo(() => {
-    const angle = 180 * (Math.PI / 180); // Left side
-    return {
-      x: center + Math.cos(angle) * (outerRadius + 20),
-      y: center + Math.sin(angle) * (outerRadius + 20),
-    };
-  }, [center, outerRadius]);
-
-  const mcPosition = useMemo(() => {
-    const angle = -90 * (Math.PI / 180); // Top
-    return {
-      x: center + Math.cos(angle) * (outerRadius + 20),
-      y: center + Math.sin(angle) * (outerRadius + 20),
-    };
-  }, [center, outerRadius]);
 
   // Get selected planet details
   const selectedPlanetData = selectedPlanet 
@@ -518,94 +502,6 @@ export const BirthChartDiagram = ({
             </g>
           );
         })}
-        
-        {/* Ascendant (AC) Marker */}
-        <g>
-          <line
-            x1={center - innerRadius}
-            y1={center}
-            x2={center - outerRadius - 8}
-            y2={center}
-            stroke={CHART_COLOR}
-            strokeWidth={1.5}
-            opacity={0.8}
-          />
-          <text
-            x={acPosition.x - 5}
-            y={acPosition.y}
-            textAnchor="end"
-            dominantBaseline="central"
-            fill={CHART_COLOR}
-            style={{ 
-              fontSize: '11px', 
-              fontFamily: 'Source Serif 4, serif',
-              letterSpacing: '0.05em'
-            }}
-          >
-            AC
-          </text>
-        </g>
-        
-        {/* Midheaven (MC) Marker */}
-        <g>
-          <line
-            x1={center}
-            y1={center - innerRadius}
-            x2={center}
-            y2={center - outerRadius - 8}
-            stroke={CHART_COLOR}
-            strokeWidth={1.5}
-            opacity={0.8}
-          />
-          <text
-            x={mcPosition.x}
-            y={mcPosition.y - 5}
-            textAnchor="middle"
-            dominantBaseline="auto"
-            fill={CHART_COLOR}
-            style={{ 
-              fontSize: '11px', 
-              fontFamily: 'Source Serif 4, serif',
-              letterSpacing: '0.05em'
-            }}
-          >
-            MC
-          </text>
-        </g>
-        
-        {/* Descendant (DC) marker - right side */}
-        <text
-          x={center + outerRadius + 15}
-          y={center}
-          textAnchor="start"
-          dominantBaseline="central"
-          fill={CHART_COLOR}
-          opacity={0.6}
-          style={{ 
-            fontSize: '9px', 
-            fontFamily: 'Source Serif 4, serif',
-            letterSpacing: '0.05em'
-          }}
-        >
-          DC
-        </text>
-        
-        {/* Imum Coeli (IC) marker - bottom */}
-        <text
-          x={center}
-          y={center + outerRadius + 18}
-          textAnchor="middle"
-          dominantBaseline="hanging"
-          fill={CHART_COLOR}
-          opacity={0.6}
-          style={{ 
-            fontSize: '9px', 
-            fontFamily: 'Source Serif 4, serif',
-            letterSpacing: '0.05em'
-          }}
-        >
-          IC
-        </text>
         
         {/* Center Point */}
         <circle
