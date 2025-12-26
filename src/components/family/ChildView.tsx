@@ -58,56 +58,25 @@ export const ChildView = ({
   const [showSelector, setShowSelector] = useState(false);
   const [showPulse, setShowPulse] = useState(false);
   
-  // Build all family members with birth data
-  const allMembers = useMemo(() => {
-    const members: FamilyMember[] = [];
-    
-    // Add children
-    babies.forEach(baby => {
-      if (baby.birthday) {
-        members.push({
-          id: baby.id,
-          name: baby.name,
-          type: 'child',
-          birthday: baby.birthday,
-          birth_time: baby.birth_time,
-          birth_location: baby.birth_location,
-        });
-      }
-    });
-    
-    // Add parent (user) if they have birthday
-    if (userProfile?.birthday) {
-      members.push({
-        id: 'parent',
-        name: userProfile.display_name || 'You',
-        type: 'parent',
-        birthday: userProfile.birthday,
-        birth_time: userProfile.birth_time,
-        birth_location: userProfile.birth_location,
-      });
-    }
-    
-    // Add partner if they have birthday
-    if (userProfile?.partner_birthday) {
-      members.push({
-        id: 'partner',
-        name: userProfile.partner_name || 'Partner',
-        type: 'partner',
-        birthday: userProfile.partner_birthday,
-        birth_time: userProfile.partner_birth_time,
-        birth_location: userProfile.partner_birth_location,
-      });
-    }
-    
-    return members;
-  }, [babies, userProfile]);
+  // Build children list only (no parents in this view)
+  const children = useMemo(() => {
+    return babies
+      .filter(baby => baby.birthday)
+      .map(baby => ({
+        id: baby.id,
+        name: baby.name,
+        type: 'child' as const,
+        birthday: baby.birthday,
+        birth_time: baby.birth_time,
+        birth_location: baby.birth_location,
+      }));
+  }, [babies]);
 
-  const hasMultipleMembers = allMembers.length > 1;
+  const hasMultipleChildren = children.length > 1;
   
-  // Show pulse animation on first visit with multiple members
+  // Show pulse animation on first visit with multiple children
   useEffect(() => {
-    if (hasMultipleMembers) {
+    if (hasMultipleChildren) {
       const hasSeenPulse = localStorage.getItem('chart-selector-seen');
       if (!hasSeenPulse) {
         setShowPulse(true);
@@ -118,34 +87,32 @@ export const ChildView = ({
         return () => clearTimeout(timer);
       }
     }
-  }, [hasMultipleMembers]);
+  }, [hasMultipleChildren]);
 
-  const selectedMember = useMemo(() => {
+  const selectedChild = useMemo(() => {
     if (selectedMemberId) {
-      return allMembers.find(m => m.id === selectedMemberId);
+      return children.find(c => c.id === selectedMemberId);
     }
-    // Default to first child, or first member if no children
-    const firstChild = allMembers.find(m => m.type === 'child');
-    return firstChild || allMembers[0];
-  }, [allMembers, selectedMemberId]);
+    return children[0];
+  }, [children, selectedMemberId]);
 
   const signs = useMemo(() => {
-    if (!selectedMember?.birthday) return null;
+    if (!selectedChild?.birthday) return null;
     
-    const sun = getZodiacFromBirthday(selectedMember.birthday);
+    const sun = getZodiacFromBirthday(selectedChild.birthday);
     const moon = getMoonSignFromBirthDateTime(
-      selectedMember.birthday, 
-      selectedMember.birth_time, 
-      selectedMember.birth_location
+      selectedChild.birthday, 
+      selectedChild.birth_time, 
+      selectedChild.birth_location
     );
     const rising = getRisingSign(
-      selectedMember.birthday, 
-      selectedMember.birth_time, 
-      selectedMember.birth_location
+      selectedChild.birthday, 
+      selectedChild.birth_time, 
+      selectedChild.birth_location
     );
     
     return { sun, moon, rising };
-  }, [selectedMember]);
+  }, [selectedChild]);
 
   const getSignsSubtitle = (): string => {
     if (!signs?.sun) return '';
@@ -157,11 +124,11 @@ export const ChildView = ({
     return parts.join(' • ');
   };
 
-  if (!selectedMember || !signs?.sun) {
+  if (!selectedChild || !signs?.sun) {
     return (
       <div className="px-5 py-12 text-center">
         <p className="text-[13px] text-foreground/40">
-          Add a family member with their birthday to see their astrological profile.
+          Add a child with their birthday to see their astrological profile.
         </p>
       </div>
     );
@@ -169,21 +136,21 @@ export const ChildView = ({
 
   return (
     <div className="space-y-6">
-      {/* Header with Member Name */}
+      {/* Header with Child Name */}
       <div className="px-5 pt-6 text-center">
-        {hasMultipleMembers ? (
+        {hasMultipleChildren ? (
           <button
             onClick={() => setShowSelector(true)}
             className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
           >
             <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+            <span className="text-[18px] text-foreground/80">{selectedChild.name}</span>
             <ChevronDown className="w-4 h-4 text-foreground/30" />
           </button>
         ) : (
           <div className="inline-flex items-center gap-2">
             <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+            <span className="text-[18px] text-foreground/80">{selectedChild.name}</span>
           </div>
         )}
         
@@ -222,12 +189,12 @@ export const ChildView = ({
         />
       </div>
 
-      {/* Member Selector Sheet */}
+      {/* Child Selector Sheet */}
       <ChartSelectorSheet
         open={showSelector}
         onOpenChange={setShowSelector}
-        members={allMembers}
-        selectedMemberId={selectedMember.id}
+        members={children}
+        selectedMemberId={selectedChild.id}
         onSelectMember={onSelectMember}
         onAddChild={onAddChild}
       />
