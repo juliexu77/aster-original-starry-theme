@@ -92,7 +92,7 @@ const BackgroundStar = ({ cx, cy, opacity }: StarProps) => (
 );
 
 // Silver/muted color for chart elements (matches app text styling)
-const CHART_COLOR = '#A0A0A0';
+const CHART_COLOR = '#E0E0E0'; // Brighter for better readability
 
 export const BirthChartDiagram = ({ 
   sunSign, 
@@ -101,11 +101,11 @@ export const BirthChartDiagram = ({
   sunDegree = 7,
   moonDegree = 15,
 }: BirthChartDiagramProps) => {
-  const size = 600;
+  const size = 700;
   const center = size / 2;
-  const outerRadius = 240;      // Single outer ring
-  const innerRadius = 200;      // Inner edge of zodiac ring
-  const planetRing = 140;       // Where planets are placed
+  const outerRadius = 290;      // Larger outer ring
+  const innerRadius = 245;      // Inner edge of zodiac ring
+  const planetRing = 170;       // Where planets are placed - single radius for all
   
   // Calculate ascendant degree (start of rising sign)
   const ascendantDegree = useMemo(() => {
@@ -341,8 +341,8 @@ export const BirthChartDiagram = ({
           r={outerRadius}
           fill="none"
           stroke={CHART_COLOR}
-          strokeWidth={1}
-          opacity={0.6}
+          strokeWidth={1.5}
+          opacity={0.9}
         />
         
         {/* Inner Circle */}
@@ -353,7 +353,7 @@ export const BirthChartDiagram = ({
           fill="none"
           stroke={CHART_COLOR}
           strokeWidth={1}
-          opacity={0.5}
+          opacity={0.7}
         />
         
         {/* Aspect Lines */}
@@ -362,15 +362,15 @@ export const BirthChartDiagram = ({
           const getAspectStyle = () => {
             switch (aspect.type) {
               case 'trine':
-                return { strokeDasharray: 'none', opacity: 0.4 };
+                return { strokeDasharray: 'none', opacity: 0.6 };
               case 'square':
-                return { strokeDasharray: '4,4', opacity: 0.35 };
+                return { strokeDasharray: '4,4', opacity: 0.5 };
               case 'opposition':
-                return { strokeDasharray: '8,4', opacity: 0.4 };
+                return { strokeDasharray: '8,4', opacity: 0.6 };
               case 'sextile':
-                return { strokeDasharray: '2,2', opacity: 0.3 };
+                return { strokeDasharray: '2,2', opacity: 0.45 };
               default:
-                return { strokeDasharray: 'none', opacity: 0.3 };
+                return { strokeDasharray: 'none', opacity: 0.4 };
             }
           };
           
@@ -405,18 +405,16 @@ export const BirthChartDiagram = ({
               x2={center + Math.cos(angleRad) * outerRadius}
               y2={center + Math.sin(angleRad) * outerRadius}
               stroke={CHART_COLOR}
-              strokeWidth={0.75}
-              opacity={0.4}
+              strokeWidth={1}
+              opacity={0.6}
             />
           );
         })}
         
         {/* Zodiac Sign Labels (inside the ring like Co-Star) */}
         {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
-          // Flip text for bottom half so it reads correctly (outward from center)
-          const adjustedRotation = (labelRotation > 180 || labelRotation < 0) 
-            ? labelRotation + 180 
-            : labelRotation;
+          // Rotate 180 degrees so text reads correctly from outside looking in
+          const adjustedRotation = labelRotation + 180;
           
           return (
             <text
@@ -426,9 +424,9 @@ export const BirthChartDiagram = ({
               textAnchor="middle"
               dominantBaseline="central"
               fill={CHART_COLOR}
-              opacity={0.85}
+              opacity={1}
               style={{ 
-                fontSize: '9px', 
+                fontSize: '10px', 
                 fontFamily: 'DM Sans, sans-serif',
                 letterSpacing: '0.08em',
                 fontWeight: 500,
