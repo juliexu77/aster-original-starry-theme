@@ -22,8 +22,8 @@ const Family = () => {
     return (saved as ViewMode) || 'child';
   });
   
-  const [selectedBabyId, setSelectedBabyId] = useState<string | null>(() => {
-    return localStorage.getItem('family-selected-baby-id');
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(() => {
+    return localStorage.getItem('chart-selected-member-id');
   });
 
   // Persist view mode
@@ -31,19 +31,19 @@ const Family = () => {
     localStorage.setItem('family-view-mode', viewMode);
   }, [viewMode]);
 
-  // Persist selected baby
+  // Persist selected member
   useEffect(() => {
-    if (selectedBabyId) {
-      localStorage.setItem('family-selected-baby-id', selectedBabyId);
+    if (selectedMemberId) {
+      localStorage.setItem('chart-selected-member-id', selectedMemberId);
     }
-  }, [selectedBabyId]);
+  }, [selectedMemberId]);
 
-  // Set initial baby if none selected
+  // Set initial member if none selected (prefer first child)
   useEffect(() => {
-    if (!selectedBabyId && babies.length > 0) {
-      setSelectedBabyId(babies[0].id);
+    if (!selectedMemberId && babies.length > 0) {
+      setSelectedMemberId(babies[0].id);
     }
-  }, [babies, selectedBabyId]);
+  }, [babies, selectedMemberId]);
 
   const handleBirthdaySaved = () => {
     fetchUserProfile();
@@ -105,8 +105,9 @@ const Family = () => {
           {viewMode === 'child' ? (
             <ChildView
               babies={babies}
-              selectedBabyId={selectedBabyId}
-              onSelectBaby={setSelectedBabyId}
+              userProfile={userProfile}
+              selectedMemberId={selectedMemberId}
+              onSelectMember={setSelectedMemberId}
               onAddChild={handleAddChild}
             />
           ) : (
