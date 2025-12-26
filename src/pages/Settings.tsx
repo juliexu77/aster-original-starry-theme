@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getZodiacFromBirthday, getZodiacName, getMoonSignFromBirthDateTime } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
+import { FamilyNav } from "@/components/family/FamilyNav";
 
 export const Settings = () => {
   const { user, signOut } = useAuth();
@@ -481,6 +482,9 @@ export const Settings = () => {
           </SettingsSection>
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      <FamilyNav />
     </div>
   );
 };
