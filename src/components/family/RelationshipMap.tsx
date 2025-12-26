@@ -19,10 +19,10 @@ interface RelationshipMapProps {
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Position members along constellation lines with good spacing
-const getMemberPositionsOnLines = (members: FamilyMember[], sign: ZodiacSign) => {
+// Assign members to actual constellation star positions
+const getMemberPositionsOnStars = (members: FamilyMember[], sign: ZodiacSign) => {
   const constellation = CONSTELLATION_DATA[sign];
-  const positions: { member: FamilyMember; x: number; y: number }[] = [];
+  const positions: { member: FamilyMember; x: number; y: number; starId: string }[] = [];
   
   // Sort: parents first, then partners, then children
   const sorted = [...members].sort((a, b) => {
@@ -30,51 +30,61 @@ const getMemberPositionsOnLines = (members: FamilyMember[], sign: ZodiacSign) =>
     return order[a.type] - order[b.type];
   });
   
-  // Get all line segments
-  const lineSegments = constellation.lines.map(([fromId, toId]) => {
-    const fromStar = constellation.stars.find(s => s.id === fromId);
-    const toStar = constellation.stars.find(s => s.id === toId);
-    return { from: fromStar, to: toStar };
-  }).filter(seg => seg.from && seg.to);
-  
-  // Calculate positions spaced along lines
-  const totalMembers = sorted.length;
+  // Sort stars by size (prominence) to assign most prominent to first members
+  const sortedStars = [...constellation.stars].sort((a, b) => b.size - a.size);
   
   sorted.forEach((member, idx) => {
-    // Distribute members across different lines/positions
-    // Use major star positions for first few, then interpolate along lines
-    if (idx < constellation.stars.length) {
-      // Use prominent star positions but offset slightly
-      const starIdx = idx % constellation.stars.length;
-      const star = constellation.stars
-        .slice()
-        .sort((a, b) => b.size - a.size)[starIdx];
-      
-      // Add slight offset based on member type for visual variety
-      const offsetX = (idx % 3 - 1) * 0.05;
-      const offsetY = (idx % 2) * 0.05;
-      
+    if (idx < sortedStars.length) {
+      const star = sortedStars[idx];
       positions.push({
         member,
-        x: Math.max(0.1, Math.min(0.9, star.x + offsetX)),
-        y: Math.max(0.1, Math.min(0.9, star.y + offsetY)),
+        x: star.x,
+        y: star.y,
+        starId: star.id,
       });
-    } else if (lineSegments.length > 0) {
-      // Place on line midpoints
-      const lineIdx = idx % lineSegments.length;
-      const seg = lineSegments[lineIdx];
-      if (seg.from && seg.to) {
-        const t = 0.3 + (idx * 0.2) % 0.4; // Vary position along line
-        positions.push({
-          member,
-          x: seg.from.x + (seg.to.x - seg.from.x) * t,
-          y: seg.from.y + (seg.to.y - seg.from.y) * t,
-        });
-      }
     }
   });
   
   return positions;
+};
+
+// Find path between two stars using BFS along constellation lines
+const findPathBetweenStars = (
+  fromStarId: string, 
+  toStarId: string, 
+  lines: [string, string][]
+): string[] | null => {
+  if (fromStarId === toStarId) return [fromStarId];
+  
+  // Build adjacency list
+  const adjacency: Record<string, string[]> = {};
+  lines.forEach(([a, b]) => {
+    if (!adjacency[a]) adjacency[a] = [];
+    if (!adjacency[b]) adjacency[b] = [];
+    adjacency[a].push(b);
+    adjacency[b].push(a);
+  });
+  
+  // BFS to find shortest path
+  const queue: { node: string; path: string[] }[] = [{ node: fromStarId, path: [fromStarId] }];
+  const visited = new Set<string>([fromStarId]);
+  
+  while (queue.length > 0) {
+    const { node, path } = queue.shift()!;
+    
+    const neighbors = adjacency[node] || [];
+    for (const neighbor of neighbors) {
+      if (neighbor === toStarId) {
+        return [...path, neighbor];
+      }
+      if (!visited.has(neighbor)) {
+        visited.add(neighbor);
+        queue.push({ node: neighbor, path: [...path, neighbor] });
+      }
+    }
+  }
+  
+  return null; // No path found
 };
 
 // Generate random background stars
@@ -98,26 +108,35 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
   
   const constellation = CONSTELLATION_DATA[constellationSign];
   const memberPositions = useMemo(
-    () => getMemberPositionsOnLines(members, constellationSign), 
+    () => getMemberPositionsOnStars(members, constellationSign), 
     [members, constellationSign]
   );
   const backgroundStars = useMemo(() => generateBackgroundStars(35), []);
   
-  // Build connections between family members
+  // Build connections between family members using constellation paths
   const connections = useMemo(() => {
-    const conns: { from: typeof memberPositions[0]; to: typeof memberPositions[0] }[] = [];
+    const conns: { 
+      from: typeof memberPositions[0]; 
+      to: typeof memberPositions[0];
+      path: string[]; // Star IDs along the path
+    }[] = [];
     
     for (let i = 0; i < memberPositions.length; i++) {
       for (let j = i + 1; j < memberPositions.length; j++) {
-        conns.push({
-          from: memberPositions[i],
-          to: memberPositions[j],
-        });
+        const from = memberPositions[i];
+        const to = memberPositions[j];
+        
+        // Find path along constellation lines
+        const path = findPathBetweenStars(from.starId, to.starId, constellation.lines);
+        
+        if (path && path.length > 1) {
+          conns.push({ from, to, path });
+        }
       }
     }
     
     return conns;
-  }, [memberPositions]);
+  }, [memberPositions, constellation.lines]);
 
   const toPixelX = (normalized: number) => padding + normalized * (width - padding * 2);
   const toPixelY = (normalized: number) => padding * 0.6 + normalized * (height - padding * 1.2);
@@ -225,38 +244,50 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           </g>
         ))}
         
-        {/* Family relationship connection lines */}
-        {connections.map((conn, i) => {
-          const fromX = toPixelX(conn.from.x);
-          const fromY = toPixelY(conn.from.y);
-          const toX = toPixelX(conn.to.x);
-          const toY = toPixelY(conn.to.y);
+        {/* Family relationship connection lines - draw along constellation paths */}
+        {connections.map((conn, connIdx) => {
           const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
+          // Build path segments from the star path
+          const pathSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
+          for (let i = 0; i < conn.path.length - 1; i++) {
+            const fromStar = constellation.stars.find(s => s.id === conn.path[i]);
+            const toStar = constellation.stars.find(s => s.id === conn.path[i + 1]);
+            if (fromStar && toStar) {
+              pathSegments.push({
+                x1: toPixelX(fromStar.x),
+                y1: toPixelY(fromStar.y),
+                x2: toPixelX(toStar.x),
+                y2: toPixelY(toStar.y),
+              });
+            }
+          }
+          
+          // Build SVG path string for the connection
+          const pathD = pathSegments.map((seg, i) => 
+            i === 0 ? `M ${seg.x1} ${seg.y1} L ${seg.x2} ${seg.y2}` : `L ${seg.x2} ${seg.y2}`
+          ).join(' ');
+          
           return (
-            <g key={`conn-${i}`}>
-              {/* Invisible hit area */}
-              <line
-                x1={fromX}
-                y1={fromY}
-                x2={toX}
-                y2={toY}
+            <g key={`conn-${connIdx}`}>
+              {/* Invisible hit area for the entire path */}
+              <path
+                d={pathD}
                 stroke="transparent"
-                strokeWidth={40}
+                strokeWidth={30}
+                fill="none"
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible line */}
-              <line
-                x1={fromX}
-                y1={fromY}
-                x2={toX}
-                y2={toY}
+              {/* Visible path along constellation lines */}
+              <path
+                d={pathD}
                 stroke={isSelected ? "#D4A574" : "#C4A574"}
-                strokeWidth={isSelected ? 2.5 : 1.5}
-                opacity={isSelected ? 1 : 0.5}
-                strokeDasharray={isSelected ? "none" : "6,6"}
+                strokeWidth={isSelected ? 3 : 2}
+                opacity={isSelected ? 1 : 0.6}
+                fill="none"
                 strokeLinecap="round"
+                strokeLinejoin="round"
                 className="pointer-events-none transition-all duration-300"
               />
             </g>
