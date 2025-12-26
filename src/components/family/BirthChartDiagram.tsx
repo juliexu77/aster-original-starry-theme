@@ -70,9 +70,12 @@ const BackgroundStar = ({ cx, cy, opacity }: StarProps) => (
     r={0.5}
     fill="currentColor"
     opacity={opacity}
-    className="text-foreground/20"
+    className="text-foreground/30"
   />
 );
+
+// Gold accent color for chart elements
+const GOLD = '#D4B896';
 
 export const BirthChartDiagram = ({ 
   sunSign, 
@@ -234,9 +237,9 @@ export const BirthChartDiagram = ({
           cy={center}
           r={outerRadius}
           fill="none"
-          stroke="currentColor"
+          stroke={GOLD}
           strokeWidth={1}
-          className="text-[#C4A574]/30"
+          opacity={0.5}
         />
         
         {/* Zodiac Ring Outer */}
@@ -245,9 +248,9 @@ export const BirthChartDiagram = ({
           cy={center}
           r={zodiacRingOuter}
           fill="none"
-          stroke="currentColor"
+          stroke={GOLD}
           strokeWidth={1}
-          className="text-[#C4A574]/40"
+          opacity={0.6}
         />
         
         {/* Zodiac Ring Inner */}
@@ -256,9 +259,9 @@ export const BirthChartDiagram = ({
           cy={center}
           r={zodiacRingInner}
           fill="none"
-          stroke="currentColor"
+          stroke={GOLD}
           strokeWidth={1}
-          className="text-[#C4A574]/40"
+          opacity={0.6}
         />
         
         {/* Inner Circle */}
@@ -267,9 +270,9 @@ export const BirthChartDiagram = ({
           cy={center}
           r={innerCircle}
           fill="none"
-          stroke="currentColor"
+          stroke={GOLD}
           strokeWidth={1}
-          className="text-[#C4A574]/25"
+          opacity={0.4}
         />
         
         {/* House Division Lines */}
@@ -280,9 +283,9 @@ export const BirthChartDiagram = ({
               y1={line.y1}
               x2={line.x2}
               y2={line.y2}
-              stroke="currentColor"
+              stroke={GOLD}
               strokeWidth={0.5}
-              className="text-[#C4A574]/20"
+              opacity={0.35}
             />
           </g>
         ))}
@@ -300,9 +303,9 @@ export const BirthChartDiagram = ({
               y1={center + Math.sin(angleRad) * zodiacRingInner}
               x2={center + Math.cos(angleRad) * zodiacRingOuter}
               y2={center + Math.sin(angleRad) * zodiacRingOuter}
-              stroke="currentColor"
+              stroke={GOLD}
               strokeWidth={0.75}
-              className="text-[#C4A574]/30"
+              opacity={0.5}
             />
           );
         })}
@@ -315,8 +318,9 @@ export const BirthChartDiagram = ({
             y={y}
             textAnchor="middle"
             dominantBaseline="central"
-            className="text-[#C4A574]/60"
-            style={{ fontSize: '14px' }}
+            fill={GOLD}
+            opacity={0.9}
+            style={{ fontSize: '14px', fontFamily: 'serif' }}
           >
             {symbol}
           </text>
@@ -335,17 +339,16 @@ export const BirthChartDiagram = ({
                 cx={x}
                 cy={y}
                 r={12}
-                fill="currentColor"
-                className="text-background"
+                fill="hsl(var(--background))"
               />
               <circle
                 cx={x}
                 cy={y}
                 r={12}
                 fill="none"
-                stroke="currentColor"
+                stroke={GOLD}
                 strokeWidth={1}
-                className="text-[#C4A574]/50"
+                opacity={0.7}
               />
               {/* Planet symbol */}
               <text
@@ -353,8 +356,8 @@ export const BirthChartDiagram = ({
                 y={y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="text-[#C4A574]/80"
-                style={{ fontSize: '12px' }}
+                fill={GOLD}
+                style={{ fontSize: '12px', fontFamily: 'serif' }}
               >
                 {planet.symbol}
               </text>
@@ -369,16 +372,16 @@ export const BirthChartDiagram = ({
             y1={center}
             x2={center - outerRadius - 8}
             y2={center}
-            stroke="currentColor"
+            stroke={GOLD}
             strokeWidth={1.5}
-            className="text-[#C4A574]/60"
+            opacity={0.8}
           />
           <text
             x={acPosition.x - 5}
             y={acPosition.y}
             textAnchor="end"
             dominantBaseline="central"
-            className="text-[#C4A574]/70"
+            fill={GOLD}
             style={{ 
               fontSize: '11px', 
               fontFamily: 'Source Serif 4, serif',
@@ -396,16 +399,16 @@ export const BirthChartDiagram = ({
             y1={center - innerCircle}
             x2={center}
             y2={center - outerRadius - 8}
-            stroke="currentColor"
+            stroke={GOLD}
             strokeWidth={1.5}
-            className="text-[#C4A574]/60"
+            opacity={0.8}
           />
           <text
             x={mcPosition.x}
             y={mcPosition.y - 5}
             textAnchor="middle"
             dominantBaseline="auto"
-            className="text-[#C4A574]/70"
+            fill={GOLD}
             style={{ 
               fontSize: '11px', 
               fontFamily: 'Source Serif 4, serif',
@@ -422,7 +425,8 @@ export const BirthChartDiagram = ({
           y={center}
           textAnchor="start"
           dominantBaseline="central"
-          className="text-[#C4A574]/40"
+          fill={GOLD}
+          opacity={0.6}
           style={{ 
             fontSize: '9px', 
             fontFamily: 'Source Serif 4, serif',
@@ -438,7 +442,8 @@ export const BirthChartDiagram = ({
           y={center + outerRadius + 18}
           textAnchor="middle"
           dominantBaseline="hanging"
-          className="text-[#C4A574]/40"
+          fill={GOLD}
+          opacity={0.6}
           style={{ 
             fontSize: '9px', 
             fontFamily: 'Source Serif 4, serif',
@@ -453,8 +458,8 @@ export const BirthChartDiagram = ({
           cx={center}
           cy={center}
           r={3}
-          fill="currentColor"
-          className="text-[#C4A574]/40"
+          fill={GOLD}
+          opacity={0.6}
         />
       </svg>
     </div>
