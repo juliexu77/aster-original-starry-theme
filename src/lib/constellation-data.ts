@@ -146,25 +146,38 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
     ],
   },
   sagittarius: {
+    // The Teapot asterism - the most recognizable pattern in Sagittarius
+    // Based on IAU star positions: forms a teapot shape
     stars: [
-      { id: 'kaus-australis', x: 0.45, y: 0.72, size: 3.5, label: 'Kaus Australis' },
-      { id: 'nunki', x: 0.68, y: 0.38, size: 3, label: 'Nunki' },
-      { id: 'ascella', x: 0.55, y: 0.55, size: 2.5, label: 'Ascella' },
-      { id: 'kaus-media', x: 0.38, y: 0.58, size: 2.5, label: 'Kaus Media' },
-      { id: 'kaus-borealis', x: 0.28, y: 0.45, size: 2.5, label: 'Kaus Borealis' },
-      { id: 'albaldah', x: 0.52, y: 0.25, size: 2, label: 'Albaldah' },
-      { id: 'phi', x: 0.72, y: 0.58, size: 2, label: 'Phi' },
-      { id: 'tau', x: 0.62, y: 0.68, size: 2, label: 'Tau' },
+      // Lid (top)
+      { id: 'kaus-borealis', x: 0.28, y: 0.32, size: 2.8, label: 'Kaus Borealis' }, // λ Sgr - handle of lid
+      // Handle (left side, curves up)
+      { id: 'nunki', x: 0.68, y: 0.40, size: 3.2, label: 'Nunki' }, // σ Sgr - top of handle
+      { id: 'tau', x: 0.72, y: 0.55, size: 2.2, label: 'Tau' }, // τ Sgr - middle handle
+      { id: 'ascella', x: 0.60, y: 0.62, size: 2.8, label: 'Ascella' }, // ζ Sgr - base of handle
+      // Body (main teapot shape)
+      { id: 'phi', x: 0.55, y: 0.38, size: 2.5, label: 'Phi' }, // φ Sgr - top of body
+      { id: 'kaus-media', x: 0.35, y: 0.52, size: 2.8, label: 'Kaus Media' }, // δ Sgr - middle bow
+      { id: 'kaus-australis', x: 0.45, y: 0.68, size: 3.5, label: 'Kaus Australis' }, // ε Sgr - brightest, base
+      // Spout (extends left)
+      { id: 'alnasl', x: 0.18, y: 0.45, size: 2.6, label: 'Alnasl' }, // γ Sgr - tip of spout
     ],
     lines: [
+      // The Teapot shape
+      // Lid
+      ['kaus-borealis', 'phi'],
+      // Body top
+      ['phi', 'nunki'],
+      // Handle
+      ['nunki', 'tau'],
+      ['tau', 'ascella'],
+      // Body bottom
+      ['ascella', 'kaus-australis'],
+      // Body left/bow
       ['kaus-australis', 'kaus-media'],
       ['kaus-media', 'kaus-borealis'],
-      ['kaus-australis', 'ascella'],
-      ['ascella', 'phi'],
-      ['phi', 'nunki'],
-      ['nunki', 'albaldah'],
-      ['ascella', 'tau'],
-      ['tau', 'kaus-australis'],
+      // Spout
+      ['kaus-media', 'alnasl'],
     ],
   },
   capricorn: {

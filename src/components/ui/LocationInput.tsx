@@ -1,36 +1,14 @@
-import { useState, useRef, useEffect } from "react";
-import { MapPin } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Common cities for autocomplete
-const CITIES = [
-  "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA", "Phoenix, USA",
-  "San Francisco, USA", "Seattle, USA", "Boston, USA", "Miami, USA", "Denver, USA",
-  "Austin, USA", "San Diego, USA", "Dallas, USA", "Portland, USA", "Atlanta, USA",
-  "London, UK", "Manchester, UK", "Birmingham, UK", "Edinburgh, UK", "Glasgow, UK",
-  "Toronto, Canada", "Vancouver, Canada", "Montreal, Canada", "Calgary, Canada",
-  "Sydney, Australia", "Melbourne, Australia", "Brisbane, Australia", "Perth, Australia",
-  "Auckland, New Zealand", "Wellington, New Zealand",
-  "Paris, France", "Lyon, France", "Marseille, France",
-  "Berlin, Germany", "Munich, Germany", "Hamburg, Germany", "Frankfurt, Germany",
-  "Amsterdam, Netherlands", "Rotterdam, Netherlands",
-  "Madrid, Spain", "Barcelona, Spain", "Valencia, Spain",
-  "Rome, Italy", "Milan, Italy", "Florence, Italy", "Naples, Italy",
-  "Tokyo, Japan", "Osaka, Japan", "Kyoto, Japan", "Yokohama, Japan",
-  "Beijing, China", "Shanghai, China", "Guangzhou, China", "Shenzhen, China",
-  "Hong Kong", "Singapore", "Seoul, South Korea", "Taipei, Taiwan",
-  "Mumbai, India", "Delhi, India", "Bangalore, India", "Chennai, India",
-  "Dubai, UAE", "Abu Dhabi, UAE", "Tel Aviv, Israel", "Jerusalem, Israel",
-  "São Paulo, Brazil", "Rio de Janeiro, Brazil", "Buenos Aires, Argentina",
-  "Mexico City, Mexico", "Guadalajara, Mexico", "Bogotá, Colombia",
-  "Cape Town, South Africa", "Johannesburg, South Africa", "Lagos, Nigeria",
-  "Cairo, Egypt", "Nairobi, Kenya", "Casablanca, Morocco",
-  "Stockholm, Sweden", "Oslo, Norway", "Copenhagen, Denmark", "Helsinki, Finland",
-  "Vienna, Austria", "Zurich, Switzerland", "Geneva, Switzerland", "Brussels, Belgium",
-  "Dublin, Ireland", "Lisbon, Portugal", "Prague, Czech Republic", "Warsaw, Poland",
-  "Budapest, Hungary", "Athens, Greece", "Istanbul, Turkey", "Moscow, Russia",
-  "Bangkok, Thailand", "Jakarta, Indonesia", "Manila, Philippines", "Kuala Lumpur, Malaysia"
-];
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  type: string;
+}
 
 interface LocationInputProps {
   id: string;
@@ -39,6 +17,15 @@ interface LocationInputProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+}
+
+// Debounce function
+function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null;
+  return (...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
 }
 
 export const LocationInput = ({ 
@@ -50,22 +37,57 @@ export const LocationInput = ({
   className = ""
 }: LocationInputProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredCities, setFilteredCities] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (value.length >= 2) {
-      const filtered = CITIES.filter(city => 
-        city.toLowerCase().includes(value.toLowerCase())
-      ).slice(0, 6);
-      setFilteredCities(filtered);
-      setShowSuggestions(filtered.length > 0);
-    } else {
-      setFilteredCities([]);
+  // Fetch locations from OpenStreetMap Nominatim API
+  const fetchLocations = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSuggestions([]);
       setShowSuggestions(false);
+      return;
     }
-  }, [value]);
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+        `q=${encodeURIComponent(query)}&` +
+        `format=json&` +
+        `addressdetails=1&` +
+        `limit=6&` +
+        `featuretype=city`
+      , {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'BabyApp/1.0'
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch');
+
+      const data: NominatimResult[] = await response.json();
+      setSuggestions(data);
+      setShowSuggestions(data.length > 0);
+    } catch (error) {
+      console.error('Error fetching locations:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Debounced search (300ms delay to respect Nominatim usage policy)
+  const debouncedFetch = useCallback(
+    debounce((query: string) => fetchLocations(query), 300),
+    [fetchLocations]
+  );
+
+  useEffect(() => {
+    debouncedFetch(value);
+  }, [value, debouncedFetch]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -82,8 +104,29 @@ export const LocationInput = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSelectCity = (city: string) => {
-    onChange(city);
+  // Format display name to be cleaner (City, Country)
+  const formatLocation = (displayName: string): string => {
+    const parts = displayName.split(',').map(p => p.trim());
+    if (parts.length >= 2) {
+      // Get city (first part) and country (last part)
+      const city = parts[0];
+      const country = parts[parts.length - 1];
+      // Check for state/region (second to last for US cities, etc)
+      if (parts.length >= 3) {
+        const region = parts[parts.length - 2];
+        // For US states, show City, State, Country
+        if (country === 'United States' && region.length <= 20) {
+          return `${city}, ${region}, USA`;
+        }
+        return `${city}, ${country}`;
+      }
+      return `${city}, ${country}`;
+    }
+    return displayName;
+  };
+
+  const handleSelectLocation = (result: NominatimResult) => {
+    onChange(formatLocation(result.display_name));
     setShowSuggestions(false);
   };
 
@@ -96,26 +139,31 @@ export const LocationInput = ({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        onFocus={() => value.length >= 2 && filteredCities.length > 0 && setShowSuggestions(true)}
+        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
         disabled={disabled}
         className={className}
         autoComplete="off"
       />
-      {showSuggestions && (
+      {isLoading && (
+        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {showSuggestions && suggestions.length > 0 && (
         <div 
           ref={suggestionsRef}
           className="absolute top-full left-0 right-0 mt-1 rounded-md border border-border shadow-lg z-50 max-h-48 overflow-y-auto"
           style={{ backgroundColor: 'hsl(var(--card))' }}
         >
-          {filteredCities.map((city) => (
+          {suggestions.map((result) => (
             <button
-              key={city}
+              key={result.place_id}
               type="button"
-              onClick={() => handleSelectCity(city)}
+              onClick={() => handleSelectLocation(result)}
               className="w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center gap-2"
             >
-              <MapPin className="w-3 h-3 text-muted-foreground" />
-              {city}
+              <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{formatLocation(result.display_name)}</span>
             </button>
           ))}
         </div>
