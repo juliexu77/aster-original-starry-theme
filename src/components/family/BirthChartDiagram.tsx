@@ -295,7 +295,7 @@ export const BirthChartDiagram = ({
     });
   }, [center, innerRadius, outerRadius]);
 
-  // Generate zodiac sign positions (labels inside the ring like Co-Star - radial text)
+  // Generate zodiac sign positions (labels always upright/horizontal)
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
       // Position in the middle of each 30° segment
@@ -309,8 +309,6 @@ export const BirthChartDiagram = ({
         sign,
         labelX: center + Math.cos(angleRad) * labelRadius,
         labelY: center + Math.sin(angleRad) * labelRadius,
-        // Radial rotation - text reads outward from center
-        labelRotation: chartAngle + 90,
       };
     });
   }, [ascendantDegree, center, outerRadius, innerRadius]);
@@ -356,40 +354,7 @@ export const BirthChartDiagram = ({
           opacity={0.7}
         />
         
-        {/* Aspect Lines */}
-        {aspectLines.map((aspect, i) => {
-          // Different styles for different aspect types
-          const getAspectStyle = () => {
-            switch (aspect.type) {
-              case 'trine':
-                return { strokeDasharray: 'none', opacity: 0.6 };
-              case 'square':
-                return { strokeDasharray: '4,4', opacity: 0.5 };
-              case 'opposition':
-                return { strokeDasharray: '8,4', opacity: 0.6 };
-              case 'sextile':
-                return { strokeDasharray: '2,2', opacity: 0.45 };
-              default:
-                return { strokeDasharray: 'none', opacity: 0.4 };
-            }
-          };
-          
-          const style = getAspectStyle();
-          
-          return (
-            <line
-              key={`aspect-${i}`}
-              x1={aspect.x1}
-              y1={aspect.y1}
-              x2={aspect.x2}
-              y2={aspect.y2}
-              stroke={CHART_COLOR}
-              strokeWidth={0.75}
-              strokeDasharray={style.strokeDasharray}
-              opacity={style.opacity}
-            />
-          );
-        })}
+        {/* Aspect Lines - hidden */}
         
         {/* Zodiac Section Divisions */}
         {Array.from({ length: 12 }, (_, i) => {
@@ -411,34 +376,28 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Sign Labels (inside the ring like Co-Star) */}
-        {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
-          // Rotate 180 degrees so text reads correctly from outside looking in
-          const adjustedRotation = labelRotation + 180;
-          
-          return (
-            <text
-              key={`label-${sign}`}
-              x={labelX}
-              y={labelY}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fill={CHART_COLOR}
-              opacity={1}
-              style={{ 
-                fontSize: '10px', 
-                fontFamily: 'DM Sans, sans-serif',
-                letterSpacing: '0.08em',
-                fontWeight: 500,
-              }}
-              transform={`rotate(${adjustedRotation}, ${labelX}, ${labelY})`}
-            >
-              {sign.toUpperCase()}
-            </text>
-          );
-        })}
+        {/* Zodiac Sign Labels (upright/horizontal) */}
+        {zodiacPositions.map(({ sign, labelX, labelY }) => (
+          <text
+            key={`label-${sign}`}
+            x={labelX}
+            y={labelY}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#FFFFFF"
+            opacity={0.95}
+            style={{ 
+              fontSize: '14px', 
+              fontFamily: 'DM Sans, sans-serif',
+              letterSpacing: '0.06em',
+              fontWeight: 500,
+            }}
+          >
+            {sign.toUpperCase()}
+          </text>
+        ))}
         
-        {/* Planet Positions */}
+        {/* Planet Positions - tappable */}
         {planets.map((planet, i) => {
           const angleRad = planet.displayAngle * (Math.PI / 180);
           const x = center + Math.cos(angleRad) * planet.radius;
@@ -451,28 +410,40 @@ export const BirthChartDiagram = ({
           return (
             <g 
               key={i} 
-              onClick={() => setSelectedPlanet(isSelected ? null : planet.label)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedPlanet(isSelected ? null : planet.label);
+              }}
               style={{ cursor: 'pointer' }}
             >
-              {/* Planet symbol only - no circular outline */}
+              {/* Invisible hit area for better tapping */}
+              <circle
+                cx={x}
+                cy={y}
+                r={24}
+                fill="transparent"
+              />
+              
+              {/* Planet symbol */}
               {isSunOrMoon ? (
                 <foreignObject
-                  x={x - 10}
-                  y={y - 10}
-                  width={20}
-                  height={20}
+                  x={x - 12}
+                  y={y - 12}
+                  width={24}
+                  height={24}
+                  style={{ pointerEvents: 'none' }}
                 >
                   <div 
                     className="flex items-center justify-center w-full h-full" 
                     style={{ 
-                      color: CHART_COLOR,
-                      opacity: isSelected ? 1 : 0.9 
+                      color: isSelected ? '#FFFFFF' : '#E8E8E8',
+                      transition: 'color 0.2s ease',
                     }}
                   >
                     {planet.label === 'Sun' ? (
-                      <IconSun size={18} strokeWidth={1.5} />
+                      <IconSun size={22} strokeWidth={1.5} />
                     ) : (
-                      <IconMoon size={18} strokeWidth={1.5} />
+                      <IconMoon size={22} strokeWidth={1.5} />
                     )}
                   </div>
                 </foreignObject>
@@ -482,9 +453,13 @@ export const BirthChartDiagram = ({
                   y={y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fill={CHART_COLOR}
-                  opacity={isSelected ? 1 : 0.9}
-                  style={{ fontSize: '16px', fontFamily: 'serif' }}
+                  fill={isSelected ? '#FFFFFF' : '#E8E8E8'}
+                  style={{ 
+                    fontSize: '20px', 
+                    fontFamily: 'serif',
+                    pointerEvents: 'none',
+                    transition: 'fill 0.2s ease',
+                  }}
                 >
                   {planet.symbol}
                 </text>
