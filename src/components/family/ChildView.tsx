@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { AstrologyGrid } from "./AstrologyGrid";
+import { BirthChartDiagram } from "./BirthChartDiagram";
 import { ChildSelectorSheet } from "./ChildSelectorSheet";
 import { 
   getZodiacFromBirthday, 
@@ -134,7 +135,16 @@ export const ChildView = ({
         )}
       </div>
 
-      {/* 2x2 Astrology Grid */}
+      {/* Birth Chart Diagram */}
+      <div className="px-5">
+        <BirthChartDiagram
+          sunSign={signs.sun}
+          moonSign={signs.moon}
+          risingSign={signs.rising}
+        />
+      </div>
+
+      {/* Astrology Grid */}
       <div className="px-5">
         <AstrologyGrid 
           sunSign={signs.sun} 
