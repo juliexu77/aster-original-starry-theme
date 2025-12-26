@@ -184,6 +184,56 @@ export const BirthChartDiagram = ({
     return placements;
   }, [sunSign, moonSign, sunDegree, moonDegree, ascendantDegree]);
 
+  // Calculate aspect lines between planets
+  const aspectLines = useMemo(() => {
+    const aspects: { 
+      x1: number; y1: number; x2: number; y2: number; 
+      type: 'trine' | 'square' | 'opposition' | 'sextile';
+    }[] = [];
+    
+    const aspectRadius = innerRadius - 20; // Draw aspects inside the inner circle
+    
+    // Check each pair of planets for aspects
+    for (let i = 0; i < planets.length; i++) {
+      for (let j = i + 1; j < planets.length; j++) {
+        const planet1 = planets[i];
+        const planet2 = planets[j];
+        
+        // Calculate angular difference (normalize to 0-360)
+        let angleDiff = Math.abs(planet1.angle - planet2.angle) % 360;
+        if (angleDiff > 180) angleDiff = 360 - angleDiff;
+        
+        // Determine aspect type with orb tolerance (±8°)
+        let aspectType: 'trine' | 'square' | 'opposition' | 'sextile' | null = null;
+        
+        if (angleDiff >= 112 && angleDiff <= 128) {
+          aspectType = 'trine'; // 120° ± 8°
+        } else if (angleDiff >= 82 && angleDiff <= 98) {
+          aspectType = 'square'; // 90° ± 8°
+        } else if (angleDiff >= 172 && angleDiff <= 188) {
+          aspectType = 'opposition'; // 180° ± 8°
+        } else if (angleDiff >= 52 && angleDiff <= 68) {
+          aspectType = 'sextile'; // 60° ± 8°
+        }
+        
+        if (aspectType) {
+          const angle1Rad = planet1.angle * (Math.PI / 180);
+          const angle2Rad = planet2.angle * (Math.PI / 180);
+          
+          aspects.push({
+            x1: center + Math.cos(angle1Rad) * aspectRadius,
+            y1: center + Math.sin(angle1Rad) * aspectRadius,
+            x2: center + Math.cos(angle2Rad) * aspectRadius,
+            y2: center + Math.sin(angle2Rad) * aspectRadius,
+            type: aspectType,
+          });
+        }
+      }
+    }
+    
+    return aspects;
+  }, [planets, center, innerRadius]);
+
   // Generate house lines (12 divisions from inner to outer)
   const houseLines = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
@@ -271,6 +321,41 @@ export const BirthChartDiagram = ({
           strokeWidth={1}
           opacity={0.5}
         />
+        
+        {/* Aspect Lines */}
+        {aspectLines.map((aspect, i) => {
+          // Different styles for different aspect types
+          const getAspectStyle = () => {
+            switch (aspect.type) {
+              case 'trine':
+                return { strokeDasharray: 'none', opacity: 0.4 };
+              case 'square':
+                return { strokeDasharray: '4,4', opacity: 0.35 };
+              case 'opposition':
+                return { strokeDasharray: '8,4', opacity: 0.4 };
+              case 'sextile':
+                return { strokeDasharray: '2,2', opacity: 0.3 };
+              default:
+                return { strokeDasharray: 'none', opacity: 0.3 };
+            }
+          };
+          
+          const style = getAspectStyle();
+          
+          return (
+            <line
+              key={`aspect-${i}`}
+              x1={aspect.x1}
+              y1={aspect.y1}
+              x2={aspect.x2}
+              y2={aspect.y2}
+              stroke={CHART_COLOR}
+              strokeWidth={0.75}
+              strokeDasharray={style.strokeDasharray}
+              opacity={style.opacity}
+            />
+          );
+        })}
         
         {/* Zodiac Section Divisions */}
         {Array.from({ length: 12 }, (_, i) => {
