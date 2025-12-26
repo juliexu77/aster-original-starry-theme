@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
@@ -20,15 +20,12 @@ interface FamilyMember {
 }
 
 interface RelationshipInsights {
-  // DYNAMICS tab
   currentStrength: string;
   currentFriction: string;
   actionableInsight: string;
-  // DAILY LIFE tab
   sleepDynamic: string;
   feedingDynamic: string;
   communicationStyle: string;
-  // GROWTH tab
   whatThisPhaseTeaches: string;
   whatsComingNext: string;
   longTermEvolution: string;
@@ -37,7 +34,7 @@ interface RelationshipInsights {
 interface RelationshipDetailProps {
   from: FamilyMember;
   to: FamilyMember;
-  onBack: () => void;
+  onClose: () => void;
 }
 
 type TabType = 'dynamics' | 'daily' | 'growth';
@@ -67,7 +64,7 @@ const getAgeMonths = (birthday: string | null): number => {
          (today.getMonth() - birthDate.getMonth());
 };
 
-export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps) => {
+export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProps) => {
   const [activeTab, setActiveTab] = useState<TabType>('dynamics');
   const [insights, setInsights] = useState<RelationshipInsights | null>(null);
   const [loading, setLoading] = useState(false);
@@ -141,11 +138,11 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
     if (!content) return null;
     
     return (
-      <div className="bg-[#252525] rounded-lg p-5 border border-[#3a3a3a]/30">
-        <p className="text-[10px] text-[#8A8A8A] uppercase tracking-[0.15em] mb-3">
+      <div className="bg-[#252525] rounded-lg p-4 border border-[#3a3a3a]/30">
+        <p className="text-[9px] text-[#8A8A8A] uppercase tracking-[0.15em] mb-2">
           {header}
         </p>
-        <p className="text-[15px] text-foreground/80 leading-[1.7]">
+        <p className="text-[14px] text-foreground/80 leading-[1.6]">
           {content}
         </p>
       </div>
@@ -153,7 +150,7 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
   };
 
   const renderDynamicsTab = () => (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {renderInsightCard('Right Now', insights?.currentStrength)}
       {renderInsightCard('Where You Clash', insights?.currentFriction)}
       {renderInsightCard('Try This', insights?.actionableInsight)}
@@ -161,7 +158,7 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
   );
 
   const renderDailyTab = () => (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {renderInsightCard('Sleep Patterns', insights?.sleepDynamic)}
       {renderInsightCard('Feeding Dynamics', insights?.feedingDynamic)}
       {renderInsightCard('Communication', insights?.communicationStyle)}
@@ -169,7 +166,7 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
   );
 
   const renderGrowthTab = () => (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {renderInsightCard('What This Phase Teaches You', insights?.whatThisPhaseTeaches)}
       {renderInsightCard("What's Coming", insights?.whatsComingNext)}
       {renderInsightCard('Long-Term Evolution', insights?.longTermEvolution)}
@@ -177,47 +174,47 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
   );
 
   return (
-    <div className="min-h-screen">
-      {/* Back button */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1 text-foreground/40 hover:text-foreground/60 transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-[12px] uppercase tracking-wide">Back</span>
-      </button>
-      
-      {/* Hero section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          {fromSign && <ZodiacIcon sign={fromSign} size={20} className="text-[#C4A574]" />}
-          <h1 className="text-[24px] text-foreground/90" style={{ fontFamily: 'Source Serif 4, serif' }}>
-            {from.name} → {to.name}
-          </h1>
+    <div className="mt-6 pt-6 border-t border-foreground/10">
+      {/* Header with close button */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            {fromSign && <ZodiacIcon sign={fromSign} size={16} className="text-[#C4A574]" />}
+            <h2 className="text-[18px] text-foreground/90" style={{ fontFamily: 'Source Serif 4, serif' }}>
+              {from.name} → {to.name}
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <p className="text-[12px] text-foreground/40">
+              {fromSign && getZodiacName(fromSign)} → {toSign && getZodiacName(toSign)}
+            </p>
+            {ageLabel && (
+              <span className="text-[10px] text-foreground/25">
+                {ageLabel}
+              </span>
+            )}
+          </div>
         </div>
         
-        <div className="flex items-center gap-4">
-          <p className="text-[13px] text-foreground/50">
-            {fromSign && getZodiacName(fromSign)} → {toSign && getZodiacName(toSign)}
-          </p>
-          {ageLabel && (
-            <span className="text-[11px] text-foreground/30">
-              {ageLabel}
-            </span>
-          )}
-        </div>
+        <button
+          onClick={onClose}
+          className="p-1 text-foreground/30 hover:text-foreground/50 transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
       
       {/* Tabs */}
-      <div className="flex items-center gap-6 mb-6 border-b border-foreground/10 pb-3">
+      <div className="flex items-center gap-5 mb-4 border-b border-foreground/10 pb-2">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`text-[11px] uppercase tracking-[0.12em] pb-1 transition-all ${
+            className={`text-[10px] uppercase tracking-[0.12em] pb-1 transition-all ${
               activeTab === tab.id
-                ? 'text-foreground/70 border-b border-[#C4A574]'
-                : 'text-foreground/30 hover:text-foreground/50'
+                ? 'text-foreground/60 border-b border-[#C4A574]'
+                : 'text-foreground/25 hover:text-foreground/40'
             }`}
           >
             {tab.label}
@@ -227,12 +224,12 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
       
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8">
           <LoadingSpinner />
         </div>
       ) : error ? (
-        <div className="text-center py-12">
-          <p className="text-[13px] text-foreground/40 mb-4">{error}</p>
+        <div className="text-center py-8">
+          <p className="text-[12px] text-foreground/40 mb-3">{error}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -244,19 +241,19 @@ export const RelationshipDetail = ({ from, to, onBack }: RelationshipDetailProps
           </Button>
         </div>
       ) : insights ? (
-        <div className="pb-8">
+        <div className="pb-4">
           {activeTab === 'dynamics' && renderDynamicsTab()}
           {activeTab === 'daily' && renderDailyTab()}
           {activeTab === 'growth' && renderGrowthTab()}
           
           {/* Update indicator */}
-          <p className="text-[10px] text-foreground/20 text-center mt-8 tracking-wide">
+          <p className="text-[9px] text-foreground/15 text-center mt-6 tracking-wide">
             Updated for {ageLabel || 'current age'}
           </p>
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-[13px] text-foreground/40">
+        <div className="text-center py-8">
+          <p className="text-[12px] text-foreground/40">
             Add birth dates to see relationship insights.
           </p>
         </div>
