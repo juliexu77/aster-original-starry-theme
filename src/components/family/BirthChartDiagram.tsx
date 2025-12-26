@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ZodiacSign, ZODIAC_DATA } from "@/lib/zodiac";
 import {
   IconZodiacAries,
@@ -136,33 +136,68 @@ export const BirthChartDiagram = ({
     return starList;
   }, [center, size]);
 
-  // Calculate planet positions
+  // State for selected planet
+  const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
+
+  // Get sign name from absolute degree
+  const getSignFromDegree = (absDegree: number): ZodiacSign => {
+    const signIndex = Math.floor(absDegree / 30) % 12;
+    return ZODIAC_ORDER[signIndex];
+  };
+
+  // Get degree within sign (0-29)
+  const getDegreeInSign = (absDegree: number): number => {
+    return Math.floor(absDegree % 30);
+  };
+
+  // Calculate planet positions with snapped display angles
   const planets = useMemo(() => {
-    const placements: { symbol: string; label: string; angle: number; radius: number }[] = [];
+    const placements: { 
+      symbol: string; 
+      label: string; 
+      displayAngle: number; // Snapped to center of sign
+      trueAngle: number; // Actual position
+      radius: number;
+      sign: ZodiacSign;
+      degree: number;
+      house: number;
+    }[] = [];
     
-    // Sun position
+    // Sun position - snap to center of its sign
     const sunAbsDegree = signToAbsoluteDegree(sunSign, sunDegree);
-    const sunAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
+    const sunSignCenter = ZODIAC_ORDER.indexOf(sunSign) * 30 + 15; // Center of sign
+    const sunDisplayAngle = degreeToChartAngle(sunSignCenter, ascendantDegree);
+    const sunTrueAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
     placements.push({
       symbol: PLANET_SYMBOLS.sun,
       label: 'Sun',
-      angle: sunAngle,
+      displayAngle: sunDisplayAngle,
+      trueAngle: sunTrueAngle,
       radius: planetRing,
+      sign: sunSign,
+      degree: sunDegree,
+      house: Math.floor((sunAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
     });
     
-    // Moon position
+    // Moon position - snap to center of its sign
     if (moonSign) {
       const moonAbsDegree = signToAbsoluteDegree(moonSign, moonDegree);
-      const moonAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
+      const moonSignCenter = ZODIAC_ORDER.indexOf(moonSign) * 30 + 15;
+      const moonDisplayAngle = degreeToChartAngle(moonSignCenter, ascendantDegree);
+      const moonTrueAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
       placements.push({
         symbol: PLANET_SYMBOLS.moon,
         label: 'Moon',
-        angle: moonAngle,
+        displayAngle: moonDisplayAngle,
+        trueAngle: moonTrueAngle,
         radius: planetRing - 25,
+        sign: moonSign,
+        degree: moonDegree,
+        house: Math.floor((moonAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
       });
     }
     
-    // Add other planets in balanced positions
+    // Add other planets - also snapped
     const otherPlanets = [
       { symbol: PLANET_SYMBOLS.mercury, label: 'Mercury', offsetFromSun: 15 },
       { symbol: PLANET_SYMBOLS.venus, label: 'Venus', offsetFromSun: 45 },
@@ -172,12 +207,23 @@ export const BirthChartDiagram = ({
     ];
     
     otherPlanets.forEach((planet, idx) => {
-      const angle = sunAngle + planet.offsetFromSun;
+      const trueAngle = sunTrueAngle + planet.offsetFromSun;
+      // Convert angle back to absolute degree to find sign
+      const absDeg = (ascendantDegree + (180 - trueAngle) + 360) % 360;
+      const planetSign = getSignFromDegree(absDeg);
+      const degInSign = getDegreeInSign(absDeg);
+      const signCenter = ZODIAC_ORDER.indexOf(planetSign) * 30 + 15;
+      const displayAngle = degreeToChartAngle(signCenter, ascendantDegree);
+      
       placements.push({
         symbol: planet.symbol,
         label: planet.label,
-        angle,
+        displayAngle,
+        trueAngle,
         radius: planetRing + (idx % 2 === 0 ? 0 : -20),
+        sign: planetSign,
+        degree: degInSign,
+        house: Math.floor((absDeg - ascendantDegree + 360) / 30) % 12 + 1,
       });
     });
     
@@ -199,8 +245,8 @@ export const BirthChartDiagram = ({
         const planet1 = planets[i];
         const planet2 = planets[j];
         
-        // Calculate angular difference (normalize to 0-360)
-        let angleDiff = Math.abs(planet1.angle - planet2.angle) % 360;
+        // Calculate angular difference using true angles for accuracy
+        let angleDiff = Math.abs(planet1.trueAngle - planet2.trueAngle) % 360;
         if (angleDiff > 180) angleDiff = 360 - angleDiff;
         
         // Determine aspect type with orb tolerance (±8°)
@@ -217,8 +263,9 @@ export const BirthChartDiagram = ({
         }
         
         if (aspectType) {
-          const angle1Rad = planet1.angle * (Math.PI / 180);
-          const angle2Rad = planet2.angle * (Math.PI / 180);
+          // Use display angles for visual positioning
+          const angle1Rad = planet1.displayAngle * (Math.PI / 180);
+          const angle2Rad = planet2.displayAngle * (Math.PI / 180);
           
           aspects.push({
             x1: center + Math.cos(angle1Rad) * aspectRadius,
@@ -284,8 +331,14 @@ export const BirthChartDiagram = ({
     };
   }, [center, outerRadius]);
 
+  // Get selected planet details
+  const selectedPlanetData = selectedPlanet 
+    ? planets.find(p => p.label === selectedPlanet) 
+    : null;
+
   return (
-    <div className="w-full aspect-square max-w-[600px] mx-auto">
+    <div className="w-full max-w-[600px] mx-auto">
+      <div className="aspect-square w-full" onClick={() => setSelectedPlanet(null)}>
       <svg
         viewBox={`0 0 ${size} ${size}`}
         className="w-full h-full"
@@ -404,15 +457,20 @@ export const BirthChartDiagram = ({
         
         {/* Planet Positions */}
         {planets.map((planet, i) => {
-          const angleRad = planet.angle * (Math.PI / 180);
+          const angleRad = planet.displayAngle * (Math.PI / 180);
           const x = center + Math.cos(angleRad) * planet.radius;
           const y = center + Math.sin(angleRad) * planet.radius;
           
           // Use Tabler icons for Sun and Moon, text symbols for others
           const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
+          const isSelected = selectedPlanet === planet.label;
           
           return (
-            <g key={i}>
+            <g 
+              key={i} 
+              onClick={() => setSelectedPlanet(isSelected ? null : planet.label)}
+              style={{ cursor: 'pointer' }}
+            >
               {/* Planet marker dot */}
               <circle
                 cx={x}
@@ -426,8 +484,8 @@ export const BirthChartDiagram = ({
                 r={12}
                 fill="none"
                 stroke={CHART_COLOR}
-                strokeWidth={1}
-                opacity={0.7}
+                strokeWidth={isSelected ? 2 : 1}
+                opacity={isSelected ? 1 : 0.7}
               />
               {/* Planet icon or symbol */}
               {isSunOrMoon ? (
@@ -558,6 +616,34 @@ export const BirthChartDiagram = ({
           opacity={0.6}
         />
       </svg>
+      </div>
+      
+      {/* Selected Planet Detail */}
+      <div 
+        className="h-12 flex items-center justify-center transition-opacity duration-200"
+        style={{ opacity: selectedPlanetData ? 1 : 0 }}
+      >
+        {selectedPlanetData && (
+          <p 
+            className="text-center"
+            style={{ 
+              color: CHART_COLOR, 
+              fontFamily: 'Source Serif 4, serif',
+              fontSize: '14px',
+              letterSpacing: '0.02em'
+            }}
+          >
+            {selectedPlanetData.label} — {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} house
+          </p>
+        )}
+      </div>
     </div>
   );
+};
+
+// Helper for ordinal suffix
+const getOrdinalSuffix = (n: number): string => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 };
