@@ -200,24 +200,28 @@ export const BirthChartDiagram = ({
     });
   }, [center, innerCircle, outerRadius]);
 
-  // Generate zodiac sign positions
+  // Generate zodiac sign positions (for icons in the ring)
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
       // Position in the middle of each 30° segment
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      const radius = (zodiacRingOuter + zodiacRingInner) / 2;
+      const iconRadius = (zodiacRingOuter + zodiacRingInner) / 2;
+      const labelRadius = outerRadius + 28; // Outside the outer circle
       
       return {
         sign,
         IconComponent: ZODIAC_ICONS[sign],
-        x: center + Math.cos(angleRad) * radius,
-        y: center + Math.sin(angleRad) * radius,
+        iconX: center + Math.cos(angleRad) * iconRadius,
+        iconY: center + Math.sin(angleRad) * iconRadius,
+        labelX: center + Math.cos(angleRad) * labelRadius,
+        labelY: center + Math.sin(angleRad) * labelRadius,
         rotation: chartAngle + 90,
+        labelRotation: chartAngle,
       };
     });
-  }, [ascendantDegree, center, zodiacRingOuter, zodiacRingInner]);
+  }, [ascendantDegree, center, zodiacRingOuter, zodiacRingInner, outerRadius]);
 
   // Calculate AC and MC positions
   const acPosition = useMemo(() => {
@@ -327,12 +331,41 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Icons */}
-        {zodiacPositions.map(({ sign, IconComponent, x, y }) => (
+        {/* Zodiac Sign Labels (outer edge) */}
+        {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
+          // Adjust rotation so text reads correctly (flip for bottom half)
+          const adjustedRotation = labelRotation > 90 || labelRotation < -90 
+            ? labelRotation + 180 
+            : labelRotation;
+          
+          return (
+            <text
+              key={`label-${sign}`}
+              x={labelX}
+              y={labelY}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill={CHART_COLOR}
+              opacity={0.7}
+              style={{ 
+                fontSize: '9px', 
+                fontFamily: 'DM Sans, sans-serif',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}
+              transform={`rotate(${adjustedRotation}, ${labelX}, ${labelY})`}
+            >
+              {sign.toUpperCase()}
+            </text>
+          );
+        })}
+        
+        {/* Zodiac Icons (in the ring) */}
+        {zodiacPositions.map(({ sign, IconComponent, iconX, iconY }) => (
           <foreignObject
             key={sign}
-            x={x - 10}
-            y={y - 10}
+            x={iconX - 10}
+            y={iconY - 10}
             width={20}
             height={20}
           >
