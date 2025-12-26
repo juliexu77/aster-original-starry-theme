@@ -160,6 +160,64 @@ export const getMoonSignFromBirthDateTime = (
   return signs[signIndex % 12];
 };
 
+// Rising sign (Ascendant) calculation
+// Uses Local Sidereal Time to determine which sign was on the eastern horizon at birth
+export const getRisingSign = (
+  birthday: string | null | undefined,
+  birthTime: string | null | undefined,
+  birthLocation?: string | null | undefined
+): ZodiacSign | null => {
+  if (!birthday || !birthTime) return null;
+  
+  const date = new Date(birthday);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  // Parse birth time
+  const [h, m] = birthTime.split(':').map(Number);
+  const hours = h + (m / 60);
+  
+  // Get timezone offset
+  const timezoneOffset = getTimezoneOffset(birthLocation);
+  const utcHours = hours - timezoneOffset;
+  
+  // Calculate Julian Day
+  const a = Math.floor((14 - (month + 1)) / 12);
+  const y = year + 4800 - a;
+  const mm = (month + 1) + 12 * a - 3;
+  const jd = day + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  
+  // Add time component
+  const jdWithTime = jd + (utcHours - 12) / 24;
+  
+  // Calculate Greenwich Sidereal Time
+  const T = (jdWithTime - 2451545.0) / 36525;
+  let gst = 280.46061837 + 360.98564736629 * (jdWithTime - 2451545.0) + 0.000387933 * T * T;
+  gst = gst % 360;
+  if (gst < 0) gst += 360;
+  
+  // Approximate longitude from city (rough estimate based on timezone)
+  // Each timezone ~15 degrees longitude
+  const longitude = timezoneOffset * 15;
+  
+  // Local Sidereal Time
+  let lst = gst + longitude;
+  lst = lst % 360;
+  if (lst < 0) lst += 360;
+  
+  // The ascendant is approximately at the LST degree
+  // Convert to zodiac sign (30 degrees each)
+  const signIndex = Math.floor(lst / 30);
+  const signs: ZodiacSign[] = [
+    'aries', 'taurus', 'gemini', 'cancer', 
+    'leo', 'virgo', 'libra', 'scorpio', 
+    'sagittarius', 'capricorn', 'aquarius', 'pisces'
+  ];
+  
+  return signs[signIndex % 12];
+};
+
 export const getZodiacSymbol = (birthday: string | null | undefined): string => {
   const sign = getZodiacFromBirthday(birthday);
   return sign ? ZODIAC_DATA[sign].symbol : '';
