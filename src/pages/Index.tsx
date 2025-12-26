@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { DailyCoach } from "@/components/home/DailyCoach";
-import { ChildSwitcher } from "@/components/home/ChildSwitcher";
 import { GuideMenu } from "@/components/GuideMenu";
 import { GuideSectionView } from "@/components/GuideSectionView";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
