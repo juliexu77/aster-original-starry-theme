@@ -1,22 +1,6 @@
 import { useMemo, useState } from "react";
 import { ZodiacSign, ZODIAC_DATA } from "@/lib/zodiac";
-import {
-  IconZodiacAries,
-  IconZodiacTaurus,
-  IconZodiacGemini,
-  IconZodiacCancer,
-  IconZodiacLeo,
-  IconZodiacVirgo,
-  IconZodiacLibra,
-  IconZodiacScorpio,
-  IconZodiacSagittarius,
-  IconZodiacCapricorn,
-  IconZodiacAquarius,
-  IconZodiacPisces,
-  IconSun,
-  IconMoon,
-} from "@tabler/icons-react";
-import type { Icon } from "@tabler/icons-react";
+import { IconSun, IconMoon, IconArrowUp } from "@tabler/icons-react";
 
 interface BirthChartDiagramProps {
   sunSign: ZodiacSign;
@@ -26,395 +10,151 @@ interface BirthChartDiagramProps {
   moonDegree?: number;
 }
 
-// Zodiac icon components map
-const ZODIAC_ICONS: Record<ZodiacSign, Icon> = {
-  aries: IconZodiacAries,
-  taurus: IconZodiacTaurus,
-  gemini: IconZodiacGemini,
-  cancer: IconZodiacCancer,
-  leo: IconZodiacLeo,
-  virgo: IconZodiacVirgo,
-  libra: IconZodiacLibra,
-  scorpio: IconZodiacScorpio,
-  sagittarius: IconZodiacSagittarius,
-  capricorn: IconZodiacCapricorn,
-  aquarius: IconZodiacAquarius,
-  pisces: IconZodiacPisces,
-};
-
 const ZODIAC_ORDER: ZodiacSign[] = [
   'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
   'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'
 ];
 
-// Planet symbols
-const PLANET_SYMBOLS = {
-  sun: '☉',
-  moon: '☽',
-  mercury: '☿',
-  venus: '♀',
-  mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
-  uranus: '⛢',
-  neptune: '♆',
-  pluto: '♇',
+const ZODIAC_SYMBOLS: Record<ZodiacSign, string> = {
+  aries: '♈', taurus: '♉', gemini: '♊', cancer: '♋',
+  leo: '♌', virgo: '♍', libra: '♎', scorpio: '♏',
+  sagittarius: '♐', capricorn: '♑', aquarius: '♒', pisces: '♓'
 };
 
-// Convert sign + degree to absolute degree (0-360)
-const signToAbsoluteDegree = (sign: ZodiacSign, degree: number): number => {
-  const signIndex = ZODIAC_ORDER.indexOf(sign);
-  return signIndex * 30 + degree;
+const ZODIAC_ABBREV: Record<ZodiacSign, string> = {
+  aries: 'ARI', taurus: 'TAU', gemini: 'GEM', cancer: 'CAN',
+  leo: 'LEO', virgo: 'VIR', libra: 'LIB', scorpio: 'SCO',
+  sagittarius: 'SAG', capricorn: 'CAP', aquarius: 'AQU', pisces: 'PIS'
 };
 
-// Convert absolute degree to chart angle (0° at AC/left side, counter-clockwise)
-const degreeToChartAngle = (degree: number, ascendantDegree: number): number => {
-  // Chart starts at Ascendant on the left (180° in SVG terms)
-  // Zodiac moves counter-clockwise
-  return 180 - (degree - ascendantDegree);
-};
-
-interface StarProps {
-  cx: number;
-  cy: number;
-  opacity: number;
-}
-
-const BackgroundStar = ({ cx, cy, opacity }: StarProps) => (
-  <circle
-    cx={cx}
-    cy={cy}
-    r={0.5}
-    fill="currentColor"
-    opacity={opacity}
-    className="text-foreground/30"
-  />
-);
-
-// Silver/muted color for chart elements (matches app text styling)
-const CHART_COLOR = '#E0E0E0'; // Brighter for better readability
+// Warm gold accent color
+const ACCENT_COLOR = '#D4A574';
+const TEXT_COLOR = '#FFFFFF';
+const MUTED_COLOR = '#8A8A8A';
+const RING_COLOR = '#4A4A4A';
 
 export const BirthChartDiagram = ({ 
   sunSign, 
   moonSign, 
   risingSign,
-  sunDegree = 7,
+  sunDegree = 15,
   moonDegree = 15,
 }: BirthChartDiagramProps) => {
-  const size = 700;
+  const size = 380;
   const center = size / 2;
-  const outerRadius = 290;      // Larger outer ring
-  const innerRadius = 245;      // Inner edge of zodiac ring
-  const planetRing = 170;       // Where planets are placed - single radius for all
+  const outerRadius = 170;
+  const innerRadius = 130;
+  const bigThreeRadius = 70;
   
-  // Calculate ascendant degree (start of rising sign)
-  const ascendantDegree = useMemo(() => {
-    if (!risingSign) return 0;
-    return ZODIAC_ORDER.indexOf(risingSign) * 30;
-  }, [risingSign]);
-
-  // Generate background stars
-  const stars = useMemo(() => {
-    const starList: StarProps[] = [];
-    const seed = 12345; // Fixed seed for consistency
-    
-    for (let i = 0; i < 40; i++) {
-      const angle = ((seed * (i + 1)) % 360) * (Math.PI / 180);
-      const distance = 275 + ((seed * (i + 2)) % 25);
-      const cx = center + Math.cos(angle) * distance;
-      const cy = center + Math.sin(angle) * distance;
-      
-      // Only include stars within bounds
-      if (cx > 10 && cx < size - 10 && cy > 10 && cy < size - 10) {
-        starList.push({
-          cx,
-          cy,
-          opacity: 0.1 + ((seed * (i + 3)) % 20) / 100,
-        });
-      }
-    }
-    return starList;
-  }, [center, size]);
-
-  // State for selected planet
-  const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
-
-  // Get sign name from absolute degree
-  const getSignFromDegree = (absDegree: number): ZodiacSign => {
-    const signIndex = Math.floor(absDegree / 30) % 12;
-    return ZODIAC_ORDER[signIndex];
-  };
-
-  // Get degree within sign (0-29)
-  const getDegreeInSign = (absDegree: number): number => {
-    return Math.floor(absDegree % 30);
-  };
-
-  // Calculate planet positions with snapped display angles
-  const planets = useMemo(() => {
-    const placements: { 
-      symbol: string; 
-      label: string; 
-      displayAngle: number; // Snapped to center of sign
-      trueAngle: number; // Actual position
-      radius: number;
-      sign: ZodiacSign;
-      degree: number;
-      house: number;
-    }[] = [];
-    
-    // Sun position - snap to center of its sign
-    const sunAbsDegree = signToAbsoluteDegree(sunSign, sunDegree);
-    const sunSignCenter = ZODIAC_ORDER.indexOf(sunSign) * 30 + 15; // Center of sign
-    const sunDisplayAngle = degreeToChartAngle(sunSignCenter, ascendantDegree);
-    const sunTrueAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
-    placements.push({
-      symbol: PLANET_SYMBOLS.sun,
-      label: 'Sun',
-      displayAngle: sunDisplayAngle,
-      trueAngle: sunTrueAngle,
-      radius: planetRing,
-      sign: sunSign,
-      degree: sunDegree,
-      house: Math.floor((sunAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
-    });
-    
-    // Moon position - snap to center of its sign
-    if (moonSign) {
-      const moonAbsDegree = signToAbsoluteDegree(moonSign, moonDegree);
-      const moonSignCenter = ZODIAC_ORDER.indexOf(moonSign) * 30 + 15;
-      const moonDisplayAngle = degreeToChartAngle(moonSignCenter, ascendantDegree);
-      const moonTrueAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
-      placements.push({
-        symbol: PLANET_SYMBOLS.moon,
-        label: 'Moon',
-        displayAngle: moonDisplayAngle,
-        trueAngle: moonTrueAngle,
-        radius: planetRing,
-        sign: moonSign,
-        degree: moonDegree,
-        house: Math.floor((moonAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
-      });
-    }
-    
-    // Add other planets - also snapped
-    const otherPlanets = [
-      { symbol: PLANET_SYMBOLS.mercury, label: 'Mercury', offsetFromSun: 15 },
-      { symbol: PLANET_SYMBOLS.venus, label: 'Venus', offsetFromSun: 45 },
-      { symbol: PLANET_SYMBOLS.mars, label: 'Mars', offsetFromSun: 120 },
-      { symbol: PLANET_SYMBOLS.jupiter, label: 'Jupiter', offsetFromSun: 180 },
-      { symbol: PLANET_SYMBOLS.saturn, label: 'Saturn', offsetFromSun: 240 },
-    ];
-    
-    otherPlanets.forEach((planet, idx) => {
-      const trueAngle = sunTrueAngle + planet.offsetFromSun;
-      // Convert angle back to absolute degree to find sign
-      const absDeg = (ascendantDegree + (180 - trueAngle) + 360) % 360;
-      const planetSign = getSignFromDegree(absDeg);
-      const degInSign = getDegreeInSign(absDeg);
-      const signCenter = ZODIAC_ORDER.indexOf(planetSign) * 30 + 15;
-      const displayAngle = degreeToChartAngle(signCenter, ascendantDegree);
-      
-      placements.push({
-        symbol: planet.symbol,
-        label: planet.label,
-        displayAngle,
-        trueAngle,
-        radius: planetRing,
-        sign: planetSign,
-        degree: degInSign,
-        house: Math.floor((absDeg - ascendantDegree + 360) / 30) % 12 + 1,
-      });
-    });
-    
-    return placements;
-  }, [sunSign, moonSign, sunDegree, moonDegree, ascendantDegree]);
-
-  // Calculate aspect lines between planets
-  const aspectLines = useMemo(() => {
-    const aspects: { 
-      x1: number; y1: number; x2: number; y2: number; 
-      type: 'trine' | 'square' | 'opposition' | 'sextile';
-    }[] = [];
-    
-    const aspectRadius = innerRadius - 20; // Draw aspects inside the inner circle
-    
-    // Check each pair of planets for aspects
-    for (let i = 0; i < planets.length; i++) {
-      for (let j = i + 1; j < planets.length; j++) {
-        const planet1 = planets[i];
-        const planet2 = planets[j];
-        
-        // Calculate angular difference using true angles for accuracy
-        let angleDiff = Math.abs(planet1.trueAngle - planet2.trueAngle) % 360;
-        if (angleDiff > 180) angleDiff = 360 - angleDiff;
-        
-        // Determine aspect type with orb tolerance (±8°)
-        let aspectType: 'trine' | 'square' | 'opposition' | 'sextile' | null = null;
-        
-        if (angleDiff >= 112 && angleDiff <= 128) {
-          aspectType = 'trine'; // 120° ± 8°
-        } else if (angleDiff >= 82 && angleDiff <= 98) {
-          aspectType = 'square'; // 90° ± 8°
-        } else if (angleDiff >= 172 && angleDiff <= 188) {
-          aspectType = 'opposition'; // 180° ± 8°
-        } else if (angleDiff >= 52 && angleDiff <= 68) {
-          aspectType = 'sextile'; // 60° ± 8°
-        }
-        
-        if (aspectType) {
-          // Use display angles for visual positioning
-          const angle1Rad = planet1.displayAngle * (Math.PI / 180);
-          const angle2Rad = planet2.displayAngle * (Math.PI / 180);
-          
-          aspects.push({
-            x1: center + Math.cos(angle1Rad) * aspectRadius,
-            y1: center + Math.sin(angle1Rad) * aspectRadius,
-            x2: center + Math.cos(angle2Rad) * aspectRadius,
-            y2: center + Math.sin(angle2Rad) * aspectRadius,
-            type: aspectType,
-          });
-        }
-      }
-    }
-    
-    return aspects;
-  }, [planets, center, innerRadius]);
-
-  // Generate house lines (12 divisions from inner to outer)
-  const houseLines = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => {
-      const angle = (i * 30 - 90) * (Math.PI / 180); // Start from top
-      return {
-        x1: center + Math.cos(angle) * innerRadius,
-        y1: center + Math.sin(angle) * innerRadius,
-        x2: center + Math.cos(angle) * outerRadius,
-        y2: center + Math.sin(angle) * outerRadius,
-        house: i + 1,
-      };
-    });
-  }, [center, innerRadius, outerRadius]);
-
-  // Generate zodiac sign positions (labels inside the ring like Co-Star - radial text)
+  // Calculate positions for the zodiac wheel
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
-      // Position in the middle of each 30° segment
-      const signDegree = i * 30 + 15;
-      const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
-      const angleRad = chartAngle * (Math.PI / 180);
-      // Labels positioned in the middle of the ring
-      const labelRadius = (outerRadius + innerRadius) / 2;
+      // Each sign occupies 30°, position label at center of segment
+      const startAngle = i * 30 - 90; // Start from top
+      const midAngle = startAngle + 15;
+      const angleRad = midAngle * (Math.PI / 180);
+      
+      // Position for label (outside the ring)
+      const labelRadius = outerRadius + 22;
       
       return {
         sign,
+        symbol: ZODIAC_SYMBOLS[sign],
+        abbrev: ZODIAC_ABBREV[sign],
         labelX: center + Math.cos(angleRad) * labelRadius,
         labelY: center + Math.sin(angleRad) * labelRadius,
-        // Radial rotation - text reads outward from center
-        labelRotation: chartAngle + 90,
+        // Segment arc for highlighting
+        startAngle,
+        endAngle: startAngle + 30,
+        // Is this sign one of the Big 3?
+        isSun: sign === sunSign,
+        isMoon: sign === moonSign,
+        isRising: sign === risingSign,
       };
     });
-  }, [ascendantDegree, center, outerRadius, innerRadius]);
+  }, [sunSign, moonSign, risingSign]);
 
+  // Generate the arc path for a zodiac segment
+  const getArcPath = (startAngle: number, endAngle: number, radius: number) => {
+    const start = {
+      x: center + Math.cos((startAngle * Math.PI) / 180) * radius,
+      y: center + Math.sin((startAngle * Math.PI) / 180) * radius,
+    };
+    const end = {
+      x: center + Math.cos((endAngle * Math.PI) / 180) * radius,
+      y: center + Math.sin((endAngle * Math.PI) / 180) * radius,
+    };
+    return `M ${start.x} ${start.y} A ${radius} ${radius} 0 0 1 ${end.x} ${end.y}`;
+  };
 
-  // Get selected planet details
-  const selectedPlanetData = selectedPlanet 
-    ? planets.find(p => p.label === selectedPlanet) 
-    : null;
+  // Big 3 positions in center triangle
+  const bigThreePositions = useMemo(() => {
+    return [
+      { type: 'sun', sign: sunSign, x: center, y: center - bigThreeRadius * 0.8, label: 'Sun' },
+      { type: 'moon', sign: moonSign, x: center - bigThreeRadius * 0.7, y: center + bigThreeRadius * 0.5, label: 'Moon' },
+      { type: 'rising', sign: risingSign, x: center + bigThreeRadius * 0.7, y: center + bigThreeRadius * 0.5, label: 'Rising' },
+    ];
+  }, [sunSign, moonSign, risingSign, center, bigThreeRadius]);
 
   return (
-    <div className="w-full max-w-[600px] mx-auto">
-      <div className="aspect-square w-full" onClick={() => setSelectedPlanet(null)}>
+    <div className="w-full max-w-[380px] mx-auto">
       <svg
         viewBox={`0 0 ${size} ${size}`}
-        className="w-full h-full"
-        style={{ background: 'transparent' }}
+        className="w-full h-auto"
       >
-        {/* Background Stars */}
-        {stars.map((star, i) => (
-          <BackgroundStar key={i} {...star} />
-        ))}
-        
-        {/* Outer Circle (zodiac ring) */}
+        {/* Outer ring */}
         <circle
           cx={center}
           cy={center}
           r={outerRadius}
           fill="none"
-          stroke={CHART_COLOR}
-          strokeWidth={1.5}
-          opacity={0.9}
+          stroke={RING_COLOR}
+          strokeWidth={2}
         />
         
-        {/* Inner Circle */}
+        {/* Inner ring */}
         <circle
           cx={center}
           cy={center}
           r={innerRadius}
           fill="none"
-          stroke={CHART_COLOR}
+          stroke={RING_COLOR}
           strokeWidth={1}
-          opacity={0.7}
+          opacity={0.6}
         />
         
-        {/* Aspect Lines */}
-        {aspectLines.map((aspect, i) => {
-          // Different styles for different aspect types
-          const getAspectStyle = () => {
-            switch (aspect.type) {
-              case 'trine':
-                return { strokeDasharray: 'none', opacity: 0.6 };
-              case 'square':
-                return { strokeDasharray: '4,4', opacity: 0.5 };
-              case 'opposition':
-                return { strokeDasharray: '8,4', opacity: 0.6 };
-              case 'sextile':
-                return { strokeDasharray: '2,2', opacity: 0.45 };
-              default:
-                return { strokeDasharray: 'none', opacity: 0.4 };
-            }
-          };
-          
-          const style = getAspectStyle();
-          
-          return (
-            <line
-              key={`aspect-${i}`}
-              x1={aspect.x1}
-              y1={aspect.y1}
-              x2={aspect.x2}
-              y2={aspect.y2}
-              stroke={CHART_COLOR}
-              strokeWidth={0.75}
-              strokeDasharray={style.strokeDasharray}
-              opacity={style.opacity}
-            />
-          );
-        })}
-        
-        {/* Zodiac Section Divisions */}
+        {/* Zodiac segment dividers */}
         {Array.from({ length: 12 }, (_, i) => {
-          const signDegree = i * 30;
-          const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
-          const angleRad = chartAngle * (Math.PI / 180);
-          
+          const angle = (i * 30 - 90) * (Math.PI / 180);
           return (
             <line
-              key={`zodiac-div-${i}`}
-              x1={center + Math.cos(angleRad) * innerRadius}
-              y1={center + Math.sin(angleRad) * innerRadius}
-              x2={center + Math.cos(angleRad) * outerRadius}
-              y2={center + Math.sin(angleRad) * outerRadius}
-              stroke={CHART_COLOR}
+              key={`div-${i}`}
+              x1={center + Math.cos(angle) * innerRadius}
+              y1={center + Math.sin(angle) * innerRadius}
+              x2={center + Math.cos(angle) * outerRadius}
+              y2={center + Math.sin(angle) * outerRadius}
+              stroke={RING_COLOR}
               strokeWidth={1}
-              opacity={0.6}
+              opacity={0.5}
             />
           );
         })}
         
-        {/* Zodiac Sign Labels (inside the ring like Co-Star) */}
-        {zodiacPositions.map(({ sign, labelX, labelY, labelRotation }) => {
-          // Rotate 180 degrees so text reads correctly from outside looking in
-          const adjustedRotation = labelRotation + 180;
+        {/* Highlight arcs for Big 3 signs */}
+        {zodiacPositions.filter(z => z.isSun || z.isMoon || z.isRising).map((z, i) => (
+          <path
+            key={`highlight-${z.sign}`}
+            d={getArcPath(z.startAngle, z.endAngle, (outerRadius + innerRadius) / 2)}
+            fill="none"
+            stroke={ACCENT_COLOR}
+            strokeWidth={outerRadius - innerRadius - 4}
+            opacity={0.25}
+          />
+        ))}
+        
+        {/* Zodiac labels - HORIZONTAL, outside the ring */}
+        {zodiacPositions.map(({ sign, abbrev, labelX, labelY, isSun, isMoon, isRising }) => {
+          const isHighlighted = isSun || isMoon || isRising;
           
           return (
             <text
@@ -423,113 +163,194 @@ export const BirthChartDiagram = ({
               y={labelY}
               textAnchor="middle"
               dominantBaseline="central"
-              fill={CHART_COLOR}
-              opacity={1}
+              fill={isHighlighted ? ACCENT_COLOR : MUTED_COLOR}
               style={{ 
-                fontSize: '10px', 
+                fontSize: isHighlighted ? '13px' : '11px', 
                 fontFamily: 'DM Sans, sans-serif',
-                letterSpacing: '0.08em',
-                fontWeight: 500,
+                fontWeight: isHighlighted ? 600 : 400,
+                letterSpacing: '0.05em',
               }}
-              transform={`rotate(${adjustedRotation}, ${labelX}, ${labelY})`}
             >
-              {sign.toUpperCase()}
+              {abbrev}
             </text>
           );
         })}
         
-        {/* Planet Positions */}
-        {planets.map((planet, i) => {
-          const angleRad = planet.displayAngle * (Math.PI / 180);
-          const x = center + Math.cos(angleRad) * planet.radius;
-          const y = center + Math.sin(angleRad) * planet.radius;
-          
-          // Use Tabler icons for Sun and Moon, text symbols for others
-          const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
-          const isSelected = selectedPlanet === planet.label;
-          
-          return (
-            <g 
-              key={i} 
-              onClick={() => setSelectedPlanet(isSelected ? null : planet.label)}
-              style={{ cursor: 'pointer' }}
-            >
-              {/* Planet symbol only - no circular outline */}
-              {isSunOrMoon ? (
-                <foreignObject
-                  x={x - 10}
-                  y={y - 10}
-                  width={20}
-                  height={20}
-                >
-                  <div 
-                    className="flex items-center justify-center w-full h-full" 
-                    style={{ 
-                      color: CHART_COLOR,
-                      opacity: isSelected ? 1 : 0.9 
-                    }}
-                  >
-                    {planet.label === 'Sun' ? (
-                      <IconSun size={18} strokeWidth={1.5} />
-                    ) : (
-                      <IconMoon size={18} strokeWidth={1.5} />
-                    )}
-                  </div>
-                </foreignObject>
-              ) : (
+        {/* Subtle connecting lines in center (very faint) */}
+        {bigThreePositions[0].sign && bigThreePositions[1].sign && (
+          <line
+            x1={bigThreePositions[0].x}
+            y1={bigThreePositions[0].y + 20}
+            x2={bigThreePositions[1].x}
+            y2={bigThreePositions[1].y - 20}
+            stroke={RING_COLOR}
+            strokeWidth={1}
+            opacity={0.3}
+            strokeDasharray="4,4"
+          />
+        )}
+        {bigThreePositions[0].sign && bigThreePositions[2].sign && (
+          <line
+            x1={bigThreePositions[0].x}
+            y1={bigThreePositions[0].y + 20}
+            x2={bigThreePositions[2].x}
+            y2={bigThreePositions[2].y - 20}
+            stroke={RING_COLOR}
+            strokeWidth={1}
+            opacity={0.3}
+            strokeDasharray="4,4"
+          />
+        )}
+        {bigThreePositions[1].sign && bigThreePositions[2].sign && (
+          <line
+            x1={bigThreePositions[1].x + 20}
+            y1={bigThreePositions[1].y}
+            x2={bigThreePositions[2].x - 20}
+            y2={bigThreePositions[2].y}
+            stroke={RING_COLOR}
+            strokeWidth={1}
+            opacity={0.3}
+            strokeDasharray="4,4"
+          />
+        )}
+        
+        {/* Big 3 placements - the main focus */}
+        {bigThreePositions.map(({ type, sign, x, y, label }) => {
+          if (!sign) {
+            // Show placeholder for missing data
+            return (
+              <g key={type}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={28}
+                  fill="#2A2A2A"
+                  stroke={RING_COLOR}
+                  strokeWidth={1}
+                  strokeDasharray="4,4"
+                  opacity={0.5}
+                />
                 <text
                   x={x}
-                  y={y}
+                  y={y - 4}
                   textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={CHART_COLOR}
-                  opacity={isSelected ? 1 : 0.9}
-                  style={{ fontSize: '16px', fontFamily: 'serif' }}
+                  fill={MUTED_COLOR}
+                  style={{ fontSize: '10px', fontFamily: 'DM Sans, sans-serif' }}
+                  opacity={0.5}
                 >
-                  {planet.symbol}
+                  {label}
                 </text>
-              )}
+                <text
+                  x={x}
+                  y={y + 10}
+                  textAnchor="middle"
+                  fill={MUTED_COLOR}
+                  style={{ fontSize: '8px', fontFamily: 'DM Sans, sans-serif' }}
+                  opacity={0.4}
+                >
+                  Add data
+                </text>
+              </g>
+            );
+          }
+          
+          const symbol = ZODIAC_SYMBOLS[sign];
+          const signName = sign.charAt(0).toUpperCase() + sign.slice(1);
+          
+          return (
+            <g key={type}>
+              {/* Glow effect */}
+              <circle
+                cx={x}
+                cy={y}
+                r={32}
+                fill="url(#glowGradient)"
+                opacity={0.4}
+              />
+              
+              {/* Main circle */}
+              <circle
+                cx={x}
+                cy={y}
+                r={28}
+                fill="#252525"
+                stroke={ACCENT_COLOR}
+                strokeWidth={1.5}
+              />
+              
+              {/* Icon */}
+              <foreignObject
+                x={x - 12}
+                y={y - 18}
+                width={24}
+                height={24}
+              >
+                <div className="w-full h-full flex items-center justify-center">
+                  {type === 'sun' && <IconSun size={20} className="text-[#D4A574]" />}
+                  {type === 'moon' && <IconMoon size={20} className="text-[#D4A574]" />}
+                  {type === 'rising' && <IconArrowUp size={20} className="text-[#D4A574]" />}
+                </div>
+              </foreignObject>
+              
+              {/* Zodiac symbol */}
+              <text
+                x={x}
+                y={y + 14}
+                textAnchor="middle"
+                fill={TEXT_COLOR}
+                style={{ fontSize: '14px', fontFamily: 'serif' }}
+              >
+                {symbol}
+              </text>
+              
+              {/* Label below */}
+              <text
+                x={x}
+                y={y + 48}
+                textAnchor="middle"
+                fill={MUTED_COLOR}
+                style={{ 
+                  fontSize: '9px', 
+                  fontFamily: 'DM Sans, sans-serif',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {label}
+              </text>
+              
+              {/* Sign name below label */}
+              <text
+                x={x}
+                y={y + 60}
+                textAnchor="middle"
+                fill={TEXT_COLOR}
+                style={{ 
+                  fontSize: '11px', 
+                  fontFamily: 'Source Serif 4, serif',
+                }}
+              >
+                {signName}
+              </text>
             </g>
           );
         })}
         
-        {/* Center Point */}
-        <circle
-          cx={center}
-          cy={center}
-          r={3}
-          fill={CHART_COLOR}
-          opacity={0.6}
-        />
+        {/* Gradient definitions */}
+        <defs>
+          <radialGradient id="glowGradient">
+            <stop offset="0%" stopColor={ACCENT_COLOR} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={ACCENT_COLOR} stopOpacity="0" />
+          </radialGradient>
+        </defs>
       </svg>
-      </div>
       
-      {/* Selected Planet Detail */}
-      <div 
-        className="h-12 flex items-center justify-center transition-opacity duration-200"
-        style={{ opacity: selectedPlanetData ? 1 : 0 }}
-      >
-        {selectedPlanetData && (
-          <p 
-            className="text-center"
-            style={{ 
-              color: CHART_COLOR, 
-              fontFamily: 'Source Serif 4, serif',
-              fontSize: '14px',
-              letterSpacing: '0.02em'
-            }}
-          >
-            {selectedPlanetData.label} — {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} house
-          </p>
-        )}
+      {/* Legend / hint */}
+      <div className="mt-4 text-center">
+        <p className="text-[10px] text-foreground/30 tracking-wide">
+          Your Big 3 • The core of your chart
+        </p>
       </div>
     </div>
   );
-};
-
-// Helper for ordinal suffix
-const getOrdinalSuffix = (n: number): string => {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return s[(v - 20) % 10] || s[v] || s[0];
 };
