@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { ParentBirthdayPrompt } from "./ParentBirthdayPrompt";
 import { RelationshipMap } from "./RelationshipMap";
 import { RelationshipDetail } from "./RelationshipDetail";
-import { getZodiacFromBirthday } from "@/lib/zodiac";
+import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
 
 interface Baby {
   id: string;
@@ -92,6 +92,25 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
     return members;
   }, [babies, userProfile, parentHasBirthday, parentName]);
 
+  // Determine which constellation to use: parent's sign first, then first child's sign
+  const constellationSign: ZodiacSign = useMemo(() => {
+    // Try parent's sign first
+    if (userProfile?.birthday) {
+      const parentSign = getZodiacFromBirthday(userProfile.birthday);
+      if (parentSign) return parentSign;
+    }
+    
+    // Fall back to first child's sign
+    const firstChildWithBirthday = babies.find(b => b.birthday);
+    if (firstChildWithBirthday?.birthday) {
+      const childSign = getZodiacFromBirthday(firstChildWithBirthday.birthday);
+      if (childSign) return childSign;
+    }
+    
+    // Default fallback
+    return 'sagittarius';
+  }, [userProfile?.birthday, babies]);
+
   const handleConnectionTap = (from: FamilyMember, to: FamilyMember) => {
     // If same connection tapped again, close it
     if (selectedConnection && 
@@ -127,6 +146,7 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         {familyMembers.length > 0 ? (
           <RelationshipMap
             members={familyMembers}
+            constellationSign={constellationSign}
             selectedConnection={selectedConnection}
             onConnectionTap={handleConnectionTap}
           />

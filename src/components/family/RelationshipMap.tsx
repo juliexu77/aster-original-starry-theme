@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
+import { CONSTELLATION_DATA, getMemberStarAssignments } from "@/lib/constellation-data";
 
 interface FamilyMember {
   id: string;
@@ -13,48 +14,17 @@ interface FamilyMember {
 
 interface RelationshipMapProps {
   members: FamilyMember[];
+  constellationSign: ZodiacSign;
   selectedConnection: { from: FamilyMember; to: FamilyMember } | null;
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Sagittarius constellation star positions (normalized 0-1 coordinates)
-// Based on actual astronomical positions of key stars
-const SAGITTARIUS_STARS = [
-  { id: 'kaus-australis', x: 0.45, y: 0.72, size: 3.5, label: 'Kaus Australis' }, // Brightest - epsilon Sgr
-  { id: 'nunki', x: 0.68, y: 0.38, size: 3, label: 'Nunki' }, // sigma Sgr
-  { id: 'ascella', x: 0.55, y: 0.55, size: 2.5, label: 'Ascella' }, // zeta Sgr
-  { id: 'kaus-media', x: 0.38, y: 0.58, size: 2.5, label: 'Kaus Media' }, // delta Sgr
-  { id: 'kaus-borealis', x: 0.28, y: 0.45, size: 2.5, label: 'Kaus Borealis' }, // lambda Sgr
-  { id: 'albaldah', x: 0.52, y: 0.25, size: 2, label: 'Albaldah' }, // pi Sgr
-  { id: 'phi', x: 0.72, y: 0.58, size: 2, label: 'Phi' }, // phi Sgr
-  { id: 'tau', x: 0.62, y: 0.68, size: 2, label: 'Tau' }, // tau Sgr
-];
-
-// Constellation lines connecting the stars (teapot asterism)
-const CONSTELLATION_LINES = [
-  ['kaus-australis', 'kaus-media'],
-  ['kaus-media', 'kaus-borealis'],
-  ['kaus-australis', 'ascella'],
-  ['ascella', 'phi'],
-  ['phi', 'nunki'],
-  ['nunki', 'albaldah'],
-  ['ascella', 'tau'],
-  ['tau', 'kaus-australis'],
-];
-
 // Map family member positions to specific stars based on their role
-const getMemberStarPositions = (members: FamilyMember[]) => {
-  const positions: { member: FamilyMember; star: typeof SAGITTARIUS_STARS[0] }[] = [];
+const getMemberStarPositions = (members: FamilyMember[], sign: ZodiacSign) => {
+  const constellation = CONSTELLATION_DATA[sign];
+  const starAssignments = getMemberStarAssignments(sign);
   
-  // Priority star assignments
-  const starAssignments = [
-    'kaus-australis', // Parent (brightest)
-    'nunki',          // First child or partner
-    'kaus-borealis',  // Second child
-    'albaldah',       // Third child
-    'phi',            // Fourth child
-    'tau',            // Fifth child
-  ];
+  const positions: { member: FamilyMember; star: typeof constellation.stars[0] }[] = [];
   
   // Sort: parents first, then partners, then children
   const sorted = [...members].sort((a, b) => {
@@ -64,7 +34,7 @@ const getMemberStarPositions = (members: FamilyMember[]) => {
   
   sorted.forEach((member, idx) => {
     const starId = starAssignments[idx] || starAssignments[starAssignments.length - 1];
-    const star = SAGITTARIUS_STARS.find(s => s.id === starId);
+    const star = constellation.stars.find(s => s.id === starId);
     if (star) {
       positions.push({ member, star });
     }
@@ -87,12 +57,16 @@ const generateBackgroundStars = (count: number) => {
   return stars;
 };
 
-export const RelationshipMap = ({ members, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
+export const RelationshipMap = ({ members, constellationSign, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
   const width = 340;
   const height = 300;
   const padding = 50;
   
-  const memberPositions = useMemo(() => getMemberStarPositions(members), [members]);
+  const constellation = CONSTELLATION_DATA[constellationSign];
+  const memberPositions = useMemo(
+    () => getMemberStarPositions(members, constellationSign), 
+    [members, constellationSign]
+  );
   const backgroundStars = useMemo(() => generateBackgroundStars(25), []);
   
   // Build connections between family members
@@ -168,8 +142,8 @@ export const RelationshipMap = ({ members, selectedConnection, onConnectionTap }
           />
         ))}
         
-        {/* Sagittarius constellation stars (background) */}
-        {SAGITTARIUS_STARS.map((star) => (
+        {/* Zodiac constellation stars (background) */}
+        {constellation.stars.map((star) => (
           <circle
             key={`const-star-${star.id}`}
             cx={toPixelX(star.x)}
@@ -180,10 +154,10 @@ export const RelationshipMap = ({ members, selectedConnection, onConnectionTap }
           />
         ))}
         
-        {/* Sagittarius constellation lines (very subtle) */}
-        {CONSTELLATION_LINES.map(([fromId, toId], i) => {
-          const fromStar = SAGITTARIUS_STARS.find(s => s.id === fromId);
-          const toStar = SAGITTARIUS_STARS.find(s => s.id === toId);
+        {/* Zodiac constellation lines (very subtle) */}
+        {constellation.lines.map(([fromId, toId], i) => {
+          const fromStar = constellation.stars.find(s => s.id === fromId);
+          const toStar = constellation.stars.find(s => s.id === toId);
           if (!fromStar || !toStar) return null;
           
           return (
