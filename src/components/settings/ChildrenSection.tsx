@@ -268,6 +268,25 @@ export const ChildrenSection = ({
             <p className="text-[10px] text-foreground/30">
               Time & location help calculate moon sign accurately
             </p>
+            
+            {/* Developmental Baseline */}
+            <div className="pt-2 border-t border-foreground/5">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setShowRecalibration(true);
+                }}
+                className="w-full flex items-center justify-between py-3 text-left"
+              >
+                <div>
+                  <p className="text-[13px] text-foreground/80">Update developmental baseline</p>
+                  <p className="text-[11px] text-foreground/40">
+                    Last updated: {formatLastCalibrated(calibration)}
+                  </p>
+                </div>
+                <RefreshCw className="w-4 h-4 text-foreground/30" />
+              </button>
+            </div>
           </div>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button 
@@ -306,6 +325,22 @@ export const ChildrenSection = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Recalibration Sheet */}
+      {selectedBaby?.birthday && (
+        <RecalibrationSheet
+          open={showRecalibration}
+          onOpenChange={setShowRecalibration}
+          babyName={selectedBaby.name}
+          babyBirthday={selectedBaby.birthday}
+          calibration={calibration}
+          onComplete={async (data: CalibrationData, emergingFlags: Record<string, boolean>) => {
+            if (!selectedBaby?.id || !household?.id) return;
+            await saveCalibration(selectedBaby.id, household.id, data, emergingFlags);
+            await refetch();
+          }}
+        />
+      )}
     </>
   );
 };
