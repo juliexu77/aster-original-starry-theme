@@ -136,8 +136,8 @@ export const BirthChartDiagram = ({
     return starList;
   }, [center, size]);
 
-  // State for selected planet
-  const [selectedPlanet, setSelectedPlanet] = useState<string | null>(null);
+  // State for selected planet with position
+  const [selectedPlanet, setSelectedPlanet] = useState<{ name: string; x: number; y: number } | null>(null);
 
   // Get sign name from absolute degree
   const getSignFromDegree = (absDegree: number): ZodiacSign => {
@@ -317,7 +317,7 @@ export const BirthChartDiagram = ({
 
   // Get selected planet details
   const selectedPlanetData = selectedPlanet 
-    ? planets.find(p => p.label === selectedPlanet) 
+    ? planets.find(p => p.label === selectedPlanet.name) 
     : null;
 
   return (
@@ -420,14 +420,14 @@ export const BirthChartDiagram = ({
           
           // Use Tabler icons for Sun and Moon, text symbols for others
           const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
-          const isSelected = selectedPlanet === planet.label;
+          const isSelected = selectedPlanet?.name === planet.label;
           
           return (
             <g 
               key={i} 
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedPlanet(isSelected ? null : planet.label);
+                setSelectedPlanet(isSelected ? null : { name: planet.label, x, y });
               }}
               style={{ cursor: 'pointer' }}
             >
@@ -459,6 +459,81 @@ export const BirthChartDiagram = ({
           );
         })}
         
+        {/* Popup tooltip for selected planet */}
+        {selectedPlanet && selectedPlanetData && (() => {
+          // Calculate tooltip position - offset from planet
+          const tooltipWidth = 140;
+          const tooltipHeight = 52;
+          const padding = 12;
+          
+          // Determine best position for tooltip (avoid edges)
+          let tooltipX = selectedPlanet.x - tooltipWidth / 2;
+          let tooltipY = selectedPlanet.y - tooltipHeight - padding - 20;
+          
+          // Keep within bounds
+          if (tooltipX < 10) tooltipX = 10;
+          if (tooltipX + tooltipWidth > size - 10) tooltipX = size - tooltipWidth - 10;
+          if (tooltipY < 10) {
+            // Show below planet instead
+            tooltipY = selectedPlanet.y + padding + 20;
+          }
+          
+          return (
+            <g>
+              {/* Tooltip background */}
+              <rect
+                x={tooltipX}
+                y={tooltipY}
+                width={tooltipWidth}
+                height={tooltipHeight}
+                rx={8}
+                ry={8}
+                fill="rgba(20, 20, 25, 0.95)"
+                stroke="rgba(255, 255, 255, 0.2)"
+                strokeWidth={1}
+              />
+              {/* Pointer triangle */}
+              <polygon
+                points={`
+                  ${selectedPlanet.x - 6},${tooltipY + tooltipHeight} 
+                  ${selectedPlanet.x + 6},${tooltipY + tooltipHeight} 
+                  ${selectedPlanet.x},${tooltipY + tooltipHeight + 8}
+                `}
+                fill="rgba(20, 20, 25, 0.95)"
+              />
+              {/* Planet name */}
+              <text
+                x={tooltipX + tooltipWidth / 2}
+                y={tooltipY + 18}
+                textAnchor="middle"
+                fill="#FFFFFF"
+                style={{ 
+                  fontSize: '13px', 
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontWeight: 600,
+                  letterSpacing: '0.02em'
+                }}
+              >
+                {selectedPlanetData.label}
+              </text>
+              {/* Position details */}
+              <text
+                x={tooltipX + tooltipWidth / 2}
+                y={tooltipY + 38}
+                textAnchor="middle"
+                fill="rgba(255, 255, 255, 0.7)"
+                style={{ 
+                  fontSize: '11px', 
+                  fontFamily: 'DM Sans, sans-serif',
+                  letterSpacing: '0.02em'
+                }}
+              >
+                {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} house
+              </text>
+            </g>
+          );
+        })()}
+        
         {/* Center Point */}
         <circle
           cx={center}
@@ -468,26 +543,6 @@ export const BirthChartDiagram = ({
           opacity={0.6}
         />
       </svg>
-      </div>
-      
-      {/* Selected Planet Detail */}
-      <div 
-        className="h-12 flex items-center justify-center transition-opacity duration-200"
-        style={{ opacity: selectedPlanetData ? 1 : 0 }}
-      >
-        {selectedPlanetData && (
-          <p 
-            className="text-center"
-            style={{ 
-              color: CHART_COLOR, 
-              fontFamily: 'Source Serif 4, serif',
-              fontSize: '14px',
-              letterSpacing: '0.02em'
-            }}
-          >
-            {selectedPlanetData.label} — {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} house
-          </p>
-        )}
       </div>
     </div>
   );
