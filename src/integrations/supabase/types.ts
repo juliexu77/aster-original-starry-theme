@@ -68,7 +68,9 @@ export type Database = {
           household_id: string
           id: string
           language_sounds: string | null
+          last_prompt_dismissed_at: string | null
           physical_skills: string[] | null
+          prompt_dismiss_count: number
           sleep_naps: string | null
           social_separation: string | null
           updated_at: string
@@ -82,7 +84,9 @@ export type Database = {
           household_id: string
           id?: string
           language_sounds?: string | null
+          last_prompt_dismissed_at?: string | null
           physical_skills?: string[] | null
+          prompt_dismiss_count?: number
           sleep_naps?: string | null
           social_separation?: string | null
           updated_at?: string
@@ -96,7 +100,9 @@ export type Database = {
           household_id?: string
           id?: string
           language_sounds?: string | null
+          last_prompt_dismissed_at?: string | null
           physical_skills?: string[] | null
+          prompt_dismiss_count?: number
           sleep_naps?: string | null
           social_separation?: string | null
           updated_at?: string

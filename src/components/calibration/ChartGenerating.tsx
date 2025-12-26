@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 interface ChartGeneratingProps {
   babyName: string;
-  onComplete: () => void;
+  onComplete?: () => void;
 }
 
 export function ChartGenerating({ babyName, onComplete }: ChartGeneratingProps) {
@@ -14,19 +14,19 @@ export function ChartGenerating({ babyName, onComplete }: ChartGeneratingProps) 
       setDots(prev => (prev % 3) + 1);
     }, 400);
 
-    // Complete after deliberate delay
-    const timer = setTimeout(() => {
+    // Complete after deliberate delay (only if onComplete provided)
+    const timer = onComplete ? setTimeout(() => {
       onComplete();
-    }, 2500);
+    }, 2500) : undefined;
 
     return () => {
       clearInterval(dotInterval);
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
     };
   }, [onComplete]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
+    <div className="min-h-[50vh] bg-background flex flex-col items-center justify-center px-5">
       <div className="text-center space-y-6">
         {/* Subtle animated circle */}
         <div className="relative w-16 h-16 mx-auto">

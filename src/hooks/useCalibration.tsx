@@ -18,6 +18,8 @@ export interface Calibration extends CalibrationData {
   emergingEarlyFlags: Record<string, boolean>;
   createdAt: string;
   updatedAt: string;
+  promptDismissCount: number;
+  lastPromptDismissedAt: string | null;
 }
 
 export function useCalibration(babyId?: string) {
@@ -55,6 +57,8 @@ export function useCalibration(babyId?: string) {
           emergingEarlyFlags: (data.emerging_early_flags as Record<string, boolean>) || {},
           createdAt: data.created_at,
           updatedAt: data.updated_at,
+          promptDismissCount: (data as any).prompt_dismiss_count ?? 0,
+          lastPromptDismissedAt: (data as any).last_prompt_dismissed_at ?? null,
         });
       }
     } catch (err: any) {
@@ -125,12 +129,29 @@ export function useCalibration(babyId?: string) {
     await fetchCalibration();
   };
 
+  const dismissPrompt = async (): Promise<void> => {
+    if (!calibration || !user) return;
+
+    const newCount = calibration.promptDismissCount + 1;
+    const { error: updateError } = await supabase
+      .from('baby_calibrations')
+      .update({
+        prompt_dismiss_count: newCount,
+        last_prompt_dismissed_at: new Date().toISOString(),
+      })
+      .eq('id', calibration.id);
+
+    if (updateError) throw updateError;
+    await fetchCalibration();
+  };
+
   return {
     calibration,
     loading,
     error,
     saveCalibration,
     updateCalibration,
+    dismissPrompt,
     refetch: fetchCalibration,
   };
 }
