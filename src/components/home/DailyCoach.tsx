@@ -2,6 +2,7 @@ import { BabyProfileCard } from "./BabyProfileCard";
 import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
+import { useCalibration } from "@/hooks/useCalibration";
 
 interface Baby {
   id: string;
@@ -12,6 +13,7 @@ interface Baby {
 interface DailyCoachProps {
   babyName?: string;
   babyBirthday?: string;
+  babyId?: string;
   babies?: Baby[];
   activeBabyId?: string;
   onSwitchBaby?: (babyId: string) => void;
@@ -29,12 +31,16 @@ const getAgeInWeeks = (birthday?: string): number => {
 export const DailyCoach = ({ 
   babyName, 
   babyBirthday,
+  babyId,
   babies = [],
   activeBabyId,
   onSwitchBaby
 }: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const displayName = babyName || "your baby";
+  
+  // Fetch calibration data for this baby
+  const { calibration } = useCalibration(babyId);
 
   if (!babyBirthday) {
     return (
@@ -67,7 +73,12 @@ export const DailyCoach = ({
 
         <div className="pb-24 space-y-4 pt-4">
           {/* Development Domains */}
-          <DevelopmentTable ageInWeeks={ageInWeeks} birthday={babyBirthday} babyName={displayName} />
+          <DevelopmentTable 
+            ageInWeeks={ageInWeeks} 
+            birthday={babyBirthday} 
+            babyName={displayName}
+            calibration={calibration}
+          />
 
           {/* Focus This Month */}
           <FocusThisMonth 

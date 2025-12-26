@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ArrowRight, Moon, Utensils } from "lucide-react";
+import { Footprints, Hand, MessageCircle, Users, Brain, Heart, ArrowRight, Moon, Utensils, ArrowUp } from "lucide-react";
 import { DomainDetailModal } from "./DomainDetailModal";
+import { Calibration } from "@/hooks/useCalibration";
 
 interface DevelopmentTableProps {
   ageInWeeks: number;
   birthday?: string;
   babyName?: string;
+  calibration?: Calibration | null;
 }
 
 // Stage data structure
@@ -24,6 +26,7 @@ export interface DomainData {
   stageName: string;
   stageDescription: string;
   isEmerging: boolean;
+  isEmergingEarly: boolean; // New: calibration-based "ahead of typical"
   totalStages: number;
 }
 
@@ -172,8 +175,108 @@ const calculateStage = (stages: StageInfo[], ageInWeeks: number): { stage: numbe
   };
 };
 
-// Get domain data with stage calculations
-export const getDomainData = (ageInWeeks: number): DomainData[] => {
+// Map calibration responses to stage overrides
+const getCalibrationOverrides = (calibration?: Calibration | null): Record<string, { stage: number; stageName: string; description: string }> => {
+  if (!calibration) return {};
+  
+  const overrides: Record<string, { stage: number; stageName: string; description: string }> = {};
+  
+  // Sleep: map nap count to stage
+  if (calibration.sleepNaps) {
+    switch (calibration.sleepNaps) {
+      case '3+':
+        overrides.sleep = { stage: 2, stageName: "Longer Stretches", description: "Consolidating nighttime sleep, 3-4 naps during day" };
+        break;
+      case '2':
+        overrides.sleep = { stage: 4, stageName: "Two Naps", description: "Drops to two predictable naps (morning and afternoon)" };
+        break;
+      case '1':
+        overrides.sleep = { stage: 6, stageName: "One Nap", description: "Consistent single afternoon nap (1-3 hours)" };
+        break;
+      case 'irregular':
+        overrides.sleep = { stage: 3, stageName: "Sleep Regression", description: "Sleep patterns are shifting and unpredictable right now" };
+        break;
+    }
+  }
+  
+  // Feeding: map solids progress to stage
+  if (calibration.feedingSolids) {
+    switch (calibration.feedingSolids) {
+      case 'not_started':
+        overrides.feeding = { stage: 1, stageName: "Exclusive Milk", description: "Breast milk or formula only" };
+        break;
+      case 'starting':
+        overrides.feeding = { stage: 2, stageName: "Starting Solids", description: "Introduction to purees and soft foods" };
+        break;
+      case 'regular':
+        overrides.feeding = { stage: 3, stageName: "Finger Foods", description: "Self-feeding with hands, three meals plus milk feeds" };
+        break;
+      case 'confident':
+        overrides.feeding = { stage: 4, stageName: "Table Foods", description: "Eating modified family meals confidently" };
+        break;
+    }
+  }
+  
+  // Physical: map highest skill to stage
+  if (calibration.physicalSkills && calibration.physicalSkills.length > 0) {
+    const skills = calibration.physicalSkills;
+    if (skills.includes('cruise')) {
+      overrides.physical = { stage: 6, stageName: "Cruising", description: "Walks sideways while holding furniture" };
+    } else if (skills.includes('stand')) {
+      overrides.physical = { stage: 6, stageName: "Cruising", description: "Standing independently, beginning to cruise" };
+    } else if (skills.includes('pull_stand')) {
+      overrides.physical = { stage: 5, stageName: "Pulling to Stand", description: "Pulls up on furniture, stands while holding on" };
+    } else if (skills.includes('crawl')) {
+      overrides.physical = { stage: 4, stageName: "Crawling", description: "Moves forward on hands and knees" };
+    } else if (skills.includes('sit')) {
+      overrides.physical = { stage: 3, stageName: "Sitting", description: "Sits independently without support" };
+    }
+  }
+  
+  // Language: map sounds to stage
+  if (calibration.languageSounds) {
+    switch (calibration.languageSounds) {
+      case 'coos':
+        overrides.language = { stage: 1, stageName: "Cooing", description: "Makes vowel sounds, responds to voices" };
+        break;
+      case 'babbling':
+        overrides.language = { stage: 3, stageName: "Babbling", description: "Repetitive consonant sounds without meaning" };
+        break;
+      case 'intentional':
+        overrides.language = { stage: 3, stageName: "Babbling", description: "Babbling with intentional intonation" };
+        break;
+      case 'words_few':
+        overrides.language = { stage: 4, stageName: "First Words", description: "1-5 words used with meaning" };
+        break;
+      case 'words_many':
+        overrides.language = { stage: 5, stageName: "Word Explosion", description: "Vocabulary growing rapidly, points and names objects" };
+        break;
+    }
+  }
+  
+  // Social: map separation response to stage
+  if (calibration.socialSeparation) {
+    switch (calibration.socialSeparation) {
+      case 'unaware':
+        overrides.social = { stage: 2, stageName: "Recognizing Caregivers", description: "Shows preference for familiar people" };
+        break;
+      case 'calm':
+        overrides.social = { stage: 2, stageName: "Recognizing Caregivers", description: "Notices caregiver leaving but remains calm" };
+        break;
+      case 'upset':
+        overrides.social = { stage: 4, stageName: "Attachment Behaviors", description: "Strong attachment, separation protest present" };
+        break;
+      case 'follows':
+        overrides.social = { stage: 4, stageName: "Attachment Behaviors", description: "Follows caregivers, strong attachment behaviors" };
+        break;
+    }
+  }
+  
+  return overrides;
+};
+
+// Get domain data with stage calculations and calibration overrides
+export const getDomainData = (ageInWeeks: number, calibration?: Calibration | null): DomainData[] => {
   const domains = [
     { id: "sleep", label: "SLEEP", icon: <Moon className="w-3.5 h-3.5" />, stages: SLEEP_STAGES },
     { id: "feeding", label: "FEEDING", icon: <Utensils className="w-3.5 h-3.5" />, stages: FEEDING_STAGES },
@@ -185,7 +288,28 @@ export const getDomainData = (ageInWeeks: number): DomainData[] => {
     { id: "emotional", label: "EMOTIONAL", icon: <Heart className="w-3.5 h-3.5" />, stages: EMOTIONAL_STAGES },
   ];
 
+  const overrides = getCalibrationOverrides(calibration);
+  const emergingFlags = calibration?.emergingEarlyFlags || {};
+
   return domains.map(domain => {
+    // Check if we have a calibration override for this domain
+    const override = overrides[domain.id];
+    
+    if (override) {
+      return {
+        id: domain.id,
+        label: domain.label,
+        icon: domain.icon,
+        currentStage: override.stage,
+        stageName: override.stageName,
+        stageDescription: override.description,
+        isEmerging: false,
+        isEmergingEarly: !!emergingFlags[domain.id],
+        totalStages: domain.stages.length,
+      };
+    }
+    
+    // Fall back to age-based calculation
     const stageInfo = calculateStage(domain.stages, ageInWeeks);
     return {
       id: domain.id,
@@ -195,13 +319,14 @@ export const getDomainData = (ageInWeeks: number): DomainData[] => {
       stageName: stageInfo.stageName,
       stageDescription: stageInfo.description,
       isEmerging: stageInfo.isEmerging,
+      isEmergingEarly: !!emergingFlags[domain.id],
       totalStages: domain.stages.length,
     };
   });
 };
 
-export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: DevelopmentTableProps) => {
-  const domains = getDomainData(ageInWeeks);
+export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }: DevelopmentTableProps) => {
+  const domains = getDomainData(ageInWeeks, calibration);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
 
   const selectedDomainData = selectedDomain 
@@ -256,8 +381,11 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName }: Development
                   </span>
                 </div>
 
-                {/* Column 3: Stage number with arrow (right) */}
+                {/* Column 3: Stage number with emerging early indicator (right) */}
                 <div className="w-14 flex items-center justify-end gap-1 py-3 pr-2.5 border-r border-border/30">
+                  {domain.isEmergingEarly && (
+                    <ArrowUp className="w-2.5 h-2.5 text-primary/70" />
+                  )}
                   <span className="text-[12px] font-light tracking-wide text-foreground/70">
                     {domain.currentStage}
                   </span>
