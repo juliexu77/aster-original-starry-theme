@@ -18,7 +18,7 @@ interface FocusThisMonthProps {
 type DomainKey = 'all' | 'sleep' | 'feeding' | 'physical' | 'fine_motor' | 'language' | 'social' | 'cognitive' | 'emotional';
 
 const DOMAIN_OPTIONS: { value: DomainKey; label: string }[] = [
-  { value: 'all', label: 'All domains' },
+  { value: 'all', label: 'Select…' },
   { value: 'sleep', label: 'SLEEP' },
   { value: 'feeding', label: 'FEEDING' },
   { value: 'physical', label: 'PHYSICAL' },
