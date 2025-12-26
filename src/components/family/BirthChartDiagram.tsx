@@ -336,8 +336,8 @@ export const BirthChartDiagram = ({
             width={20}
             height={20}
           >
-            <div className="flex items-center justify-center w-full h-full">
-              <IconComponent size={16} strokeWidth={1.5} color={GOLD} style={{ opacity: 0.9 }} />
+            <div className="flex items-center justify-center w-full h-full" style={{ color: GOLD, opacity: 0.9 }}>
+              <IconComponent size={16} strokeWidth={1.5} />
             </div>
           </foreignObject>
         ))}
@@ -377,11 +377,11 @@ export const BirthChartDiagram = ({
                   width={16}
                   height={16}
                 >
-                  <div className="flex items-center justify-center w-full h-full">
+                  <div className="flex items-center justify-center w-full h-full" style={{ color: GOLD }}>
                     {planet.label === 'Sun' ? (
-                      <IconSun size={14} strokeWidth={1.5} color={GOLD} />
+                      <IconSun size={14} strokeWidth={1.5} />
                     ) : (
-                      <IconMoon size={14} strokeWidth={1.5} color={GOLD} />
+                      <IconMoon size={14} strokeWidth={1.5} />
                     )}
                   </div>
                 </foreignObject>
