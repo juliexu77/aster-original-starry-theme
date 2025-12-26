@@ -400,8 +400,9 @@ export const BirthChartDiagram = ({
         {/* Planet Positions - tappable */}
         {planets.map((planet, i) => {
           const angleRad = planet.displayAngle * (Math.PI / 180);
-          const x = center + Math.cos(angleRad) * planet.radius;
-          const y = center + Math.sin(angleRad) * planet.radius;
+          // Use fixed planetRing radius for ALL planets to ensure same circle
+          const x = center + Math.cos(angleRad) * planetRing;
+          const y = center + Math.sin(angleRad) * planetRing;
           
           // Use Tabler icons for Sun and Moon, text symbols for others
           const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
