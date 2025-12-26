@@ -195,6 +195,9 @@ export const BirthChartDiagram = ({
       { symbol: PLANET_SYMBOLS.mars, label: 'Mars', offsetFromSun: 120 },
       { symbol: PLANET_SYMBOLS.jupiter, label: 'Jupiter', offsetFromSun: 180 },
       { symbol: PLANET_SYMBOLS.saturn, label: 'Saturn', offsetFromSun: 240 },
+      { symbol: PLANET_SYMBOLS.uranus, label: 'Uranus', offsetFromSun: 280 },
+      { symbol: PLANET_SYMBOLS.neptune, label: 'Neptune', offsetFromSun: 310 },
+      { symbol: PLANET_SYMBOLS.pluto, label: 'Pluto', offsetFromSun: 335 },
     ];
     
     otherPlanets.forEach((planet) => {
@@ -298,12 +301,10 @@ export const BirthChartDiagram = ({
       const normalizedAngle = ((chartAngle % 360) + 360) % 360;
       const isBottomHalf = normalizedAngle > 0 && normalizedAngle < 180;
       
-      // For curved text effect:
-      // - Top half: rotate so baseline follows outer curve (text readable from outside)
-      // - Bottom half: flip 180° so text is still readable from outside
+      // Rotate all labels 180° so they read from inside the circle
       const textRotation = isBottomHalf 
-        ? chartAngle + 90  // Bottom: baseline on outside, text reads outward
-        : chartAngle - 90; // Top: baseline on inside, text reads outward
+        ? chartAngle - 90  // Bottom: flipped
+        : chartAngle + 90; // Top: flipped
       
       return {
         sign,
