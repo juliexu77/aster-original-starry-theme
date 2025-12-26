@@ -105,8 +105,7 @@ export const BirthChartDiagram = ({
   const center = size / 2;
   const outerRadius = 290;      // Outer edge of zodiac ring
   const zodiacInnerRadius = 245; // Inner edge of zodiac ring (where signs are)
-  const planetCircleRadius = 220; // Circle where planets sit (visible ring) - closer to inner ring
-  const planetRing = 220;        // Where planets are placed - same as planetCircleRadius
+  const planetRing = 232;        // Where planets are placed - closer to zodiac inner ring
   
   // Calculate ascendant degree (start of rising sign)
   const ascendantDegree = useMemo(() => {
@@ -227,7 +226,7 @@ export const BirthChartDiagram = ({
       type: 'trine' | 'square' | 'opposition' | 'sextile';
     }[] = [];
     
-    const aspectRadius = planetCircleRadius - 30; // Draw aspects inside the planet circle
+    const aspectRadius = planetRing - 30; // Draw aspects inside the planet circle
     
     // Check each pair of planets for aspects
     for (let i = 0; i < planets.length; i++) {
@@ -268,7 +267,7 @@ export const BirthChartDiagram = ({
     }
     
     return aspects;
-  }, [planets, center, planetCircleRadius]);
+  }, [planets, center, planetRing]);
 
   // Generate house lines (12 divisions from inner to outer)
   const houseLines = useMemo(() => {
@@ -360,7 +359,7 @@ export const BirthChartDiagram = ({
         <circle
           cx={center}
           cy={center}
-          r={planetCircleRadius}
+          r={planetRing}
           fill="none"
           stroke={CHART_COLOR}
           strokeWidth={0.75}
@@ -450,40 +449,22 @@ export const BirthChartDiagram = ({
                 fill="transparent"
               />
               
-              {/* Planet symbol - use text for ALL planets for consistent positioning */}
-              {isSunOrMoon ? (
-                <text
-                  x={x}
-                  y={y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
-                  style={{ 
-                    fontSize: '22px', 
-                    fontFamily: 'serif',
-                    pointerEvents: 'none',
-                    transition: 'fill 0.2s ease',
-                  }}
-                >
-                  {planet.symbol}
-                </text>
-              ) : (
-                <text
-                  x={x}
-                  y={y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
-                  style={{ 
-                    fontSize: '22px', 
-                    fontFamily: 'serif',
-                    pointerEvents: 'none',
-                    transition: 'fill 0.2s ease',
-                  }}
-                >
-                  {planet.symbol}
-                </text>
-              )}
+              {/* Planet symbol - unified rendering for ALL planets */}
+              <text
+                x={x}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
+                style={{ 
+                  fontSize: '20px', 
+                  fontFamily: 'serif',
+                  pointerEvents: 'none',
+                  transition: 'fill 0.2s ease',
+                }}
+              >
+                {planet.symbol}
+              </text>
             </g>
           );
         })}
