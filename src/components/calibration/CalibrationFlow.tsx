@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { differenceInMonths } from "date-fns";
 
-interface CalibrationData {
+export interface CalibrationData {
   sleepNaps: string | null;
   feedingSolids: string | null;
   physicalSkills: string[];

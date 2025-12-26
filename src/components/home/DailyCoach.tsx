@@ -1,8 +1,14 @@
+import { useState, useMemo } from "react";
 import { BabyProfileCard } from "./BabyProfileCard";
 import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 import { useCalibration } from "@/hooks/useCalibration";
+import { useCalibrationPrompt, isCalibrationStale } from "@/hooks/useCalibrationPrompt";
+import { CalibrationCheckInModal } from "@/components/calibration/CalibrationCheckInModal";
+import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
+import { CalibrationData } from "@/components/calibration/CalibrationFlow";
+import { useHousehold } from "@/hooks/useHousehold";
 
 interface Baby {
   id: string;
@@ -28,6 +34,15 @@ const getAgeInWeeks = (birthday?: string): number => {
   return Math.floor(diffDays / 7);
 };
 
+const getAgeInMonths = (birthday?: string): number => {
+  if (!birthday) return 0;
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  const months = (today.getFullYear() - birthDate.getFullYear()) * 12 + 
+    (today.getMonth() - birthDate.getMonth());
+  return Math.max(0, months);
+};
+
 export const DailyCoach = ({ 
   babyName, 
   babyBirthday,
@@ -37,10 +52,48 @@ export const DailyCoach = ({
   onSwitchBaby
 }: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
+  const ageInMonths = getAgeInMonths(babyBirthday);
   const displayName = babyName || "your baby";
   
   // Fetch calibration data for this baby
-  const { calibration } = useCalibration(babyId);
+  const { calibration, saveCalibration, dismissPrompt, refetch } = useCalibration(babyId);
+  const { household } = useHousehold();
+  
+  // Check if we should show the age-based prompt
+  const { shouldShowPrompt } = useCalibrationPrompt(calibration, babyBirthday, ageInMonths);
+  
+  // Modal states
+  const [showCheckInModal, setShowCheckInModal] = useState(shouldShowPrompt);
+  const [showRecalibrationSheet, setShowRecalibrationSheet] = useState(false);
+  
+  // Update check-in modal visibility when prompt status changes
+  useMemo(() => {
+    if (shouldShowPrompt && !showRecalibrationSheet) {
+      setShowCheckInModal(true);
+    }
+  }, [shouldShowPrompt, showRecalibrationSheet]);
+
+  const handleMaybeLater = async () => {
+    await dismissPrompt();
+    setShowCheckInModal(false);
+  };
+
+  const handleUpdateFromModal = () => {
+    setShowCheckInModal(false);
+    setShowRecalibrationSheet(true);
+  };
+
+  const handleTapProfile = () => {
+    setShowRecalibrationSheet(true);
+  };
+
+  const handleRecalibrationComplete = async (data: CalibrationData, emergingFlags: Record<string, boolean>) => {
+    if (!babyId || !household?.id) return;
+    await saveCalibration(babyId, household.id, data, emergingFlags);
+    await refetch();
+  };
+
+  const staleCalibration = isCalibrationStale(calibration);
 
   if (!babyBirthday) {
     return (
@@ -68,6 +121,8 @@ export const DailyCoach = ({
             babies={babies}
             activeBabyId={activeBabyId}
             onSwitchBaby={onSwitchBaby}
+            onTapProfile={handleTapProfile}
+            isCalibrationStale={staleCalibration}
           />
         </div>
 
@@ -95,6 +150,28 @@ export const DailyCoach = ({
           </div>
         </div>
       </TimeOfDayBackground>
+
+      {/* Age-based check-in modal */}
+      <CalibrationCheckInModal
+        open={showCheckInModal}
+        onOpenChange={setShowCheckInModal}
+        babyName={displayName}
+        ageInMonths={ageInMonths}
+        onUpdateChart={handleUpdateFromModal}
+        onMaybeLater={handleMaybeLater}
+      />
+
+      {/* Recalibration sheet (from header tap) */}
+      {babyBirthday && (
+        <RecalibrationSheet
+          open={showRecalibrationSheet}
+          onOpenChange={setShowRecalibrationSheet}
+          babyName={displayName}
+          babyBirthday={babyBirthday}
+          calibration={calibration}
+          onComplete={handleRecalibrationComplete}
+        />
+      )}
     </div>
   );
 };

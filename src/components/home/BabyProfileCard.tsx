@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ChevronDown, Check } from "lucide-react";
+import { useMemo } from "react";
+import { ChevronDown, Check, Pencil } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacFromBirthday, getZodiacName, ZodiacSign } from "@/lib/zodiac";
 import {
@@ -21,6 +21,8 @@ interface BabyProfileCardProps {
   babies?: Baby[];
   activeBabyId?: string;
   onSwitchBaby?: (babyId: string) => void;
+  onTapProfile?: () => void;
+  isCalibrationStale?: boolean;
 }
 
 const getAgeInWeeks = (birthday?: string): number => {
@@ -68,7 +70,9 @@ export const BabyProfileCard = ({
   babyBirthday,
   babies = [],
   activeBabyId,
-  onSwitchBaby
+  onSwitchBaby,
+  onTapProfile,
+  isCalibrationStale = false
 }: BabyProfileCardProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageLabel = getAgeLabel(ageInWeeks);
@@ -85,15 +89,19 @@ export const BabyProfileCard = ({
   }, []);
 
   const profileContent = (
-    <div className={`flex items-start gap-4 ${hasMultipleBabies ? 'cursor-pointer' : ''}`}>
+    <div className={`flex items-start gap-4 ${hasMultipleBabies || onTapProfile ? 'cursor-pointer' : ''}`}>
       {/* Avatar with zodiac icon */}
-      <div className="w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0">
+      <div className="w-12 h-12 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center shrink-0 relative">
         {zodiacSign ? (
           <ZodiacIcon sign={zodiacSign} size={20} strokeWidth={1.5} className="text-foreground/50" />
         ) : (
           <span className="text-lg font-serif text-foreground/50">
             {babyName.charAt(0).toUpperCase()}
           </span>
+        )}
+        {/* Stale indicator dot */}
+        {isCalibrationStale && (
+          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-foreground/30" />
         )}
       </div>
 
@@ -105,6 +113,9 @@ export const BabyProfileCard = ({
           </h1>
           {hasMultipleBabies && (
             <ChevronDown className="w-4 h-4 text-foreground/40 mt-1" />
+          )}
+          {!hasMultipleBabies && onTapProfile && (
+            <Pencil className="w-3 h-3 text-foreground/20 mt-1 ml-1" />
           )}
         </div>
         
@@ -160,6 +171,10 @@ export const BabyProfileCard = ({
             })}
           </DropdownMenuContent>
         </DropdownMenu>
+      ) : onTapProfile ? (
+        <div onClick={onTapProfile}>
+          {profileContent}
+        </div>
       ) : (
         profileContent
       )}

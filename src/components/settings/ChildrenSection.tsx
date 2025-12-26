@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Baby, Plus, Archive, MapPin } from "lucide-react";
+import { Baby, Plus, Archive, MapPin, RefreshCw } from "lucide-react";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Baby as BabyType } from "@/hooks/useBabies";
+import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
+import { useCalibration } from "@/hooks/useCalibration";
+import { useHousehold } from "@/hooks/useHousehold";
+import { formatLastCalibrated } from "@/hooks/useCalibrationPrompt";
+import { CalibrationData } from "@/components/calibration/CalibrationFlow";
 
 interface ChildrenSectionProps {
   babies: BabyType[];
@@ -57,15 +62,20 @@ export const ChildrenSection = ({
   onArchiveBaby 
 }: ChildrenSectionProps) => {
   const { toast } = useToast();
+  const { household } = useHousehold();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+  const [showRecalibration, setShowRecalibration] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<BabyType | null>(null);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [birthLocation, setBirthLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Calibration hook for selected baby
+  const { calibration, saveCalibration, refetch } = useCalibration(selectedBaby?.id);
 
   const handleOpenAdd = () => {
     setName("");
