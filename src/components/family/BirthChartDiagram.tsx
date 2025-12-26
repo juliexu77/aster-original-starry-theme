@@ -105,8 +105,8 @@ export const BirthChartDiagram = ({
   const center = size / 2;
   const outerRadius = 290;      // Outer edge of zodiac ring
   const zodiacInnerRadius = 245; // Inner edge of zodiac ring (where signs are)
-  const planetCircleRadius = 190; // Circle where planets sit (visible ring)
-  const planetRing = 190;        // Where planets are placed
+  const planetCircleRadius = 220; // Circle where planets sit (visible ring) - closer to inner ring
+  const planetRing = 220;        // Where planets are placed - same as planetCircleRadius
   
   // Calculate ascendant degree (start of rising sign)
   const ascendantDegree = useMemo(() => {
@@ -450,29 +450,23 @@ export const BirthChartDiagram = ({
                 fill="transparent"
               />
               
-              {/* Planet symbol */}
+              {/* Planet symbol - use text for ALL planets for consistent positioning */}
               {isSunOrMoon ? (
-                <foreignObject
-                  x={x - 12}
-                  y={y - 12}
-                  width={24}
-                  height={24}
-                  style={{ pointerEvents: 'none' }}
+                <text
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
+                  style={{ 
+                    fontSize: '22px', 
+                    fontFamily: 'serif',
+                    pointerEvents: 'none',
+                    transition: 'fill 0.2s ease',
+                  }}
                 >
-                  <div 
-                    className="flex items-center justify-center w-full h-full" 
-                    style={{ 
-                      color: isSelected ? '#FFFFFF' : '#F0F0F0',
-                      transition: 'color 0.2s ease',
-                    }}
-                  >
-                    {planet.label === 'Sun' ? (
-                      <IconSun size={22} strokeWidth={1.5} fill="currentColor" />
-                    ) : (
-                      <IconMoon size={22} strokeWidth={1.5} fill="currentColor" />
-                    )}
-                  </div>
-                </foreignObject>
+                  {planet.symbol}
+                </text>
               ) : (
                 <text
                   x={x}
