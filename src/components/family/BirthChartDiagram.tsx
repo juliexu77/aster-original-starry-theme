@@ -295,7 +295,9 @@ export const BirthChartDiagram = ({
     });
   }, [center, innerRadius, outerRadius]);
 
-  // Generate zodiac sign positions (labels always upright/horizontal)
+  // Generate zodiac sign positions (curved text like Co-Star)
+  // Top half: text reads left-to-right curving along top
+  // Bottom half: text flipped so it reads left-to-right curving along bottom
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
       // Position in the middle of each 30° segment
@@ -305,10 +307,23 @@ export const BirthChartDiagram = ({
       // Labels positioned in the middle of the ring
       const labelRadius = (outerRadius + innerRadius) / 2;
       
+      // Determine if this sign is in the bottom half (angles between 0° and 180° in SVG coords)
+      // In SVG, 0° is right, 90° is down, so bottom half is roughly 0-180°
+      const normalizedAngle = ((chartAngle % 360) + 360) % 360;
+      const isBottomHalf = normalizedAngle > 0 && normalizedAngle < 180;
+      
+      // For curved text effect:
+      // - Top half: rotate so baseline follows outer curve (text readable from outside)
+      // - Bottom half: flip 180° so text is still readable from outside
+      const textRotation = isBottomHalf 
+        ? chartAngle + 90  // Bottom: baseline on outside, text reads outward
+        : chartAngle - 90; // Top: baseline on inside, text reads outward
+      
       return {
         sign,
         labelX: center + Math.cos(angleRad) * labelRadius,
         labelY: center + Math.sin(angleRad) * labelRadius,
+        textRotation,
       };
     });
   }, [ascendantDegree, center, outerRadius, innerRadius]);
@@ -387,8 +402,8 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Sign Labels (upright/horizontal) */}
-        {zodiacPositions.map(({ sign, labelX, labelY }) => (
+        {/* Zodiac Sign Labels (curved text like Co-Star) */}
+        {zodiacPositions.map(({ sign, labelX, labelY, textRotation }) => (
           <text
             key={`label-${sign}`}
             x={labelX}
@@ -398,11 +413,12 @@ export const BirthChartDiagram = ({
             fill="#FFFFFF"
             opacity={0.95}
             style={{ 
-              fontSize: '14px', 
+              fontSize: '12px', 
               fontFamily: 'DM Sans, sans-serif',
-              letterSpacing: '0.06em',
+              letterSpacing: '0.1em',
               fontWeight: 500,
             }}
+            transform={`rotate(${textRotation}, ${labelX}, ${labelY})`}
           >
             {sign.toUpperCase()}
           </text>
