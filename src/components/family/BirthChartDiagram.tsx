@@ -103,9 +103,10 @@ export const BirthChartDiagram = ({
 }: BirthChartDiagramProps) => {
   const size = 700;
   const center = size / 2;
-  const outerRadius = 290;      // Larger outer ring
-  const innerRadius = 245;      // Inner edge of zodiac ring
-  const planetRing = 170;       // Where planets are placed - single radius for all
+  const outerRadius = 290;      // Outer edge of zodiac ring
+  const zodiacInnerRadius = 245; // Inner edge of zodiac ring (where signs are)
+  const planetCircleRadius = 190; // Circle where planets sit (visible ring)
+  const planetRing = 190;        // Where planets are placed
   
   // Calculate ascendant degree (start of rising sign)
   const ascendantDegree = useMemo(() => {
@@ -237,7 +238,7 @@ export const BirthChartDiagram = ({
       type: 'trine' | 'square' | 'opposition' | 'sextile';
     }[] = [];
     
-    const aspectRadius = innerRadius - 20; // Draw aspects inside the inner circle
+    const aspectRadius = planetCircleRadius - 30; // Draw aspects inside the planet circle
     
     // Check each pair of planets for aspects
     for (let i = 0; i < planets.length; i++) {
@@ -279,21 +280,21 @@ export const BirthChartDiagram = ({
     }
     
     return aspects;
-  }, [planets, center, innerRadius]);
+  }, [planets, center, planetCircleRadius]);
 
   // Generate house lines (12 divisions from inner to outer)
   const houseLines = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const angle = (i * 30 - 90) * (Math.PI / 180); // Start from top
       return {
-        x1: center + Math.cos(angle) * innerRadius,
-        y1: center + Math.sin(angle) * innerRadius,
+        x1: center + Math.cos(angle) * zodiacInnerRadius,
+        y1: center + Math.sin(angle) * zodiacInnerRadius,
         x2: center + Math.cos(angle) * outerRadius,
         y2: center + Math.sin(angle) * outerRadius,
         house: i + 1,
       };
     });
-  }, [center, innerRadius, outerRadius]);
+  }, [center, zodiacInnerRadius, outerRadius]);
 
   // Generate zodiac sign positions (curved text like Co-Star)
   // Top half: text reads left-to-right curving along top
@@ -304,8 +305,8 @@ export const BirthChartDiagram = ({
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      // Labels positioned in the middle of the ring
-      const labelRadius = (outerRadius + innerRadius) / 2;
+      // Labels positioned in the middle of the zodiac ring
+      const labelRadius = (outerRadius + zodiacInnerRadius) / 2;
       
       // Determine if this sign is in the bottom half (angles between 0° and 180° in SVG coords)
       // In SVG, 0° is right, 90° is down, so bottom half is roughly 0-180°
@@ -326,7 +327,7 @@ export const BirthChartDiagram = ({
         textRotation,
       };
     });
-  }, [ascendantDegree, center, outerRadius, innerRadius]);
+  }, [ascendantDegree, center, outerRadius, zodiacInnerRadius]);
 
 
   // Get selected planet details
@@ -358,15 +359,26 @@ export const BirthChartDiagram = ({
           opacity={0.9}
         />
         
-        {/* Inner Circle */}
+        {/* Inner Circle (inner edge of zodiac ring) */}
         <circle
           cx={center}
           cy={center}
-          r={innerRadius}
+          r={zodiacInnerRadius}
           fill="none"
           stroke={CHART_COLOR}
           strokeWidth={1}
           opacity={0.7}
+        />
+        
+        {/* Planet Circle (where planets sit) */}
+        <circle
+          cx={center}
+          cy={center}
+          r={planetCircleRadius}
+          fill="none"
+          stroke={CHART_COLOR}
+          strokeWidth={0.75}
+          opacity={0.4}
         />
         
         {/* Aspect Lines - subtle */}
@@ -391,8 +403,8 @@ export const BirthChartDiagram = ({
           return (
             <line
               key={`zodiac-div-${i}`}
-              x1={center + Math.cos(angleRad) * innerRadius}
-              y1={center + Math.sin(angleRad) * innerRadius}
+              x1={center + Math.cos(angleRad) * zodiacInnerRadius}
+              y1={center + Math.sin(angleRad) * zodiacInnerRadius}
               x2={center + Math.cos(angleRad) * outerRadius}
               y2={center + Math.sin(angleRad) * outerRadius}
               stroke={CHART_COLOR}
