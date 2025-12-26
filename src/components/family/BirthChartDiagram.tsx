@@ -452,10 +452,10 @@ export const BirthChartDiagram = ({
               {/* Planet symbol */}
               {isSunOrMoon ? (
                 <foreignObject
-                  x={x - 14}
-                  y={y - 14}
-                  width={28}
-                  height={28}
+                  x={x - 12}
+                  y={y - 12}
+                  width={24}
+                  height={24}
                   style={{ pointerEvents: 'none' }}
                 >
                   <div 
@@ -466,9 +466,9 @@ export const BirthChartDiagram = ({
                     }}
                   >
                     {planet.label === 'Sun' ? (
-                      <IconSun size={26} strokeWidth={1.5} />
+                      <IconSun size={22} strokeWidth={1.5} fill="currentColor" />
                     ) : (
-                      <IconMoon size={26} strokeWidth={1.5} />
+                      <IconMoon size={22} strokeWidth={1.5} fill="currentColor" />
                     )}
                   </div>
                 </foreignObject>
@@ -480,7 +480,7 @@ export const BirthChartDiagram = ({
                   dominantBaseline="central"
                   fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
                   style={{ 
-                    fontSize: '24px', 
+                    fontSize: '22px', 
                     fontFamily: 'serif',
                     pointerEvents: 'none',
                     transition: 'fill 0.2s ease',
