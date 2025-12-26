@@ -355,16 +355,6 @@ export const BirthChartDiagram = ({
           opacity={0.7}
         />
         
-        {/* Planet Circle (where planets sit) */}
-        <circle
-          cx={center}
-          cy={center}
-          r={planetRing}
-          fill="none"
-          stroke={CHART_COLOR}
-          strokeWidth={0.75}
-          opacity={0.4}
-        />
         
         {/* Aspect Lines - subtle */}
         {aspectLines.map((aspect, i) => (
@@ -457,7 +447,7 @@ export const BirthChartDiagram = ({
                 dominantBaseline="central"
                 fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
                 style={{ 
-                  fontSize: '20px', 
+                  fontSize: isSunOrMoon ? '26px' : '20px', 
                   fontFamily: 'serif',
                   pointerEvents: 'none',
                   transition: 'fill 0.2s ease',
