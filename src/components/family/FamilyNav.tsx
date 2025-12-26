@@ -13,21 +13,21 @@ export const FamilyNav = () => {
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-background border-t border-border/30">
       <div className="flex items-center justify-around py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <button 
-          onClick={() => navigate("/family")}
+          onClick={() => navigate("/")}
           className="flex flex-col items-center gap-1 px-6 py-1"
         >
-          <Users className={`w-5 h-5 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-[10px] ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
+          <Users className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
             Child
           </span>
         </button>
 
         <button 
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/family")}
           className="flex flex-col items-center gap-1 px-6 py-1"
         >
-          <Sparkles className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
+          <Sparkles className={`w-5 h-5 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
             Chart
           </span>
         </button>
