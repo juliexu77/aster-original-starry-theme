@@ -56,7 +56,7 @@ export const DailyCoach = ({
   const displayName = babyName || "your baby";
   
   // Fetch calibration data for this baby
-  const { calibration, saveCalibration, dismissPrompt, refetch } = useCalibration(babyId);
+  const { calibration, saveCalibration, updateCalibration, dismissPrompt, refetch } = useCalibration(babyId);
   const { household } = useHousehold();
   
   // Check if we should show the age-based prompt
@@ -91,6 +91,27 @@ export const DailyCoach = ({
     if (!babyId || !household?.id) return;
     await saveCalibration(babyId, household.id, data, emergingFlags);
     await refetch();
+  };
+
+  // Handle milestone confirmation - update the emerging_early_flags in calibration
+  const handleMilestoneConfirm = async (domainId: string, stageNumber: number, date: string) => {
+    if (!calibration) return;
+    
+    // Create the flag key for this milestone
+    const flagKey = `${domainId}_stage_${stageNumber}`;
+    
+    // Update the emerging early flags to include this confirmed milestone
+    const updatedFlags = {
+      ...calibration.emergingEarlyFlags,
+      [flagKey]: true,
+    };
+    
+    try {
+      await updateCalibration({}, updatedFlags);
+      await refetch();
+    } catch (err) {
+      console.error('Error updating milestone:', err);
+    }
   };
 
   const staleCalibration = isCalibrationStale(calibration);
@@ -132,7 +153,9 @@ export const DailyCoach = ({
             ageInWeeks={ageInWeeks} 
             birthday={babyBirthday} 
             babyName={displayName}
+            babyId={babyId}
             calibration={calibration}
+            onMilestoneConfirm={handleMilestoneConfirm}
           />
 
           {/* Focus This Month */}
