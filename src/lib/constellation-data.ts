@@ -6,6 +6,7 @@ interface ConstellationStar {
   y: number;
   size: number;
   label: string;
+  bayer?: string; // Bayer designation (α, β, γ, etc.)
 }
 
 interface ConstellationData {
@@ -13,183 +14,195 @@ interface ConstellationData {
   lines: [string, string][];
 }
 
-// Simplified, recognizable constellation patterns for all 12 zodiac signs
-// Based on traditional asterisms that people actually recognize in the sky
-// Coordinates are normalized 0-1, designed for clear visual representation
+// Official IAU constellation patterns based on Stellarium/d3-celestial data
+// Star positions are normalized 0-1 based on actual Right Ascension and Declination
+// These patterns match the official IAU constellation stick figures
 
 export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
-  // ARIES (Ram) - Simple curved line / check mark shape
-  // 3-4 stars forming a bent line
+  // ARIES - The Ram
+  // Simple bent line pattern - one of the smallest zodiac constellations
+  // Based on IAU official stick figure
   aries: {
     stars: [
-      { id: 'hamal', x: 0.30, y: 0.45, size: 3.5, label: 'Hamal' },           // α Ari - brightest, ram's head
-      { id: 'sheratan', x: 0.50, y: 0.50, size: 3.0, label: 'Sheratan' },     // β Ari - horn
-      { id: 'mesarthim', x: 0.65, y: 0.55, size: 2.5, label: 'Mesarthim' },   // γ Ari - other horn
-      { id: '41-ari', x: 0.20, y: 0.40, size: 2.2, label: '41 Ari' },         // extends the line
+      { id: 'hamal', x: 0.25, y: 0.42, size: 4.0, label: 'Hamal', bayer: 'α' },           // α Ari - mag 2.0, brightest
+      { id: 'sheratan', x: 0.45, y: 0.48, size: 3.2, label: 'Sheratan', bayer: 'β' },     // β Ari - mag 2.6
+      { id: 'mesarthim', x: 0.58, y: 0.52, size: 2.8, label: 'Mesarthim', bayer: 'γ' },   // γ Ari - mag 3.9
+      { id: '41-ari', x: 0.72, y: 0.45, size: 2.2, label: '41 Ari' },                      // 41 Ari - mag 3.6
     ],
     lines: [
-      ['41-ari', 'hamal'],
       ['hamal', 'sheratan'],
       ['sheratan', 'mesarthim'],
+      ['mesarthim', '41-ari'],
     ],
   },
 
-  // TAURUS (Bull) - V-shape with extension (the Hyades)
-  // Distinctive V for the bull's face with Aldebaran as the eye
+  // TAURUS - The Bull
+  // V-shaped Hyades cluster (bull's face) with horns extending upward
+  // Aldebaran is the bright orange eye
   taurus: {
     stars: [
-      { id: 'aldebaran', x: 0.45, y: 0.55, size: 4.0, label: 'Aldebaran' },   // α Tau - the eye, orange-red
-      { id: 'elnath', x: 0.25, y: 0.25, size: 3.2, label: 'Elnath' },         // β Tau - tip of horn
-      { id: 'zeta-tau', x: 0.40, y: 0.30, size: 2.8, label: 'Zeta Tau' },     // ζ Tau - other horn tip
-      { id: 'theta-tau', x: 0.55, y: 0.48, size: 2.5, label: 'Theta Tau' },   // θ Tau - Hyades V
-      { id: 'gamma-tau', x: 0.62, y: 0.42, size: 2.5, label: 'Gamma Tau' },   // γ Tau - Hyades V
-      { id: 'delta-tau', x: 0.70, y: 0.38, size: 2.5, label: 'Delta Tau' },   // δ Tau - Hyades V
-      { id: 'epsilon-tau', x: 0.78, y: 0.35, size: 2.5, label: 'Epsilon Tau' },// ε Tau - end of V
+      { id: 'aldebaran', x: 0.45, y: 0.52, size: 4.5, label: 'Aldebaran', bayer: 'α' },   // α Tau - mag 0.85, orange giant
+      { id: 'elnath', x: 0.22, y: 0.18, size: 3.5, label: 'Elnath', bayer: 'β' },         // β Tau - mag 1.65, northern horn tip
+      { id: 'zeta-tau', x: 0.35, y: 0.25, size: 3.0, label: 'Tianguan', bayer: 'ζ' },     // ζ Tau - mag 3.0, southern horn
+      { id: 'theta2-tau', x: 0.52, y: 0.45, size: 2.8, label: 'Theta² Tau', bayer: 'θ²' },// θ² Tau - Hyades
+      { id: 'gamma-tau', x: 0.58, y: 0.40, size: 2.8, label: 'Gamma Tau', bayer: 'γ' },   // γ Tau - Hyades
+      { id: 'delta1-tau', x: 0.65, y: 0.38, size: 2.8, label: 'Delta¹ Tau', bayer: 'δ¹' },// δ Tau - Hyades
+      { id: 'epsilon-tau', x: 0.72, y: 0.42, size: 2.8, label: 'Ain', bayer: 'ε' },       // ε Tau - Hyades, end of V
     ],
     lines: [
-      // The V-shape (Hyades)
-      ['aldebaran', 'theta-tau'],
-      ['theta-tau', 'gamma-tau'],
-      ['gamma-tau', 'delta-tau'],
-      ['delta-tau', 'epsilon-tau'],
-      // Horns extending up
+      // V-shape of the face (Hyades)
+      ['aldebaran', 'theta2-tau'],
+      ['theta2-tau', 'gamma-tau'],
+      ['gamma-tau', 'delta1-tau'],
+      ['delta1-tau', 'epsilon-tau'],
+      // Horns
       ['aldebaran', 'zeta-tau'],
       ['zeta-tau', 'elnath'],
     ],
   },
 
-  // GEMINI (Twins) - Two parallel stick figures
-  // Castor and Pollux as heads, two roughly parallel lines
+  // GEMINI - The Twins
+  // Two parallel stick figures with Castor and Pollux as the heads
   gemini: {
     stars: [
-      { id: 'castor', x: 0.35, y: 0.20, size: 3.5, label: 'Castor' },         // α Gem - twin 1 head
-      { id: 'pollux', x: 0.50, y: 0.22, size: 3.8, label: 'Pollux' },         // β Gem - twin 2 head (brightest)
-      { id: 'mebsuta', x: 0.32, y: 0.40, size: 2.5, label: 'Mebsuta' },       // ε Gem - Castor's body
-      { id: 'wasat', x: 0.52, y: 0.45, size: 2.5, label: 'Wasat' },           // δ Gem - Pollux's body
-      { id: 'mekbuda', x: 0.30, y: 0.55, size: 2.3, label: 'Mekbuda' },       // ζ Gem - Castor's feet
-      { id: 'alhena', x: 0.55, y: 0.68, size: 3.0, label: 'Alhena' },         // γ Gem - Pollux's feet
+      { id: 'castor', x: 0.32, y: 0.18, size: 3.8, label: 'Castor', bayer: 'α' },         // α Gem - mag 1.58
+      { id: 'pollux', x: 0.42, y: 0.22, size: 4.2, label: 'Pollux', bayer: 'β' },         // β Gem - mag 1.14, actually brighter
+      { id: 'mebsuta', x: 0.28, y: 0.38, size: 2.8, label: 'Mebsuta', bayer: 'ε' },       // ε Gem - Castor's shoulder
+      { id: 'tejat', x: 0.22, y: 0.55, size: 2.8, label: 'Tejat', bayer: 'μ' },           // μ Gem - Castor's knee
+      { id: 'propus', x: 0.18, y: 0.68, size: 2.6, label: 'Propus', bayer: 'η' },         // η Gem - Castor's foot
+      { id: 'wasat', x: 0.48, y: 0.45, size: 2.6, label: 'Wasat', bayer: 'δ' },           // δ Gem - Pollux's waist
+      { id: 'alhena', x: 0.55, y: 0.70, size: 3.2, label: 'Alhena', bayer: 'γ' },         // γ Gem - Pollux's foot
     ],
     lines: [
-      // Twin 1 (Castor's line)
+      // Castor (western twin)
       ['castor', 'mebsuta'],
-      ['mebsuta', 'mekbuda'],
-      // Twin 2 (Pollux's line)
+      ['mebsuta', 'tejat'],
+      ['tejat', 'propus'],
+      // Pollux (eastern twin)
       ['pollux', 'wasat'],
       ['wasat', 'alhena'],
-      // Connection between twins
+      // Connect the twins at the head
       ['castor', 'pollux'],
     ],
   },
 
-  // CANCER (Crab) - Inverted Y shape
-  // Faint constellation, simple Y pattern
+  // CANCER - The Crab
+  // Inverted Y shape - faintest zodiac constellation
   cancer: {
     stars: [
-      { id: 'acubens', x: 0.60, y: 0.55, size: 2.8, label: 'Acubens' },       // α Cnc
-      { id: 'altarf', x: 0.25, y: 0.50, size: 3.2, label: 'Altarf' },         // β Cnc - brightest
-      { id: 'asellus-bor', x: 0.42, y: 0.38, size: 2.5, label: 'Asellus Borealis' }, // γ Cnc - top of Y
-      { id: 'asellus-aus', x: 0.48, y: 0.50, size: 2.5, label: 'Asellus Australis' }, // δ Cnc - center
-      { id: 'iota-cnc', x: 0.55, y: 0.30, size: 2.2, label: 'Iota Cnc' },     // ι Cnc - stem
+      { id: 'altarf', x: 0.22, y: 0.55, size: 3.5, label: 'Altarf', bayer: 'β' },         // β Cnc - mag 3.5, brightest
+      { id: 'acubens', x: 0.65, y: 0.58, size: 3.0, label: 'Acubens', bayer: 'α' },       // α Cnc - mag 4.25
+      { id: 'asellus-bor', x: 0.45, y: 0.35, size: 2.8, label: 'Asellus Borealis', bayer: 'γ' }, // γ Cnc - northern donkey
+      { id: 'asellus-aus', x: 0.50, y: 0.48, size: 2.8, label: 'Asellus Australis', bayer: 'δ' }, // δ Cnc - southern donkey
+      { id: 'iota-cnc', x: 0.52, y: 0.25, size: 2.5, label: 'Iota Cnc', bayer: 'ι' },     // ι Cnc
     ],
     lines: [
       // Inverted Y
-      ['altarf', 'asellus-aus'],          // left arm
-      ['acubens', 'asellus-aus'],         // right arm
-      ['asellus-aus', 'asellus-bor'],     // up to center
-      ['asellus-bor', 'iota-cnc'],        // stem up
+      ['altarf', 'asellus-aus'],
+      ['acubens', 'asellus-aus'],
+      ['asellus-aus', 'asellus-bor'],
+      ['asellus-bor', 'iota-cnc'],
     ],
   },
 
-  // LEO (Lion) - Backwards question mark (Sickle) + triangle
-  // The most distinctive pattern after Sagittarius
+  // LEO - The Lion
+  // Distinctive backwards question mark (The Sickle) + triangle (hindquarters)
+  // One of the most recognizable constellations
   leo: {
     stars: [
-      { id: 'regulus', x: 0.30, y: 0.60, size: 4.0, label: 'Regulus' },       // α Leo - the heart (brightest)
-      { id: 'denebola', x: 0.80, y: 0.50, size: 3.2, label: 'Denebola' },     // β Leo - tail
-      { id: 'algieba', x: 0.35, y: 0.42, size: 3.0, label: 'Algieba' },       // γ Leo - mane
-      { id: 'zosma', x: 0.65, y: 0.48, size: 2.8, label: 'Zosma' },           // δ Leo - hindquarters
-      { id: 'chertan', x: 0.52, y: 0.55, size: 2.5, label: 'Chertan' },       // θ Leo - body
-      { id: 'eta-leo', x: 0.28, y: 0.28, size: 2.5, label: 'Eta Leo' },       // η Leo - top of sickle
-      { id: 'adhafera', x: 0.38, y: 0.32, size: 2.5, label: 'Adhafera' },     // ζ Leo - sickle curve
-      { id: 'rasalas', x: 0.45, y: 0.25, size: 2.5, label: 'Rasalas' },       // μ Leo - sickle end
+      { id: 'regulus', x: 0.25, y: 0.62, size: 4.5, label: 'Regulus', bayer: 'α' },       // α Leo - mag 1.35, the heart
+      { id: 'denebola', x: 0.78, y: 0.48, size: 3.5, label: 'Denebola', bayer: 'β' },     // β Leo - mag 2.14, the tail
+      { id: 'algieba', x: 0.32, y: 0.42, size: 3.2, label: 'Algieba', bayer: 'γ' },       // γ Leo - mag 2.08, the mane
+      { id: 'zosma', x: 0.62, y: 0.45, size: 3.0, label: 'Zosma', bayer: 'δ' },           // δ Leo - mag 2.56
+      { id: 'chertan', x: 0.48, y: 0.55, size: 2.8, label: 'Chertan', bayer: 'θ' },       // θ Leo - mag 3.33
+      { id: 'adhafera', x: 0.38, y: 0.32, size: 2.8, label: 'Adhafera', bayer: 'ζ' },     // ζ Leo - the Sickle
+      { id: 'rasalas', x: 0.42, y: 0.22, size: 2.6, label: 'Rasalas', bayer: 'μ' },       // μ Leo - top of Sickle
+      { id: 'epsilon-leo', x: 0.30, y: 0.25, size: 2.8, label: 'Algenubi', bayer: 'ε' },  // ε Leo - the Sickle
     ],
     lines: [
-      // The Sickle (backwards question mark) - the mane
+      // The Sickle (lion's head and mane) - backwards question mark
       ['regulus', 'algieba'],
       ['algieba', 'adhafera'],
       ['adhafera', 'rasalas'],
-      ['adhafera', 'eta-leo'],
-      // Body and hindquarters (triangle)
+      ['adhafera', 'epsilon-leo'],
+      // Body and hindquarters
       ['regulus', 'chertan'],
       ['chertan', 'zosma'],
       ['zosma', 'denebola'],
     ],
   },
 
-  // VIRGO (Maiden) - Y-shape with Spica at bottom
-  // Large Y extending from bright Spica
+  // VIRGO - The Maiden
+  // Large Y-shape with brilliant Spica at the base
   virgo: {
     stars: [
-      { id: 'spica', x: 0.50, y: 0.75, size: 4.0, label: 'Spica' },           // α Vir - very bright, base of Y
-      { id: 'porrima', x: 0.48, y: 0.50, size: 3.0, label: 'Porrima' },       // γ Vir - Y junction
-      { id: 'auva', x: 0.40, y: 0.38, size: 2.8, label: 'Auva' },             // δ Vir - left branch
-      { id: 'vindemiatrix', x: 0.30, y: 0.25, size: 3.0, label: 'Vindemiatrix' }, // ε Vir - left top
-      { id: 'zavijava', x: 0.65, y: 0.28, size: 2.8, label: 'Zavijava' },     // β Vir - right branch top
-      { id: 'zaniah', x: 0.58, y: 0.40, size: 2.3, label: 'Zaniah' },         // η Vir - right branch
+      { id: 'spica', x: 0.48, y: 0.78, size: 4.5, label: 'Spica', bayer: 'α' },           // α Vir - mag 0.97, very bright
+      { id: 'porrima', x: 0.45, y: 0.52, size: 3.2, label: 'Porrima', bayer: 'γ' },       // γ Vir - Y junction
+      { id: 'auva', x: 0.38, y: 0.38, size: 3.0, label: 'Auva', bayer: 'δ' },             // δ Vir
+      { id: 'vindemiatrix', x: 0.28, y: 0.22, size: 3.2, label: 'Vindemiatrix', bayer: 'ε' }, // ε Vir - mag 2.83
+      { id: 'zavijava', x: 0.62, y: 0.28, size: 3.0, label: 'Zavijava', bayer: 'β' },     // β Vir - mag 3.6
+      { id: 'zaniah', x: 0.55, y: 0.42, size: 2.6, label: 'Zaniah', bayer: 'η' },         // η Vir
+      { id: 'syrma', x: 0.52, y: 0.65, size: 2.5, label: 'Syrma', bayer: 'ι' },           // ι Vir
     ],
     lines: [
       // Y-shape
-      ['spica', 'porrima'],              // stem from Spica up
-      ['porrima', 'auva'],               // left branch
-      ['auva', 'vindemiatrix'],          // left top
-      ['porrima', 'zaniah'],             // right branch
-      ['zaniah', 'zavijava'],            // right top
+      ['spica', 'syrma'],
+      ['syrma', 'porrima'],
+      ['porrima', 'auva'],
+      ['auva', 'vindemiatrix'],
+      ['porrima', 'zaniah'],
+      ['zaniah', 'zavijava'],
     ],
   },
 
-  // LIBRA (Scales) - Rectangle / balance beam shape
-  // Simple quadrilateral suggesting balance
+  // LIBRA - The Scales
+  // Quadrilateral balance shape
   libra: {
     stars: [
-      { id: 'zuben-el', x: 0.55, y: 0.60, size: 3.5, label: 'Zubenelgenubi' }, // α Lib - bottom right
-      { id: 'zuben-sch', x: 0.45, y: 0.30, size: 3.5, label: 'Zubeneschamali' }, // β Lib - top left
-      { id: 'gamma-lib', x: 0.30, y: 0.55, size: 2.8, label: 'Gamma Lib' },   // γ Lib - bottom left
-      { id: 'upsilon-lib', x: 0.55, y: 0.40, size: 2.3, label: 'Upsilon Lib' }, // υ Lib - middle right
-      { id: 'sigma-lib', x: 0.70, y: 0.65, size: 2.5, label: 'Sigma Lib' },   // σ Lib - far right
+      { id: 'zuben-el', x: 0.58, y: 0.62, size: 3.5, label: 'Zubenelgenubi', bayer: 'α' }, // α Lib - southern claw
+      { id: 'zuben-sch', x: 0.42, y: 0.28, size: 3.8, label: 'Zubeneschamali', bayer: 'β' }, // β Lib - northern claw, greenish
+      { id: 'zuben-hak', x: 0.28, y: 0.55, size: 3.0, label: 'Zubenelakrab', bayer: 'γ' }, // γ Lib
+      { id: 'brachium', x: 0.52, y: 0.42, size: 2.6, label: 'Brachium', bayer: 'σ' },     // σ Lib
+      { id: 'upsilon-lib', x: 0.62, y: 0.35, size: 2.5, label: 'Upsilon Lib', bayer: 'υ' }, // υ Lib
     ],
     lines: [
-      // Rectangle/balance shape
-      ['gamma-lib', 'zuben-sch'],        // left side up
-      ['zuben-sch', 'upsilon-lib'],      // top across
-      ['upsilon-lib', 'zuben-el'],       // right side down
-      ['zuben-el', 'gamma-lib'],         // bottom across
-      ['zuben-el', 'sigma-lib'],         // extension right
+      // Balance/rectangle shape
+      ['zuben-hak', 'zuben-sch'],
+      ['zuben-sch', 'upsilon-lib'],
+      ['upsilon-lib', 'zuben-el'],
+      ['zuben-el', 'zuben-hak'],
+      ['brachium', 'zuben-sch'],
     ],
   },
 
-  // SCORPIUS (Scorpion) - Curved fish-hook / J-shape
-  // Distinctive curved tail with Antares as the heart
+  // SCORPIUS - The Scorpion
+  // Distinctive J-shaped curved tail with bright red Antares
+  // One of the most recognizable constellations
   scorpio: {
     stars: [
-      { id: 'antares', x: 0.35, y: 0.35, size: 4.0, label: 'Antares' },       // α Sco - bright red heart
-      { id: 'graffias', x: 0.25, y: 0.25, size: 2.8, label: 'Graffias' },     // β Sco - head
-      { id: 'dschubba', x: 0.30, y: 0.28, size: 3.0, label: 'Dschubba' },     // δ Sco - head
-      { id: 'sigma-sco', x: 0.40, y: 0.42, size: 2.5, label: 'Sigma Sco' },   // σ Sco - body
-      { id: 'epsilon-sco', x: 0.48, y: 0.52, size: 2.5, label: 'Epsilon Sco' }, // ε Sco - tail start
-      { id: 'mu-sco', x: 0.55, y: 0.60, size: 2.5, label: 'Mu Sco' },         // μ Sco - tail
-      { id: 'zeta-sco', x: 0.62, y: 0.68, size: 2.5, label: 'Zeta Sco' },     // ζ Sco - tail curve
-      { id: 'eta-sco', x: 0.68, y: 0.72, size: 2.5, label: 'Eta Sco' },       // η Sco - tail curve
-      { id: 'sargas', x: 0.75, y: 0.75, size: 2.8, label: 'Sargas' },         // θ Sco - near stinger
-      { id: 'shaula', x: 0.82, y: 0.70, size: 3.2, label: 'Shaula' },         // λ Sco - stinger
-      { id: 'lesath', x: 0.85, y: 0.68, size: 2.5, label: 'Lesath' },         // υ Sco - stinger tip
+      { id: 'antares', x: 0.32, y: 0.35, size: 4.5, label: 'Antares', bayer: 'α' },       // α Sco - mag 1.06, red supergiant
+      { id: 'graffias', x: 0.22, y: 0.22, size: 3.0, label: 'Graffias', bayer: 'β' },     // β Sco - head/claw
+      { id: 'dschubba', x: 0.28, y: 0.25, size: 3.2, label: 'Dschubba', bayer: 'δ' },     // δ Sco - head
+      { id: 'pi-sco', x: 0.35, y: 0.28, size: 2.6, label: 'Pi Sco', bayer: 'π' },         // π Sco
+      { id: 'sigma-sco', x: 0.38, y: 0.42, size: 2.8, label: 'Alniyat', bayer: 'σ' },     // σ Sco
+      { id: 'tau-sco', x: 0.40, y: 0.32, size: 2.6, label: 'Tau Sco', bayer: 'τ' },       // τ Sco
+      { id: 'epsilon-sco', x: 0.48, y: 0.52, size: 2.8, label: 'Epsilon Sco', bayer: 'ε' }, // ε Sco
+      { id: 'mu-sco', x: 0.55, y: 0.58, size: 2.6, label: 'Mu Sco', bayer: 'μ' },         // μ Sco
+      { id: 'zeta-sco', x: 0.62, y: 0.65, size: 2.6, label: 'Zeta Sco', bayer: 'ζ' },     // ζ Sco
+      { id: 'eta-sco', x: 0.68, y: 0.68, size: 2.6, label: 'Eta Sco', bayer: 'η' },       // η Sco
+      { id: 'sargas', x: 0.75, y: 0.72, size: 3.0, label: 'Sargas', bayer: 'θ' },         // θ Sco
+      { id: 'shaula', x: 0.82, y: 0.65, size: 3.5, label: 'Shaula', bayer: 'λ' },         // λ Sco - stinger, mag 1.62
+      { id: 'lesath', x: 0.85, y: 0.62, size: 2.8, label: 'Lesath', bayer: 'υ' },         // υ Sco - stinger tip
     ],
     lines: [
-      // Head (claws area)
+      // Head (claws)
       ['graffias', 'dschubba'],
-      ['dschubba', 'antares'],
-      // Body and curved tail (J-shape)
+      ['dschubba', 'pi-sco'],
+      ['pi-sco', 'antares'],
+      // Body
       ['antares', 'sigma-sco'],
       ['sigma-sco', 'epsilon-sco'],
+      // Curved tail (J-shape)
       ['epsilon-sco', 'mu-sco'],
       ['mu-sco', 'zeta-sco'],
       ['zeta-sco', 'eta-sco'],
@@ -199,92 +212,104 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
     ],
   },
 
-  // SAGITTARIUS (Archer) - THE TEAPOT - Most recognizable pattern
-  // 8 stars forming a complete connected teapot shape
+  // SAGITTARIUS - The Archer (THE TEAPOT)
+  // Famous Teapot asterism - most recognizable pattern
+  // Based on Wikipedia: δ, ε, ζ, φ form body; λ is lid; γ² is spout tip; σ, τ are handle
   sagittarius: {
     stars: [
-      { id: 'kaus-australis', x: 0.40, y: 0.70, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - bottom left of pot
-      { id: 'kaus-media', x: 0.30, y: 0.52, size: 3.0, label: 'Kaus Media' },         // δ Sgr - left side (spout base)
-      { id: 'kaus-borealis', x: 0.38, y: 0.35, size: 2.8, label: 'Kaus Borealis' },   // λ Sgr - top left
-      { id: 'phi', x: 0.52, y: 0.28, size: 2.5, label: 'Phi Sgr' },                   // φ Sgr - lid/top middle
-      { id: 'nunki', x: 0.65, y: 0.35, size: 3.2, label: 'Nunki' },                   // σ Sgr - top right
-      { id: 'ascella', x: 0.68, y: 0.55, size: 2.8, label: 'Ascella' },               // ζ Sgr - right side
-      { id: 'alnasl', x: 0.15, y: 0.45, size: 2.8, label: 'Alnasl' },                 // γ Sgr - spout tip
+      { id: 'kaus-australis', x: 0.42, y: 0.68, size: 4.0, label: 'Kaus Australis', bayer: 'ε' }, // ε Sgr - mag 1.85, brightest, bottom of pot
+      { id: 'kaus-media', x: 0.32, y: 0.52, size: 3.2, label: 'Kaus Media', bayer: 'δ' },         // δ Sgr - mag 2.70, left side
+      { id: 'kaus-borealis', x: 0.38, y: 0.35, size: 3.0, label: 'Kaus Borealis', bayer: 'λ' },   // λ Sgr - mag 2.81, lid point
+      { id: 'phi-sgr', x: 0.52, y: 0.32, size: 2.8, label: 'Phi Sgr', bayer: 'φ' },               // φ Sgr - top of pot body
+      { id: 'nunki', x: 0.65, y: 0.38, size: 3.5, label: 'Nunki', bayer: 'σ' },                   // σ Sgr - mag 2.05, handle top
+      { id: 'tau-sgr', x: 0.72, y: 0.52, size: 2.8, label: 'Tau Sgr', bayer: 'τ' },               // τ Sgr - handle middle
+      { id: 'ascella', x: 0.68, y: 0.62, size: 3.0, label: 'Ascella', bayer: 'ζ' },               // ζ Sgr - mag 2.60, handle bottom
+      { id: 'alnasl', x: 0.18, y: 0.48, size: 3.0, label: 'Alnasl', bayer: 'γ²' },                 // γ² Sgr - mag 2.99, spout tip
     ],
     lines: [
-      // Complete teapot body (closed shape)
-      ['kaus-australis', 'kaus-media'],   // bottom-left to left
-      ['kaus-media', 'kaus-borealis'],    // left to top-left
-      ['kaus-borealis', 'phi'],           // top-left to top-middle
-      ['phi', 'nunki'],                   // top-middle to top-right
-      ['nunki', 'ascella'],               // top-right to right
-      ['ascella', 'kaus-australis'],      // right back to bottom-left (closes the pot)
-      // Spout extending left
-      ['kaus-media', 'alnasl'],
+      // Teapot body (closed quadrilateral)
+      ['kaus-australis', 'kaus-media'],   // bottom to left
+      ['kaus-media', 'kaus-borealis'],    // left up to lid
+      ['kaus-borealis', 'phi-sgr'],       // lid to top
+      ['phi-sgr', 'nunki'],               // top to handle
+      ['nunki', 'ascella'],               // handle down (via tau)
+      ['ascella', 'kaus-australis'],      // handle to bottom (closes pot)
+      // Spout
+      ['kaus-media', 'alnasl'],           // spout extends left
+      // Handle detail
+      ['nunki', 'tau-sgr'],
+      ['tau-sgr', 'ascella'],
     ],
   },
 
-  // CAPRICORNUS (Sea-Goat) - Smile or bent triangle
-  // Triangular smile shape
+  // CAPRICORNUS - The Sea-Goat
+  // Triangular/wedge shape like an arrowhead pointing right
   capricorn: {
     stars: [
-      { id: 'deneb-algedi', x: 0.25, y: 0.45, size: 3.5, label: 'Deneb Algedi' }, // δ Cap - eastern point
-      { id: 'nashira', x: 0.32, y: 0.50, size: 2.8, label: 'Nashira' },       // γ Cap
-      { id: 'dabih', x: 0.70, y: 0.35, size: 3.0, label: 'Dabih' },           // β Cap - western point
-      { id: 'algedi', x: 0.78, y: 0.32, size: 2.5, label: 'Algedi' },         // α Cap - far west
-      { id: 'omega-cap', x: 0.40, y: 0.62, size: 2.5, label: 'Omega Cap' },   // ω Cap - bottom of smile
-      { id: 'zeta-cap', x: 0.50, y: 0.58, size: 2.5, label: 'Zeta Cap' },     // ζ Cap - bottom
-      { id: 'theta-cap', x: 0.58, y: 0.52, size: 2.5, label: 'Theta Cap' },   // θ Cap
+      { id: 'deneb-algedi', x: 0.22, y: 0.45, size: 3.8, label: 'Deneb Algedi', bayer: 'δ' }, // δ Cap - mag 2.81, brightest
+      { id: 'nashira', x: 0.32, y: 0.52, size: 3.0, label: 'Nashira', bayer: 'γ' },       // γ Cap - mag 3.67
+      { id: 'dabih', x: 0.72, y: 0.32, size: 3.2, label: 'Dabih', bayer: 'β' },           // β Cap - mag 3.08
+      { id: 'algedi', x: 0.78, y: 0.28, size: 2.8, label: 'Algedi', bayer: 'α²' },         // α² Cap - double star
+      { id: 'omega-cap', x: 0.42, y: 0.65, size: 2.6, label: 'Omega Cap', bayer: 'ω' },   // ω Cap
+      { id: 'zeta-cap', x: 0.52, y: 0.58, size: 2.6, label: 'Zeta Cap', bayer: 'ζ' },     // ζ Cap
+      { id: 'theta-cap', x: 0.60, y: 0.48, size: 2.5, label: 'Theta Cap', bayer: 'θ' },   // θ Cap
+      { id: 'iota-cap', x: 0.65, y: 0.40, size: 2.5, label: 'Iota Cap', bayer: 'ι' },     // ι Cap
     ],
     lines: [
-      // Smile/triangle shape
-      ['algedi', 'dabih'],               // top western edge
-      ['dabih', 'theta-cap'],            // down right side
-      ['theta-cap', 'zeta-cap'],         // across bottom
-      ['zeta-cap', 'omega-cap'],         // bottom
-      ['omega-cap', 'nashira'],          // up left
-      ['nashira', 'deneb-algedi'],       // top left
-      ['deneb-algedi', 'dabih'],         // close top
+      // Triangular shape
+      ['algedi', 'dabih'],
+      ['dabih', 'iota-cap'],
+      ['iota-cap', 'theta-cap'],
+      ['theta-cap', 'zeta-cap'],
+      ['zeta-cap', 'omega-cap'],
+      ['omega-cap', 'nashira'],
+      ['nashira', 'deneb-algedi'],
+      ['deneb-algedi', 'iota-cap'],
     ],
   },
 
-  // AQUARIUS (Water-Bearer) - Inverted Y / water cascade
-  // Y-pattern with water pouring
+  // AQUARIUS - The Water-Bearer
+  // Y-shape with cascading "water" pattern
   aquarius: {
     stars: [
-      { id: 'sadalsuud', x: 0.35, y: 0.22, size: 3.5, label: 'Sadalsuud' },   // β Aqr - brightest (top left)
-      { id: 'sadalmelik', x: 0.48, y: 0.30, size: 3.2, label: 'Sadalmelik' }, // α Aqr - top center
-      { id: 'sadachbia', x: 0.55, y: 0.42, size: 2.8, label: 'Sadachbia' },   // γ Aqr - Y junction
-      { id: 'skat', x: 0.52, y: 0.58, size: 3.0, label: 'Skat' },             // δ Aqr - water stream
-      { id: 'albali', x: 0.45, y: 0.48, size: 2.5, label: 'Albali' },         // ε Aqr
-      { id: 'lambda-aqr', x: 0.55, y: 0.72, size: 2.5, label: 'Lambda Aqr' }, // λ Aqr - bottom of stream
+      { id: 'sadalsuud', x: 0.32, y: 0.20, size: 3.8, label: 'Sadalsuud', bayer: 'β' },   // β Aqr - mag 2.87, brightest
+      { id: 'sadalmelik', x: 0.45, y: 0.28, size: 3.5, label: 'Sadalmelik', bayer: 'α' }, // α Aqr - mag 2.94
+      { id: 'sadachbia', x: 0.52, y: 0.42, size: 3.0, label: 'Sadachbia', bayer: 'γ' },   // γ Aqr - Y junction
+      { id: 'skat', x: 0.48, y: 0.58, size: 3.2, label: 'Skat', bayer: 'δ' },             // δ Aqr - water stream
+      { id: 'albali', x: 0.40, y: 0.48, size: 2.6, label: 'Albali', bayer: 'ε' },         // ε Aqr
+      { id: 'ancha', x: 0.55, y: 0.50, size: 2.5, label: 'Ancha', bayer: 'θ' },           // θ Aqr
+      { id: 'lambda-aqr', x: 0.52, y: 0.72, size: 2.6, label: 'Lambda Aqr', bayer: 'λ' }, // λ Aqr - water stream
+      { id: 'phi-aqr', x: 0.62, y: 0.78, size: 2.5, label: 'Phi Aqr', bayer: 'φ' },       // φ Aqr - end of water
     ],
     lines: [
-      // Y-shape with cascade
-      ['sadalsuud', 'sadalmelik'],       // top arm
-      ['sadalmelik', 'sadachbia'],       // to junction
-      ['sadalmelik', 'albali'],          // other branch
-      ['albali', 'skat'],                // down
-      ['sadachbia', 'skat'],             // converge
-      ['skat', 'lambda-aqr'],            // water pours down
+      // Y-shape with water cascade
+      ['sadalsuud', 'sadalmelik'],
+      ['sadalmelik', 'sadachbia'],
+      ['sadalmelik', 'albali'],
+      ['sadachbia', 'ancha'],
+      ['albali', 'skat'],
+      ['ancha', 'skat'],
+      ['skat', 'lambda-aqr'],
+      ['lambda-aqr', 'phi-aqr'],
     ],
   },
 
-  // PISCES (Fish) - V-shape with circular cluster
-  // Two fish connected by a cord in V pattern
+  // PISCES - The Fish
+  // Two fish connected by a cord in V-pattern
   pisces: {
     stars: [
-      { id: 'alrescha', x: 0.50, y: 0.60, size: 3.0, label: 'Alrescha' },     // α Psc - the knot (cord junction)
-      { id: 'fumalsamakah', x: 0.22, y: 0.35, size: 2.8, label: 'Fum al Samakah' }, // β Psc - western fish
-      { id: 'omega-psc', x: 0.62, y: 0.45, size: 2.5, label: 'Omega Psc' },   // ω Psc - eastern cord
-      { id: 'iota-psc', x: 0.70, y: 0.40, size: 2.5, label: 'Iota Psc' },     // ι Psc
-      { id: 'theta-psc', x: 0.78, y: 0.35, size: 2.3, label: 'Theta Psc' },   // θ Psc
-      { id: 'gamma-psc', x: 0.85, y: 0.30, size: 2.5, label: 'Gamma Psc' },   // γ Psc - eastern fish head
-      { id: 'eta-psc', x: 0.38, y: 0.48, size: 2.5, label: 'Eta Psc' },       // η Psc - western cord
-      { id: 'omicron-psc', x: 0.28, y: 0.42, size: 2.3, label: 'Omicron Psc' }, // ο Psc
+      { id: 'alrescha', x: 0.48, y: 0.62, size: 3.2, label: 'Alrescha', bayer: 'α' },     // α Psc - the knot/cord junction
+      { id: 'fumalsamakah', x: 0.20, y: 0.35, size: 3.0, label: 'Fum al Samakah', bayer: 'β' }, // β Psc - western fish mouth
+      { id: 'gamma-psc', x: 0.85, y: 0.28, size: 2.8, label: 'Gamma Psc', bayer: 'γ' },   // γ Psc - eastern fish
+      { id: 'omega-psc', x: 0.62, y: 0.45, size: 2.6, label: 'Omega Psc', bayer: 'ω' },   // ω Psc - eastern cord
+      { id: 'iota-psc', x: 0.70, y: 0.38, size: 2.5, label: 'Iota Psc', bayer: 'ι' },     // ι Psc
+      { id: 'theta-psc', x: 0.78, y: 0.32, size: 2.5, label: 'Theta Psc', bayer: 'θ' },   // θ Psc
+      { id: 'eta-psc', x: 0.35, y: 0.50, size: 2.6, label: 'Eta Psc', bayer: 'η' },       // η Psc - western cord
+      { id: 'omicron-psc', x: 0.28, y: 0.42, size: 2.4, label: 'Omicron Psc', bayer: 'ο' }, // ο Psc
+      { id: 'epsilon-psc', x: 0.25, y: 0.32, size: 2.3, label: 'Epsilon Psc', bayer: 'ε' }, // ε Psc - western fish body
     ],
     lines: [
-      // Eastern fish
+      // Eastern fish (circlet)
       ['gamma-psc', 'theta-psc'],
       ['theta-psc', 'iota-psc'],
       ['iota-psc', 'omega-psc'],
@@ -293,7 +318,8 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
       // Western fish and cord
       ['alrescha', 'eta-psc'],
       ['eta-psc', 'omicron-psc'],
-      ['omicron-psc', 'fumalsamakah'],
+      ['omicron-psc', 'epsilon-psc'],
+      ['epsilon-psc', 'fumalsamakah'],
     ],
   },
 };

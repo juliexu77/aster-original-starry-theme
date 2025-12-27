@@ -219,7 +219,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
             />
           </g>
         )}
-        {/* CONSTELLATION LINES - thin and subtle like reference */}
+        {/* CONSTELLATION LINES - dotted white lines like official diagrams */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
           const toStar = constellation.stars.find(s => s.id === toId);
@@ -232,9 +232,11 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y1={toPixelY(fromStar.y)}
               x2={toPixelX(toStar.x)}
               y2={toPixelY(toStar.y)}
-              stroke="#444"
-              strokeWidth={0.75}
+              stroke="#ffffff"
+              strokeWidth={1}
+              strokeDasharray="3,3"
               strokeLinecap="round"
+              opacity={0.35}
             />
           );
         })}
