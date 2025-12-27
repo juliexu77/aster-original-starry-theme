@@ -131,7 +131,7 @@ export const LocationInput = ({
   };
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ overflow: 'visible' }}>
       <Input
         ref={inputRef}
         id={id}

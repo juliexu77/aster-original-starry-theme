@@ -82,7 +82,7 @@ export const ChildView = ({
     if (userProfile?.birthday) {
       members.push({
         id: 'parent',
-        name: userProfile.display_name || 'You',
+        name: userProfile.display_name?.split(' ')[0] || 'You',
         type: 'parent' as const,
         birthday: userProfile.birthday,
         birth_time: userProfile.birth_time,
