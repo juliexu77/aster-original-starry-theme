@@ -447,7 +447,7 @@ export const BirthChartDiagram = ({
                 dominantBaseline="central"
                 fill={isSelected ? '#FFFFFF' : '#F0F0F0'}
                 style={{ 
-                  fontSize: '26px', 
+                  fontSize: '30px', 
                   fontFamily: 'serif',
                   pointerEvents: 'none',
                   transition: 'fill 0.2s ease',
