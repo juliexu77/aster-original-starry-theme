@@ -203,19 +203,30 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - very faint ghost layer */}
+        {/* MYTHOLOGICAL ILLUSTRATION - semi-translucent outline with interior detail */}
         {illustration && (
           <g 
-            opacity={0.12}
+            opacity={0.18}
             transform={`translate(${padding + (illustration.transform?.translateX || 0)}, ${padding + (illustration.transform?.translateY || 0)}) scale(${((width - padding * 2) / illustration.viewBox.width) * (illustration.transform?.scale || 1)})`}
           >
+            {/* Main outline of the mythological figure */}
             <path
-              d={illustration.illustrationPath}
-              stroke="#3a4a5a"
-              strokeWidth={1.5}
+              d={illustration.outlinePath}
+              stroke="#5a6a7a"
+              strokeWidth={1.8}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
+            />
+            {/* Interior detail lines for depth */}
+            <path
+              d={illustration.detailPath}
+              stroke="#4a5a6a"
+              strokeWidth={1}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity={0.7}
             />
           </g>
         )}
