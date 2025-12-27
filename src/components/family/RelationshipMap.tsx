@@ -252,9 +252,8 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y={imageY}
               width={imageWidth}
               height={imageHeight}
-              opacity={0.35}
+              opacity={0.6}
               preserveAspectRatio="xMidYMid meet"
-              style={{ mixBlendMode: 'screen' }}
             />
           );
         })()}
