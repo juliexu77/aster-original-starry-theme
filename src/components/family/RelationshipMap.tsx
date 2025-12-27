@@ -202,7 +202,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* CONSTELLATION LINES - More visible */}
+        {/* CONSTELLATION LINES - thin and clean */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
           const toStar = constellation.stars.find(s => s.id === toId);
@@ -215,34 +215,42 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y1={toPixelY(fromStar.y)}
               x2={toPixelX(toStar.x)}
               y2={toPixelY(toStar.y)}
-              stroke="url(#constLineGrad)"
-              strokeWidth={1.5}
+              stroke="#555"
+              strokeWidth={1}
               strokeLinecap="round"
+              opacity={0.7}
             />
           );
         })}
         
-        {/* CONSTELLATION STARS - More visible */}
-        {constellation.stars.map((star) => (
-          <g key={`const-star-${star.id}`}>
-            {/* Star glow */}
-            <circle
-              cx={toPixelX(star.x)}
-              cy={toPixelY(star.y)}
-              r={star.size * 2.5}
-              fill="#5A5650"
-              opacity={0.15}
-            />
-            {/* Star core */}
-            <circle
-              cx={toPixelX(star.x)}
-              cy={toPixelY(star.y)}
-              r={star.size * 0.8}
-              fill="#6A6660"
-              opacity={0.6}
-            />
-          </g>
-        ))}
+        {/* CONSTELLATION STARS - simple filled dots like reference image */}
+        {constellation.stars.map((star) => {
+          const px = toPixelX(star.x);
+          const py = toPixelY(star.y);
+          // Larger stars get decorative 4-point effect
+          const isLargeStar = star.size >= 3;
+          
+          return (
+            <g key={`const-star-${star.id}`}>
+              {/* Main star dot */}
+              <circle
+                cx={px}
+                cy={py}
+                r={star.size * 0.7}
+                fill="#666"
+              />
+              {/* 4-point decoration for larger stars */}
+              {isLargeStar && (
+                <>
+                  <circle cx={px} cy={py - star.size * 1.5} r={0.8} fill="#555" />
+                  <circle cx={px} cy={py + star.size * 1.5} r={0.8} fill="#555" />
+                  <circle cx={px - star.size * 1.5} cy={py} r={0.8} fill="#555" />
+                  <circle cx={px + star.size * 1.5} cy={py} r={0.8} fill="#555" />
+                </>
+              )}
+            </g>
+          );
+        })}
         
         {/* Family relationship connection lines - draw along constellation paths */}
         {connections.map((conn, connIdx) => {
@@ -294,7 +302,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* Family member nodes */}
+        {/* Family member nodes - simple filled dots like reference */}
         {memberPositions.map(({ member, x, y }) => {
           const px = toPixelX(x);
           const py = toPixelY(y);
@@ -304,61 +312,59 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           
           return (
             <g key={member.id}>
-              {/* Outer glow */}
+              {/* Main star dot - filled, no outline */}
               <circle
                 cx={px}
                 cy={py}
-                r={32}
-                fill="url(#starGlow)"
-                opacity={isInSelected ? 0.7 : 0.5}
-                className="transition-opacity duration-300"
-              />
-              
-              {/* Node circle */}
-              <circle
-                cx={px}
-                cy={py}
-                r={24}
-                fill="none"
-                stroke={isInSelected ? "#D4A574" : "#C4A574"}
-                strokeWidth={isInSelected ? 2.5 : 2}
-                opacity={isInSelected ? 1 : 0.85}
+                r={isInSelected ? 8 : 6}
+                fill={isInSelected ? "#B8A080" : "#888"}
                 className="transition-all duration-300"
               />
               
-              {/* Zodiac icon */}
-              {sign && (
-                <foreignObject
-                  x={px - 11}
-                  y={py - 11}
-                  width={22}
-                  height={22}
-                >
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ZodiacIcon 
-                      sign={sign} 
-                      size={18} 
-                      className={isInSelected ? "text-[#D4A574]" : "text-[#C4A574]"}
-                    />
-                  </div>
-                </foreignObject>
-              )}
+              {/* Small decorative points around larger stars (4-point star effect) */}
+              {member.type === 'parent' || member.type === 'partner' ? (
+                <>
+                  <circle cx={px} cy={py - 12} r={1} fill="#666" opacity={0.6} />
+                  <circle cx={px} cy={py + 12} r={1} fill="#666" opacity={0.6} />
+                  <circle cx={px - 12} cy={py} r={1} fill="#666" opacity={0.6} />
+                  <circle cx={px + 12} cy={py} r={1} fill="#666" opacity={0.6} />
+                </>
+              ) : null}
               
               {/* Name label */}
               <text
                 x={px}
-                y={py + 42}
+                y={py + 22}
                 textAnchor="middle"
-                fill={isInSelected ? "#B8A080" : "#888"}
+                fill={isInSelected ? "#B8A080" : "#666"}
                 style={{ 
-                  fontSize: '11px', 
+                  fontSize: '10px', 
                   fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.03em'
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase'
                 }}
                 className="transition-all duration-300"
               >
                 {member.name}
               </text>
+              
+              {/* Zodiac icon below name if space allows */}
+              {sign && (
+                <foreignObject
+                  x={px - 8}
+                  y={py + 28}
+                  width={16}
+                  height={16}
+                >
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ZodiacIcon 
+                      sign={sign} 
+                      size={12} 
+                      className={isInSelected ? "text-[#B8A080]" : "text-[#555]"}
+                    />
+                  </div>
+                </foreignObject>
+              )}
             </g>
           );
         })}
