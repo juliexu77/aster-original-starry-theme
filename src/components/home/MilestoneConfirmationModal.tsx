@@ -47,8 +47,9 @@ export const MilestoneConfirmationModal = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogOverlay className="bg-black/60 backdrop-blur-sm" />
       <DialogContent 
-        className="fixed bottom-0 left-0 right-0 sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 
-                   w-full sm:max-w-md mx-auto rounded-t-2xl sm:rounded-2xl border-0 bg-[#2a2a2a] p-0 shadow-2xl
+        className="fixed left-1/2 -translate-x-1/2 bottom-0 top-auto translate-y-0
+                   sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 
+                   w-[calc(100%-1rem)] sm:max-w-md rounded-t-2xl sm:rounded-2xl border-0 bg-[#2a2a2a] p-0 shadow-2xl
                    animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in-0 duration-300
                    focus:outline-none"
         style={{ maxHeight: "85vh" }}
