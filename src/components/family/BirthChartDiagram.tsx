@@ -61,6 +61,20 @@ const PLANET_SYMBOLS = {
   pluto: '♇',
 };
 
+// Planet meanings for tooltips
+const PLANET_MEANINGS: Record<string, { keyword: string; description: string }> = {
+  Sun: { keyword: 'Identity', description: 'Core self, ego, and vitality' },
+  Moon: { keyword: 'Emotions', description: 'Inner world, instincts, and needs' },
+  Mercury: { keyword: 'Mind', description: 'Communication, thinking, and learning' },
+  Venus: { keyword: 'Love', description: 'Values, beauty, and relationships' },
+  Mars: { keyword: 'Drive', description: 'Action, energy, and assertion' },
+  Jupiter: { keyword: 'Growth', description: 'Expansion, luck, and wisdom' },
+  Saturn: { keyword: 'Structure', description: 'Discipline, limits, and lessons' },
+  Uranus: { keyword: 'Change', description: 'Innovation, rebellion, and freedom' },
+  Neptune: { keyword: 'Dreams', description: 'Intuition, imagination, and spirituality' },
+  Pluto: { keyword: 'Power', description: 'Transformation, depth, and rebirth' },
+};
+
 // Convert sign + degree to absolute degree (0-360)
 const signToAbsoluteDegree = (sign: ZodiacSign, degree: number): number => {
   const signIndex = ZODIAC_ORDER.indexOf(sign);
@@ -462,13 +476,17 @@ export const BirthChartDiagram = ({
         {/* Popup tooltip for selected planet */}
         {selectedPlanet && selectedPlanetData && (() => {
           // Calculate tooltip position - offset from planet
-          const tooltipWidth = 140;
-          const tooltipHeight = 52;
+          const tooltipWidth = 200;
+          const tooltipHeight = 100;
           const padding = 12;
+          
+          // Get planet meaning
+          const meaning = PLANET_MEANINGS[selectedPlanetData.label] || { keyword: '', description: '' };
           
           // Determine best position for tooltip (avoid edges)
           let tooltipX = selectedPlanet.x - tooltipWidth / 2;
           let tooltipY = selectedPlanet.y - tooltipHeight - padding - 20;
+          let pointerAtTop = false;
           
           // Keep within bounds
           if (tooltipX < 10) tooltipX = 10;
@@ -476,59 +494,103 @@ export const BirthChartDiagram = ({
           if (tooltipY < 10) {
             // Show below planet instead
             tooltipY = selectedPlanet.y + padding + 20;
+            pointerAtTop = true;
           }
           
           return (
             <g>
+              {/* Pointer triangle - above tooltip when showing below planet */}
+              {pointerAtTop && (
+                <polygon
+                  points={`
+                    ${selectedPlanet.x - 8},${tooltipY} 
+                    ${selectedPlanet.x + 8},${tooltipY} 
+                    ${selectedPlanet.x},${tooltipY - 10}
+                  `}
+                  fill="rgba(20, 20, 25, 0.95)"
+                />
+              )}
+              
               {/* Tooltip background */}
               <rect
                 x={tooltipX}
                 y={tooltipY}
                 width={tooltipWidth}
                 height={tooltipHeight}
-                rx={8}
-                ry={8}
+                rx={10}
+                ry={10}
                 fill="rgba(20, 20, 25, 0.95)"
-                stroke="rgba(255, 255, 255, 0.2)"
+                stroke="rgba(255, 255, 255, 0.25)"
                 strokeWidth={1}
               />
-              {/* Pointer triangle */}
-              <polygon
-                points={`
-                  ${selectedPlanet.x - 6},${tooltipY + tooltipHeight} 
-                  ${selectedPlanet.x + 6},${tooltipY + tooltipHeight} 
-                  ${selectedPlanet.x},${tooltipY + tooltipHeight + 8}
-                `}
-                fill="rgba(20, 20, 25, 0.95)"
-              />
-              {/* Planet name */}
+              
+              {/* Pointer triangle - below tooltip when showing above planet */}
+              {!pointerAtTop && (
+                <polygon
+                  points={`
+                    ${selectedPlanet.x - 8},${tooltipY + tooltipHeight} 
+                    ${selectedPlanet.x + 8},${tooltipY + tooltipHeight} 
+                    ${selectedPlanet.x},${tooltipY + tooltipHeight + 10}
+                  `}
+                  fill="rgba(20, 20, 25, 0.95)"
+                />
+              )}
+              
+              {/* Planet name and keyword */}
               <text
                 x={tooltipX + tooltipWidth / 2}
-                y={tooltipY + 18}
+                y={tooltipY + 24}
                 textAnchor="middle"
                 fill="#FFFFFF"
                 style={{ 
-                  fontSize: '13px', 
-                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: '16px', 
+                  fontFamily: 'Source Serif 4, serif',
                   fontWeight: 600,
                   letterSpacing: '0.02em'
                 }}
               >
-                {selectedPlanetData.label}
+                {selectedPlanetData.label} · {meaning.keyword}
               </text>
-              {/* Position details */}
+              
+              {/* Planet description */}
               <text
                 x={tooltipX + tooltipWidth / 2}
-                y={tooltipY + 38}
+                y={tooltipY + 46}
                 textAnchor="middle"
-                fill="rgba(255, 255, 255, 0.7)"
+                fill="rgba(255, 255, 255, 0.6)"
                 style={{ 
-                  fontSize: '11px', 
+                  fontSize: '12px', 
                   fontFamily: 'DM Sans, sans-serif',
+                  fontStyle: 'italic',
                   letterSpacing: '0.02em'
                 }}
               >
-                {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} house
+                {meaning.description}
+              </text>
+              
+              {/* Divider line */}
+              <line
+                x1={tooltipX + 16}
+                y1={tooltipY + 60}
+                x2={tooltipX + tooltipWidth - 16}
+                y2={tooltipY + 60}
+                stroke="rgba(255, 255, 255, 0.15)"
+                strokeWidth={1}
+              />
+              
+              {/* Position details */}
+              <text
+                x={tooltipX + tooltipWidth / 2}
+                y={tooltipY + 82}
+                textAnchor="middle"
+                fill="rgba(255, 255, 255, 0.85)"
+                style={{ 
+                  fontSize: '13px', 
+                  fontFamily: 'DM Sans, sans-serif',
+                  letterSpacing: '0.03em'
+                }}
+              >
+                {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} House
               </text>
             </g>
           );
