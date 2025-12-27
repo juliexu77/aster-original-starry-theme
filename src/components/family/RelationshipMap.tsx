@@ -367,23 +367,6 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 {member.name}
               </text>
               
-              {/* Zodiac icon below name - 2x larger */}
-              {sign && (
-                <foreignObject
-                  x={px - 10}
-                  y={py + 26}
-                  width={20}
-                  height={20}
-                >
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ZodiacIcon 
-                      sign={sign} 
-                      size={18} 
-                      className={isInSelected ? "text-[#D4A574]" : "text-[#666]"}
-                    />
-                  </div>
-                </foreignObject>
-              )}
             </g>
           );
         })}
