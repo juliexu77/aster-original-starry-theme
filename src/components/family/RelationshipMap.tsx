@@ -190,19 +190,19 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           </linearGradient>
         </defs>
         
-        {/* Background stars */}
+        {/* Background stars - very subtle */}
         {backgroundStars.map((star, i) => (
           <circle
             key={`bg-star-${i}`}
             cx={toPixelX(star.x)}
             cy={toPixelY(star.y)}
-            r={star.size}
-            fill="#C4A574"
-            opacity={star.opacity}
+            r={star.size * 0.6}
+            fill="#888"
+            opacity={star.opacity * 0.5}
           />
         ))}
         
-        {/* CONSTELLATION LINES - thin and clean */}
+        {/* CONSTELLATION LINES - thin and subtle like reference */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
           const toStar = constellation.stars.find(s => s.id === toId);
@@ -215,24 +215,28 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y1={toPixelY(fromStar.y)}
               x2={toPixelX(toStar.x)}
               y2={toPixelY(toStar.y)}
-              stroke="#555"
-              strokeWidth={1}
+              stroke="#444"
+              strokeWidth={0.75}
               strokeLinecap="round"
-              opacity={0.7}
             />
           );
         })}
         
-        {/* CONSTELLATION STARS - simple filled dots */}
-        {constellation.stars.map((star) => (
-          <circle
-            key={`const-star-${star.id}`}
-            cx={toPixelX(star.x)}
-            cy={toPixelY(star.y)}
-            r={star.size * 0.8}
-            fill="#666"
-          />
-        ))}
+        {/* CONSTELLATION STARS - small simple dots */}
+        {constellation.stars.map((star) => {
+          // Check if this star has a family member on it
+          const hasMember = memberPositions.some(mp => mp.starId === star.id);
+          
+          return (
+            <circle
+              key={`const-star-${star.id}`}
+              cx={toPixelX(star.x)}
+              cy={toPixelY(star.y)}
+              r={hasMember ? 0 : Math.max(1, star.size * 0.5)}
+              fill="#555"
+            />
+          );
+        })}
         
         {/* Family relationship connection lines - draw along constellation paths */}
         {connections.map((conn, connIdx) => {
@@ -264,7 +268,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               <path
                 d={pathD}
                 stroke="transparent"
-                strokeWidth={30}
+                strokeWidth={24}
                 fill="none"
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
@@ -272,9 +276,9 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               {/* Visible path along constellation lines */}
               <path
                 d={pathD}
-                stroke={isSelected ? "#D4A574" : "#C4A574"}
-                strokeWidth={isSelected ? 3 : 2}
-                opacity={isSelected ? 1 : 0.6}
+                stroke={isSelected ? "#B8A080" : "#777"}
+                strokeWidth={isSelected ? 1.5 : 1}
+                opacity={isSelected ? 1 : 0.5}
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -284,7 +288,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* Family member nodes - simple filled dots like reference */}
+        {/* Family member nodes - small dots with labels */}
         {memberPositions.map(({ member, x, y }) => {
           const px = toPixelX(x);
           const py = toPixelY(y);
@@ -294,11 +298,11 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           
           return (
             <g key={member.id}>
-              {/* Main star dot - filled, no outline */}
+              {/* Main star dot */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 8 : 6}
+                r={isInSelected ? 4 : 3}
                 fill={isInSelected ? "#B8A080" : "#888"}
                 className="transition-all duration-300"
               />
@@ -306,11 +310,11 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               {/* Name label */}
               <text
                 x={px}
-                y={py + 22}
+                y={py + 16}
                 textAnchor="middle"
                 fill={isInSelected ? "#B8A080" : "#666"}
                 style={{ 
-                  fontSize: '10px', 
+                  fontSize: '9px', 
                   fontFamily: 'DM Sans, sans-serif',
                   letterSpacing: '0.05em',
                   textTransform: 'uppercase'
@@ -320,18 +324,18 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 {member.name}
               </text>
               
-              {/* Zodiac icon below name if space allows */}
+              {/* Zodiac icon below name */}
               {sign && (
                 <foreignObject
-                  x={px - 8}
-                  y={py + 28}
-                  width={16}
-                  height={16}
+                  x={px - 6}
+                  y={py + 20}
+                  width={12}
+                  height={12}
                 >
                   <div className="w-full h-full flex items-center justify-center">
                     <ZodiacIcon 
                       sign={sign} 
-                      size={12} 
+                      size={10} 
                       className={isInSelected ? "text-[#B8A080]" : "text-[#555]"}
                     />
                   </div>
