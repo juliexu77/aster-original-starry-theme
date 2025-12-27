@@ -260,13 +260,18 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
           </h2>
 
           {/* Options */}
-          <div className="space-y-3">
+          <div className="space-y-3 pointer-events-auto">
             {currentQuestion.options.map((option) => (
               <button
                 key={option.value}
-                onClick={() => handleSelect(option.value)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSelect(option.value);
+                }}
                 className={cn(
-                  "w-full text-left px-4 py-3 rounded-xl border transition-all",
+                  "w-full text-left px-4 py-3 rounded-xl border transition-all pointer-events-auto",
                   "text-[13px] leading-[1.5]",
                   isSelected(option.value)
                     ? "border-foreground/30 bg-foreground/5 text-foreground"
