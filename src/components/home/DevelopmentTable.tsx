@@ -416,6 +416,7 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }
         domain={selectedDomainData}
         ageInWeeks={ageInWeeks}
         birthday={birthday}
+        babyName={babyName}
         allDomains={domains}
         onNavigate={(id) => setSelectedDomain(id)}
       />

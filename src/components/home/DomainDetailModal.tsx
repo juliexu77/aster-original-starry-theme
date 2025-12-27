@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Check, Circle, Minus } from "lucide-react";
 import { DomainData, getStagesForDomain } from "./DevelopmentTable";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { MilestoneConfirmationButton } from "./MilestoneConfirmationButton";
 
 interface DomainDetailModalProps {
   isOpen: boolean;
@@ -9,8 +10,11 @@ interface DomainDetailModalProps {
   domain: DomainData | null | undefined;
   ageInWeeks: number;
   birthday?: string;
+  babyName?: string;
+  babyId?: string;
   allDomains: DomainData[];
   onNavigate: (domainId: string) => void;
+  onMilestoneConfirm?: (domainId: string, stageNumber: number, date: string) => void;
 }
 
 // Get zodiac sign for astrological flavor
@@ -216,10 +220,14 @@ export const DomainDetailModal = ({
   domain,
   ageInWeeks,
   birthday,
+  babyName = "your baby",
+  babyId = "",
   allDomains,
   onNavigate,
+  onMilestoneConfirm,
 }: DomainDetailModalProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [confirmedMilestones, setConfirmedMilestones] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (domain) {
@@ -355,11 +363,35 @@ export const DomainDetailModal = ({
                     <span className="text-base font-serif text-foreground/80">{nextStageInfo.name}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Likely emerging in {getTimeToNextStage()}
+                    Likely emerging {getTimeToNextStage()}
                   </p>
-                  <p className="text-sm text-foreground/60 leading-relaxed">
+                  <p className="text-sm text-foreground/60 leading-relaxed mb-4">
                     {nextStageInfo.description}
                   </p>
+
+                  {/* Milestone Confirmation Button */}
+                  <MilestoneConfirmationButton
+                    stageNumber={nextStageInfo.stage}
+                    stageName={nextStageInfo.name}
+                    domainId={domain.id}
+                    babyName={babyName}
+                    babyId={babyId}
+                    confirmedDate={confirmedMilestones[`${domain.id}-${nextStageInfo.stage}`]}
+                    onConfirm={(date, timing) => {
+                      setConfirmedMilestones(prev => ({
+                        ...prev,
+                        [`${domain.id}-${nextStageInfo.stage}`]: date
+                      }));
+                      onMilestoneConfirm?.(domain.id, nextStageInfo.stage, date);
+                    }}
+                    onUndo={() => {
+                      setConfirmedMilestones(prev => {
+                        const updated = { ...prev };
+                        delete updated[`${domain.id}-${nextStageInfo.stage}`];
+                        return updated;
+                      });
+                    }}
+                  />
                 </div>
               </div>
             )}
