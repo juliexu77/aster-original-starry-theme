@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.generate-sibling-dynamics]
 verify_jwt = false
+
+[functions.generate-relationship-insights]
+verify_jwt = false
+
+[functions.generate-partner-insights]
+verify_jwt = false
