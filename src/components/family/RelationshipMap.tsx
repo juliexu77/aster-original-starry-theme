@@ -237,13 +237,13 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images */}
+        {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images, 70% of page width */}
         {(() => {
-          // Calculate 70% of available space, centered
-          const imageWidth = (width - padding * 2) * 0.7;
-          const imageHeight = (height - padding * 2) * 0.7;
-          const imageX = padding + ((width - padding * 2) - imageWidth) / 2;
-          const imageY = padding + ((height - padding * 2) - imageHeight) / 2;
+          // Calculate 70% of full width, centered
+          const imageWidth = width * 0.7;
+          const imageHeight = height * 0.7;
+          const imageX = (width - imageWidth) / 2;
+          const imageY = (height - imageHeight) / 2;
           
           return (
             <image
