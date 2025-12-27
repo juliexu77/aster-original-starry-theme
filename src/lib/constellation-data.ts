@@ -200,27 +200,25 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
   },
 
   // SAGITTARIUS (Archer) - THE TEAPOT - Most recognizable pattern
-  // 8 stars forming teapot: pot body with spout (left) and handle (right)
+  // 8 stars forming a complete connected teapot shape
   sagittarius: {
     stars: [
-      { id: 'kaus-australis', x: 0.35, y: 0.65, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - bottom left of pot
-      { id: 'kaus-media', x: 0.30, y: 0.50, size: 3.0, label: 'Kaus Media' },         // δ Sgr - left side (spout base)
-      { id: 'kaus-borealis', x: 0.35, y: 0.35, size: 2.8, label: 'Kaus Borealis' },   // λ Sgr - top left
-      { id: 'phi', x: 0.50, y: 0.30, size: 2.5, label: 'Phi Sgr' },                   // φ Sgr - lid/top middle
-      { id: 'nunki', x: 0.65, y: 0.35, size: 3.2, label: 'Nunki' },                   // σ Sgr - top of handle
-      { id: 'tau', x: 0.72, y: 0.50, size: 2.5, label: 'Tau Sgr' },                   // τ Sgr - handle curve
-      { id: 'ascella', x: 0.65, y: 0.62, size: 2.8, label: 'Ascella' },               // ζ Sgr - bottom of handle
-      { id: 'alnasl', x: 0.15, y: 0.42, size: 2.8, label: 'Alnasl' },                 // γ Sgr - spout tip
+      { id: 'kaus-australis', x: 0.40, y: 0.70, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - bottom left of pot
+      { id: 'kaus-media', x: 0.30, y: 0.52, size: 3.0, label: 'Kaus Media' },         // δ Sgr - left side (spout base)
+      { id: 'kaus-borealis', x: 0.38, y: 0.35, size: 2.8, label: 'Kaus Borealis' },   // λ Sgr - top left
+      { id: 'phi', x: 0.52, y: 0.28, size: 2.5, label: 'Phi Sgr' },                   // φ Sgr - lid/top middle
+      { id: 'nunki', x: 0.65, y: 0.35, size: 3.2, label: 'Nunki' },                   // σ Sgr - top right
+      { id: 'ascella', x: 0.68, y: 0.55, size: 2.8, label: 'Ascella' },               // ζ Sgr - right side
+      { id: 'alnasl', x: 0.15, y: 0.45, size: 2.8, label: 'Alnasl' },                 // γ Sgr - spout tip
     ],
     lines: [
-      // Closed teapot body
-      ['kaus-australis', 'kaus-media'],
-      ['kaus-media', 'kaus-borealis'],
-      ['kaus-borealis', 'phi'],
-      ['phi', 'nunki'],
-      ['nunki', 'tau'],
-      ['tau', 'ascella'],
-      ['ascella', 'kaus-australis'],
+      // Complete teapot body (closed shape)
+      ['kaus-australis', 'kaus-media'],   // bottom-left to left
+      ['kaus-media', 'kaus-borealis'],    // left to top-left
+      ['kaus-borealis', 'phi'],           // top-left to top-middle
+      ['phi', 'nunki'],                   // top-middle to top-right
+      ['nunki', 'ascella'],               // top-right to right
+      ['ascella', 'kaus-australis'],      // right back to bottom-left (closes the pot)
       // Spout extending left
       ['kaus-media', 'alnasl'],
     ],
