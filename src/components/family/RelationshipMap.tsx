@@ -119,7 +119,8 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
     const conns: { 
       from: typeof memberPositions[0]; 
       to: typeof memberPositions[0];
-      path: string[]; // Star IDs along the path
+      path: string[] | null; // Star IDs along the path, or null if no path exists
+      hasConstellationPath: boolean;
     }[] = [];
     
     for (let i = 0; i < memberPositions.length; i++) {
@@ -130,9 +131,13 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
         // Find path along constellation lines
         const path = findPathBetweenStars(from.starId, to.starId, constellation.lines);
         
-        if (path && path.length > 1) {
-          conns.push({ from, to, path });
-        }
+        // Always add the connection, even if no constellation path exists
+        conns.push({ 
+          from, 
+          to, 
+          path: path && path.length > 1 ? path : null,
+          hasConstellationPath: !!(path && path.length > 1)
+        });
       }
     }
     
@@ -274,25 +279,57 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
         {connections.map((conn, connIdx) => {
           const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
-          // Build path segments from the star path
-          const pathSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
-          for (let i = 0; i < conn.path.length - 1; i++) {
-            const fromStar = constellation.stars.find(s => s.id === conn.path[i]);
-            const toStar = constellation.stars.find(s => s.id === conn.path[i + 1]);
-            if (fromStar && toStar) {
-              pathSegments.push({
-                x1: toPixelX(fromStar.x),
-                y1: toPixelY(fromStar.y),
-                x2: toPixelX(toStar.x),
-                y2: toPixelY(toStar.y),
-              });
-            }
-          }
+          // Get pixel positions for from and to
+          const fromPx = toPixelX(conn.from.x);
+          const fromPy = toPixelY(conn.from.y);
+          const toPx = toPixelX(conn.to.x);
+          const toPy = toPixelY(conn.to.y);
           
-          // Build SVG path string for the connection
-          const pathD = pathSegments.map((seg, i) => 
-            i === 0 ? `M ${seg.x1} ${seg.y1} L ${seg.x2} ${seg.y2}` : `L ${seg.x2} ${seg.y2}`
-          ).join(' ');
+          let pathD: string;
+          
+          if (conn.hasConstellationPath && conn.path) {
+            // Build path segments from the star path
+            const pathSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
+            for (let i = 0; i < conn.path.length - 1; i++) {
+              const fromStar = constellation.stars.find(s => s.id === conn.path![i]);
+              const toStar = constellation.stars.find(s => s.id === conn.path![i + 1]);
+              if (fromStar && toStar) {
+                pathSegments.push({
+                  x1: toPixelX(fromStar.x),
+                  y1: toPixelY(fromStar.y),
+                  x2: toPixelX(toStar.x),
+                  y2: toPixelY(toStar.y),
+                });
+              }
+            }
+            
+            // Build SVG path string for constellation path
+            pathD = pathSegments.map((seg, i) => 
+              i === 0 ? `M ${seg.x1} ${seg.y1} L ${seg.x2} ${seg.y2}` : `L ${seg.x2} ${seg.y2}`
+            ).join(' ');
+          } else {
+            // No constellation path - draw a gentle arc between the two points
+            const midX = (fromPx + toPx) / 2;
+            const midY = (fromPy + toPy) / 2;
+            
+            // Calculate perpendicular offset for the arc
+            const dx = toPx - fromPx;
+            const dy = toPy - fromPy;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Arc curves outward, amount proportional to distance
+            const arcHeight = Math.min(distance * 0.25, 40);
+            
+            // Perpendicular direction (rotate 90 degrees)
+            const perpX = -dy / distance;
+            const perpY = dx / distance;
+            
+            // Control point for quadratic curve
+            const ctrlX = midX + perpX * arcHeight;
+            const ctrlY = midY + perpY * arcHeight;
+            
+            pathD = `M ${fromPx} ${fromPy} Q ${ctrlX} ${ctrlY} ${toPx} ${toPy}`;
+          }
           
           return (
             <g key={`conn-${connIdx}`}>
@@ -305,15 +342,16 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible path along constellation lines - brighter and bolder than constellation lines */}
+              {/* Visible path - solid for constellation path, dashed for direct arc */}
               <path
                 d={pathD}
-                stroke={isSelected ? "#D4A574" : "#999"}
-                strokeWidth={isSelected ? 2.5 : 1.8}
-                opacity={isSelected ? 1 : 0.7}
+                stroke={isSelected ? "#D4A574" : conn.hasConstellationPath ? "#999" : "#777"}
+                strokeWidth={isSelected ? 2.5 : conn.hasConstellationPath ? 1.8 : 1.2}
+                opacity={isSelected ? 1 : conn.hasConstellationPath ? 0.7 : 0.5}
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                strokeDasharray={conn.hasConstellationPath ? "none" : "4,4"}
                 className="pointer-events-none transition-all duration-300"
               />
             </g>
