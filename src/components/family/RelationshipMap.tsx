@@ -223,34 +223,16 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* CONSTELLATION STARS - simple filled dots like reference image */}
-        {constellation.stars.map((star) => {
-          const px = toPixelX(star.x);
-          const py = toPixelY(star.y);
-          // Larger stars get decorative 4-point effect
-          const isLargeStar = star.size >= 3;
-          
-          return (
-            <g key={`const-star-${star.id}`}>
-              {/* Main star dot */}
-              <circle
-                cx={px}
-                cy={py}
-                r={star.size * 0.7}
-                fill="#666"
-              />
-              {/* 4-point decoration for larger stars */}
-              {isLargeStar && (
-                <>
-                  <circle cx={px} cy={py - star.size * 1.5} r={0.8} fill="#555" />
-                  <circle cx={px} cy={py + star.size * 1.5} r={0.8} fill="#555" />
-                  <circle cx={px - star.size * 1.5} cy={py} r={0.8} fill="#555" />
-                  <circle cx={px + star.size * 1.5} cy={py} r={0.8} fill="#555" />
-                </>
-              )}
-            </g>
-          );
-        })}
+        {/* CONSTELLATION STARS - simple filled dots */}
+        {constellation.stars.map((star) => (
+          <circle
+            key={`const-star-${star.id}`}
+            cx={toPixelX(star.x)}
+            cy={toPixelY(star.y)}
+            r={star.size * 0.8}
+            fill="#666"
+          />
+        ))}
         
         {/* Family relationship connection lines - draw along constellation paths */}
         {connections.map((conn, connIdx) => {
@@ -320,16 +302,6 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 fill={isInSelected ? "#B8A080" : "#888"}
                 className="transition-all duration-300"
               />
-              
-              {/* Small decorative points around larger stars (4-point star effect) */}
-              {member.type === 'parent' || member.type === 'partner' ? (
-                <>
-                  <circle cx={px} cy={py - 12} r={1} fill="#666" opacity={0.6} />
-                  <circle cx={px} cy={py + 12} r={1} fill="#666" opacity={0.6} />
-                  <circle cx={px - 12} cy={py} r={1} fill="#666" opacity={0.6} />
-                  <circle cx={px + 12} cy={py} r={1} fill="#666" opacity={0.6} />
-                </>
-              ) : null}
               
               {/* Name label */}
               <text

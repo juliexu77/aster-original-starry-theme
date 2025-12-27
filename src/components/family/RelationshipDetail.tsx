@@ -74,12 +74,31 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
   const toSign = getZodiacFromBirthday(to.birthday);
   const toMoon = getMoonSignFromBirthDateTime(to.birthday, to.birth_time, to.birth_location);
   
+  // Determine relationship type
   const isChildRelationship = to.type === 'child';
+  const isAdultRelationship = from.type !== 'child' && to.type !== 'child';
+  
   const ageLabel = isChildRelationship ? getAgeLabel(to.birthday) : null;
   const ageMonths = isChildRelationship ? getAgeMonths(to.birthday) : 0;
   
   const fetchInsights = async () => {
     if (!fromSign || !toSign) return;
+    
+    // Skip API call for adult-adult relationships - show static content instead
+    if (isAdultRelationship) {
+      setInsights({
+        currentStrength: `${fromSign && getZodiacName(fromSign)} and ${toSign && getZodiacName(toSign)} share a natural understanding. Your cosmic connection runs deep, with both signs bringing unique strengths to the partnership.`,
+        currentFriction: `Different elemental energies can create tension. Finding balance between your approaches takes conscious effort, but leads to growth.`,
+        actionableInsight: `Honor each other's rhythms. What feels like friction is often just different timing.`,
+        sleepDynamic: `Your rest patterns may differ. One may need more quiet time while the other recharges through connection.`,
+        feedingDynamic: `Sharing meals together strengthens your bond. Create rituals around food that honor both your preferences.`,
+        communicationStyle: `Learn each other's love languages. What feels like being heard differs between your signs.`,
+        whatThisPhaseTeaches: `Partnership reveals parts of yourself you cannot see alone. Your differences are teachers.`,
+        whatsComingNext: `The more you understand each other's cosmic makeup, the more patience you'll find naturally.`,
+        longTermEvolution: `Long-term, your signs build complementary strengths. What challenges you now becomes your foundation.`
+      });
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -246,10 +265,12 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
           {activeTab === 'daily' && renderDailyTab()}
           {activeTab === 'growth' && renderGrowthTab()}
           
-          {/* Update indicator */}
-          <p className="text-[9px] text-foreground/15 text-center mt-6 tracking-wide">
-            Updated for {ageLabel || 'current age'}
-          </p>
+          {/* Update indicator - only show age for child relationships */}
+          {isChildRelationship && ageLabel && (
+            <p className="text-[9px] text-foreground/15 text-center mt-6 tracking-wide">
+              Updated for {ageLabel}
+            </p>
+          )}
         </div>
       ) : (
         <div className="text-center py-8">
