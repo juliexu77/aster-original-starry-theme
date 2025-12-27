@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
 import { CONSTELLATION_DATA } from "@/lib/constellation-data";
-
+import { CONSTELLATION_ILLUSTRATIONS, getStarColor } from "@/lib/constellation-illustrations";
 interface FamilyMember {
   id: string;
   name: string;
@@ -107,6 +107,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
   const padding = 30;
   
   const constellation = CONSTELLATION_DATA[constellationSign];
+  const illustration = CONSTELLATION_ILLUSTRATIONS[constellationSign];
   const memberPositions = useMemo(
     () => getMemberPositionsOnStars(members, constellationSign), 
     [members, constellationSign]
@@ -202,6 +203,22 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
+        {/* MYTHOLOGICAL ILLUSTRATION - very faint ghost layer */}
+        {illustration && (
+          <g 
+            opacity={0.12}
+            transform={`translate(${padding + (illustration.transform?.translateX || 0)}, ${padding + (illustration.transform?.translateY || 0)}) scale(${((width - padding * 2) / illustration.viewBox.width) * (illustration.transform?.scale || 1)})`}
+          >
+            <path
+              d={illustration.illustrationPath}
+              stroke="#3a4a5a"
+              strokeWidth={1.5}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        )}
         {/* CONSTELLATION LINES - thin and subtle like reference */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
@@ -222,18 +239,20 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* CONSTELLATION STARS - small simple dots */}
+        {/* CONSTELLATION STARS - small simple dots with special colors */}
         {constellation.stars.map((star) => {
           // Check if this star has a family member on it
           const hasMember = memberPositions.some(mp => mp.starId === star.id);
+          const starColor = getStarColor(constellationSign, star.id);
           
           return (
             <circle
               key={`const-star-${star.id}`}
               cx={toPixelX(star.x)}
               cy={toPixelY(star.y)}
-              r={hasMember ? 0 : Math.max(1, star.size * 0.5)}
-              fill="#555"
+              r={hasMember ? 0 : Math.max(1.5, star.size * 0.6)}
+              fill={starColor}
+              opacity={0.85}
             />
           );
         })}
