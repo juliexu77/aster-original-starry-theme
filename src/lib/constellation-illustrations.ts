@@ -367,7 +367,7 @@ export const CONSTELLATION_ILLUSTRATIONS: Record<ZodiacSign, ConstellationIllust
   },
 };
 
-// Color schemes for constellation rendering
+// Color schemes for constellation rendering - elegant gold line-art style
 export const CONSTELLATION_COLORS = {
   background: {
     gradient: {
@@ -376,19 +376,20 @@ export const CONSTELLATION_COLORS = {
     },
   },
   stars: {
-    default: '#e8e4d9',
-    bright: '#fff5e0',
-    dim: '#a8a090',
+    default: '#d4af70', // Gold-amber stars
+    bright: '#e8c47a',
+    dim: '#a8905a',
   },
   illustration: {
-    stroke: '#4a5a6a',
+    stroke: '#c9a55a', // Rich gold for mythological figures
+    strokeLight: '#b89545', // Slightly darker gold for details
     fill: 'none',
-    opacity: 0.15,
+    opacity: 0.55,
   },
   lines: {
     constellation: {
-      stroke: '#ffffff',
-      opacity: 0.4,
+      stroke: '#d4af70', // Gold constellation lines
+      opacity: 0.5,
     },
     relationship: {
       stroke: '#D4A574',

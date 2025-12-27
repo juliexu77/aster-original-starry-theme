@@ -208,34 +208,34 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - semi-translucent outline with interior detail */}
+        {/* MYTHOLOGICAL ILLUSTRATION - elegant gold line-art style */}
         {illustration && (
           <g 
-            opacity={0.35}
+            opacity={0.55}
             transform={`translate(${padding + (illustration.transform?.translateX || 0)}, ${padding + (illustration.transform?.translateY || 0)}) scale(${((width - padding * 2) / illustration.viewBox.width) * (illustration.transform?.scale || 1)})`}
           >
-            {/* Main outline of the mythological figure */}
+            {/* Main outline of the mythological figure - rich gold */}
             <path
               d={illustration.outlinePath}
-              stroke="#7a8a9a"
-              strokeWidth={2}
+              stroke="#c9a55a"
+              strokeWidth={1.8}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            {/* Interior detail lines for depth */}
+            {/* Interior detail lines for depth - slightly lighter gold */}
             <path
               d={illustration.detailPath}
-              stroke="#6a7a8a"
+              stroke="#d4b06a"
               strokeWidth={1.2}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity={0.8}
+              opacity={0.9}
             />
           </g>
         )}
-        {/* CONSTELLATION LINES - dotted white lines like official diagrams */}
+        {/* CONSTELLATION LINES - gold dotted lines */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
           const toStar = constellation.stars.find(s => s.id === toId);
@@ -248,29 +248,28 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y1={toPixelY(fromStar.y)}
               x2={toPixelX(toStar.x)}
               y2={toPixelY(toStar.y)}
-              stroke="#ffffff"
+              stroke="#d4af70"
               strokeWidth={1}
               strokeDasharray="3,3"
               strokeLinecap="round"
-              opacity={0.35}
+              opacity={0.45}
             />
           );
         })}
         
-        {/* CONSTELLATION STARS - small simple dots with special colors */}
+        {/* CONSTELLATION STARS - gold star dots */}
         {constellation.stars.map((star) => {
           // Check if this star has a family member on it
           const hasMember = memberPositions.some(mp => mp.starId === star.id);
-          const starColor = getStarColor(constellationSign, star.id);
           
           return (
             <circle
               key={`const-star-${star.id}`}
               cx={toPixelX(star.x)}
               cy={toPixelY(star.y)}
-              r={hasMember ? 0 : Math.max(1.5, star.size * 0.6)}
-              fill={starColor}
-              opacity={0.85}
+              r={hasMember ? 0 : Math.max(1.8, star.size * 0.7)}
+              fill="#d4af70"
+              opacity={0.9}
             />
           );
         })}
