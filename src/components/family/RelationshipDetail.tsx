@@ -19,7 +19,8 @@ interface FamilyMember {
   birth_location?: string | null;
 }
 
-interface RelationshipInsights {
+// Insights for parent-child relationships
+interface ChildRelationshipInsights {
   currentStrength: string;
   currentFriction: string;
   actionableInsight: string;
@@ -31,13 +32,24 @@ interface RelationshipInsights {
   longTermEvolution: string;
 }
 
+// Insights for partner relationships
+interface PartnerInsights {
+  currentStrength: string;
+  currentFriction: string;
+  actionableInsight: string;
+  communicationStyle: string;
+  emotionalDynamic: string;
+  parentingTeamwork: string;
+  stressResponse: string;
+  intimacyInsight: string;
+  longTermEvolution: string;
+}
+
 interface RelationshipDetailProps {
   from: FamilyMember;
   to: FamilyMember;
   onClose: () => void;
 }
-
-type TabType = 'dynamics' | 'daily' | 'growth';
 
 const getAgeLabel = (birthday: string | null): string => {
   if (!birthday) return '';
@@ -65,77 +77,120 @@ const getAgeMonths = (birthday: string | null): number => {
 };
 
 export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProps) => {
-  const [activeTab, setActiveTab] = useState<TabType>('dynamics');
-  const [insights, setInsights] = useState<RelationshipInsights | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('dynamics');
+  const [childInsights, setChildInsights] = useState<ChildRelationshipInsights | null>(null);
+  const [partnerInsights, setPartnerInsights] = useState<PartnerInsights | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const fromSign = getZodiacFromBirthday(from.birthday);
   const toSign = getZodiacFromBirthday(to.birthday);
+  const fromMoon = getMoonSignFromBirthDateTime(from.birthday, from.birth_time, from.birth_location);
   const toMoon = getMoonSignFromBirthDateTime(to.birthday, to.birth_time, to.birth_location);
   
   // Determine relationship type
-  const isChildRelationship = to.type === 'child';
+  const isChildRelationship = to.type === 'child' || from.type === 'child';
   const isAdultRelationship = from.type !== 'child' && to.type !== 'child';
   
-  const ageLabel = isChildRelationship ? getAgeLabel(to.birthday) : null;
-  const ageMonths = isChildRelationship ? getAgeMonths(to.birthday) : 0;
+  // For child relationships, identify which is the child
+  const child = from.type === 'child' ? from : to;
+  const parent = from.type === 'child' ? to : from;
+  
+  const ageLabel = isChildRelationship ? getAgeLabel(child.birthday) : null;
+  const ageMonths = isChildRelationship ? getAgeMonths(child.birthday) : 0;
   
   const fetchInsights = async () => {
     if (!fromSign || !toSign) return;
-    
-    // Skip API call for adult-adult relationships - show static content instead
-    if (isAdultRelationship) {
-      setInsights({
-        currentStrength: `${fromSign && getZodiacName(fromSign)} and ${toSign && getZodiacName(toSign)} share a natural understanding. Your cosmic connection runs deep, with both signs bringing unique strengths to the partnership.`,
-        currentFriction: `Different elemental energies can create tension. Finding balance between your approaches takes conscious effort, but leads to growth.`,
-        actionableInsight: `Honor each other's rhythms. What feels like friction is often just different timing.`,
-        sleepDynamic: `Your rest patterns may differ. One may need more quiet time while the other recharges through connection.`,
-        feedingDynamic: `Sharing meals together strengthens your bond. Create rituals around food that honor both your preferences.`,
-        communicationStyle: `Learn each other's love languages. What feels like being heard differs between your signs.`,
-        whatThisPhaseTeaches: `Partnership reveals parts of yourself you cannot see alone. Your differences are teachers.`,
-        whatsComingNext: `The more you understand each other's cosmic makeup, the more patience you'll find naturally.`,
-        longTermEvolution: `Long-term, your signs build complementary strengths. What challenges you now becomes your foundation.`
-      });
-      return;
-    }
     
     setLoading(true);
     setError(null);
     
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-relationship-insights`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            parent: {
-              name: from.name,
-              sunSign: getZodiacName(fromSign),
-              moonSign: getMoonSignFromBirthDateTime(from.birthday, from.birth_time, from.birth_location)
-                ? getZodiacName(getMoonSignFromBirthDateTime(from.birthday, from.birth_time, from.birth_location)!)
-                : null,
+      if (isAdultRelationship) {
+        // Use partner insights edge function
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-partner-insights`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
-            child: {
-              name: to.name,
-              sunSign: getZodiacName(toSign),
-              moonSign: toMoon ? getZodiacName(toMoon) : null,
-              ageMonths,
-            },
-          }),
+            body: JSON.stringify({
+              person1: {
+                name: from.name,
+                sunSign: getZodiacName(fromSign),
+                moonSign: fromMoon ? getZodiacName(fromMoon) : null,
+              },
+              person2: {
+                name: to.name,
+                sunSign: getZodiacName(toSign),
+                moonSign: toMoon ? getZodiacName(toMoon) : null,
+              },
+            }),
+          }
+        );
+        
+        if (!response.ok) {
+          if (response.status === 429) {
+            throw new Error('Rate limit exceeded. Try again later.');
+          }
+          if (response.status === 402) {
+            throw new Error('API credits exhausted.');
+          }
+          throw new Error('Failed to load insights');
         }
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to load insights');
+        
+        const data = await response.json();
+        setPartnerInsights(data);
+      } else {
+        // Use parent-child insights edge function
+        const parentSign = getZodiacFromBirthday(parent.birthday);
+        const childSign = getZodiacFromBirthday(child.birthday);
+        
+        if (!parentSign || !childSign) return;
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-relationship-insights`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              parent: {
+                name: parent.name,
+                sunSign: getZodiacName(parentSign),
+                moonSign: getMoonSignFromBirthDateTime(parent.birthday, parent.birth_time, parent.birth_location)
+                  ? getZodiacName(getMoonSignFromBirthDateTime(parent.birthday, parent.birth_time, parent.birth_location)!)
+                  : null,
+              },
+              child: {
+                name: child.name,
+                sunSign: getZodiacName(childSign),
+                moonSign: getMoonSignFromBirthDateTime(child.birthday, child.birth_time, child.birth_location)
+                  ? getZodiacName(getMoonSignFromBirthDateTime(child.birthday, child.birth_time, child.birth_location)!)
+                  : null,
+                ageMonths,
+              },
+            }),
+          }
+        );
+        
+        if (!response.ok) {
+          if (response.status === 429) {
+            throw new Error('Rate limit exceeded. Try again later.');
+          }
+          if (response.status === 402) {
+            throw new Error('API credits exhausted.');
+          }
+          throw new Error('Failed to load insights');
+        }
+        
+        const data = await response.json();
+        setChildInsights(data);
       }
-      
-      const data = await response.json();
-      setInsights(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
@@ -147,11 +202,20 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
     fetchInsights();
   }, [from.id, to.id]);
 
-  const tabs: { id: TabType; label: string }[] = [
+  // Different tabs for different relationship types
+  const childTabs = [
     { id: 'dynamics', label: 'DYNAMICS' },
     { id: 'daily', label: 'DAILY LIFE' },
     { id: 'growth', label: 'GROWTH' },
   ];
+  
+  const partnerTabs = [
+    { id: 'dynamics', label: 'DYNAMICS' },
+    { id: 'connection', label: 'CONNECTION' },
+    { id: 'parenting', label: 'PARENTING' },
+  ];
+  
+  const tabs = isAdultRelationship ? partnerTabs : childTabs;
 
   const renderInsightCard = (header: string, content: string | undefined) => {
     if (!content) return null;
@@ -168,29 +232,57 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
     );
   };
 
-  const renderDynamicsTab = () => (
+  // Child relationship tabs
+  const renderChildDynamicsTab = () => (
     <div className="space-y-3">
-      {renderInsightCard('Right Now', insights?.currentStrength)}
-      {renderInsightCard('Where You Clash', insights?.currentFriction)}
-      {renderInsightCard('Try This', insights?.actionableInsight)}
+      {renderInsightCard('Right Now', childInsights?.currentStrength)}
+      {renderInsightCard('Where You Clash', childInsights?.currentFriction)}
+      {renderInsightCard('Try This', childInsights?.actionableInsight)}
     </div>
   );
 
-  const renderDailyTab = () => (
+  const renderChildDailyTab = () => (
     <div className="space-y-3">
-      {renderInsightCard('Sleep Patterns', insights?.sleepDynamic)}
-      {renderInsightCard('Feeding Dynamics', insights?.feedingDynamic)}
-      {renderInsightCard('Communication', insights?.communicationStyle)}
+      {renderInsightCard('Sleep Patterns', childInsights?.sleepDynamic)}
+      {renderInsightCard('Feeding Dynamics', childInsights?.feedingDynamic)}
+      {renderInsightCard('Communication', childInsights?.communicationStyle)}
     </div>
   );
 
-  const renderGrowthTab = () => (
+  const renderChildGrowthTab = () => (
     <div className="space-y-3">
-      {renderInsightCard('What This Phase Teaches You', insights?.whatThisPhaseTeaches)}
-      {renderInsightCard("What's Coming", insights?.whatsComingNext)}
-      {renderInsightCard('Long-Term Evolution', insights?.longTermEvolution)}
+      {renderInsightCard('What This Phase Teaches You', childInsights?.whatThisPhaseTeaches)}
+      {renderInsightCard("What's Coming", childInsights?.whatsComingNext)}
+      {renderInsightCard('Long-Term Evolution', childInsights?.longTermEvolution)}
     </div>
   );
+
+  // Partner relationship tabs
+  const renderPartnerDynamicsTab = () => (
+    <div className="space-y-3">
+      {renderInsightCard('Your Strength', partnerInsights?.currentStrength)}
+      {renderInsightCard('Where You Clash', partnerInsights?.currentFriction)}
+      {renderInsightCard('Try This', partnerInsights?.actionableInsight)}
+    </div>
+  );
+
+  const renderPartnerConnectionTab = () => (
+    <div className="space-y-3">
+      {renderInsightCard('Communication', partnerInsights?.communicationStyle)}
+      {renderInsightCard('Emotional Dynamic', partnerInsights?.emotionalDynamic)}
+      {renderInsightCard('Under Stress', partnerInsights?.stressResponse)}
+      {renderInsightCard('Intimacy', partnerInsights?.intimacyInsight)}
+    </div>
+  );
+
+  const renderPartnerParentingTab = () => (
+    <div className="space-y-3">
+      {renderInsightCard('Parenting Teamwork', partnerInsights?.parentingTeamwork)}
+      {renderInsightCard('Long-Term Evolution', partnerInsights?.longTermEvolution)}
+    </div>
+  );
+
+  const hasInsights = isAdultRelationship ? !!partnerInsights : !!childInsights;
 
   return (
     <div className="mt-6 pt-6 border-t border-foreground/10">
@@ -200,13 +292,13 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
           <div className="flex items-center gap-2 mb-1">
             {fromSign && <ZodiacIcon sign={fromSign} size={16} className="text-[#C4A574]" />}
             <h2 className="text-[18px] text-foreground/90" style={{ fontFamily: 'Source Serif 4, serif' }}>
-              {from.name} → {to.name}
+              {from.name} & {to.name}
             </h2>
           </div>
           
           <div className="flex items-center gap-3">
             <p className="text-[12px] text-foreground/40">
-              {fromSign && getZodiacName(fromSign)} → {toSign && getZodiacName(toSign)}
+              {fromSign && getZodiacName(fromSign)} • {toSign && getZodiacName(toSign)}
             </p>
             {ageLabel && (
               <span className="text-[10px] text-foreground/25">
@@ -259,11 +351,21 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
             Retry
           </Button>
         </div>
-      ) : insights ? (
+      ) : hasInsights ? (
         <div className="pb-4">
-          {activeTab === 'dynamics' && renderDynamicsTab()}
-          {activeTab === 'daily' && renderDailyTab()}
-          {activeTab === 'growth' && renderGrowthTab()}
+          {isAdultRelationship ? (
+            <>
+              {activeTab === 'dynamics' && renderPartnerDynamicsTab()}
+              {activeTab === 'connection' && renderPartnerConnectionTab()}
+              {activeTab === 'parenting' && renderPartnerParentingTab()}
+            </>
+          ) : (
+            <>
+              {activeTab === 'dynamics' && renderChildDynamicsTab()}
+              {activeTab === 'daily' && renderChildDailyTab()}
+              {activeTab === 'growth' && renderChildGrowthTab()}
+            </>
+          )}
           
           {/* Update indicator - only show age for child relationships */}
           {isChildRelationship && ageLabel && (
