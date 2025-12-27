@@ -102,9 +102,9 @@ const generateBackgroundStars = (count: number) => {
 };
 
 export const RelationshipMap = ({ members, constellationSign, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
-  const width = 380;
-  const height = 380;
-  const padding = 35;
+  const width = 420;
+  const height = 440;
+  const padding = 30;
   
   const constellation = CONSTELLATION_DATA[constellationSign];
   const memberPositions = useMemo(
@@ -164,7 +164,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
   }
 
   return (
-    <div className="w-full max-w-[400px] mx-auto">
+    <div className="w-full max-w-[440px] mx-auto px-2">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
         <defs>
           {/* Glow filter for member nodes */}
