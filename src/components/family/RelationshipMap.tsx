@@ -238,15 +238,26 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
         ))}
         
         {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images */}
-        <image
-          href={ZODIAC_IMAGES[constellationSign]}
-          x={padding}
-          y={padding}
-          width={width - padding * 2}
-          height={height - padding * 2}
-          opacity={0.7}
-          preserveAspectRatio="xMidYMid meet"
-        />
+        {(() => {
+          // Calculate 70% of available space, centered
+          const imageWidth = (width - padding * 2) * 0.7;
+          const imageHeight = (height - padding * 2) * 0.7;
+          const imageX = padding + ((width - padding * 2) - imageWidth) / 2;
+          const imageY = padding + ((height - padding * 2) - imageHeight) / 2;
+          
+          return (
+            <image
+              href={ZODIAC_IMAGES[constellationSign]}
+              x={imageX}
+              y={imageY}
+              width={imageWidth}
+              height={imageHeight}
+              opacity={0.35}
+              preserveAspectRatio="xMidYMid meet"
+              style={{ mixBlendMode: 'screen' }}
+            />
+          );
+        })()}
         {/* CONSTELLATION LINES - gold dotted lines */}
         {constellation.lines.map(([fromId, toId], i) => {
           const fromStar = constellation.stars.find(s => s.id === fromId);
