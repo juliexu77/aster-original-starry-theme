@@ -208,32 +208,17 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - elegant gold line-art style */}
-        {illustration && (
-          <g 
-            opacity={0.55}
-            transform={`translate(${padding + (illustration.transform?.translateX || 0)}, ${padding + (illustration.transform?.translateY || 0)}) scale(${((width - padding * 2) / illustration.viewBox.width) * (illustration.transform?.scale || 1)})`}
-          >
-            {/* Main outline of the mythological figure - rich gold */}
-            <path
-              d={illustration.outlinePath}
-              stroke="#c9a55a"
-              strokeWidth={1.8}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {/* Interior detail lines for depth - slightly lighter gold */}
-            <path
-              d={illustration.detailPath}
-              stroke="#d4b06a"
-              strokeWidth={1.2}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              opacity={0.9}
-            />
-          </g>
+        {/* MYTHOLOGICAL ILLUSTRATION - using actual image */}
+        {constellationSign === 'virgo' && (
+          <image
+            href="/src/assets/virgo-constellation.png"
+            x={padding}
+            y={padding}
+            width={width - padding * 2}
+            height={height - padding * 2}
+            opacity={0.7}
+            preserveAspectRatio="xMidYMid meet"
+          />
         )}
         {/* CONSTELLATION LINES - gold dotted lines */}
         {constellation.lines.map(([fromId, toId], i) => {
