@@ -13,657 +13,326 @@ interface ConstellationIllustration {
   description: string;
 }
 
-// Mythological illustrations as SVG paths for each zodiac constellation
-// Styled like the golden zodiac symbols - outline with interior detail
+// Mythological illustrations as SVG paths - stylized like classic zodiac artwork
+// Clean angular lines, iconic silhouettes, less organic/cartoonish
 export const CONSTELLATION_ILLUSTRATIONS: Record<ZodiacSign, ConstellationIllustration> = {
-  // ARIES - Ram in profile with curved horns
+  // ARIES - Stylized ram with bold curved horns
   aries: {
     outlinePath: `
-      M 140 200 
-      Q 100 195 75 175 
-      Q 55 155 50 130 
-      Q 45 100 60 75 
-      Q 80 50 115 45 
-      Q 150 42 180 55 
-      Q 210 70 225 100 
-      Q 235 130 225 160 
-      Q 210 190 180 200 
-      Q 160 205 140 200 Z
-      M 60 75 
-      Q 40 50 35 30 
-      Q 32 15 45 12 
-      Q 60 10 70 25 
-      Q 78 40 75 60
-      M 115 45 
-      Q 125 25 145 15 
-      Q 165 8 175 20 
-      Q 182 35 175 55
-      M 50 130 
-      Q 30 135 15 150
-      M 225 160 
-      Q 255 165 280 155 
-      Q 305 145 320 125 
-      Q 330 105 325 85
-      M 180 200 
-      Q 175 225 165 245
-      M 140 200 
-      Q 130 225 120 245
+      M 160 185 L 130 175 L 105 155 L 90 130 L 85 100 L 95 75 L 115 55 L 145 48 L 175 52 L 200 68 L 215 92 L 218 120 L 208 150 L 185 172 L 160 185 Z
+      M 95 75 L 75 55 L 60 35 L 55 20 L 65 15 L 80 22 L 90 42 L 95 65
+      M 145 48 L 155 28 L 172 15 L 188 12 L 195 22 L 188 40 L 175 55
+      M 218 120 L 248 125 L 280 118 L 305 100
+      M 130 175 L 120 205 L 115 235
+      M 185 172 L 195 200 L 200 230
     `,
     detailPath: `
-      M 90 110 Q 95 105 100 110
-      M 145 100 Q 150 95 155 100
-      M 115 145 Q 125 155 140 152 Q 155 148 160 138
-      M 80 85 Q 95 80 110 85
-      M 150 75 Q 165 72 180 78
-      M 100 130 Q 110 140 125 138
-      M 145 128 Q 155 138 170 135
+      M 118 105 L 128 100 L 138 108
+      M 165 98 L 175 93 L 185 100
+      M 140 138 L 155 148 L 175 142
+      M 100 85 L 115 80 L 130 88
+      M 170 78 L 185 75 L 198 82
     `,
-    viewBox: { width: 350, height: 280 },
-    description: 'Ram in profile with curved horns'
+    viewBox: { width: 340, height: 260 },
+    description: 'Stylized ram with curved horns'
   },
 
-  // TAURUS - Powerful bull charging forward
+  // TAURUS - Bold bull silhouette
   taurus: {
     outlinePath: `
-      M 180 220 
-      Q 140 210 110 185 
-      Q 85 160 80 125 
-      Q 78 95 95 70 
-      Q 115 45 150 40 
-      Q 185 38 215 50 
-      Q 250 65 270 95 
-      Q 285 125 280 160 
-      Q 270 195 240 215 
-      Q 210 230 180 220 Z
-      M 95 70 
-      Q 60 40 40 20 
-      Q 28 8 18 18 
-      Q 10 32 20 48 
-      Q 35 68 60 82
-      M 215 50 
-      Q 250 25 280 15 
-      Q 300 10 310 25 
-      Q 318 42 305 60 
-      Q 285 80 260 90
-      M 80 125 
-      Q 55 130 35 145
-      M 280 160 
-      Q 305 165 325 180
-      M 180 220 
-      Q 175 245 168 270
-      M 240 215 
-      Q 245 240 250 265
+      M 175 210 L 140 200 L 110 180 L 88 152 L 78 120 L 82 88 L 100 62 L 135 48 L 175 45 L 215 52 L 248 72 L 268 102 L 272 138 L 258 172 L 232 198 L 195 212 L 175 210 Z
+      M 100 62 L 70 38 L 48 18 L 35 15 L 28 28 L 38 48 L 58 68
+      M 248 72 L 278 48 L 302 25 L 318 22 L 325 35 L 315 55 L 292 78
+      M 78 120 L 52 128 L 30 145
+      M 272 138 L 298 148 L 322 162
+      M 140 200 L 130 235 L 125 265
+      M 232 198 L 245 232 L 252 262
     `,
     detailPath: `
-      M 130 110 Q 138 105 145 112
-      M 195 105 Q 203 100 210 107
-      M 160 155 Q 175 168 195 162
-      M 145 85 Q 160 80 175 82 Q 190 85 200 92
-      M 110 100 Q 125 95 140 100
-      M 200 95 Q 215 92 230 98
-      M 150 130 Q 160 140 175 138
-      M 180 130 Q 195 140 210 135
-      M 165 180 Q 175 188 190 185
+      M 125 108 L 138 102 L 152 110
+      M 198 102 L 212 96 L 228 105
+      M 158 155 L 175 165 L 195 158
+      M 112 90 L 130 85 L 148 92
+      M 202 88 L 222 82 L 242 92
+      M 165 130 L 180 140 L 198 135
     `,
-    viewBox: { width: 350, height: 290 },
-    transform: { scale: 0.95 },
-    description: 'Powerful bull with horns lowered'
+    viewBox: { width: 360, height: 285 },
+    transform: { scale: 0.92 },
+    description: 'Powerful bull with lowered horns'
   },
 
-  // GEMINI - Twin figures standing together
+  // GEMINI - Twin figures in angular style
   gemini: {
     outlinePath: `
-      M 85 60 
-      Q 70 50 75 35 
-      Q 82 20 100 22 
-      Q 118 25 120 42 
-      Q 120 58 105 65 
-      Q 92 70 85 60 Z
-      M 100 70 
-      L 95 95 
-      L 85 145 
-      L 75 200
-      M 70 110 Q 85 120 95 105
-      M 95 105 Q 105 120 125 110
-      M 85 145 L 55 200
-      M 85 145 L 105 200
-      M 195 60 
-      Q 180 50 185 35 
-      Q 192 20 210 22 
-      Q 228 25 230 42 
-      Q 230 58 215 65 
-      Q 202 70 195 60 Z
-      M 210 70 
-      L 205 95 
-      L 195 145 
-      L 185 200
-      M 180 110 Q 195 120 205 105
-      M 205 105 Q 215 120 235 110
-      M 195 145 L 165 200
-      M 195 145 L 215 200
-      M 120 42 Q 145 30 170 30 Q 195 32 210 42
-      M 125 110 Q 145 100 165 100 Q 185 102 195 110
+      M 88 55 L 78 42 L 82 28 L 98 22 L 115 28 L 118 45 L 108 58 L 95 62 L 88 55 Z
+      M 102 65 L 98 95 L 92 135 L 85 185
+      M 78 105 L 95 115 L 115 105
+      M 92 135 L 65 185
+      M 92 135 L 115 185
+      M 212 55 L 202 42 L 206 28 L 222 22 L 238 28 L 242 45 L 232 58 L 218 62 L 212 55 Z
+      M 225 65 L 222 95 L 215 135 L 208 185
+      M 202 105 L 218 115 L 238 105
+      M 215 135 L 188 185
+      M 215 135 L 238 185
+      M 118 38 L 150 28 L 182 28 L 215 38
+      M 115 105 L 145 95 L 175 95 L 202 105
     `,
     detailPath: `
-      M 92 42 Q 98 40 102 45
-      M 202 42 Q 208 40 212 45
-      M 88 52 Q 95 58 105 55
-      M 198 52 Q 205 58 215 55
-      M 80 130 Q 90 138 100 135
-      M 190 130 Q 200 138 210 135
-      M 82 170 Q 90 175 98 172
-      M 192 170 Q 200 175 208 172
+      M 95 42 L 102 38 L 110 45
+      M 218 42 L 225 38 L 232 45
+      M 85 155 L 95 162 L 108 158
+      M 208 155 L 218 162 L 232 158
     `,
-    viewBox: { width: 300, height: 220 },
-    transform: { translateY: 20 },
-    description: 'Twin figures standing side by side'
+    viewBox: { width: 300, height: 205 },
+    transform: { translateY: 25 },
+    description: 'Twin figures connected'
   },
 
-  // CANCER - Crab with claws raised
+  // CANCER - Geometric crab with angular claws
   cancer: {
     outlinePath: `
-      M 160 145 
-      Q 120 135 95 150 
-      Q 70 170 75 200 
-      Q 80 230 110 250 
-      Q 145 268 185 268 
-      Q 225 268 260 250 
-      Q 290 230 295 200 
-      Q 300 170 275 150 
-      Q 250 135 210 145 
-      Q 185 152 160 145 Z
-      M 95 150 
-      Q 60 125 40 90 
-      Q 30 65 50 50 
-      Q 72 40 88 60 
-      Q 100 82 95 115
-      M 70 170 
-      Q 35 160 15 140 
-      Q 0 125 10 108 
-      Q 25 95 48 108 
-      Q 65 125 75 155
-      M 275 150 
-      Q 310 125 330 90 
-      Q 340 65 320 50 
-      Q 298 40 282 60 
-      Q 270 82 275 115
-      M 300 170 
-      Q 335 160 355 140 
-      Q 370 125 360 108 
-      Q 345 95 322 108 
-      Q 305 125 295 155
-      M 110 250 Q 105 275 98 295
-      M 150 268 Q 148 290 145 310
-      M 220 268 Q 222 290 225 310
-      M 260 250 Q 265 275 272 295
+      M 170 140 L 130 135 L 100 150 L 82 175 L 85 205 L 105 235 L 145 255 L 190 258 L 235 250 L 268 225 L 282 195 L 278 162 L 255 140 L 215 135 L 170 140 Z
+      M 100 150 L 68 125 L 45 95 L 38 68 L 52 55 L 72 62 L 85 92 L 95 125
+      M 82 175 L 48 168 L 22 152 L 12 132 L 25 118 L 48 128 L 72 152
+      M 255 140 L 288 118 L 315 88 L 325 62 L 312 48 L 290 58 L 275 88 L 262 122
+      M 278 162 L 312 158 L 342 142 L 355 125 L 342 108 L 318 118 L 292 145
+      M 105 235 L 98 268 L 95 295
+      M 145 255 L 142 285 L 140 312
+      M 235 250 L 242 282 L 248 308
+      M 268 225 L 278 258 L 285 288
     `,
     detailPath: `
-      M 145 185 Q 155 180 165 185
-      M 195 185 Q 205 180 215 185
-      M 165 215 Q 180 225 200 220
-      M 130 200 Q 145 210 165 205
-      M 205 200 Q 225 210 240 205
-      M 55 75 Q 65 70 72 78
-      M 298 75 Q 308 70 315 78
-      M 35 120 Q 45 115 52 122
-      M 318 120 Q 328 115 335 122
+      M 148 185 L 165 178 L 182 185
+      M 202 180 L 218 175 L 235 182
+      M 165 215 L 185 225 L 208 218
+      M 55 82 L 68 78 L 78 88
+      M 295 78 L 308 72 L 318 82
     `,
-    viewBox: { width: 370, height: 330 },
-    transform: { scale: 0.85 },
-    description: 'Crab with claws raised and extended'
+    viewBox: { width: 375, height: 330 },
+    transform: { scale: 0.82 },
+    description: 'Crab with raised angular claws'
   },
 
-  // LEO - Majestic lion with flowing mane
+  // LEO - Majestic lion with geometric mane
   leo: {
     outlinePath: `
-      M 80 155 
-      Q 55 130 60 100 
-      Q 68 70 95 50 
-      Q 125 30 165 35 
-      Q 200 40 225 65 
-      Q 245 90 240 125 
-      Q 232 160 200 180 
-      Q 170 195 135 190 
-      Q 100 185 80 165 Z
-      M 60 100 
-      Q 35 90 25 70 
-      Q 18 52 35 42 
-      Q 55 35 68 52
-      M 95 50 
-      Q 85 28 95 15 
-      Q 108 5 125 15 
-      Q 135 28 130 48
-      M 165 35 
-      Q 175 12 195 8 
-      Q 215 6 222 22 
-      Q 225 42 215 60
-      M 240 125 
-      Q 270 135 300 140 
-      Q 330 145 355 135 
-      Q 380 120 385 95
-      M 355 135 
-      Q 365 158 358 180 
-      Q 348 200 325 200 
-      Q 305 198 310 175
-      M 200 180 
-      Q 195 210 185 235
-      M 135 190 
-      Q 125 215 115 240
-      M 80 165 
-      Q 70 195 65 225
+      M 85 148 L 62 122 L 58 92 L 72 62 L 98 42 L 135 35 L 175 42 L 208 62 L 228 95 L 232 130 L 218 162 L 190 185 L 152 192 L 115 185 L 88 165 L 85 148 Z
+      M 58 92 L 35 82 L 22 62 L 28 45 L 48 42 L 62 58
+      M 98 42 L 88 22 L 98 8 L 118 12 L 128 32
+      M 135 35 L 138 15 L 155 8 L 172 15 L 172 35
+      M 175 42 L 188 22 L 208 18 L 218 32 L 212 52
+      M 232 130 L 268 138 L 305 142 L 342 132 L 372 112
+      M 342 132 L 358 158 L 352 188 L 328 198 L 312 182
+      M 190 185 L 185 218 L 178 252
+      M 152 192 L 142 225 L 135 258
+      M 115 185 L 102 218 L 92 252
     `,
     detailPath: `
-      M 115 100 Q 125 95 135 102
-      M 175 95 Q 185 90 195 97
-      M 145 140 Q 160 152 180 148
-      M 90 75 Q 105 68 120 75
-      M 170 65 Q 185 60 200 68
-      M 120 120 Q 135 130 155 125
-      M 165 118 Q 180 128 200 122
-      M 280 140 Q 295 145 310 140
-      M 330 120 Q 345 125 360 118
+      M 112 95 L 128 88 L 145 98
+      M 172 88 L 188 82 L 205 92
+      M 145 138 L 165 152 L 188 145
+      M 75 72 L 88 68 L 102 78
+      M 192 68 L 208 62 L 222 72
+      M 285 140 L 308 145 L 332 138
     `,
-    viewBox: { width: 410, height: 260 },
-    transform: { scale: 0.88, translateY: 15 },
-    description: 'Majestic lion with flowing mane'
+    viewBox: { width: 400, height: 275 },
+    transform: { scale: 0.85, translateY: 10 },
+    description: 'Majestic lion with geometric mane'
   },
 
-  // VIRGO - Maiden with flowing robes and wheat
+  // VIRGO - Elegant maiden with angular robes
   virgo: {
     outlinePath: `
-      M 155 60 
-      Q 138 48 145 30 
-      Q 155 12 175 16 
-      Q 195 22 195 42 
-      Q 192 60 175 68 
-      Q 162 72 155 60 Z
-      M 172 70 
-      L 165 100 
-      L 155 150 
-      L 145 210
-      M 140 110 Q 158 122 165 105
-      M 165 105 Q 172 120 195 115
-      M 155 150 
-      Q 125 165 100 195 
-      Q 85 220 95 255
-      M 155 150 
-      Q 185 165 210 195 
-      Q 225 220 215 255
-      M 145 210 
-      Q 120 230 105 270
-      M 145 210 
-      Q 170 230 185 270
-      M 195 115 
-      Q 225 105 250 100 
-      Q 275 98 295 110
-      M 250 100 
-      Q 265 82 285 75 
-      Q 305 70 315 82
-      M 275 98 
-      Q 290 80 310 75
-      M 295 110 
-      Q 312 108 325 118
+      M 152 55 L 142 42 L 148 25 L 168 20 L 188 28 L 192 48 L 182 62 L 168 68 L 155 62 L 152 55 Z
+      M 170 70 L 165 102 L 158 148 L 148 210
+      M 145 115 L 162 128 L 185 118
+      M 158 148 L 125 172 L 98 210 L 92 258
+      M 158 148 L 192 172 L 218 210 L 225 258
+      M 148 210 L 118 242 L 102 285
+      M 148 210 L 178 242 L 195 285
+      M 185 118 L 218 108 L 252 102 L 282 112
+      M 252 102 L 272 82 L 295 72 L 315 78
+      M 282 112 L 305 108 L 325 118
     `,
     detailPath: `
-      M 162 38 Q 170 34 178 40
-      M 158 52 Q 168 58 180 54
-      M 150 130 Q 162 138 175 134
-      M 130 180 Q 145 190 165 185
-      M 165 185 Q 185 195 205 188
-      M 115 235 Q 128 245 145 240
-      M 175 235 Q 190 245 208 238
-      M 260 95 Q 272 92 282 98
-      M 295 102 Q 305 98 315 105
+      M 162 38 L 172 35 L 182 42
+      M 158 52 L 168 58 L 180 52
+      M 152 132 L 168 142 L 185 135
+      M 118 195 L 138 205 L 162 198
+      M 168 198 L 192 208 L 215 200
+      M 262 98 L 278 95 L 295 102
     `,
-    viewBox: { width: 345, height: 290 },
-    transform: { scale: 0.92 },
-    description: 'Maiden in flowing robes holding wheat'
+    viewBox: { width: 350, height: 305 },
+    transform: { scale: 0.88 },
+    description: 'Elegant maiden with flowing angular robes'
   },
 
-  // LIBRA - Balanced scales
+  // LIBRA - Geometric balanced scales
   libra: {
     outlinePath: `
-      M 50 180 
-      L 270 180
-      M 160 180 
-      L 160 100
-      M 160 100 
-      L 60 125
-      M 60 125 
-      L 50 155 
-      L 70 170 
-      L 95 170 
-      L 105 155 
-      L 95 125 
-      Q 78 118 60 125
-      M 160 100 
-      L 260 125
-      M 260 125 
-      L 250 155 
-      L 270 170 
-      L 295 170 
-      L 305 155 
-      L 295 125 
-      Q 278 118 260 125
-      M 60 125 
-      Q 78 132 95 125
-      M 260 125 
-      Q 278 132 295 125
-      M 50 155 
-      Q 60 165 72 168 
-      Q 85 170 95 165
-      M 250 155 
-      Q 260 165 272 168 
-      Q 285 170 295 165
-      M 160 180 
-      L 160 230
-      M 130 230 
-      L 190 230
-      M 130 230 
-      Q 125 242 130 250
-      M 190 230 
-      Q 195 242 190 250
+      M 45 175 L 275 175
+      M 160 175 L 160 95
+      M 160 95 L 55 122
+      M 55 122 L 45 155 L 55 168 L 85 168 L 95 155 L 85 122 L 55 122
+      M 160 95 L 265 122
+      M 265 122 L 255 155 L 265 168 L 295 168 L 305 155 L 295 122 L 265 122
+      M 55 168 L 70 178 L 85 168
+      M 265 168 L 280 178 L 295 168
+      M 160 175 L 160 225
+      M 125 225 L 195 225
+      M 125 225 L 118 242
+      M 195 225 L 202 242
     `,
     detailPath: `
-      M 65 145 Q 72 142 78 148
-      M 85 145 Q 92 142 98 148
-      M 255 145 Q 262 142 268 148
-      M 275 145 Q 282 142 288 148
-      M 72 160 Q 80 165 90 162
-      M 262 160 Q 270 165 280 162
-      M 155 130 Q 160 125 165 130
-      M 155 150 Q 160 145 165 150
+      M 62 142 L 72 138 L 82 145
+      M 272 142 L 282 138 L 292 145
+      M 65 158 L 75 162 L 88 158
+      M 275 158 L 285 162 L 298 158
+      M 155 125 L 160 118 L 165 125
+      M 155 148 L 160 142 L 165 148
     `,
-    viewBox: { width: 330, height: 270 },
-    transform: { translateY: 5, scale: 0.95 },
-    description: 'Balanced scales of justice'
+    viewBox: { width: 330, height: 260 },
+    transform: { translateY: 15, scale: 0.95 },
+    description: 'Geometric balanced scales'
   },
 
-  // SCORPIO - Scorpion with curved tail and stinger
+  // SCORPIO - Angular scorpion with sharp tail
   scorpio: {
     outlinePath: `
-      M 70 130 
-      Q 50 110 58 85 
-      Q 70 60 100 62 
-      Q 130 65 145 90 
-      Q 155 115 145 145 
-      Q 132 170 100 175 
-      Q 72 178 60 155 
-      Q 52 138 70 130 Z
-      M 58 85 
-      Q 35 72 25 50 
-      Q 20 32 38 28 
-      Q 58 26 65 48 
-      Q 68 65 62 82
-      M 50 110 
-      Q 28 102 15 82 
-      Q 6 65 20 52 
-      Q 38 48 50 68
-      M 145 145 
-      Q 175 160 210 170 
-      Q 245 178 280 175 
-      Q 310 170 330 155 
-      Q 350 135 345 110 
-      Q 338 88 315 92 
-      Q 298 100 305 125 
-      Q 315 145 330 155
-      M 330 155 
-      Q 350 165 370 158 
-      Q 385 148 380 128 
-      Q 372 115 355 125
-      M 60 155 
-      Q 50 180 48 205
-      M 85 178 
-      Q 80 200 78 225
-      M 120 175 
-      Q 125 198 128 222
+      M 72 125 L 55 105 L 55 78 L 72 58 L 98 55 L 125 65 L 142 92 L 145 125 L 132 155 L 105 168 L 75 165 L 58 145 L 62 125 L 72 125 Z
+      M 55 78 L 35 62 L 22 42 L 25 25 L 42 22 L 55 38 L 58 62
+      M 55 105 L 32 95 L 15 75 L 15 55 L 32 48 L 48 65
+      M 145 125 L 178 142 L 218 155 L 262 162 L 305 155 L 338 135 L 355 108 L 352 82 L 332 75 L 318 92 L 328 118 L 348 142
+      M 348 142 L 372 152 L 392 142 L 398 118 L 382 105
+      M 75 165 L 68 198 L 65 228
+      M 105 168 L 102 200 L 100 232
+      M 132 155 L 138 188 L 145 220
     `,
     detailPath: `
-      M 85 100 Q 95 95 105 102
-      M 100 125 Q 112 135 128 130
-      M 32 58 Q 42 52 50 60
-      M 28 78 Q 38 72 48 80
-      M 260 172 Q 275 175 290 170
-      M 300 148 Q 315 155 328 148
-      M 355 138 Q 365 145 375 138
-      M 75 120 Q 88 128 102 122
+      M 88 92 L 102 88 L 115 98
+      M 98 128 L 115 138 L 132 130
+      M 38 52 L 48 48 L 58 55
+      M 265 158 L 288 162 L 312 155
+      M 335 118 L 348 125 L 362 118
+      M 378 125 L 388 130 L 395 122
     `,
-    viewBox: { width: 400, height: 245 },
-    transform: { scale: 0.82, translateY: 25 },
-    description: 'Scorpion with curved tail and stinger'
+    viewBox: { width: 420, height: 250 },
+    transform: { scale: 0.78, translateY: 25 },
+    description: 'Angular scorpion with raised stinger'
   },
 
-  // SAGITTARIUS - Centaur archer drawing bow
+  // SAGITTARIUS - Dynamic centaur archer
   sagittarius: {
     outlinePath: `
-      M 170 75 
-      Q 152 62 158 42 
-      Q 168 22 190 28 
-      Q 212 35 210 58 
-      Q 205 78 185 85 
-      Q 175 88 170 75 Z
-      M 185 88 
-      L 175 120 
-      L 160 160
-      M 145 130 Q 165 142 175 125
-      M 175 125 Q 185 138 210 130
-      M 210 130 
-      Q 225 140 240 145 
-      Q 255 148 265 142
-      M 240 145 
-      L 55 65
-      M 55 65 
-      L 50 58 
-      M 55 65 
-      L 62 58
-      M 265 142 
-      Q 300 125 335 115 
-      Q 365 108 385 120
-      M 160 160 
-      L 175 175 
-      L 195 175 
-      L 218 175 
-      L 250 185
-      M 175 175 
-      Q 165 200 155 230
-      M 195 175 
-      Q 188 200 182 230
-      M 218 175 
-      Q 228 200 240 230
-      M 250 185 
-      Q 268 205 285 235
-      M 160 160 
-      Q 130 155 105 165 
-      Q 78 178 68 210
+      M 175 72 L 162 55 L 168 38 L 188 32 L 208 42 L 212 62 L 200 78 L 185 82 L 175 72 Z
+      M 192 85 L 185 118 L 172 158
+      M 158 128 L 178 142 L 202 132
+      M 202 132 L 225 142 L 252 148
+      M 252 148 L 55 68
+      M 55 68 L 48 58 L 55 68 L 62 58
+      M 252 148 L 295 135 L 342 125 L 385 138
+      M 172 158 L 188 175 L 212 178 L 238 182 L 272 195
+      M 188 175 L 175 208 L 165 248
+      M 212 178 L 205 212 L 198 252
+      M 238 182 L 248 218 L 262 255
+      M 272 195 L 295 225 L 318 265
+      M 172 158 L 138 155 L 108 168 L 85 202
     `,
     detailPath: `
-      M 178 50 Q 188 45 195 52
-      M 175 65 Q 185 72 198 68
-      M 155 145 Q 168 152 182 148
-      M 80 75 Q 100 72 115 80
-      M 120 85 Q 140 82 155 90
-      M 285 125 Q 305 122 325 128
-      M 182 190 Q 195 198 212 195
-      M 230 195 Q 248 202 268 198
+      M 182 52 L 192 48 L 202 55
+      M 178 68 L 188 75 L 200 68
+      M 165 142 L 180 152 L 198 145
+      M 95 75 L 125 72 L 155 82
+      M 295 138 L 325 132 L 358 140
+      M 195 195 L 215 205 L 242 198
     `,
-    viewBox: { width: 410, height: 260 },
-    transform: { scale: 0.88 },
-    description: 'Centaur archer drawing bow and arrow'
+    viewBox: { width: 415, height: 285 },
+    transform: { scale: 0.85 },
+    description: 'Dynamic centaur archer with drawn bow'
   },
 
-  // CAPRICORN - Sea-goat with fish tail
+  // CAPRICORN - Angular sea-goat
   capricorn: {
     outlinePath: `
-      M 85 115 
-      Q 65 98 72 72 
-      Q 82 48 115 52 
-      Q 145 58 155 85 
-      Q 162 110 150 138 
-      Q 135 162 102 165 
-      Q 75 165 70 138 
-      Q 68 122 85 115 Z
-      M 72 72 
-      Q 48 55 45 35 
-      Q 44 18 60 15 
-      Q 78 15 85 35 
-      Q 88 52 82 70
-      M 115 52 
-      Q 130 32 152 28 
-      Q 172 26 178 45 
-      Q 180 62 168 80
-      M 150 138 
-      Q 180 150 212 158 
-      Q 248 165 285 158 
-      Q 318 148 338 125 
-      Q 355 100 345 78
-      M 345 78 
-      Q 335 65 318 72 
-      Q 308 85 318 105 
-      Q 332 125 350 135
-      M 285 158 
-      Q 298 178 290 198 
-      Q 280 215 260 210 
-      Q 245 202 252 182
-      M 318 148 
-      Q 332 165 325 185 
-      Q 315 202 295 198
-      M 102 165 
-      Q 95 190 100 215
-      M 120 165 
-      Q 130 190 138 215
+      M 88 112 L 72 92 L 75 65 L 95 48 L 125 48 L 152 62 L 165 92 L 162 125 L 142 152 L 112 162 L 82 155 L 70 132 L 78 115 L 88 112 Z
+      M 75 65 L 52 48 L 42 28 L 48 15 L 68 15 L 78 35 L 82 55
+      M 125 48 L 142 28 L 165 18 L 185 25 L 188 45 L 175 65
+      M 162 125 L 198 142 L 242 155 L 292 158 L 338 145 L 368 118 L 378 88
+      M 378 88 L 368 72 L 348 78 L 345 102 L 362 128 L 385 145
+      M 292 158 L 308 185 L 298 212 L 272 218 L 258 198
+      M 338 145 L 358 172 L 348 202 L 322 208
+      M 112 162 L 108 198 L 112 235
+      M 142 152 L 152 188 L 162 225
     `,
     detailPath: `
-      M 98 85 Q 108 80 118 88
-      M 105 115 Q 118 125 135 120
-      M 58 52 Q 68 48 78 55
-      M 145 58 Q 158 55 168 62
-      M 240 160 Q 258 165 278 158
-      M 305 135 Q 322 142 338 135
-      M 325 95 Q 335 102 345 95
-      M 95 140 Q 108 148 125 142
+      M 102 82 L 118 78 L 132 88
+      M 112 118 L 128 128 L 148 120
+      M 58 42 L 72 38 L 85 48
+      M 248 158 L 275 162 L 305 155
+      M 352 105 L 368 112 L 380 102
+      M 312 188 L 328 195 L 348 185
     `,
-    viewBox: { width: 375, height: 235 },
-    transform: { scale: 0.88, translateY: 20 },
-    description: 'Sea-goat with goat head and fish tail'
+    viewBox: { width: 410, height: 255 },
+    transform: { scale: 0.82, translateY: 18 },
+    description: 'Angular sea-goat with fish tail'
   },
 
-  // AQUARIUS - Water bearer pouring from urn
+  // AQUARIUS - Geometric water bearer
   aquarius: {
     outlinePath: `
-      M 125 60 
-      Q 108 48 115 30 
-      Q 125 12 148 16 
-      Q 168 22 168 42 
-      Q 165 60 148 68 
-      Q 135 72 125 60 Z
-      M 145 70 
-      L 138 100 
-      L 128 150 
-      L 118 210
-      M 115 115 Q 132 125 138 108
-      M 138 108 Q 148 122 175 115
-      M 175 115 
-      Q 205 108 230 100 
-      Q 258 95 280 105
-      M 230 100 
-      L 245 170
-      M 245 170 
-      Q 250 185 245 200 
-      Q 238 218 220 222 
-      Q 200 225 198 205
-      M 280 105 
-      L 310 110 
-      L 340 115
-      M 128 150 
-      Q 102 165 85 200 
-      Q 75 235 90 270
-      M 128 150 
-      Q 155 165 175 200 
-      Q 185 235 170 270
-      M 118 210 
-      Q 95 230 85 265
-      M 118 210 
-      Q 140 230 152 265
-      M 280 140 
-      Q 260 155 255 175
-      M 320 145 
-      Q 300 162 295 185
-      M 350 148 
-      Q 332 168 328 195
+      M 128 58 L 115 42 L 122 25 L 142 20 L 162 28 L 168 48 L 158 62 L 142 68 L 130 62 L 128 58 Z
+      M 148 72 L 142 108 L 132 158 L 122 218
+      M 122 122 L 140 135 L 165 125
+      M 165 125 L 202 115 L 242 108 L 278 118
+      M 242 108 L 258 178
+      M 258 178 L 268 202 L 258 225 L 232 232 L 218 212
+      M 278 118 L 312 125 L 348 132
+      M 132 158 L 102 178 L 82 218 L 85 268
+      M 132 158 L 165 180 L 188 222 L 182 272
+      M 122 218 L 98 248 L 88 288
+      M 122 218 L 148 252 L 162 292
+      M 285 155 L 268 175 L 262 202
+      M 325 162 L 305 185 L 298 215
+      M 358 168 L 342 195 L 335 228
     `,
     detailPath: `
-      M 135 38 Q 145 34 155 40
-      M 132 52 Q 142 58 155 54
-      M 125 135 Q 138 142 152 138
-      M 98 185 Q 115 195 138 188
-      M 142 185 Q 162 195 185 188
-      M 232 135 Q 248 142 268 135
-      M 252 180 Q 265 188 280 182
-      M 290 178 Q 305 185 322 178
+      M 138 42 L 148 38 L 158 45
+      M 135 55 L 145 62 L 158 55
+      M 132 142 L 148 152 L 168 145
+      M 98 202 L 122 215 L 152 205
+      M 248 132 L 268 138 L 292 132
+      M 272 188 L 288 198 L 308 190
     `,
-    viewBox: { width: 375, height: 290 },
-    transform: { scale: 0.88 },
-    description: 'Water bearer pouring from urn'
+    viewBox: { width: 385, height: 310 },
+    transform: { scale: 0.85 },
+    description: 'Geometric water bearer with flowing streams'
   },
 
-  // PISCES - Two fish swimming in opposite directions
+  // PISCES - Two angular fish bound together
   pisces: {
     outlinePath: `
-      M 80 70 
-      Q 55 60 45 40 
-      Q 40 20 60 15 
-      Q 82 12 95 30 
-      Q 108 50 100 75 
-      Q 92 98 68 105 
-      Q 48 108 45 85 
-      Q 45 72 60 68 
-      Q 72 65 80 70 Z
-      M 45 40 
-      Q 28 35 20 48 
-      Q 15 62 28 72
-      M 100 75 
-      L 160 85 
-      L 220 100 
-      L 160 115 
-      L 100 125
-      M 100 125 
-      Q 75 132 60 155 
-      Q 48 180 55 205 
-      Q 65 228 95 230 
-      Q 125 230 140 208 
-      Q 155 185 145 158 
-      Q 132 135 100 125 Z
-      M 55 205 
-      Q 38 210 28 195 
-      Q 22 178 38 170
-      M 220 100 
-      Q 250 108 275 140 
-      Q 298 175 292 210 
-      Q 282 245 248 250 
-      Q 215 252 198 225 
-      Q 182 198 195 165 
-      Q 212 138 250 130 
-      Q 275 125 285 145 
-      Q 292 165 275 178 
-      Q 258 188 248 175 
-      Q 242 160 255 152
-      M 292 210 
-      Q 312 218 325 205 
-      Q 335 188 318 175
+      M 82 68 L 62 52 L 55 32 L 68 18 L 92 22 L 108 42 L 108 72 L 92 95 L 68 102 L 52 92 L 52 72 L 62 62 L 75 62 L 82 68 Z
+      M 55 32 L 35 28 L 22 42 L 28 62
+      M 108 72 L 158 82 L 212 98 L 158 115 L 108 128
+      M 108 128 L 85 142 L 68 172 L 68 208 L 88 235 L 122 248 L 158 242 L 185 218 L 192 182 L 175 152 L 142 138 L 108 128 Z
+      M 68 208 L 48 218 L 35 205 L 42 185
+      M 212 98 L 248 112 L 282 148 L 298 195 L 288 242 L 255 268 L 212 272 L 175 252 L 162 212 L 175 172 L 208 148 L 252 138 L 282 148
+      M 252 138 L 272 128 L 282 142
+      M 298 195 L 322 205 L 338 192 L 332 168
     `,
     detailPath: `
-      M 62 48 Q 72 44 82 52
-      M 70 78 Q 82 85 95 80
-      M 115 92 Q 135 88 155 92
-      M 155 108 Q 175 105 195 110
-      M 75 165 Q 88 162 100 170
-      M 85 195 Q 100 202 118 195
-      M 235 165 Q 250 162 265 170
-      M 245 205 Q 262 212 280 205
+      M 72 48 L 85 42 L 98 52
+      M 75 78 L 88 85 L 102 78
+      M 128 92 L 158 88 L 188 95
+      M 158 108 L 185 105 L 212 112
+      M 88 175 L 105 168 L 122 178
+      M 98 215 L 118 225 L 142 218
+      M 228 175 L 248 168 L 268 178
+      M 238 225 L 258 235 L 280 228
     `,
-    viewBox: { width: 360, height: 275 },
-    transform: { scale: 0.9, translateY: 5 },
-    description: 'Two fish swimming in opposite directions, bound by cord'
+    viewBox: { width: 370, height: 295 },
+    transform: { scale: 0.88 },
+    description: 'Two angular fish bound by cord'
   },
 };
 
@@ -700,20 +369,20 @@ export const CONSTELLATION_COLORS = {
 // Special star colors for specific constellations
 export const SPECIAL_STAR_COLORS: Partial<Record<ZodiacSign, Record<string, string>>> = {
   taurus: {
-    'aldebaran': '#ffb090', // Orange-red giant
+    'aldebaran': '#ffb090',
   },
   leo: {
-    'regulus': '#b8c8ff', // Blue-white
+    'regulus': '#b8c8ff',
   },
   virgo: {
-    'spica': '#aaccff', // Blue-white
+    'spica': '#aaccff',
   },
   scorpio: {
-    'antares': '#ff9080', // Red supergiant
+    'antares': '#ff9080',
   },
   gemini: {
     'castor': '#fff8e0',
-    'pollux': '#ffd8a0', // Orange giant
+    'pollux': '#ffd8a0',
   },
   aquarius: {
     'sadalsuud': '#fffadc',
