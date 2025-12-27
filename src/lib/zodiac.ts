@@ -49,63 +49,133 @@ export const getZodiacFromBirthday = (birthday: string | null | undefined): Zodi
   return 'pisces';
 };
 
-// Simple city to UTC offset mapping for common cities
-// Positive = ahead of UTC, Negative = behind UTC
-const CITY_TIMEZONE_OFFSETS: Record<string, number> = {
+// City data: [timezone offset, longitude, latitude]
+interface CityData {
+  offset: number;
+  longitude: number;
+  latitude: number;
+}
+
+const CITY_DATA: Record<string, CityData> = {
   // North America
-  'new york': -5, 'nyc': -5, 'manhattan': -5, 'brooklyn': -5,
-  'los angeles': -8, 'la': -8, 'hollywood': -8,
-  'san francisco': -8, 'sf': -8, 'oakland': -8, 'berkeley': -8,
-  'seattle': -8, 'portland': -8,
-  'denver': -7, 'phoenix': -7, 'salt lake': -7,
-  'chicago': -6, 'dallas': -6, 'houston': -6, 'austin': -6,
-  'miami': -5, 'atlanta': -5, 'boston': -5, 'philadelphia': -5,
-  'toronto': -5, 'montreal': -5, 'vancouver': -8,
-  'mexico city': -6,
+  'new york': { offset: -5, longitude: -74.006, latitude: 40.7128 },
+  'nyc': { offset: -5, longitude: -74.006, latitude: 40.7128 },
+  'manhattan': { offset: -5, longitude: -73.9712, latitude: 40.7831 },
+  'brooklyn': { offset: -5, longitude: -73.9442, latitude: 40.6782 },
+  'los angeles': { offset: -8, longitude: -118.2437, latitude: 34.0522 },
+  'la': { offset: -8, longitude: -118.2437, latitude: 34.0522 },
+  'hollywood': { offset: -8, longitude: -118.3287, latitude: 34.0928 },
+  'san francisco': { offset: -8, longitude: -122.4194, latitude: 37.7749 },
+  'sf': { offset: -8, longitude: -122.4194, latitude: 37.7749 },
+  'oakland': { offset: -8, longitude: -122.2711, latitude: 37.8044 },
+  'berkeley': { offset: -8, longitude: -122.2727, latitude: 37.8716 },
+  'seattle': { offset: -8, longitude: -122.3321, latitude: 47.6062 },
+  'portland': { offset: -8, longitude: -122.6765, latitude: 45.5152 },
+  'denver': { offset: -7, longitude: -104.9903, latitude: 39.7392 },
+  'phoenix': { offset: -7, longitude: -112.074, latitude: 33.4484 },
+  'salt lake': { offset: -7, longitude: -111.891, latitude: 40.7608 },
+  'chicago': { offset: -6, longitude: -87.6298, latitude: 41.8781 },
+  'dallas': { offset: -6, longitude: -96.797, latitude: 32.7767 },
+  'houston': { offset: -6, longitude: -95.3698, latitude: 29.7604 },
+  'austin': { offset: -6, longitude: -97.7431, latitude: 30.2672 },
+  'miami': { offset: -5, longitude: -80.1918, latitude: 25.7617 },
+  'atlanta': { offset: -5, longitude: -84.388, latitude: 33.749 },
+  'boston': { offset: -5, longitude: -71.0589, latitude: 42.3601 },
+  'philadelphia': { offset: -5, longitude: -75.1652, latitude: 39.9526 },
+  'toronto': { offset: -5, longitude: -79.3832, latitude: 43.6532 },
+  'montreal': { offset: -5, longitude: -73.5673, latitude: 45.5017 },
+  'vancouver': { offset: -8, longitude: -123.1207, latitude: 49.2827 },
+  'mexico city': { offset: -6, longitude: -99.1332, latitude: 19.4326 },
   
   // Europe
-  'london': 0, 'edinburgh': 0, 'dublin': 0,
-  'paris': 1, 'berlin': 1, 'amsterdam': 1, 'brussels': 1, 'vienna': 1,
-  'rome': 1, 'milan': 1, 'madrid': 1, 'barcelona': 1,
-  'stockholm': 1, 'oslo': 1, 'copenhagen': 1,
-  'athens': 2, 'istanbul': 3, 'moscow': 3,
+  'london': { offset: 0, longitude: -0.1276, latitude: 51.5074 },
+  'edinburgh': { offset: 0, longitude: -3.1883, latitude: 55.9533 },
+  'dublin': { offset: 0, longitude: -6.2603, latitude: 53.3498 },
+  'paris': { offset: 1, longitude: 2.3522, latitude: 48.8566 },
+  'berlin': { offset: 1, longitude: 13.405, latitude: 52.52 },
+  'amsterdam': { offset: 1, longitude: 4.9041, latitude: 52.3676 },
+  'brussels': { offset: 1, longitude: 4.3517, latitude: 50.8503 },
+  'vienna': { offset: 1, longitude: 16.3738, latitude: 48.2082 },
+  'rome': { offset: 1, longitude: 12.4964, latitude: 41.9028 },
+  'milan': { offset: 1, longitude: 9.19, latitude: 45.4642 },
+  'madrid': { offset: 1, longitude: -3.7038, latitude: 40.4168 },
+  'barcelona': { offset: 1, longitude: 2.1734, latitude: 41.3851 },
+  'stockholm': { offset: 1, longitude: 18.0686, latitude: 59.3293 },
+  'oslo': { offset: 1, longitude: 10.7522, latitude: 59.9139 },
+  'copenhagen': { offset: 1, longitude: 12.5683, latitude: 55.6761 },
+  'athens': { offset: 2, longitude: 23.7275, latitude: 37.9838 },
+  'istanbul': { offset: 3, longitude: 28.9784, latitude: 41.0082 },
+  'moscow': { offset: 3, longitude: 37.6173, latitude: 55.7558 },
   
   // Asia
-  'tokyo': 9, 'osaka': 9, 'kyoto': 9,
-  'seoul': 9, 'busan': 9,
-  'beijing': 8, 'shanghai': 8, 'guangzhou': 8, 'shenzhen': 8,
-  'hong kong': 8, 'taipei': 8, 'singapore': 8,
-  'bangkok': 7, 'jakarta': 7, 'ho chi minh': 7, 'hanoi': 7,
-  'mumbai': 5.5, 'delhi': 5.5, 'bangalore': 5.5, 'chennai': 5.5,
-  'dubai': 4, 'abu dhabi': 4,
-  'tel aviv': 2, 'jerusalem': 2,
+  'tokyo': { offset: 9, longitude: 139.6917, latitude: 35.6895 },
+  'osaka': { offset: 9, longitude: 135.5022, latitude: 34.6937 },
+  'kyoto': { offset: 9, longitude: 135.7681, latitude: 35.0116 },
+  'seoul': { offset: 9, longitude: 126.978, latitude: 37.5665 },
+  'busan': { offset: 9, longitude: 129.0756, latitude: 35.1796 },
+  'beijing': { offset: 8, longitude: 116.4074, latitude: 39.9042 },
+  'shanghai': { offset: 8, longitude: 121.4737, latitude: 31.2304 },
+  'guangzhou': { offset: 8, longitude: 113.2644, latitude: 23.1291 },
+  'shenzhen': { offset: 8, longitude: 114.0579, latitude: 22.5431 },
+  'hong kong': { offset: 8, longitude: 114.1694, latitude: 22.3193 },
+  'taipei': { offset: 8, longitude: 121.5654, latitude: 25.033 },
+  'singapore': { offset: 8, longitude: 103.8198, latitude: 1.3521 },
+  'bangkok': { offset: 7, longitude: 100.5018, latitude: 13.7563 },
+  'jakarta': { offset: 7, longitude: 106.8456, latitude: -6.2088 },
+  'ho chi minh': { offset: 7, longitude: 106.6297, latitude: 10.8231 },
+  'hanoi': { offset: 7, longitude: 105.8342, latitude: 21.0278 },
+  'mumbai': { offset: 5.5, longitude: 72.8777, latitude: 19.076 },
+  'delhi': { offset: 5.5, longitude: 77.1025, latitude: 28.7041 },
+  'bangalore': { offset: 5.5, longitude: 77.5946, latitude: 12.9716 },
+  'chennai': { offset: 5.5, longitude: 80.2707, latitude: 13.0827 },
+  'dubai': { offset: 4, longitude: 55.2708, latitude: 25.2048 },
+  'abu dhabi': { offset: 4, longitude: 54.3773, latitude: 24.4539 },
+  'tel aviv': { offset: 2, longitude: 34.7818, latitude: 32.0853 },
+  'jerusalem': { offset: 2, longitude: 35.2137, latitude: 31.7683 },
   
   // Oceania
-  'sydney': 10, 'melbourne': 10, 'brisbane': 10,
-  'perth': 8, 'auckland': 12, 'wellington': 12,
+  'sydney': { offset: 10, longitude: 151.2093, latitude: -33.8688 },
+  'melbourne': { offset: 10, longitude: 144.9631, latitude: -37.8136 },
+  'brisbane': { offset: 10, longitude: 153.0251, latitude: -27.4698 },
+  'perth': { offset: 8, longitude: 115.8605, latitude: -31.9505 },
+  'auckland': { offset: 12, longitude: 174.7633, latitude: -36.8485 },
+  'wellington': { offset: 12, longitude: 174.7762, latitude: -41.2865 },
   
   // South America
-  'sao paulo': -3, 'rio de janeiro': -3, 'buenos aires': -3,
-  'lima': -5, 'bogota': -5, 'santiago': -4,
+  'sao paulo': { offset: -3, longitude: -46.6333, latitude: -23.5505 },
+  'rio de janeiro': { offset: -3, longitude: -43.1729, latitude: -22.9068 },
+  'buenos aires': { offset: -3, longitude: -58.3816, latitude: -34.6037 },
+  'lima': { offset: -5, longitude: -77.0428, latitude: -12.0464 },
+  'bogota': { offset: -5, longitude: -74.0721, latitude: 4.711 },
+  'santiago': { offset: -4, longitude: -70.6693, latitude: -33.4489 },
   
   // Africa
-  'cairo': 2, 'johannesburg': 2, 'cape town': 2, 'nairobi': 3, 'lagos': 1,
+  'cairo': { offset: 2, longitude: 31.2357, latitude: 30.0444 },
+  'johannesburg': { offset: 2, longitude: 28.0473, latitude: -26.2041 },
+  'cape town': { offset: 2, longitude: 18.4241, latitude: -33.9249 },
+  'nairobi': { offset: 3, longitude: 36.8219, latitude: -1.2921 },
+  'lagos': { offset: 1, longitude: 3.3792, latitude: 6.5244 },
+};
+
+// Get city data from location string
+const getCityData = (birthLocation: string | null | undefined): CityData | null => {
+  if (!birthLocation) return null;
+  
+  const normalizedLocation = birthLocation.toLowerCase().trim();
+  
+  for (const [city, data] of Object.entries(CITY_DATA)) {
+    if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
+      return data;
+    }
+  }
+  
+  return null;
 };
 
 // Get timezone offset from city name (returns hours from UTC)
 const getTimezoneOffset = (birthLocation: string | null | undefined): number => {
-  if (!birthLocation) return 0; // Assume UTC if no location
-  
-  const normalizedLocation = birthLocation.toLowerCase().trim();
-  
-  // Check for exact matches or partial matches
-  for (const [city, offset] of Object.entries(CITY_TIMEZONE_OFFSETS)) {
-    if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
-      return offset;
-    }
-  }
-  
-  return 0; // Default to UTC if city not found
+  const cityData = getCityData(birthLocation);
+  return cityData?.offset ?? 0;
 };
 
 // Approximate moon sign calculation
@@ -161,7 +231,7 @@ export const getMoonSignFromBirthDateTime = (
 };
 
 // Rising sign (Ascendant) calculation
-// Uses Local Sidereal Time to determine which sign was on the eastern horizon at birth
+// Uses proper astronomical formulas with latitude consideration
 export const getRisingSign = (
   birthday: string | null | undefined,
   birthTime: string | null | undefined,
@@ -178,8 +248,13 @@ export const getRisingSign = (
   const [h, m] = birthTime.split(':').map(Number);
   const hours = h + (m / 60);
   
-  // Get timezone offset
-  const timezoneOffset = getTimezoneOffset(birthLocation);
+  // Get city data for accurate coordinates
+  const cityData = getCityData(birthLocation);
+  const timezoneOffset = cityData?.offset ?? 0;
+  const longitude = cityData?.longitude ?? 0;
+  const latitude = cityData?.latitude ?? 0;
+  
+  // Convert to UTC
   const utcHours = hours - timezoneOffset;
   
   // Calculate Julian Day
@@ -194,21 +269,39 @@ export const getRisingSign = (
   // Calculate Greenwich Sidereal Time
   const T = (jdWithTime - 2451545.0) / 36525;
   let gst = 280.46061837 + 360.98564736629 * (jdWithTime - 2451545.0) + 0.000387933 * T * T;
-  gst = gst % 360;
-  if (gst < 0) gst += 360;
+  gst = ((gst % 360) + 360) % 360;
   
-  // Approximate longitude from city (rough estimate based on timezone)
-  // Each timezone ~15 degrees longitude
-  const longitude = timezoneOffset * 15;
-  
-  // Local Sidereal Time
+  // Local Sidereal Time (using actual longitude)
   let lst = gst + longitude;
-  lst = lst % 360;
-  if (lst < 0) lst += 360;
+  lst = ((lst % 360) + 360) % 360;
   
-  // The ascendant is approximately at the LST degree
+  // Convert LST to radians for trigonometric calculations
+  const lstRad = (lst * Math.PI) / 180;
+  const latRad = (latitude * Math.PI) / 180;
+  
+  // Obliquity of the ecliptic (approximate)
+  const obliquity = 23.4397; // degrees
+  const obliquityRad = (obliquity * Math.PI) / 180;
+  
+  // Calculate the Ascendant using the proper formula:
+  // tan(ASC) = cos(LST) / -(sin(obliquity) * tan(latitude) + cos(obliquity) * sin(LST))
+  const sinLst = Math.sin(lstRad);
+  const cosLst = Math.cos(lstRad);
+  const sinObl = Math.sin(obliquityRad);
+  const cosObl = Math.cos(obliquityRad);
+  const tanLat = Math.tan(latRad);
+  
+  const denominator = -(sinObl * tanLat + cosObl * sinLst);
+  let ascendant = Math.atan2(cosLst, denominator);
+  
+  // Convert to degrees
+  ascendant = (ascendant * 180) / Math.PI;
+  
+  // Normalize to 0-360
+  ascendant = ((ascendant % 360) + 360) % 360;
+  
   // Convert to zodiac sign (30 degrees each)
-  const signIndex = Math.floor(lst / 30);
+  const signIndex = Math.floor(ascendant / 30);
   const signs: ZodiacSign[] = [
     'aries', 'taurus', 'gemini', 'cancer', 
     'leo', 'virgo', 'libra', 'scorpio', 
