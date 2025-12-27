@@ -196,54 +196,31 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
     ],
   },
 
-  // Sagittarius: Based on Stellarium western_SnT constellationship.fab
-  // HIP IDs decoded from: Sgr 20 90185 88635 88635 89931 89931 90185...
-  // Coordinates normalized 0-1 based on RA/Dec positions
+  // Sagittarius: THE TEAPOT - Most recognizable zodiac pattern
+  // 8 connected stars forming a teapot shape with spout (left) and handle (right)
   sagittarius: {
     stars: [
-      // Primary Teapot stars
-      { id: 'kaus-australis', x: 0.52, y: 0.58, size: 3.8, label: 'Kaus Australis' }, // HIP 90185 (ε Sgr) - brightest
-      { id: 'alnasl', x: 0.18, y: 0.52, size: 2.8, label: 'Alnasl' },                 // HIP 88635 (γ² Sgr) - arrowhead
-      { id: 'kaus-media', x: 0.42, y: 0.50, size: 3.0, label: 'Kaus Media' },         // HIP 89931 (δ Sgr)
-      { id: 'kaus-borealis', x: 0.48, y: 0.35, size: 2.8, label: 'Kaus Borealis' },   // HIP 90496 (λ Sgr)
-      { id: 'phi', x: 0.58, y: 0.38, size: 2.5, label: 'Phi Sgr' },                   // HIP 92041 (φ Sgr)
-      { id: 'nunki', x: 0.68, y: 0.35, size: 3.2, label: 'Nunki' },                   // HIP 92855 (σ Sgr)
-      { id: 'tau', x: 0.75, y: 0.45, size: 2.5, label: 'Tau Sgr' },                   // HIP 93864 (τ Sgr)
-      { id: 'ascella', x: 0.72, y: 0.52, size: 2.8, label: 'Ascella' },               // HIP 93506 (ζ Sgr)
-      // Extended archer figure
-      { id: 'eta', x: 0.40, y: 0.72, size: 2.5, label: 'Eta Sgr' },                   // HIP 89642 (η Sgr)
-      { id: 'polis', x: 0.35, y: 0.28, size: 2.2, label: 'Polis' },                   // HIP 89341 (μ Sgr)
-      { id: 'rho1', x: 0.82, y: 0.25, size: 2.2, label: 'Rho1 Sgr' },                 // HIP 95168 (ρ¹ Sgr)
-      { id: 'pi', x: 0.78, y: 0.28, size: 2.5, label: 'Pi Sgr' },                     // HIP 94141 (π Sgr)
-      { id: 'omicron', x: 0.74, y: 0.30, size: 2.3, label: 'Omicron Sgr' },           // HIP 93683 (ο Sgr)
-      { id: 'xi2', x: 0.70, y: 0.28, size: 2.3, label: 'Xi2 Sgr' },                   // HIP 93085 (ξ² Sgr)
+      // Teapot body - 8 main stars only
+      { id: 'kaus-australis', x: 0.35, y: 0.65, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - bottom left of pot
+      { id: 'kaus-media', x: 0.30, y: 0.50, size: 3.0, label: 'Kaus Media' },         // δ Sgr - left side (spout base)
+      { id: 'kaus-borealis', x: 0.35, y: 0.35, size: 2.8, label: 'Kaus Borealis' },   // λ Sgr - top left
+      { id: 'phi', x: 0.50, y: 0.30, size: 2.5, label: 'Phi Sgr' },                   // φ Sgr - lid/top middle
+      { id: 'nunki', x: 0.65, y: 0.35, size: 3.2, label: 'Nunki' },                   // σ Sgr - top of handle
+      { id: 'tau', x: 0.72, y: 0.50, size: 2.5, label: 'Tau Sgr' },                   // τ Sgr - handle curve
+      { id: 'ascella', x: 0.65, y: 0.62, size: 2.8, label: 'Ascella' },               // ζ Sgr - bottom of handle
+      { id: 'alnasl', x: 0.15, y: 0.42, size: 2.8, label: 'Alnasl' },                 // γ Sgr - spout tip
     ],
     lines: [
-      // Stellarium lines decoded from pairs:
-      // 90185-88635, 88635-89931, 89931-90185, 90185-89931, 89931-90496
-      ['kaus-australis', 'alnasl'],   // ε to γ (bow string to arrowhead)
-      ['alnasl', 'kaus-media'],       // γ to δ
-      ['kaus-media', 'kaus-australis'], // δ to ε (closing triangle)
-      ['kaus-media', 'kaus-borealis'], // δ to λ (up the bow)
-      // 90496-92041, 92041-89931, 89931-92041
-      ['kaus-borealis', 'phi'],       // λ to φ
-      ['phi', 'kaus-media'],          // φ back to δ
-      // 92041-92855, 92855-93864, 93864-93506
-      ['phi', 'nunki'],               // φ to σ (teapot handle top)
-      ['nunki', 'tau'],               // σ to τ
-      ['tau', 'ascella'],             // τ to ζ
-      // 93506-92041, 92041-93506, 93506-90185
-      ['ascella', 'phi'],             // ζ to φ
-      ['ascella', 'kaus-australis'],  // ζ to ε (bottom of teapot)
-      // 90185-89642 (down to eta)
-      ['kaus-australis', 'eta'],      // ε to η
-      // 90496-89341 (up to polis/bow)
-      ['kaus-borealis', 'polis'],     // λ to μ
-      // 95168-94141, 94141-93683, 93683-93085, 93085-94141 (upper arm)
-      ['rho1', 'pi'],                 // ρ to π
-      ['pi', 'omicron'],              // π to ο
-      ['omicron', 'xi2'],             // ο to ξ²
-      ['xi2', 'pi'],                  // ξ² to π (closing)
+      // Closed teapot body (7 lines forming the pot)
+      ['kaus-australis', 'kaus-media'],     // bottom left up to spout base
+      ['kaus-media', 'kaus-borealis'],      // up the left side
+      ['kaus-borealis', 'phi'],             // across the lid
+      ['phi', 'nunki'],                     // lid to handle top
+      ['nunki', 'tau'],                     // handle curves down
+      ['tau', 'ascella'],                   // handle continues
+      ['ascella', 'kaus-australis'],        // close the pot bottom
+      // Spout extending left
+      ['kaus-media', 'alnasl'],             // spout from left side
     ],
   },
 
