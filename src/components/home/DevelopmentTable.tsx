@@ -7,7 +7,9 @@ interface DevelopmentTableProps {
   ageInWeeks: number;
   birthday?: string;
   babyName?: string;
+  babyId?: string;
   calibration?: Calibration | null;
+  onMilestoneConfirm?: (domainId: string, stageNumber: number, date: string) => void;
 }
 
 // Stage data structure
@@ -325,7 +327,7 @@ export const getDomainData = (ageInWeeks: number, calibration?: Calibration | nu
   });
 };
 
-export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }: DevelopmentTableProps) => {
+export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, babyId, calibration, onMilestoneConfirm }: DevelopmentTableProps) => {
   const domains = getDomainData(ageInWeeks, calibration);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
 
@@ -417,8 +419,10 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, calibration }
         ageInWeeks={ageInWeeks}
         birthday={birthday}
         babyName={babyName}
+        babyId={babyId}
         allDomains={domains}
         onNavigate={(id) => setSelectedDomain(id)}
+        onMilestoneConfirm={onMilestoneConfirm}
       />
     </>
   );
