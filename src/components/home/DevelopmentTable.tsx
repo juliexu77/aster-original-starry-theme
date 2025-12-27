@@ -277,6 +277,23 @@ const getCalibrationOverrides = (calibration?: Calibration | null): Record<strin
   return overrides;
 };
 
+// Get the highest confirmed stage for a domain from emerging_early_flags
+const getConfirmedStageFromFlags = (domainId: string, emergingFlags: Record<string, boolean>): number | null => {
+  let highestConfirmedStage: number | null = null;
+  
+  // Look for flags like "physical_stage_5", "language_stage_4", etc.
+  for (const [key, value] of Object.entries(emergingFlags)) {
+    if (value && key.startsWith(`${domainId}_stage_`)) {
+      const stageNum = parseInt(key.replace(`${domainId}_stage_`, ''), 10);
+      if (!isNaN(stageNum) && (highestConfirmedStage === null || stageNum > highestConfirmedStage)) {
+        highestConfirmedStage = stageNum;
+      }
+    }
+  }
+  
+  return highestConfirmedStage;
+};
+
 // Get domain data with stage calculations and calibration overrides
 export const getDomainData = (ageInWeeks: number, calibration?: Calibration | null): DomainData[] => {
   const domains = [
@@ -297,31 +314,54 @@ export const getDomainData = (ageInWeeks: number, calibration?: Calibration | nu
     // Check if we have a calibration override for this domain
     const override = overrides[domain.id];
     
+    // Check if user has confirmed a milestone stage
+    const confirmedStage = getConfirmedStageFromFlags(domain.id, emergingFlags);
+    
+    // Get base stage info from age or override
+    let baseStage: number;
+    let baseStageName: string;
+    let baseDescription: string;
+    let isEmerging = false;
+    
     if (override) {
-      return {
-        id: domain.id,
-        label: domain.label,
-        icon: domain.icon,
-        currentStage: override.stage,
-        stageName: override.stageName,
-        stageDescription: override.description,
-        isEmerging: false,
-        isEmergingEarly: !!emergingFlags[domain.id],
-        totalStages: domain.stages.length,
-      };
+      baseStage = override.stage;
+      baseStageName = override.stageName;
+      baseDescription = override.description;
+    } else {
+      const stageInfo = calculateStage(domain.stages, ageInWeeks);
+      baseStage = stageInfo.stage;
+      baseStageName = stageInfo.stageName;
+      baseDescription = stageInfo.description;
+      isEmerging = stageInfo.isEmerging;
     }
     
-    // Fall back to age-based calculation
-    const stageInfo = calculateStage(domain.stages, ageInWeeks);
+    // If user confirmed a higher stage, use that instead
+    if (confirmedStage !== null && confirmedStage > baseStage) {
+      const confirmedStageInfo = domain.stages.find(s => s.stage === confirmedStage);
+      if (confirmedStageInfo) {
+        return {
+          id: domain.id,
+          label: domain.label,
+          icon: domain.icon,
+          currentStage: confirmedStage,
+          stageName: confirmedStageInfo.name,
+          stageDescription: confirmedStageInfo.description,
+          isEmerging: false, // Not emerging if confirmed
+          isEmergingEarly: true, // Mark as ahead of typical
+          totalStages: domain.stages.length,
+        };
+      }
+    }
+    
     return {
       id: domain.id,
       label: domain.label,
       icon: domain.icon,
-      currentStage: stageInfo.stage,
-      stageName: stageInfo.stageName,
-      stageDescription: stageInfo.description,
-      isEmerging: stageInfo.isEmerging,
-      isEmergingEarly: !!emergingFlags[domain.id],
+      currentStage: baseStage,
+      stageName: baseStageName,
+      stageDescription: baseDescription,
+      isEmerging,
+      isEmergingEarly: !!emergingFlags[domain.id] || (confirmedStage !== null && confirmedStage > baseStage),
       totalStages: domain.stages.length,
     };
   });
