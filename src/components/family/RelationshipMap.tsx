@@ -206,14 +206,14 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
         {/* MYTHOLOGICAL ILLUSTRATION - semi-translucent outline with interior detail */}
         {illustration && (
           <g 
-            opacity={0.18}
+            opacity={0.35}
             transform={`translate(${padding + (illustration.transform?.translateX || 0)}, ${padding + (illustration.transform?.translateY || 0)}) scale(${((width - padding * 2) / illustration.viewBox.width) * (illustration.transform?.scale || 1)})`}
           >
             {/* Main outline of the mythological figure */}
             <path
               d={illustration.outlinePath}
-              stroke="#5a6a7a"
-              strokeWidth={1.8}
+              stroke="#7a8a9a"
+              strokeWidth={2}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -221,12 +221,12 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
             {/* Interior detail lines for depth */}
             <path
               d={illustration.detailPath}
-              stroke="#4a5a6a"
-              strokeWidth={1}
+              stroke="#6a7a8a"
+              strokeWidth={1.2}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity={0.7}
+              opacity={0.8}
             />
           </g>
         )}
