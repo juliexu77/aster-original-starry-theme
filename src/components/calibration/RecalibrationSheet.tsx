@@ -65,13 +65,15 @@ export const RecalibrationSheet = ({
   if (showFlow) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl p-0 overflow-y-auto">
-          <CalibrationFlow
-            babyName={babyName}
-            babyBirthday={babyBirthday}
-            onComplete={handleComplete}
-            onSkip={handleSkip}
-          />
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl p-0 overflow-y-auto pointer-events-auto">
+          <div className="pointer-events-auto">
+            <CalibrationFlow
+              babyName={babyName}
+              babyBirthday={babyBirthday}
+              onComplete={handleComplete}
+              onSkip={handleSkip}
+            />
+          </div>
         </SheetContent>
       </Sheet>
     );

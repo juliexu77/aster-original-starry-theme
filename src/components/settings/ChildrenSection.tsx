@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Baby, Plus, Archive, MapPin, RefreshCw } from "lucide-react";
+import { Baby, Plus, Archive, RefreshCw } from "lucide-react";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LocationInput } from "@/components/ui/LocationInput";
 import {
   Dialog,
   DialogContent,
@@ -252,17 +253,13 @@ export const ChildrenSection = ({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="editBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
-                <div className="relative">
-                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                  <Input
-                    id="editBirthLocation"
-                    type="text"
-                    placeholder="City"
-                    value={birthLocation}
-                    onChange={(e) => setBirthLocation(e.target.value)}
-                    className="text-[13px] pl-8"
-                  />
-                </div>
+                <LocationInput
+                  id="editBirthLocation"
+                  value={birthLocation}
+                  onChange={setBirthLocation}
+                  placeholder="Start typing a city..."
+                  className="text-[13px]"
+                />
               </div>
             </div>
             <p className="text-[10px] text-foreground/30">
