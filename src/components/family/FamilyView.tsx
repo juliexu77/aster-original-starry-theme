@@ -44,7 +44,7 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
     to: FamilyMember;
   } | null>(null);
 
-  const parentName = userProfile?.display_name || "You";
+  const parentName = userProfile?.display_name?.split(' ')[0] || "You";
   const parentHasBirthday = !!userProfile?.birthday;
 
   // Build family members list for constellation

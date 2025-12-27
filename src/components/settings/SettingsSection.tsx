@@ -13,7 +13,7 @@ export const SettingsSection = ({ title, children }: SettingsSectionProps) => {
           {title}
         </p>
       )}
-      <div className="bg-card/50 rounded-xl overflow-hidden divide-y divide-border/30">
+      <div className="bg-card/50 rounded-xl divide-y divide-border/30">
         {children}
       </div>
     </div>
