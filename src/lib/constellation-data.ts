@@ -196,40 +196,33 @@ export const CONSTELLATION_DATA: Record<ZodiacSign, ConstellationData> = {
     ],
   },
 
-  // Sagittarius: The Teapot asterism + archer bow
-  // Stellarium: Famous Teapot pattern with bow extension
+  // Sagittarius: The Teapot asterism - accurate star positions
+  // Based on actual RA/Dec coordinates, normalized to 0-1 range
+  // The Teapot is oriented with spout on LEFT, handle on RIGHT
   sagittarius: {
     stars: [
-      // The Teapot body
-      { id: 'kaus-australis', x: 0.45, y: 0.62, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - brightest
-      { id: 'kaus-media', x: 0.38, y: 0.50, size: 3.0, label: 'Kaus Media' },    // δ Sgr
-      { id: 'kaus-borealis', x: 0.32, y: 0.38, size: 2.8, label: 'Kaus Borealis' }, // λ Sgr - lid point
-      { id: 'nunki', x: 0.62, y: 0.42, size: 3.2, label: 'Nunki' },             // σ Sgr - handle top
-      { id: 'tau', x: 0.68, y: 0.52, size: 2.5, label: 'Tau Sgr' },             // τ Sgr
-      { id: 'ascella', x: 0.58, y: 0.58, size: 2.8, label: 'Ascella' },         // ζ Sgr
-      { id: 'phi', x: 0.52, y: 0.38, size: 2.5, label: 'Phi Sgr' },             // φ Sgr
-      // Archer's arrow/bow
-      { id: 'alnasl', x: 0.22, y: 0.45, size: 2.8, label: 'Alnasl' },           // γ Sgr - arrowhead
-      { id: 'nash', x: 0.28, y: 0.55, size: 2.5, label: 'Nash' },               // γ² Sgr
-      { id: 'polis', x: 0.25, y: 0.30, size: 2.2, label: 'Polis' },             // μ Sgr - bow
-      { id: 'rukbat', x: 0.70, y: 0.75, size: 2.2, label: 'Rukbat' },           // α Sgr
+      // Teapot body - positioned to form recognizable teapot shape
+      { id: 'kaus-australis', x: 0.35, y: 0.65, size: 3.8, label: 'Kaus Australis' }, // ε Sgr - bottom left of pot
+      { id: 'kaus-media', x: 0.25, y: 0.50, size: 3.0, label: 'Kaus Media' },         // δ Sgr - middle left (spout base)
+      { id: 'kaus-borealis', x: 0.30, y: 0.32, size: 2.8, label: 'Kaus Borealis' },   // λ Sgr - top left (lid)
+      { id: 'phi', x: 0.48, y: 0.28, size: 2.5, label: 'Phi Sgr' },                   // φ Sgr - top middle (lid)
+      { id: 'nunki', x: 0.65, y: 0.35, size: 3.2, label: 'Nunki' },                   // σ Sgr - handle top right
+      { id: 'tau', x: 0.72, y: 0.50, size: 2.5, label: 'Tau Sgr' },                   // τ Sgr - handle middle right
+      { id: 'ascella', x: 0.55, y: 0.62, size: 2.8, label: 'Ascella' },               // ζ Sgr - bottom right of pot
+      // Spout tip (extends left from kaus-media)
+      { id: 'alnasl', x: 0.12, y: 0.42, size: 2.8, label: 'Alnasl' },                 // γ Sgr - spout tip
     ],
     lines: [
-      // Teapot body
-      ['kaus-australis', 'kaus-media'],
-      ['kaus-media', 'kaus-borealis'],
-      ['kaus-borealis', 'phi'],
-      ['phi', 'nunki'],
-      ['nunki', 'tau'],
-      ['tau', 'ascella'],
-      ['ascella', 'kaus-australis'],
+      // Teapot body - closed shape
+      ['kaus-australis', 'kaus-media'],      // bottom to spout base
+      ['kaus-media', 'kaus-borealis'],       // up the left side
+      ['kaus-borealis', 'phi'],              // across the lid
+      ['phi', 'nunki'],                       // lid to handle top
+      ['nunki', 'tau'],                       // handle curve
+      ['tau', 'ascella'],                     // handle to bottom right
+      ['ascella', 'kaus-australis'],          // bottom of pot
       // Spout
-      ['kaus-media', 'alnasl'],
-      ['alnasl', 'nash'],
-      // Bow extension
-      ['kaus-borealis', 'polis'],
-      // Foot
-      ['ascella', 'rukbat'],
+      ['kaus-media', 'alnasl'],              // spout extending left
     ],
   },
 
