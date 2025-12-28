@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
 
-// Import zodiac SVG images
+// Import zodiac SVG images (constellation line art, no background)
 import ariesImg from "@/assets/zodiac/aries.svg";
 import taurusImg from "@/assets/zodiac/taurus.svg";
 import geminiImg from "@/assets/zodiac/gemini.svg";
@@ -31,47 +31,104 @@ const ZODIAC_IMAGES: Record<ZodiacSign, string> = {
   pisces: piscesImg,
 };
 
-// Geometric position patterns based on family size
-// All coordinates are normalized (0-1) and centered in the viewport
-const GEOMETRIC_PATTERNS: Record<number, { x: number; y: number }[]> = {
-  // 1 person - single point centered
-  1: [
-    { x: 0.50, y: 0.50 },
+// Strategic anchor points on each zodiac illustration for placing family members
+// These positions are designed to integrate naturally with the mythological figures
+const ZODIAC_ANCHOR_POINTS: Record<ZodiacSign, { x: number; y: number; label: string }[]> = {
+  sagittarius: [
+    { x: 0.50, y: 0.08, label: 'head' },        // Head of archer - top
+    { x: 0.15, y: 0.35, label: 'bow-hand' },    // Hand holding bow - far left
+    { x: 0.85, y: 0.28, label: 'arrow' },       // Arrow tip - far right
+    { x: 0.50, y: 0.50, label: 'torso' },       // Center torso
+    { x: 0.18, y: 0.75, label: 'horse-back' },  // Horse back - bottom left
+    { x: 0.82, y: 0.88, label: 'tail' },        // Horse tail - bottom right
   ],
-  // 2 people - horizontal line
-  2: [
-    { x: 0.30, y: 0.50 },
-    { x: 0.70, y: 0.50 },
+  aries: [
+    { x: 0.70, y: 0.10, label: 'horn-1' },
+    { x: 0.30, y: 0.10, label: 'horn-2' },
+    { x: 0.50, y: 0.35, label: 'head' },
+    { x: 0.50, y: 0.55, label: 'body' },
+    { x: 0.15, y: 0.85, label: 'front-leg' },
+    { x: 0.85, y: 0.85, label: 'back-leg' },
   ],
-  // 3 people - Triangle/Bow shape
-  3: [
-    { x: 0.50, y: 0.35 }, // Top vertex
-    { x: 0.25, y: 0.65 }, // Bottom left
-    { x: 0.75, y: 0.65 }, // Bottom right
+  taurus: [
+    { x: 0.20, y: 0.12, label: 'horn-1' },
+    { x: 0.80, y: 0.12, label: 'horn-2' },
+    { x: 0.50, y: 0.38, label: 'head' },
+    { x: 0.50, y: 0.58, label: 'body' },
+    { x: 0.15, y: 0.88, label: 'front-leg' },
+    { x: 0.85, y: 0.88, label: 'back-leg' },
   ],
-  // 4 people - Diamond with diagonals
-  4: [
-    { x: 0.50, y: 0.25 }, // Top
-    { x: 0.25, y: 0.50 }, // Left
-    { x: 0.75, y: 0.50 }, // Right
-    { x: 0.50, y: 0.75 }, // Bottom
+  gemini: [
+    { x: 0.18, y: 0.15, label: 'twin-1-head' },
+    { x: 0.82, y: 0.15, label: 'twin-2-head' },
+    { x: 0.18, y: 0.60, label: 'twin-1-body' },
+    { x: 0.82, y: 0.60, label: 'twin-2-body' },
+    { x: 0.50, y: 0.38, label: 'hands' },
+    { x: 0.50, y: 0.88, label: 'feet' },
   ],
-  // 5 people - Five-pointed star (pentagram)
-  5: [
-    { x: 0.50, y: 0.20 },  // Top
-    { x: 0.20, y: 0.42 },  // Upper Left
-    { x: 0.80, y: 0.42 },  // Upper Right
-    { x: 0.30, y: 0.78 },  // Lower Left
-    { x: 0.70, y: 0.78 },  // Lower Right
+  cancer: [
+    { x: 0.50, y: 0.10, label: 'shell-top' },
+    { x: 0.12, y: 0.40, label: 'claw-1' },
+    { x: 0.88, y: 0.40, label: 'claw-2' },
+    { x: 0.50, y: 0.55, label: 'body' },
+    { x: 0.20, y: 0.85, label: 'leg-1' },
+    { x: 0.80, y: 0.85, label: 'leg-2' },
   ],
-  // 6 people - Hexagon with complete internal web
-  6: [
-    { x: 0.32, y: 0.25 },  // Top Left
-    { x: 0.68, y: 0.25 },  // Top Right
-    { x: 0.15, y: 0.50 },  // Middle Left
-    { x: 0.85, y: 0.50 },  // Middle Right
-    { x: 0.32, y: 0.75 },  // Bottom Left
-    { x: 0.68, y: 0.75 },  // Bottom Right
+  leo: [
+    { x: 0.50, y: 0.08, label: 'mane' },
+    { x: 0.50, y: 0.35, label: 'head' },
+    { x: 0.50, y: 0.55, label: 'body' },
+    { x: 0.12, y: 0.78, label: 'front-paw' },
+    { x: 0.88, y: 0.78, label: 'back-paw' },
+    { x: 0.85, y: 0.45, label: 'tail' },
+  ],
+  virgo: [
+    { x: 0.50, y: 0.08, label: 'head' },
+    { x: 0.18, y: 0.32, label: 'shoulder' },
+    { x: 0.82, y: 0.35, label: 'hand' },
+    { x: 0.50, y: 0.55, label: 'waist' },
+    { x: 0.25, y: 0.88, label: 'leg-1' },
+    { x: 0.75, y: 0.88, label: 'leg-2' },
+  ],
+  libra: [
+    { x: 0.50, y: 0.08, label: 'top' },
+    { x: 0.12, y: 0.35, label: 'scale-1' },
+    { x: 0.88, y: 0.35, label: 'scale-2' },
+    { x: 0.50, y: 0.50, label: 'beam' },
+    { x: 0.50, y: 0.72, label: 'stand' },
+    { x: 0.50, y: 0.92, label: 'base' },
+  ],
+  scorpio: [
+    { x: 0.25, y: 0.15, label: 'claw-1' },
+    { x: 0.60, y: 0.15, label: 'claw-2' },
+    { x: 0.40, y: 0.45, label: 'body' },
+    { x: 0.55, y: 0.68, label: 'tail-mid' },
+    { x: 0.75, y: 0.55, label: 'tail-curve' },
+    { x: 0.88, y: 0.25, label: 'stinger' },
+  ],
+  capricorn: [
+    { x: 0.25, y: 0.10, label: 'horn' },
+    { x: 0.50, y: 0.30, label: 'head' },
+    { x: 0.35, y: 0.55, label: 'body' },
+    { x: 0.15, y: 0.82, label: 'front-leg' },
+    { x: 0.65, y: 0.65, label: 'tail-start' },
+    { x: 0.88, y: 0.88, label: 'tail-fin' },
+  ],
+  aquarius: [
+    { x: 0.50, y: 0.08, label: 'head' },
+    { x: 0.15, y: 0.35, label: 'shoulder' },
+    { x: 0.80, y: 0.38, label: 'vessel' },
+    { x: 0.50, y: 0.58, label: 'waist' },
+    { x: 0.60, y: 0.78, label: 'water-1' },
+    { x: 0.85, y: 0.92, label: 'water-2' },
+  ],
+  pisces: [
+    { x: 0.20, y: 0.22, label: 'fish-1-head' },
+    { x: 0.08, y: 0.50, label: 'fish-1-tail' },
+    { x: 0.80, y: 0.55, label: 'fish-2-head' },
+    { x: 0.92, y: 0.80, label: 'fish-2-tail' },
+    { x: 0.50, y: 0.38, label: 'cord-mid' },
+    { x: 0.50, y: 0.68, label: 'cord-end' },
   ],
 };
 
@@ -91,10 +148,9 @@ interface RelationshipMapProps {
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Generate positions based on family size using geometric patterns
-const getMemberPositions = (members: FamilyMember[]) => {
-  const count = Math.min(members.length, 6);
-  const pattern = GEOMETRIC_PATTERNS[count] || GEOMETRIC_PATTERNS[6];
+// Assign members to zodiac anchor points
+const getMemberPositionsOnZodiac = (members: FamilyMember[], sign: ZodiacSign) => {
+  const anchors = ZODIAC_ANCHOR_POINTS[sign];
   const positions: { member: FamilyMember; x: number; y: number }[] = [];
   
   // Sort: parents first, then partners, then children
@@ -104,11 +160,11 @@ const getMemberPositions = (members: FamilyMember[]) => {
   });
   
   sorted.forEach((member, idx) => {
-    if (idx < pattern.length) {
+    if (idx < anchors.length) {
       positions.push({
         member,
-        x: pattern[idx].x,
-        y: pattern[idx].y,
+        x: anchors[idx].x,
+        y: anchors[idx].y,
       });
     }
   });
@@ -123,9 +179,8 @@ const generateBackgroundStars = (count: number) => {
     stars.push({
       x: Math.random(),
       y: Math.random(),
-      size: 1 + Math.random() * 2, // 1-3px
-      opacity: 0.40 + Math.random() * 0.30, // 40-70%
-      animationDelay: Math.random() * 5, // 0-5s delay for twinkle
+      size: 0.5 + Math.random() * 1.2,
+      opacity: 0.10 + Math.random() * 0.10,
     });
   }
   return stars;
@@ -133,22 +188,23 @@ const generateBackgroundStars = (count: number) => {
 
 export const RelationshipMap = ({ members, constellationSign, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
   const width = 420;
-  const height = 480;
-  const padding = 40;
+  const height = 520;
+  const padding = 20;
   
   const memberPositions = useMemo(
-    () => getMemberPositions(members), 
-    [members]
+    () => getMemberPositionsOnZodiac(members, constellationSign), 
+    [members, constellationSign]
   );
-  const backgroundStars = useMemo(() => generateBackgroundStars(18), []);
+  const backgroundStars = useMemo(() => generateBackgroundStars(80), []); // More stars
   
-  // Build connections - every member connects to every other member
+  // Build connections - every member connects to every other member (direct lines)
   const connections = useMemo(() => {
     const conns: { 
       from: typeof memberPositions[0]; 
       to: typeof memberPositions[0];
     }[] = [];
     
+    // Create connection between every pair of members
     for (let i = 0; i < memberPositions.length; i++) {
       for (let j = i + 1; j < memberPositions.length; j++) {
         conns.push({ 
@@ -188,140 +244,136 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
 
   return (
     <div className="w-full max-w-[480px] mx-auto px-2">
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '420px' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '400px' }}>
         <defs>
-          {/* Radial gradient background - deep blue-black center to pure black edge */}
-          <radialGradient id="skyGradient" cx="50%" cy="50%" r="70%">
-            <stop offset="0%" stopColor="#0a1128" />
-            <stop offset="100%" stopColor="#1a1a1a" />
-          </radialGradient>
-          
           {/* Glow filter for member nodes */}
           <filter id="memberGlow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feGaussianBlur stdDeviation="8" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           
-          {/* Subtle glow for connection hover/selected */}
-          <filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          {/* Subtle glow for stars */}
+          <radialGradient id="starGlow">
+            <stop offset="0%" stopColor="#C4A574" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#C4A574" stopOpacity="0" />
+          </radialGradient>
           
-          {/* Ghost filter for zodiac background */}
-          <filter id="zodiacGhostFilter" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-            <feColorMatrix
-              in="blur"
-              type="matrix"
-              values="0 0 0 0 0.12
-                      0 0 0 0 0.10
-                      0 0 0 0 0.15
-                      0 0 0 0.18 0"
-              result="colorized"
-            />
-          </filter>
+          {/* Constellation line gradient */}
+          <linearGradient id="constLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#5A5650" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#6A6660" stopOpacity="0.8" />
+            <stop offset="100%" stopColor="#5A5650" stopOpacity="0.6" />
+          </linearGradient>
           
-          {/* Twinkle animation keyframes via CSS */}
-          <style>{`
-            @keyframes twinkle {
-              0%, 100% { opacity: 0.4; }
-              50% { opacity: 0.7; }
-            }
-            .twinkle-star {
-              animation: twinkle 4s ease-in-out infinite;
-            }
-          `}</style>
+          {/* Night sky gradient - subtle twilight/dusk tones */}
+          <linearGradient id="nightSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#0a0a12" stopOpacity="0.4" />
+            <stop offset="30%" stopColor="#0d0d18" stopOpacity="0.3" />
+            <stop offset="60%" stopColor="#12101a" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#15121c" stopOpacity="0.2" />
+          </linearGradient>
         </defs>
         
-        {/* LAYER 1: Background gradient */}
+        {/* LAYER 1: Night sky background */}
         <rect 
           x="0" 
           y="0" 
           width={width} 
           height={height} 
-          fill="url(#skyGradient)" 
+          fill="url(#nightSkyGradient)" 
         />
         
-        {/* LAYER 2: Scattered background stars */}
+        {/* Night sky scattered stars - tiny dots at varying sizes and opacities */}
         {backgroundStars.map((star, i) => (
           <circle
             key={`bg-star-${i}`}
             cx={star.x * width}
             cy={star.y * height}
             r={star.size}
-            fill="#ffffff"
-            className="twinkle-star"
-            style={{ 
-              animationDelay: `${star.animationDelay}s`,
-              opacity: star.opacity 
-            }}
+            fill="#fff"
+            opacity={star.opacity}
           />
         ))}
         
-        {/* LAYER 3: Zodiac illustration - ghost layer texture */}
+        {/* LAYER 2: Zodiac illustration - ghost layer texture */}
         {(() => {
-          const imageSize = Math.min(width, height) * 0.85;
-          const imageX = (width - imageSize) / 2;
-          const imageY = (height - imageSize) / 2;
+          // Calculate 110% of full width, centered (will overflow)
+          const imageWidth = width * 1.1;
+          const imageHeight = height * 1.1;
+          const imageX = (width - imageWidth) / 2;
+          const imageY = (height - imageHeight) / 2;
           
           return (
-            <image
-              href={ZODIAC_IMAGES[constellationSign]}
-              x={imageX}
-              y={imageY}
-              width={imageSize}
-              height={imageSize}
-              filter="url(#zodiacGhostFilter)"
-              preserveAspectRatio="xMidYMid meet"
-            />
+            <>
+              <defs>
+                <filter id="zodiacGhostFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
+                  <feColorMatrix
+                    in="blur"
+                    type="matrix"
+                    values="0 0 0 0 0.15
+                            0 0 0 0 0.12
+                            0 0 0 0 0.18
+                            0 0 0 0.18 0"
+                    result="colorized"
+                  />
+                </filter>
+              </defs>
+              <image
+                href={ZODIAC_IMAGES[constellationSign]}
+                x={imageX}
+                y={imageY}
+                width={imageWidth}
+                height={imageHeight}
+                filter="url(#zodiacGhostFilter)"
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </>
           );
         })()}
         
-        {/* LAYER 4: Connection lines - warm gold */}
+        {/* Family relationship connection lines - direct lines between all members */}
         {connections.map((conn, connIdx) => {
           const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
+          // Get pixel positions for from and to
           const fromPx = toPixelX(conn.from.x);
           const fromPy = toPixelY(conn.from.y);
           const toPx = toPixelX(conn.to.x);
           const toPy = toPixelY(conn.to.y);
           
+          // Direct line between members
           const pathD = `M ${fromPx} ${fromPy} L ${toPx} ${toPy}`;
           
           return (
             <g key={`conn-${connIdx}`}>
-              {/* Invisible hit area - 20px buffer */}
+              {/* Invisible hit area for the line */}
               <path
                 d={pathD}
                 stroke="transparent"
-                strokeWidth={24}
+                strokeWidth={30}
                 fill="none"
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible connection line */}
+              {/* Visible line - thicker and more prominent */}
               <path
                 d={pathD}
-                stroke="#C4A574"
-                strokeWidth={isSelected ? 2 : 1.5}
-                opacity={isSelected ? 0.9 : 0.6}
+                stroke={isSelected ? "#D4A574" : "#999"}
+                strokeWidth={isSelected ? 3 : 2}
+                opacity={isSelected ? 1 : 0.7}
                 fill="none"
                 strokeLinecap="round"
-                filter={isSelected ? "url(#lineGlow)" : undefined}
                 className="pointer-events-none transition-all duration-300"
               />
             </g>
           );
         })}
         
-        {/* LAYER 5: Family member nodes */}
+        {/* Family member nodes - larger and more prominent */}
         {memberPositions.map(({ member, x, y }) => {
           const px = toPixelX(x);
           const py = toPixelY(y);
@@ -329,65 +381,61 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           const isInSelected = selectedConnection && 
             (selectedConnection.from.id === member.id || selectedConnection.to.id === member.id);
           
-          const circleRadius = 28; // 56px diameter / 2
-          
           return (
             <g key={member.id}>
-              {/* Outer glow behind node */}
+              {/* Outer glow behind member node */}
               <circle
                 cx={px}
                 cy={py}
-                r={circleRadius + 8}
-                fill="#C4A574"
-                opacity={isInSelected ? 0.25 : 0.1}
-                className="transition-all duration-300"
+                r={isInSelected ? 24 : 18}
+                fill="url(#starGlow)"
+                opacity={isInSelected ? 0.9 : 0.5}
               />
               
-              {/* Main circle - stroke only, no fill */}
+              {/* Main member dot - larger and more prominent */}
               <circle
                 cx={px}
                 cy={py}
-                r={circleRadius}
-                fill="transparent"
-                stroke="#C4A574"
-                strokeWidth={2}
-                filter={isInSelected ? "url(#memberGlow)" : undefined}
+                r={isInSelected ? 10 : 8}
+                fill={isInSelected ? "#D4A574" : "#bbb"}
+                filter="url(#memberGlow)"
                 className="transition-all duration-300"
               />
               
-              {/* Zodiac symbol centered in circle */}
-              {sign && (
-                <g transform={`translate(${px - 11}, ${py - 11})`}>
-                  <ZodiacIcon 
-                    sign={sign} 
-                    size={22} 
-                    className={`transition-all duration-300 ${isInSelected ? 'text-[#C4A574]' : 'text-[#C4A574]/70'}`}
-                  />
-                </g>
-              )}
+              {/* Inner bright core */}
+              <circle
+                cx={px}
+                cy={py}
+                r={isInSelected ? 4 : 3}
+                fill={isInSelected ? "#fff" : "#ddd"}
+                opacity={0.8}
+                className="transition-all duration-300"
+              />
               
-              {/* Name label below circle */}
+              {/* Name label - larger and more readable */}
               <text
                 x={px}
-                y={py + circleRadius + 18}
+                y={py + 28}
                 textAnchor="middle"
-                fill={isInSelected ? "#C4A574" : "#999999"}
+                fill={isInSelected ? "#D4A574" : "#999"}
                 style={{ 
-                  fontSize: '14px', 
+                  fontSize: '12px', 
                   fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.05em',
-                  fontWeight: 400
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  fontWeight: 500
                 }}
                 className="transition-all duration-300"
               >
                 {member.name}
               </text>
+              
             </g>
           );
         })}
       </svg>
       
-      {/* Tap hint */}
+      {/* Tap hint - only show when no connection selected */}
       {!selectedConnection && (
         <p className="text-[11px] text-foreground/25 text-center mt-3 tracking-wide">
           Tap a connection to explore
