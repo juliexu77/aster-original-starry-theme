@@ -1,8 +1,6 @@
 import { useMemo } from "react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
-import { CONSTELLATION_DATA } from "@/lib/constellation-data";
-import { CONSTELLATION_ILLUSTRATIONS, getStarColor } from "@/lib/constellation-illustrations";
 
 // Import zodiac SVG images (constellation line art, no background)
 import ariesImg from "@/assets/zodiac/aries.svg";
@@ -32,6 +30,87 @@ const ZODIAC_IMAGES: Record<ZodiacSign, string> = {
   aquarius: aquariusImg,
   pisces: piscesImg,
 };
+
+// 5 recognizable constellations ordered by complexity (fewer to more lines)
+// Each has star positions and lines connecting them
+const FAMILY_CONSTELLATIONS = [
+  // 2 members - Gemini (simple twin stars)
+  {
+    name: 'gemini',
+    stars: [
+      { id: 'a', x: 0.35, y: 0.3, size: 3 },
+      { id: 'b', x: 0.65, y: 0.3, size: 3 },
+      { id: 'c', x: 0.3, y: 0.5, size: 2 },
+      { id: 'd', x: 0.7, y: 0.5, size: 2 },
+      { id: 'e', x: 0.35, y: 0.7, size: 2 },
+      { id: 'f', x: 0.65, y: 0.7, size: 2 },
+    ],
+    lines: [['a', 'b'], ['a', 'c'], ['b', 'd'], ['c', 'e'], ['d', 'f']] as [string, string][],
+  },
+  // 3 members - Orion's Belt (triangle)
+  {
+    name: 'orions-belt',
+    stars: [
+      { id: 'a', x: 0.3, y: 0.45, size: 3 },
+      { id: 'b', x: 0.5, y: 0.5, size: 3 },
+      { id: 'c', x: 0.7, y: 0.55, size: 3 },
+      { id: 'd', x: 0.5, y: 0.3, size: 2 },
+      { id: 'e', x: 0.5, y: 0.7, size: 2 },
+    ],
+    lines: [['a', 'b'], ['b', 'c'], ['b', 'd'], ['b', 'e']] as [string, string][],
+  },
+  // 4 members - Cassiopeia (W shape)
+  {
+    name: 'cassiopeia',
+    stars: [
+      { id: 'a', x: 0.2, y: 0.4, size: 3 },
+      { id: 'b', x: 0.35, y: 0.55, size: 3 },
+      { id: 'c', x: 0.5, y: 0.4, size: 3 },
+      { id: 'd', x: 0.65, y: 0.55, size: 3 },
+      { id: 'e', x: 0.8, y: 0.4, size: 3 },
+    ],
+    lines: [['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'e']] as [string, string][],
+  },
+  // 5 members - Big Dipper
+  {
+    name: 'big-dipper',
+    stars: [
+      { id: 'a', x: 0.2, y: 0.35, size: 3 },
+      { id: 'b', x: 0.3, y: 0.4, size: 3 },
+      { id: 'c', x: 0.4, y: 0.45, size: 3 },
+      { id: 'd', x: 0.5, y: 0.5, size: 3 },
+      { id: 'e', x: 0.6, y: 0.55, size: 3 },
+      { id: 'f', x: 0.7, y: 0.5, size: 2.5 },
+      { id: 'g', x: 0.75, y: 0.4, size: 2.5 },
+    ],
+    lines: [['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'e'], ['e', 'f'], ['f', 'g'], ['g', 'd']] as [string, string][],
+  },
+  // 6+ members - Orion (full constellation)
+  {
+    name: 'orion',
+    stars: [
+      { id: 'a', x: 0.35, y: 0.2, size: 3 }, // Betelgeuse (shoulder)
+      { id: 'b', x: 0.65, y: 0.2, size: 2.5 }, // Bellatrix (shoulder)
+      { id: 'c', x: 0.3, y: 0.45, size: 2.5 }, // Belt left
+      { id: 'd', x: 0.5, y: 0.5, size: 3 }, // Belt center
+      { id: 'e', x: 0.7, y: 0.55, size: 2.5 }, // Belt right
+      { id: 'f', x: 0.25, y: 0.75, size: 2.5 }, // Saiph (foot)
+      { id: 'g', x: 0.75, y: 0.75, size: 3 }, // Rigel (foot)
+      { id: 'h', x: 0.5, y: 0.65, size: 2 }, // Sword
+    ],
+    lines: [['a', 'c'], ['b', 'e'], ['c', 'd'], ['d', 'e'], ['c', 'f'], ['e', 'g'], ['d', 'h']] as [string, string][],
+  },
+];
+
+// Get constellation based on family size
+const getConstellationForFamily = (memberCount: number) => {
+  if (memberCount <= 2) return FAMILY_CONSTELLATIONS[0];
+  if (memberCount === 3) return FAMILY_CONSTELLATIONS[1];
+  if (memberCount === 4) return FAMILY_CONSTELLATIONS[2];
+  if (memberCount === 5) return FAMILY_CONSTELLATIONS[3];
+  return FAMILY_CONSTELLATIONS[4]; // 6+
+};
+
 interface FamilyMember {
   id: string;
   name: string;
@@ -48,9 +127,8 @@ interface RelationshipMapProps {
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Assign members to actual constellation star positions
-const getMemberPositionsOnStars = (members: FamilyMember[], sign: ZodiacSign) => {
-  const constellation = CONSTELLATION_DATA[sign];
+// Assign members to constellation star positions
+const getMemberPositionsOnStars = (members: FamilyMember[], constellation: typeof FAMILY_CONSTELLATIONS[0]) => {
   const positions: { member: FamilyMember; x: number; y: number; starId: string }[] = [];
   
   // Sort: parents first, then partners, then children
@@ -135,43 +213,34 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
   const height = 440;
   const padding = 30;
   
-  const constellation = CONSTELLATION_DATA[constellationSign];
-  const illustration = CONSTELLATION_ILLUSTRATIONS[constellationSign];
+  // Get constellation based on family size, not zodiac sign
+  const constellation = useMemo(() => getConstellationForFamily(members.length), [members.length]);
+  
   const memberPositions = useMemo(
-    () => getMemberPositionsOnStars(members, constellationSign), 
-    [members, constellationSign]
+    () => getMemberPositionsOnStars(members, constellation), 
+    [members, constellation]
   );
   const backgroundStars = useMemo(() => generateBackgroundStars(60), []);
   
-  // Build connections between family members using constellation paths
+  // Build connections - every member connects to every other member (direct lines)
   const connections = useMemo(() => {
     const conns: { 
       from: typeof memberPositions[0]; 
       to: typeof memberPositions[0];
-      path: string[] | null; // Star IDs along the path, or null if no path exists
-      hasConstellationPath: boolean;
     }[] = [];
     
+    // Create connection between every pair of members
     for (let i = 0; i < memberPositions.length; i++) {
       for (let j = i + 1; j < memberPositions.length; j++) {
-        const from = memberPositions[i];
-        const to = memberPositions[j];
-        
-        // Find path along constellation lines
-        const path = findPathBetweenStars(from.starId, to.starId, constellation.lines);
-        
-        // Always add the connection, even if no constellation path exists
         conns.push({ 
-          from, 
-          to, 
-          path: path && path.length > 1 ? path : null,
-          hasConstellationPath: !!(path && path.length > 1)
+          from: memberPositions[i], 
+          to: memberPositions[j],
         });
       }
     }
     
     return conns;
-  }, [memberPositions, constellation.lines]);
+  }, [memberPositions]);
 
   const toPixelX = (normalized: number) => padding + normalized * (width - padding * 2);
   const toPixelY = (normalized: number) => padding + normalized * (height - padding * 2);
@@ -237,11 +306,11 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images, 70% of page width */}
+        {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images, 110% of page width */}
         {(() => {
-          // Calculate 70% of full width, centered
-          const imageWidth = width * 0.7;
-          const imageHeight = height * 0.7;
+          // Calculate 110% of full width, centered (will overflow)
+          const imageWidth = width * 1.1;
+          const imageHeight = height * 1.1;
           const imageX = (width - imageWidth) / 2;
           const imageY = (height - imageHeight) / 2;
           
@@ -257,29 +326,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
             />
           );
         })()}
-        {/* CONSTELLATION LINES - gold dotted lines */}
-        {constellation.lines.map(([fromId, toId], i) => {
-          const fromStar = constellation.stars.find(s => s.id === fromId);
-          const toStar = constellation.stars.find(s => s.id === toId);
-          if (!fromStar || !toStar) return null;
-          
-          return (
-            <line
-              key={`const-line-${i}`}
-              x1={toPixelX(fromStar.x)}
-              y1={toPixelY(fromStar.y)}
-              x2={toPixelX(toStar.x)}
-              y2={toPixelY(toStar.y)}
-              stroke="#d4af70"
-              strokeWidth={1}
-              strokeDasharray="3,3"
-              strokeLinecap="round"
-              opacity={0.45}
-            />
-          );
-        })}
-        
-        {/* CONSTELLATION STARS - gold star dots */}
+        {/* CONSTELLATION STARS - gold star dots (only show unused stars) */}
         {constellation.stars.map((star) => {
           // Check if this star has a family member on it
           const hasMember = memberPositions.some(mp => mp.starId === star.id);
@@ -291,12 +338,12 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               cy={toPixelY(star.y)}
               r={hasMember ? 0 : Math.max(1.8, star.size * 0.7)}
               fill="#d4af70"
-              opacity={0.9}
+              opacity={0.5}
             />
           );
         })}
         
-        {/* Family relationship connection lines - draw along constellation paths */}
+        {/* Family relationship connection lines - direct lines between all members */}
         {connections.map((conn, connIdx) => {
           const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
@@ -306,55 +353,12 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           const toPx = toPixelX(conn.to.x);
           const toPy = toPixelY(conn.to.y);
           
-          let pathD: string;
-          
-          if (conn.hasConstellationPath && conn.path) {
-            // Build path segments from the star path
-            const pathSegments: { x1: number; y1: number; x2: number; y2: number }[] = [];
-            for (let i = 0; i < conn.path.length - 1; i++) {
-              const fromStar = constellation.stars.find(s => s.id === conn.path![i]);
-              const toStar = constellation.stars.find(s => s.id === conn.path![i + 1]);
-              if (fromStar && toStar) {
-                pathSegments.push({
-                  x1: toPixelX(fromStar.x),
-                  y1: toPixelY(fromStar.y),
-                  x2: toPixelX(toStar.x),
-                  y2: toPixelY(toStar.y),
-                });
-              }
-            }
-            
-            // Build SVG path string for constellation path
-            pathD = pathSegments.map((seg, i) => 
-              i === 0 ? `M ${seg.x1} ${seg.y1} L ${seg.x2} ${seg.y2}` : `L ${seg.x2} ${seg.y2}`
-            ).join(' ');
-          } else {
-            // No constellation path - draw a gentle arc between the two points
-            const midX = (fromPx + toPx) / 2;
-            const midY = (fromPy + toPy) / 2;
-            
-            // Calculate perpendicular offset for the arc
-            const dx = toPx - fromPx;
-            const dy = toPy - fromPy;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Arc curves outward, amount proportional to distance
-            const arcHeight = Math.min(distance * 0.25, 40);
-            
-            // Perpendicular direction (rotate 90 degrees)
-            const perpX = -dy / distance;
-            const perpY = dx / distance;
-            
-            // Control point for quadratic curve
-            const ctrlX = midX + perpX * arcHeight;
-            const ctrlY = midY + perpY * arcHeight;
-            
-            pathD = `M ${fromPx} ${fromPy} Q ${ctrlX} ${ctrlY} ${toPx} ${toPy}`;
-          }
+          // Direct line between members
+          const pathD = `M ${fromPx} ${fromPy} L ${toPx} ${toPy}`;
           
           return (
             <g key={`conn-${connIdx}`}>
-              {/* Invisible hit area for the entire path */}
+              {/* Invisible hit area for the line */}
               <path
                 d={pathD}
                 stroke="transparent"
@@ -363,16 +367,14 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible path - solid for constellation path, dashed for direct arc */}
+              {/* Visible line */}
               <path
                 d={pathD}
-                stroke={isSelected ? "#D4A574" : conn.hasConstellationPath ? "#999" : "#777"}
-                strokeWidth={isSelected ? 2.5 : conn.hasConstellationPath ? 1.8 : 1.2}
-                opacity={isSelected ? 1 : conn.hasConstellationPath ? 0.7 : 0.5}
+                stroke={isSelected ? "#D4A574" : "#888"}
+                strokeWidth={isSelected ? 2.5 : 1.5}
+                opacity={isSelected ? 1 : 0.6}
                 fill="none"
                 strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray={conn.hasConstellationPath ? "none" : "4,4"}
                 className="pointer-events-none transition-all duration-300"
               />
             </g>
