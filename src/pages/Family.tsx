@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { TimeOfDayBackground } from "@/components/home/TimeOfDayBackground";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { ChildView } from "@/components/family/ChildView";
 import { FamilyView } from "@/components/family/FamilyView";
@@ -67,8 +67,8 @@ const Family = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <TimeOfDayBackground>
+    <div className="min-h-screen">
+      <NightSkyBackground>
         <div className="space-y-3 pb-24">
           {/* Header with Toggle */}
           <div className="px-5 pt-8 pb-2">
@@ -125,7 +125,7 @@ const Family = () => {
             </p>
           </div>
         </div>
-      </TimeOfDayBackground>
+      </NightSkyBackground>
 
       <FamilyNav />
     </div>
