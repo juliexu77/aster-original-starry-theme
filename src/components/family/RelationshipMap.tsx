@@ -323,7 +323,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           />
         ))}
         
-        {/* LAYER 2: Zodiac illustration */}
+        {/* LAYER 2: Zodiac illustration - ghost layer texture */}
         {(() => {
           // Calculate 110% of full width, centered (will overflow)
           const imageWidth = width * 1.1;
@@ -332,15 +332,31 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           const imageY = (height - imageHeight) / 2;
           
           return (
-            <image
-              href={ZODIAC_IMAGES[constellationSign]}
-              x={imageX}
-              y={imageY}
-              width={imageWidth}
-              height={imageHeight}
-              opacity={0.5}
-              preserveAspectRatio="xMidYMid meet"
-            />
+            <>
+              <defs>
+                <filter id="zodiacGhostFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
+                  <feColorMatrix
+                    in="blur"
+                    type="matrix"
+                    values="0 0 0 0 0.15
+                            0 0 0 0 0.12
+                            0 0 0 0 0.18
+                            0 0 0 0.18 0"
+                    result="colorized"
+                  />
+                </filter>
+              </defs>
+              <image
+                href={ZODIAC_IMAGES[constellationSign]}
+                x={imageX}
+                y={imageY}
+                width={imageWidth}
+                height={imageHeight}
+                filter="url(#zodiacGhostFilter)"
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </>
           );
         })()}
         
