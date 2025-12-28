@@ -194,15 +194,15 @@ const findPathBetweenStars = (
   return null; // No path found
 };
 
-// Generate random background stars
+// Generate random background stars for night sky effect
 const generateBackgroundStars = (count: number) => {
   const stars = [];
   for (let i = 0; i < count; i++) {
     stars.push({
       x: Math.random(),
       y: Math.random(),
-      size: 0.3 + Math.random() * 0.8,
-      opacity: 0.03 + Math.random() * 0.08,
+      size: 0.5 + Math.random() * 1.2, // Varying sizes
+      opacity: 0.10 + Math.random() * 0.10, // 10-20% opacity range
     });
   }
   return stars;
@@ -210,8 +210,8 @@ const generateBackgroundStars = (count: number) => {
 
 export const RelationshipMap = ({ members, constellationSign, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
   const width = 420;
-  const height = 440;
-  const padding = 30;
+  const height = 520; // Increased height for more vertical space
+  const padding = 20; // Reduced padding to use more space
   
   // Get constellation based on family size, not zodiac sign
   const constellation = useMemo(() => getConstellationForFamily(members.length), [members.length]);
@@ -220,7 +220,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
     () => getMemberPositionsOnStars(members, constellation), 
     [members, constellation]
   );
-  const backgroundStars = useMemo(() => generateBackgroundStars(60), []);
+  const backgroundStars = useMemo(() => generateBackgroundStars(80), []); // More stars
   
   // Build connections - every member connects to every other member (direct lines)
   const connections = useMemo(() => {
@@ -268,12 +268,12 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
   }
 
   return (
-    <div className="w-full max-w-[440px] mx-auto px-2">
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+    <div className="w-full max-w-[480px] mx-auto px-2">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '400px' }}>
         <defs>
           {/* Glow filter for member nodes */}
           <filter id="memberGlow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feGaussianBlur stdDeviation="8" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
@@ -282,7 +282,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           
           {/* Subtle glow for stars */}
           <radialGradient id="starGlow">
-            <stop offset="0%" stopColor="#C4A574" stopOpacity="0.5" />
+            <stop offset="0%" stopColor="#C4A574" stopOpacity="0.6" />
             <stop offset="100%" stopColor="#C4A574" stopOpacity="0" />
           </radialGradient>
           
@@ -292,21 +292,38 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
             <stop offset="50%" stopColor="#6A6660" stopOpacity="0.8" />
             <stop offset="100%" stopColor="#5A5650" stopOpacity="0.6" />
           </linearGradient>
+          
+          {/* Night sky gradient - subtle twilight/dusk tones */}
+          <linearGradient id="nightSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#0a0a12" stopOpacity="0.4" />
+            <stop offset="30%" stopColor="#0d0d18" stopOpacity="0.3" />
+            <stop offset="60%" stopColor="#12101a" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#15121c" stopOpacity="0.2" />
+          </linearGradient>
         </defs>
         
-        {/* Scattered background stars - very faint texture */}
+        {/* LAYER 1: Night sky background */}
+        <rect 
+          x="0" 
+          y="0" 
+          width={width} 
+          height={height} 
+          fill="url(#nightSkyGradient)" 
+        />
+        
+        {/* Night sky scattered stars - tiny dots at varying sizes and opacities */}
         {backgroundStars.map((star, i) => (
           <circle
             key={`bg-star-${i}`}
-            cx={toPixelX(star.x)}
-            cy={toPixelY(star.y)}
-            r={star.size * 0.5}
-            fill="#666"
-            opacity={star.opacity * 0.6}
+            cx={star.x * width}
+            cy={star.y * height}
+            r={star.size}
+            fill="#fff"
+            opacity={star.opacity}
           />
         ))}
         
-        {/* MYTHOLOGICAL ILLUSTRATION - using actual zodiac images, 110% of page width */}
+        {/* LAYER 2: Zodiac illustration */}
         {(() => {
           // Calculate 110% of full width, centered (will overflow)
           const imageWidth = width * 1.1;
@@ -321,12 +338,14 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               y={imageY}
               width={imageWidth}
               height={imageHeight}
-              opacity={0.6}
+              opacity={0.5}
               preserveAspectRatio="xMidYMid meet"
             />
           );
         })()}
-        {/* CONSTELLATION STARS - gold star dots (only show unused stars) */}
+        
+        {/* LAYER 3: Constellation nodes, lines, and labels */}
+        {/* Constellation anchor stars - gold dots (only show stars not occupied by family members) */}
         {constellation.stars.map((star) => {
           // Check if this star has a family member on it
           const hasMember = memberPositions.some(mp => mp.starId === star.id);
@@ -336,9 +355,9 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               key={`const-star-${star.id}`}
               cx={toPixelX(star.x)}
               cy={toPixelY(star.y)}
-              r={hasMember ? 0 : Math.max(1.8, star.size * 0.7)}
+              r={hasMember ? 0 : Math.max(2.5, star.size * 1.2)}
               fill="#d4af70"
-              opacity={0.5}
+              opacity={0.6}
             />
           );
         })}
@@ -362,17 +381,17 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
               <path
                 d={pathD}
                 stroke="transparent"
-                strokeWidth={24}
+                strokeWidth={30}
                 fill="none"
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible line */}
+              {/* Visible line - thicker and more prominent */}
               <path
                 d={pathD}
-                stroke={isSelected ? "#D4A574" : "#888"}
-                strokeWidth={isSelected ? 2.5 : 1.5}
-                opacity={isSelected ? 1 : 0.6}
+                stroke={isSelected ? "#D4A574" : "#999"}
+                strokeWidth={isSelected ? 3 : 2}
+                opacity={isSelected ? 1 : 0.7}
                 fill="none"
                 strokeLinecap="round"
                 className="pointer-events-none transition-all duration-300"
@@ -381,7 +400,7 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* Family member nodes - slightly larger with subtle glow */}
+        {/* Family member nodes - larger and more prominent */}
         {memberPositions.map(({ member, x, y }) => {
           const px = toPixelX(x);
           const py = toPixelY(y);
@@ -391,35 +410,45 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           
           return (
             <g key={member.id}>
-              {/* Subtle glow behind member node */}
+              {/* Outer glow behind member node */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 14 : 10}
+                r={isInSelected ? 24 : 18}
                 fill="url(#starGlow)"
-                opacity={isInSelected ? 0.8 : 0.4}
+                opacity={isInSelected ? 0.9 : 0.5}
               />
               
-              {/* Main member dot - larger */}
+              {/* Main member dot - larger and more prominent */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 6 : 5}
-                fill={isInSelected ? "#D4A574" : "#999"}
+                r={isInSelected ? 10 : 8}
+                fill={isInSelected ? "#D4A574" : "#bbb"}
                 filter="url(#memberGlow)"
                 className="transition-all duration-300"
               />
               
-              {/* Name label */}
+              {/* Inner bright core */}
+              <circle
+                cx={px}
+                cy={py}
+                r={isInSelected ? 4 : 3}
+                fill={isInSelected ? "#fff" : "#ddd"}
+                opacity={0.8}
+                className="transition-all duration-300"
+              />
+              
+              {/* Name label - larger and more readable */}
               <text
                 x={px}
-                y={py + 20}
+                y={py + 28}
                 textAnchor="middle"
-                fill={isInSelected ? "#D4A574" : "#777"}
+                fill={isInSelected ? "#D4A574" : "#999"}
                 style={{ 
-                  fontSize: '10px', 
+                  fontSize: '12px', 
                   fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   fontWeight: 500
                 }}
