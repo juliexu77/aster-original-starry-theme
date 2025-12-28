@@ -31,84 +31,105 @@ const ZODIAC_IMAGES: Record<ZodiacSign, string> = {
   pisces: piscesImg,
 };
 
-// 5 recognizable constellations ordered by complexity (fewer to more lines)
-// Each has star positions and lines connecting them
-const FAMILY_CONSTELLATIONS = [
-  // 2 members - Gemini (simple twin stars)
-  {
-    name: 'gemini',
-    stars: [
-      { id: 'a', x: 0.35, y: 0.3, size: 3 },
-      { id: 'b', x: 0.65, y: 0.3, size: 3 },
-      { id: 'c', x: 0.3, y: 0.5, size: 2 },
-      { id: 'd', x: 0.7, y: 0.5, size: 2 },
-      { id: 'e', x: 0.35, y: 0.7, size: 2 },
-      { id: 'f', x: 0.65, y: 0.7, size: 2 },
-    ],
-    lines: [['a', 'b'], ['a', 'c'], ['b', 'd'], ['c', 'e'], ['d', 'f']] as [string, string][],
-  },
-  // 3 members - Orion's Belt (triangle)
-  {
-    name: 'orions-belt',
-    stars: [
-      { id: 'a', x: 0.3, y: 0.45, size: 3 },
-      { id: 'b', x: 0.5, y: 0.5, size: 3 },
-      { id: 'c', x: 0.7, y: 0.55, size: 3 },
-      { id: 'd', x: 0.5, y: 0.3, size: 2 },
-      { id: 'e', x: 0.5, y: 0.7, size: 2 },
-    ],
-    lines: [['a', 'b'], ['b', 'c'], ['b', 'd'], ['b', 'e']] as [string, string][],
-  },
-  // 4 members - Cassiopeia (W shape)
-  {
-    name: 'cassiopeia',
-    stars: [
-      { id: 'a', x: 0.2, y: 0.4, size: 3 },
-      { id: 'b', x: 0.35, y: 0.55, size: 3 },
-      { id: 'c', x: 0.5, y: 0.4, size: 3 },
-      { id: 'd', x: 0.65, y: 0.55, size: 3 },
-      { id: 'e', x: 0.8, y: 0.4, size: 3 },
-    ],
-    lines: [['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'e']] as [string, string][],
-  },
-  // 5 members - Big Dipper
-  {
-    name: 'big-dipper',
-    stars: [
-      { id: 'a', x: 0.2, y: 0.35, size: 3 },
-      { id: 'b', x: 0.3, y: 0.4, size: 3 },
-      { id: 'c', x: 0.4, y: 0.45, size: 3 },
-      { id: 'd', x: 0.5, y: 0.5, size: 3 },
-      { id: 'e', x: 0.6, y: 0.55, size: 3 },
-      { id: 'f', x: 0.7, y: 0.5, size: 2.5 },
-      { id: 'g', x: 0.75, y: 0.4, size: 2.5 },
-    ],
-    lines: [['a', 'b'], ['b', 'c'], ['c', 'd'], ['d', 'e'], ['e', 'f'], ['f', 'g'], ['g', 'd']] as [string, string][],
-  },
-  // 6+ members - Orion (full constellation)
-  {
-    name: 'orion',
-    stars: [
-      { id: 'a', x: 0.35, y: 0.2, size: 3 }, // Betelgeuse (shoulder)
-      { id: 'b', x: 0.65, y: 0.2, size: 2.5 }, // Bellatrix (shoulder)
-      { id: 'c', x: 0.3, y: 0.45, size: 2.5 }, // Belt left
-      { id: 'd', x: 0.5, y: 0.5, size: 3 }, // Belt center
-      { id: 'e', x: 0.7, y: 0.55, size: 2.5 }, // Belt right
-      { id: 'f', x: 0.25, y: 0.75, size: 2.5 }, // Saiph (foot)
-      { id: 'g', x: 0.75, y: 0.75, size: 3 }, // Rigel (foot)
-      { id: 'h', x: 0.5, y: 0.65, size: 2 }, // Sword
-    ],
-    lines: [['a', 'c'], ['b', 'e'], ['c', 'd'], ['d', 'e'], ['c', 'f'], ['e', 'g'], ['d', 'h']] as [string, string][],
-  },
-];
-
-// Get constellation based on family size
-const getConstellationForFamily = (memberCount: number) => {
-  if (memberCount <= 2) return FAMILY_CONSTELLATIONS[0];
-  if (memberCount === 3) return FAMILY_CONSTELLATIONS[1];
-  if (memberCount === 4) return FAMILY_CONSTELLATIONS[2];
-  if (memberCount === 5) return FAMILY_CONSTELLATIONS[3];
-  return FAMILY_CONSTELLATIONS[4]; // 6+
+// Strategic anchor points on each zodiac illustration for placing family members
+// These positions are designed to integrate naturally with the mythological figures
+const ZODIAC_ANCHOR_POINTS: Record<ZodiacSign, { x: number; y: number; label: string }[]> = {
+  sagittarius: [
+    { x: 0.52, y: 0.22, label: 'head' },        // Head of archer
+    { x: 0.38, y: 0.38, label: 'bow-hand' },    // Hand holding bow
+    { x: 0.62, y: 0.35, label: 'arrow' },       // Arrow tip
+    { x: 0.50, y: 0.52, label: 'torso' },       // Center torso
+    { x: 0.35, y: 0.68, label: 'horse-back' },  // Horse back
+    { x: 0.65, y: 0.75, label: 'tail' },        // Horse tail
+  ],
+  aries: [
+    { x: 0.55, y: 0.25, label: 'horn-1' },
+    { x: 0.45, y: 0.25, label: 'horn-2' },
+    { x: 0.50, y: 0.40, label: 'head' },
+    { x: 0.50, y: 0.58, label: 'body' },
+    { x: 0.35, y: 0.75, label: 'front-leg' },
+    { x: 0.65, y: 0.75, label: 'back-leg' },
+  ],
+  taurus: [
+    { x: 0.40, y: 0.28, label: 'horn-1' },
+    { x: 0.60, y: 0.28, label: 'horn-2' },
+    { x: 0.50, y: 0.42, label: 'head' },
+    { x: 0.50, y: 0.60, label: 'body' },
+    { x: 0.35, y: 0.78, label: 'front-leg' },
+    { x: 0.65, y: 0.78, label: 'back-leg' },
+  ],
+  gemini: [
+    { x: 0.35, y: 0.28, label: 'twin-1-head' },
+    { x: 0.65, y: 0.28, label: 'twin-2-head' },
+    { x: 0.35, y: 0.55, label: 'twin-1-body' },
+    { x: 0.65, y: 0.55, label: 'twin-2-body' },
+    { x: 0.50, y: 0.42, label: 'hands' },
+    { x: 0.50, y: 0.75, label: 'feet' },
+  ],
+  cancer: [
+    { x: 0.50, y: 0.30, label: 'shell-top' },
+    { x: 0.30, y: 0.45, label: 'claw-1' },
+    { x: 0.70, y: 0.45, label: 'claw-2' },
+    { x: 0.50, y: 0.55, label: 'body' },
+    { x: 0.35, y: 0.72, label: 'leg-1' },
+    { x: 0.65, y: 0.72, label: 'leg-2' },
+  ],
+  leo: [
+    { x: 0.50, y: 0.25, label: 'mane' },
+    { x: 0.50, y: 0.42, label: 'head' },
+    { x: 0.50, y: 0.58, label: 'body' },
+    { x: 0.30, y: 0.70, label: 'front-paw' },
+    { x: 0.70, y: 0.70, label: 'back-paw' },
+    { x: 0.75, y: 0.55, label: 'tail' },
+  ],
+  virgo: [
+    { x: 0.50, y: 0.22, label: 'head' },
+    { x: 0.40, y: 0.38, label: 'shoulder' },
+    { x: 0.60, y: 0.40, label: 'hand' },
+    { x: 0.50, y: 0.55, label: 'waist' },
+    { x: 0.45, y: 0.75, label: 'leg-1' },
+    { x: 0.55, y: 0.75, label: 'leg-2' },
+  ],
+  libra: [
+    { x: 0.50, y: 0.25, label: 'top' },
+    { x: 0.30, y: 0.40, label: 'scale-1' },
+    { x: 0.70, y: 0.40, label: 'scale-2' },
+    { x: 0.50, y: 0.50, label: 'beam' },
+    { x: 0.50, y: 0.68, label: 'stand' },
+    { x: 0.50, y: 0.82, label: 'base' },
+  ],
+  scorpio: [
+    { x: 0.45, y: 0.30, label: 'claw-1' },
+    { x: 0.55, y: 0.30, label: 'claw-2' },
+    { x: 0.50, y: 0.48, label: 'body' },
+    { x: 0.60, y: 0.62, label: 'tail-mid' },
+    { x: 0.70, y: 0.50, label: 'tail-curve' },
+    { x: 0.75, y: 0.35, label: 'stinger' },
+  ],
+  capricorn: [
+    { x: 0.45, y: 0.25, label: 'horn' },
+    { x: 0.50, y: 0.38, label: 'head' },
+    { x: 0.45, y: 0.55, label: 'body' },
+    { x: 0.35, y: 0.72, label: 'front-leg' },
+    { x: 0.60, y: 0.65, label: 'tail-start' },
+    { x: 0.72, y: 0.78, label: 'tail-fin' },
+  ],
+  aquarius: [
+    { x: 0.50, y: 0.22, label: 'head' },
+    { x: 0.38, y: 0.40, label: 'shoulder' },
+    { x: 0.62, y: 0.42, label: 'vessel' },
+    { x: 0.50, y: 0.58, label: 'waist' },
+    { x: 0.55, y: 0.72, label: 'water-1' },
+    { x: 0.65, y: 0.82, label: 'water-2' },
+  ],
+  pisces: [
+    { x: 0.35, y: 0.35, label: 'fish-1-head' },
+    { x: 0.25, y: 0.50, label: 'fish-1-tail' },
+    { x: 0.65, y: 0.55, label: 'fish-2-head' },
+    { x: 0.75, y: 0.70, label: 'fish-2-tail' },
+    { x: 0.50, y: 0.45, label: 'cord-mid' },
+    { x: 0.50, y: 0.60, label: 'cord-end' },
+  ],
 };
 
 interface FamilyMember {
@@ -127,9 +148,10 @@ interface RelationshipMapProps {
   onConnectionTap: (from: FamilyMember, to: FamilyMember) => void;
 }
 
-// Assign members to constellation star positions
-const getMemberPositionsOnStars = (members: FamilyMember[], constellation: typeof FAMILY_CONSTELLATIONS[0]) => {
-  const positions: { member: FamilyMember; x: number; y: number; starId: string }[] = [];
+// Assign members to zodiac anchor points
+const getMemberPositionsOnZodiac = (members: FamilyMember[], sign: ZodiacSign) => {
+  const anchors = ZODIAC_ANCHOR_POINTS[sign];
+  const positions: { member: FamilyMember; x: number; y: number }[] = [];
   
   // Sort: parents first, then partners, then children
   const sorted = [...members].sort((a, b) => {
@@ -137,61 +159,17 @@ const getMemberPositionsOnStars = (members: FamilyMember[], constellation: typeo
     return order[a.type] - order[b.type];
   });
   
-  // Sort stars by size (prominence) to assign most prominent to first members
-  const sortedStars = [...constellation.stars].sort((a, b) => b.size - a.size);
-  
   sorted.forEach((member, idx) => {
-    if (idx < sortedStars.length) {
-      const star = sortedStars[idx];
+    if (idx < anchors.length) {
       positions.push({
         member,
-        x: star.x,
-        y: star.y,
-        starId: star.id,
+        x: anchors[idx].x,
+        y: anchors[idx].y,
       });
     }
   });
   
   return positions;
-};
-
-// Find path between two stars using BFS along constellation lines
-const findPathBetweenStars = (
-  fromStarId: string, 
-  toStarId: string, 
-  lines: [string, string][]
-): string[] | null => {
-  if (fromStarId === toStarId) return [fromStarId];
-  
-  // Build adjacency list
-  const adjacency: Record<string, string[]> = {};
-  lines.forEach(([a, b]) => {
-    if (!adjacency[a]) adjacency[a] = [];
-    if (!adjacency[b]) adjacency[b] = [];
-    adjacency[a].push(b);
-    adjacency[b].push(a);
-  });
-  
-  // BFS to find shortest path
-  const queue: { node: string; path: string[] }[] = [{ node: fromStarId, path: [fromStarId] }];
-  const visited = new Set<string>([fromStarId]);
-  
-  while (queue.length > 0) {
-    const { node, path } = queue.shift()!;
-    
-    const neighbors = adjacency[node] || [];
-    for (const neighbor of neighbors) {
-      if (neighbor === toStarId) {
-        return [...path, neighbor];
-      }
-      if (!visited.has(neighbor)) {
-        visited.add(neighbor);
-        queue.push({ node: neighbor, path: [...path, neighbor] });
-      }
-    }
-  }
-  
-  return null; // No path found
 };
 
 // Generate random background stars for night sky effect
@@ -201,8 +179,8 @@ const generateBackgroundStars = (count: number) => {
     stars.push({
       x: Math.random(),
       y: Math.random(),
-      size: 0.5 + Math.random() * 1.2, // Varying sizes
-      opacity: 0.10 + Math.random() * 0.10, // 10-20% opacity range
+      size: 0.5 + Math.random() * 1.2,
+      opacity: 0.10 + Math.random() * 0.10,
     });
   }
   return stars;
@@ -210,15 +188,12 @@ const generateBackgroundStars = (count: number) => {
 
 export const RelationshipMap = ({ members, constellationSign, selectedConnection, onConnectionTap }: RelationshipMapProps) => {
   const width = 420;
-  const height = 520; // Increased height for more vertical space
-  const padding = 20; // Reduced padding to use more space
-  
-  // Get constellation based on family size, not zodiac sign
-  const constellation = useMemo(() => getConstellationForFamily(members.length), [members.length]);
+  const height = 520;
+  const padding = 20;
   
   const memberPositions = useMemo(
-    () => getMemberPositionsOnStars(members, constellation), 
-    [members, constellation]
+    () => getMemberPositionsOnZodiac(members, constellationSign), 
+    [members, constellationSign]
   );
   const backgroundStars = useMemo(() => generateBackgroundStars(80), []); // More stars
   
@@ -359,24 +334,6 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
             </>
           );
         })()}
-        
-        {/* LAYER 3: Constellation nodes, lines, and labels */}
-        {/* Constellation anchor stars - gold dots (only show stars not occupied by family members) */}
-        {constellation.stars.map((star) => {
-          // Check if this star has a family member on it
-          const hasMember = memberPositions.some(mp => mp.starId === star.id);
-          
-          return (
-            <circle
-              key={`const-star-${star.id}`}
-              cx={toPixelX(star.x)}
-              cy={toPixelY(star.y)}
-              r={hasMember ? 0 : Math.max(2.5, star.size * 1.2)}
-              fill="#d4af70"
-              opacity={0.6}
-            />
-          );
-        })}
         
         {/* Family relationship connection lines - direct lines between all members */}
         {connections.map((conn, connIdx) => {
