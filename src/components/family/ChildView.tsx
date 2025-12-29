@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
-import { AstrologyGrid } from "./AstrologyGrid";
+import { AstrologyProfile } from "./AstrologyProfile";
 import { BirthChartDiagram } from "./BirthChartDiagram";
 import { ChartSelectorSheet } from "./ChartSelectorSheet";
 import { 
@@ -211,9 +211,9 @@ export const ChildView = ({
         />
       </div>
 
-      {/* Astrology Grid */}
+      {/* Astrology Profile */}
       <div className="px-5">
-        <AstrologyGrid 
+        <AstrologyProfile 
           sunSign={signs.sun} 
           moonSign={signs.moon} 
           risingSign={signs.rising} 
