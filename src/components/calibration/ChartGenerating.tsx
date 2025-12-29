@@ -19,7 +19,7 @@ export function ChartGenerating({ babyName, onComplete }: ChartGeneratingProps) 
     // Complete after deliberate delay (only if onComplete provided)
     const timer = onComplete ? setTimeout(() => {
       onComplete();
-    }, 2500) : undefined;
+    }, 5000) : undefined;
 
     return () => {
       clearInterval(dotInterval);
