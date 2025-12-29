@@ -290,15 +290,10 @@ export const RelationshipMap = ({
 
   return (
     <div className="w-full mx-auto px-4" style={{ maxWidth: '90vw' }}>
-      {/* Microcopy header */}
-      <div className="text-center mb-4">
-        <h3 className="text-[15px] font-medium text-foreground/80 tracking-wide">
-          Your family constellation
-        </h3>
-        <p className="text-[11px] text-foreground/35 mt-1 tracking-wider">
-          Everyone connected. One moment at the center.
-        </p>
-      </div>
+      {/* Instruction text */}
+      <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-4">
+        Tap a connection to explore
+      </p>
       
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '65vh' }}>
         <defs>
