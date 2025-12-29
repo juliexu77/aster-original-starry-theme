@@ -471,6 +471,11 @@ export const testDSTHandling = () => {
     // Sydney (Southern Hemisphere - DST in Jan, not in Jul)
     { date: '2022-01-15', time: '15:00', location: 'Sydney', label: 'Sydney Summer (Jan 15, 3PM)' },
     { date: '2022-07-15', time: '15:00', location: 'Sydney', label: 'Sydney Winter (Jul 15, 3PM)' },
+    // New Bay Area cities
+    { date: '2025-04-15', time: '05:00', location: 'Redwood City', label: 'Redwood City (Apr 15, 5AM)' },
+    { date: '2025-04-15', time: '05:00', location: 'Palo Alto', label: 'Palo Alto (Apr 15, 5AM)' },
+    // Original test case that was previously failing
+    { date: '1988-12-16', time: '21:30', location: 'Shanghai', label: 'Shanghai (Dec 16 1988, 9:30PM)' },
   ];
 
   console.log('=== DST HANDLING TEST ===\n');
@@ -478,17 +483,30 @@ export const testDSTHandling = () => {
   testCases.forEach(({ date, time, location, label }) => {
     console.log(`\n--- ${label} ---`);
     
+    // Parse date correctly (same way as the actual functions now do)
+    const dateParts = date.split('-');
+    const year = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1;
+    const day = parseInt(dateParts[2], 10);
+    const birthDate = new Date(year, month, day);
+    
+    console.log(`Parsed date: ${year}-${month + 1}-${day}`);
+    
     const cityData = getCityData(location);
-    const birthDate = new Date(date);
     
     if (cityData) {
       const offset = getTimezoneOffsetForDate(cityData.timezone, birthDate);
+      console.log(`City found: ${location}`);
       console.log(`Timezone: ${cityData.timezone}`);
+      console.log(`Coordinates: lat ${cityData.latitude}, lon ${cityData.longitude}`);
       console.log(`Offset for ${date}: UTC${offset >= 0 ? '+' : ''}${offset}`);
+    } else {
+      console.log(`⚠️ City NOT found: ${location}`);
     }
     
     // Run the ascendant calculation with debug
-    getRisingSign(date, time, location, true);
+    const rising = getRisingSign(date, time, location, true);
+    console.log(`Rising sign result: ${rising}`);
   });
   
   console.log('\n=== END DST TEST ===');
