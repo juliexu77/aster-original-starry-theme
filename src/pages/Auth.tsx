@@ -136,7 +136,7 @@ const Auth = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: mode === 'signup' ? 20 : -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-card/50 rounded-xl p-6 space-y-6"
+            className="bg-card/20 backdrop-blur-sm rounded-xl p-6 space-y-6"
           >
             {mode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-5">
@@ -156,7 +156,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border/30" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-3 bg-card/50 text-[10px] text-foreground/30 uppercase tracking-wider">
+                    <span className="px-3 bg-transparent text-[10px] text-foreground/30 uppercase tracking-wider">
                       or
                     </span>
                   </div>
@@ -226,7 +226,7 @@ const Auth = () => {
                     <span className="w-full border-t border-border/30" />
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-3 bg-card/50 text-[10px] text-foreground/30 uppercase tracking-wider">
+                    <span className="px-3 bg-transparent text-[10px] text-foreground/30 uppercase tracking-wider">
                       or
                     </span>
                   </div>
