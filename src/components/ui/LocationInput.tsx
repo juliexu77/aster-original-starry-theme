@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { searchTopCities, CityResult } from "@/lib/top-cities";
 
 interface NominatimResult {
   place_id: number;
@@ -28,6 +29,12 @@ function debounce<T extends (...args: unknown[]) => void>(func: T, wait: number)
   };
 }
 
+interface Suggestion {
+  id: string | number;
+  displayName: string;
+  isLocal: boolean;
+}
+
 export const LocationInput = ({ 
   id, 
   value, 
@@ -37,16 +44,39 @@ export const LocationInput = ({
   className = ""
 }: LocationInputProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [suggestions, setSuggestions] = useState<NominatimResult[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+
+  // Search local cities first (instant)
+  const searchLocal = useCallback((query: string): Suggestion[] => {
+    const localResults = searchTopCities(query);
+    return localResults.map((city, index) => ({
+      id: `local-${index}`,
+      displayName: city.displayName,
+      isLocal: true
+    }));
+  }, []);
 
   // Fetch locations from OpenStreetMap Nominatim API
   const fetchLocations = useCallback(async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
       setShowSuggestions(false);
+      return;
+    }
+
+    // First show local results immediately
+    const localSuggestions = searchLocal(query);
+    if (localSuggestions.length > 0) {
+      setSuggestions(localSuggestions);
+      setShowSuggestions(true);
+    }
+
+    // If we have enough local results, don't hit the API
+    if (localSuggestions.length >= 4) {
+      setIsLoading(false);
       return;
     }
 
@@ -69,15 +99,31 @@ export const LocationInput = ({
       if (!response.ok) throw new Error('Failed to fetch');
 
       const data: NominatimResult[] = await response.json();
-      setSuggestions(data);
-      setShowSuggestions(data.length > 0);
+      
+      // Combine local and API results, avoiding duplicates
+      const localDisplayNames = new Set(localSuggestions.map(s => s.displayName.toLowerCase()));
+      const apiSuggestions: Suggestion[] = data
+        .map(result => ({
+          id: result.place_id,
+          displayName: formatLocation(result.display_name),
+          isLocal: false
+        }))
+        .filter(s => !localDisplayNames.has(s.displayName.toLowerCase()));
+
+      const combined = [...localSuggestions, ...apiSuggestions].slice(0, 6);
+      setSuggestions(combined);
+      setShowSuggestions(combined.length > 0);
     } catch (error) {
       console.error('Error fetching locations:', error);
-      setSuggestions([]);
+      // Keep local results on API error
+      if (localSuggestions.length > 0) {
+        setSuggestions(localSuggestions);
+        setShowSuggestions(true);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchLocal]);
 
   // Debounced search (300ms delay to respect Nominatim usage policy)
   const debouncedFetch = useCallback(
@@ -85,9 +131,17 @@ export const LocationInput = ({
     [fetchLocations]
   );
 
+  // Immediate local search on value change
   useEffect(() => {
+    if (value.length >= 2) {
+      const localSuggestions = searchLocal(value);
+      if (localSuggestions.length > 0) {
+        setSuggestions(localSuggestions);
+        setShowSuggestions(true);
+      }
+    }
     debouncedFetch(value);
-  }, [value, debouncedFetch]);
+  }, [value, debouncedFetch, searchLocal]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -108,13 +162,10 @@ export const LocationInput = ({
   const formatLocation = (displayName: string): string => {
     const parts = displayName.split(',').map(p => p.trim());
     if (parts.length >= 2) {
-      // Get city (first part) and country (last part)
       const city = parts[0];
       const country = parts[parts.length - 1];
-      // Check for state/region (second to last for US cities, etc)
       if (parts.length >= 3) {
         const region = parts[parts.length - 2];
-        // For US states, show City, State, Country
         if (country === 'United States' && region.length <= 20) {
           return `${city}, ${region}, USA`;
         }
@@ -125,8 +176,8 @@ export const LocationInput = ({
     return displayName;
   };
 
-  const handleSelectLocation = (result: NominatimResult) => {
-    onChange(formatLocation(result.display_name));
+  const handleSelectLocation = (suggestion: Suggestion) => {
+    onChange(suggestion.displayName);
     setShowSuggestions(false);
   };
 
@@ -155,15 +206,15 @@ export const LocationInput = ({
           className="absolute top-full left-0 right-0 mt-1 rounded-md border border-border shadow-lg z-50 max-h-48 overflow-y-auto"
           style={{ backgroundColor: 'hsl(var(--card))' }}
         >
-          {suggestions.map((result) => (
+          {suggestions.map((suggestion) => (
             <button
-              key={result.place_id}
+              key={suggestion.id}
               type="button"
-              onClick={() => handleSelectLocation(result)}
+              onClick={() => handleSelectLocation(suggestion)}
               className="w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center gap-2"
             >
               <MapPin className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-              <span className="truncate">{formatLocation(result.display_name)}</span>
+              <span className="truncate">{suggestion.displayName}</span>
             </button>
           ))}
         </div>
