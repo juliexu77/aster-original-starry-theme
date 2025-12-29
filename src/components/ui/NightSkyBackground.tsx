@@ -5,6 +5,74 @@ interface NightSkyBackgroundProps {
   starCount?: number;
 }
 
+type TimeOfDay = "morning" | "day" | "evening" | "night";
+
+const getTimeOfDay = (): TimeOfDay => {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 10) return "morning";
+  if (hour >= 10 && hour < 17) return "day";
+  if (hour >= 17 && hour < 21) return "evening";
+  return "night";
+};
+
+// Background gradients that transition from warm/light (day) to dark (night)
+const getBackgroundGradient = (timeOfDay: TimeOfDay): string => {
+  switch (timeOfDay) {
+    case "morning":
+      return `linear-gradient(
+        180deg,
+        hsl(35 15% 12%) 0%,
+        hsl(30 12% 10%) 30%,
+        hsl(28 10% 9%) 60%,
+        hsl(30 12% 10%) 85%,
+        hsl(35 15% 12%) 100%
+      )`;
+    case "day":
+      return `linear-gradient(
+        180deg,
+        hsl(38 18% 14%) 0%,
+        hsl(35 15% 12%) 30%,
+        hsl(32 12% 10%) 60%,
+        hsl(35 15% 12%) 85%,
+        hsl(38 18% 14%) 100%
+      )`;
+    case "evening":
+      return `linear-gradient(
+        180deg,
+        hsl(32 12% 8%) 0%,
+        hsl(28 10% 6%) 30%,
+        hsl(25 10% 5%) 60%,
+        hsl(28 10% 6%) 85%,
+        hsl(32 12% 8%) 100%
+      )`;
+    case "night":
+    default:
+      return `linear-gradient(
+        180deg,
+        hsl(30 8% 3%) 0%,
+        hsl(25 10% 4%) 30%,
+        hsl(20 12% 5%) 60%,
+        hsl(25 10% 4%) 85%,
+        hsl(30 8% 3%) 100%
+      )`;
+  }
+};
+
+// Star opacity multiplier based on time of day
+const getStarOpacityMultiplier = (timeOfDay: TimeOfDay): number => {
+  switch (timeOfDay) {
+    case "morning":
+      return 0.4;
+    case "day":
+      return 0.25;
+    case "evening":
+      return 0.7;
+    case "night":
+    default:
+      return 1.0;
+  }
+};
+
 // Generate random background stars for night sky effect
 const generateBackgroundStars = (count: number) => {
   const stars = [];
@@ -54,22 +122,18 @@ const generateBackgroundStars = (count: number) => {
 };
 
 export const NightSkyBackground = ({ children, starCount = 150 }: NightSkyBackgroundProps) => {
+  const timeOfDay = useMemo(() => getTimeOfDay(), []);
+  const backgroundGradient = useMemo(() => getBackgroundGradient(timeOfDay), [timeOfDay]);
+  const starOpacityMultiplier = useMemo(() => getStarOpacityMultiplier(timeOfDay), [timeOfDay]);
   const backgroundStars = useMemo(() => generateBackgroundStars(starCount), [starCount]);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Deep dark background with warm undertones */}
+      {/* Dynamic background based on time of day */}
       <div 
-        className="fixed inset-0 pointer-events-none"
+        className="fixed inset-0 pointer-events-none transition-all duration-1000"
         style={{
-          background: `linear-gradient(
-            180deg,
-            hsl(30 8% 3%) 0%,
-            hsl(25 10% 4%) 30%,
-            hsl(20 12% 5%) 60%,
-            hsl(25 10% 4%) 85%,
-            hsl(30 8% 3%) 100%
-          )`,
+          background: backgroundGradient,
           zIndex: -3,
         }}
       />
@@ -95,81 +159,85 @@ export const NightSkyBackground = ({ children, starCount = 150 }: NightSkyBackgr
         }}
       />
       
-      {/* Scattered star dots */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
-        {backgroundStars.map((star, i) => (
-          <div key={`night-star-${i}`}>
-            {/* Base star - warm white/cream color */}
-            <div
-              className="absolute rounded-full"
-              style={{
-                left: `${star.x}%`,
-                top: `${star.y}%`,
-                width: `${star.size}px`,
-                height: `${star.size}px`,
-                backgroundColor: star.hasFlare ? '#fffef8' : '#f8f6f0',
-                opacity: star.opacity,
-                boxShadow: star.hasFlare 
-                  ? `0 0 ${star.size * 4}px ${star.size * 1.5}px rgba(255,252,240,0.4), 0 0 ${star.size * 8}px ${star.size * 2}px rgba(255,250,235,0.15)` 
-                  : star.size > 1 
-                    ? `0 0 ${star.size * 2}px ${star.size * 0.5}px rgba(255,250,240,0.2)`
-                    : undefined,
-              }}
-            />
-            {/* Cross flare for featured stars */}
-            {star.hasFlare && (
-              <>
-                {/* Horizontal flare */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: `calc(${star.x}% - ${star.size * 6}px)`,
-                    top: `calc(${star.y}% - 0.5px)`,
-                    width: `${star.size * 12}px`,
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.6}) 50%, transparent 100%)`,
-                  }}
-                />
-                {/* Vertical flare */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: `calc(${star.x}% - 0.5px)`,
-                    top: `calc(${star.y}% - ${star.size * 6}px)`,
-                    width: '1px',
-                    height: `${star.size * 12}px`,
-                    background: `linear-gradient(180deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.6}) 50%, transparent 100%)`,
-                  }}
-                />
-                {/* Diagonal flares for more prominent stars */}
-                <div
-                  className="absolute"
-                  style={{
-                    left: `calc(${star.x}% - ${star.size * 3}px)`,
-                    top: `calc(${star.y}% - ${star.size * 3}px)`,
-                    width: `${star.size * 6}px`,
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.3}) 50%, transparent 100%)`,
-                    transform: 'rotate(45deg)',
-                    transformOrigin: 'center',
-                  }}
-                />
-                <div
-                  className="absolute"
-                  style={{
-                    left: `calc(${star.x}% - ${star.size * 3}px)`,
-                    top: `calc(${star.y}% + ${star.size * 3}px)`,
-                    width: `${star.size * 6}px`,
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.3}) 50%, transparent 100%)`,
-                    transform: 'rotate(-45deg)',
-                    transformOrigin: 'center',
-                  }}
-                />
-              </>
-            )}
-          </div>
-        ))}
+      {/* Scattered star dots - opacity adjusted by time of day */}
+      <div className="fixed inset-0 pointer-events-none transition-opacity duration-1000" style={{ zIndex: -1 }}>
+        {backgroundStars.map((star, i) => {
+          const adjustedOpacity = star.opacity * starOpacityMultiplier;
+          
+          return (
+            <div key={`night-star-${i}`}>
+              {/* Base star - warm white/cream color */}
+              <div
+                className="absolute rounded-full"
+                style={{
+                  left: `${star.x}%`,
+                  top: `${star.y}%`,
+                  width: `${star.size}px`,
+                  height: `${star.size}px`,
+                  backgroundColor: star.hasFlare ? '#fffef8' : '#f8f6f0',
+                  opacity: adjustedOpacity,
+                  boxShadow: star.hasFlare 
+                    ? `0 0 ${star.size * 4}px ${star.size * 1.5}px rgba(255,252,240,${0.4 * starOpacityMultiplier}), 0 0 ${star.size * 8}px ${star.size * 2}px rgba(255,250,235,${0.15 * starOpacityMultiplier})` 
+                    : star.size > 1 
+                      ? `0 0 ${star.size * 2}px ${star.size * 0.5}px rgba(255,250,240,${0.2 * starOpacityMultiplier})`
+                      : undefined,
+                }}
+              />
+              {/* Cross flare for featured stars */}
+              {star.hasFlare && (
+                <>
+                  {/* Horizontal flare */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: `calc(${star.x}% - ${star.size * 6}px)`,
+                      top: `calc(${star.y}% - 0.5px)`,
+                      width: `${star.size * 12}px`,
+                      height: '1px',
+                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${adjustedOpacity * 0.6}) 50%, transparent 100%)`,
+                    }}
+                  />
+                  {/* Vertical flare */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: `calc(${star.x}% - 0.5px)`,
+                      top: `calc(${star.y}% - ${star.size * 6}px)`,
+                      width: '1px',
+                      height: `${star.size * 12}px`,
+                      background: `linear-gradient(180deg, transparent 0%, rgba(255,252,240,${adjustedOpacity * 0.6}) 50%, transparent 100%)`,
+                    }}
+                  />
+                  {/* Diagonal flares for more prominent stars */}
+                  <div
+                    className="absolute"
+                    style={{
+                      left: `calc(${star.x}% - ${star.size * 3}px)`,
+                      top: `calc(${star.y}% - ${star.size * 3}px)`,
+                      width: `${star.size * 6}px`,
+                      height: '1px',
+                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${adjustedOpacity * 0.3}) 50%, transparent 100%)`,
+                      transform: 'rotate(45deg)',
+                      transformOrigin: 'center',
+                    }}
+                  />
+                  <div
+                    className="absolute"
+                    style={{
+                      left: `calc(${star.x}% - ${star.size * 3}px)`,
+                      top: `calc(${star.y}% + ${star.size * 3}px)`,
+                      width: `${star.size * 6}px`,
+                      height: '1px',
+                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${adjustedOpacity * 0.3}) 50%, transparent 100%)`,
+                      transform: 'rotate(-45deg)',
+                      transformOrigin: 'center',
+                    }}
+                  />
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
       
       {/* Content */}

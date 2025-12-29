@@ -289,7 +289,7 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full max-w-[560px] mx-auto px-2">
+    <div className="w-full mx-auto px-2" style={{ maxWidth: '60vw' }}>
       {/* Microcopy header */}
       <div className="text-center mb-4">
         <h3 className="text-[15px] font-medium text-foreground/80 tracking-wide">
@@ -405,7 +405,7 @@ export const RelationshipMap = ({
           </g>
         ))}
         
-        {/* LAYER 2: Very faint zodiac watermark - texture only */}
+        {/* LAYER 2: Zodiac watermark - subtle ethereal texture */}
         {(() => {
           const imageWidth = width * 0.85;
           const imageHeight = height * 0.85;
@@ -416,14 +416,14 @@ export const RelationshipMap = ({
             <>
               <defs>
                 <filter id="zodiacGhostFilter" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur" />
                   <feColorMatrix
                     in="blur"
                     type="matrix"
-                    values="0 0 0 0 0.10
-                            0 0 0 0 0.08
-                            0 0 0 0 0.14
-                            0 0 0 0.05 0"
+                    values="0 0 0 0 0.18
+                            0 0 0 0 0.15
+                            0 0 0 0 0.22
+                            0 0 0 0.15 0"
                     result="colorized"
                   />
                 </filter>
