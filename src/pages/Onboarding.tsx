@@ -26,28 +26,27 @@ const Onboarding = () => {
         <div className="flex-1 flex items-end justify-center pb-8 pt-20">
           <div className="flex items-center justify-center gap-1">
             {letters.map((letter, index) => (
-                <motion.span
-                  key={index}
-                  initial={{ rotateX: -90, opacity: 0 }}
-                  animate={{ 
-                    rotateX: 0, 
-                    opacity: 1,
-                  }}
-                  transition={{
-                    duration: 1.2,
-                    delay: index * 0.15,
-                    ease: [0.23, 1, 0.32, 1],
-                  }}
-                  className="text-[28px] uppercase inline-block"
-                  style={{
-                    transformStyle: 'preserve-3d',
-                    letterSpacing: '0.2em',
-                    color: 'rgba(180, 195, 220, 0.7)',
-                    textShadow: '0 0 30px rgba(200, 220, 255, 0.8), 0 0 60px rgba(180, 200, 255, 0.5), 0 0 100px rgba(160, 180, 255, 0.3), 0 0 150px rgba(140, 160, 255, 0.2)',
-                  }}
-                >
-                  {letter}
-                </motion.span>
+              <motion.span
+                key={index}
+                initial={{ rotateX: -90, opacity: 0 }}
+                animate={{ 
+                  rotateX: 0, 
+                  opacity: 1,
+                }}
+                transition={{
+                  duration: 1.2,
+                  delay: index * 0.15,
+                  ease: [0.23, 1, 0.32, 1],
+                }}
+                className="text-[28px] text-foreground/50 uppercase inline-block"
+                style={{
+                  transformStyle: 'preserve-3d',
+                  letterSpacing: '0.2em',
+                  textShadow: '0 0 20px rgba(255, 229, 180, 0.4), 0 0 40px rgba(255, 229, 180, 0.2), 0 0 60px rgba(255, 229, 180, 0.1)',
+                }}
+              >
+                {letter}
+              </motion.span>
             ))}
           </div>
         </div>
