@@ -147,6 +147,47 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
         }}
       />
       
+      {/* Milky Way band - diagonal ethereal glow */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -2,
+          opacity: 0.12 * starOpacityMultiplier,
+          background: `
+            linear-gradient(
+              135deg,
+              transparent 0%,
+              transparent 25%,
+              hsla(35, 15%, 35%, 0.3) 35%,
+              hsla(30, 20%, 45%, 0.5) 42%,
+              hsla(35, 25%, 55%, 0.6) 48%,
+              hsla(40, 20%, 50%, 0.55) 52%,
+              hsla(35, 20%, 45%, 0.5) 58%,
+              hsla(30, 15%, 35%, 0.3) 65%,
+              transparent 75%,
+              transparent 100%
+            )
+          `,
+        }}
+      />
+      
+      {/* Milky Way cloudy texture overlay */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -2,
+          opacity: 0.08 * starOpacityMultiplier,
+          background: `
+            radial-gradient(ellipse 25% 15% at 30% 45%, hsla(35, 25%, 60%, 0.6) 0%, transparent 70%),
+            radial-gradient(ellipse 20% 12% at 45% 40%, hsla(40, 20%, 55%, 0.5) 0%, transparent 65%),
+            radial-gradient(ellipse 18% 10% at 55% 48%, hsla(30, 30%, 50%, 0.55) 0%, transparent 60%),
+            radial-gradient(ellipse 22% 14% at 65% 42%, hsla(35, 25%, 55%, 0.5) 0%, transparent 70%),
+            radial-gradient(ellipse 15% 8% at 38% 52%, hsla(40, 20%, 60%, 0.4) 0%, transparent 55%),
+            radial-gradient(ellipse 20% 10% at 58% 38%, hsla(30, 25%, 50%, 0.45) 0%, transparent 60%)
+          `,
+        }}
+      />
+      
       {/* Very subtle dust/grain texture via noise-like gradient */}
       <div 
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
