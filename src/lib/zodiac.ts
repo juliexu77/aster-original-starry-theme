@@ -49,112 +49,150 @@ export const getZodiacFromBirthday = (birthday: string | null | undefined): Zodi
   return 'pisces';
 };
 
-// City data: [timezone offset, longitude, latitude]
+// City data with IANA timezone identifiers for DST-aware calculations
 interface CityData {
-  offset: number;
+  timezone: string;  // IANA timezone identifier
   longitude: number;
   latitude: number;
 }
 
 const CITY_DATA: Record<string, CityData> = {
   // North America
-  'new york': { offset: -5, longitude: -74.006, latitude: 40.7128 },
-  'nyc': { offset: -5, longitude: -74.006, latitude: 40.7128 },
-  'manhattan': { offset: -5, longitude: -73.9712, latitude: 40.7831 },
-  'brooklyn': { offset: -5, longitude: -73.9442, latitude: 40.6782 },
-  'los angeles': { offset: -8, longitude: -118.2437, latitude: 34.0522 },
-  'la': { offset: -8, longitude: -118.2437, latitude: 34.0522 },
-  'hollywood': { offset: -8, longitude: -118.3287, latitude: 34.0928 },
-  'san francisco': { offset: -8, longitude: -122.4194, latitude: 37.7749 },
-  'sf': { offset: -8, longitude: -122.4194, latitude: 37.7749 },
-  'oakland': { offset: -8, longitude: -122.2711, latitude: 37.8044 },
-  'berkeley': { offset: -8, longitude: -122.2727, latitude: 37.8716 },
-  'seattle': { offset: -8, longitude: -122.3321, latitude: 47.6062 },
-  'portland': { offset: -8, longitude: -122.6765, latitude: 45.5152 },
-  'denver': { offset: -7, longitude: -104.9903, latitude: 39.7392 },
-  'phoenix': { offset: -7, longitude: -112.074, latitude: 33.4484 },
-  'salt lake': { offset: -7, longitude: -111.891, latitude: 40.7608 },
-  'chicago': { offset: -6, longitude: -87.6298, latitude: 41.8781 },
-  'dallas': { offset: -6, longitude: -96.797, latitude: 32.7767 },
-  'houston': { offset: -6, longitude: -95.3698, latitude: 29.7604 },
-  'austin': { offset: -6, longitude: -97.7431, latitude: 30.2672 },
-  'miami': { offset: -5, longitude: -80.1918, latitude: 25.7617 },
-  'atlanta': { offset: -5, longitude: -84.388, latitude: 33.749 },
-  'boston': { offset: -5, longitude: -71.0589, latitude: 42.3601 },
-  'philadelphia': { offset: -5, longitude: -75.1652, latitude: 39.9526 },
-  'toronto': { offset: -5, longitude: -79.3832, latitude: 43.6532 },
-  'montreal': { offset: -5, longitude: -73.5673, latitude: 45.5017 },
-  'vancouver': { offset: -8, longitude: -123.1207, latitude: 49.2827 },
-  'mexico city': { offset: -6, longitude: -99.1332, latitude: 19.4326 },
+  'new york': { timezone: 'America/New_York', longitude: -74.006, latitude: 40.7128 },
+  'nyc': { timezone: 'America/New_York', longitude: -74.006, latitude: 40.7128 },
+  'manhattan': { timezone: 'America/New_York', longitude: -73.9712, latitude: 40.7831 },
+  'brooklyn': { timezone: 'America/New_York', longitude: -73.9442, latitude: 40.6782 },
+  'los angeles': { timezone: 'America/Los_Angeles', longitude: -118.2437, latitude: 34.0522 },
+  'la': { timezone: 'America/Los_Angeles', longitude: -118.2437, latitude: 34.0522 },
+  'hollywood': { timezone: 'America/Los_Angeles', longitude: -118.3287, latitude: 34.0928 },
+  'san francisco': { timezone: 'America/Los_Angeles', longitude: -122.4194, latitude: 37.7749 },
+  'sf': { timezone: 'America/Los_Angeles', longitude: -122.4194, latitude: 37.7749 },
+  'oakland': { timezone: 'America/Los_Angeles', longitude: -122.2711, latitude: 37.8044 },
+  'berkeley': { timezone: 'America/Los_Angeles', longitude: -122.2727, latitude: 37.8716 },
+  'seattle': { timezone: 'America/Los_Angeles', longitude: -122.3321, latitude: 47.6062 },
+  'portland': { timezone: 'America/Los_Angeles', longitude: -122.6765, latitude: 45.5152 },
+  'denver': { timezone: 'America/Denver', longitude: -104.9903, latitude: 39.7392 },
+  'phoenix': { timezone: 'America/Phoenix', longitude: -112.074, latitude: 33.4484 }, // No DST
+  'salt lake': { timezone: 'America/Denver', longitude: -111.891, latitude: 40.7608 },
+  'chicago': { timezone: 'America/Chicago', longitude: -87.6298, latitude: 41.8781 },
+  'dallas': { timezone: 'America/Chicago', longitude: -96.797, latitude: 32.7767 },
+  'houston': { timezone: 'America/Chicago', longitude: -95.3698, latitude: 29.7604 },
+  'austin': { timezone: 'America/Chicago', longitude: -97.7431, latitude: 30.2672 },
+  'miami': { timezone: 'America/New_York', longitude: -80.1918, latitude: 25.7617 },
+  'atlanta': { timezone: 'America/New_York', longitude: -84.388, latitude: 33.749 },
+  'boston': { timezone: 'America/New_York', longitude: -71.0589, latitude: 42.3601 },
+  'philadelphia': { timezone: 'America/New_York', longitude: -75.1652, latitude: 39.9526 },
+  'toronto': { timezone: 'America/Toronto', longitude: -79.3832, latitude: 43.6532 },
+  'montreal': { timezone: 'America/Montreal', longitude: -73.5673, latitude: 45.5017 },
+  'vancouver': { timezone: 'America/Vancouver', longitude: -123.1207, latitude: 49.2827 },
+  'mexico city': { timezone: 'America/Mexico_City', longitude: -99.1332, latitude: 19.4326 },
   
   // Europe
-  'london': { offset: 0, longitude: -0.1276, latitude: 51.5074 },
-  'edinburgh': { offset: 0, longitude: -3.1883, latitude: 55.9533 },
-  'dublin': { offset: 0, longitude: -6.2603, latitude: 53.3498 },
-  'paris': { offset: 1, longitude: 2.3522, latitude: 48.8566 },
-  'berlin': { offset: 1, longitude: 13.405, latitude: 52.52 },
-  'amsterdam': { offset: 1, longitude: 4.9041, latitude: 52.3676 },
-  'brussels': { offset: 1, longitude: 4.3517, latitude: 50.8503 },
-  'vienna': { offset: 1, longitude: 16.3738, latitude: 48.2082 },
-  'rome': { offset: 1, longitude: 12.4964, latitude: 41.9028 },
-  'milan': { offset: 1, longitude: 9.19, latitude: 45.4642 },
-  'madrid': { offset: 1, longitude: -3.7038, latitude: 40.4168 },
-  'barcelona': { offset: 1, longitude: 2.1734, latitude: 41.3851 },
-  'stockholm': { offset: 1, longitude: 18.0686, latitude: 59.3293 },
-  'oslo': { offset: 1, longitude: 10.7522, latitude: 59.9139 },
-  'copenhagen': { offset: 1, longitude: 12.5683, latitude: 55.6761 },
-  'athens': { offset: 2, longitude: 23.7275, latitude: 37.9838 },
-  'istanbul': { offset: 3, longitude: 28.9784, latitude: 41.0082 },
-  'moscow': { offset: 3, longitude: 37.6173, latitude: 55.7558 },
+  'london': { timezone: 'Europe/London', longitude: -0.1276, latitude: 51.5074 },
+  'edinburgh': { timezone: 'Europe/London', longitude: -3.1883, latitude: 55.9533 },
+  'dublin': { timezone: 'Europe/Dublin', longitude: -6.2603, latitude: 53.3498 },
+  'paris': { timezone: 'Europe/Paris', longitude: 2.3522, latitude: 48.8566 },
+  'berlin': { timezone: 'Europe/Berlin', longitude: 13.405, latitude: 52.52 },
+  'amsterdam': { timezone: 'Europe/Amsterdam', longitude: 4.9041, latitude: 52.3676 },
+  'brussels': { timezone: 'Europe/Brussels', longitude: 4.3517, latitude: 50.8503 },
+  'vienna': { timezone: 'Europe/Vienna', longitude: 16.3738, latitude: 48.2082 },
+  'rome': { timezone: 'Europe/Rome', longitude: 12.4964, latitude: 41.9028 },
+  'milan': { timezone: 'Europe/Rome', longitude: 9.19, latitude: 45.4642 },
+  'madrid': { timezone: 'Europe/Madrid', longitude: -3.7038, latitude: 40.4168 },
+  'barcelona': { timezone: 'Europe/Madrid', longitude: 2.1734, latitude: 41.3851 },
+  'stockholm': { timezone: 'Europe/Stockholm', longitude: 18.0686, latitude: 59.3293 },
+  'oslo': { timezone: 'Europe/Oslo', longitude: 10.7522, latitude: 59.9139 },
+  'copenhagen': { timezone: 'Europe/Copenhagen', longitude: 12.5683, latitude: 55.6761 },
+  'athens': { timezone: 'Europe/Athens', longitude: 23.7275, latitude: 37.9838 },
+  'istanbul': { timezone: 'Europe/Istanbul', longitude: 28.9784, latitude: 41.0082 },
+  'moscow': { timezone: 'Europe/Moscow', longitude: 37.6173, latitude: 55.7558 },
   
   // Asia
-  'tokyo': { offset: 9, longitude: 139.6917, latitude: 35.6895 },
-  'osaka': { offset: 9, longitude: 135.5022, latitude: 34.6937 },
-  'kyoto': { offset: 9, longitude: 135.7681, latitude: 35.0116 },
-  'seoul': { offset: 9, longitude: 126.978, latitude: 37.5665 },
-  'busan': { offset: 9, longitude: 129.0756, latitude: 35.1796 },
-  'beijing': { offset: 8, longitude: 116.4074, latitude: 39.9042 },
-  'shanghai': { offset: 8, longitude: 121.4737, latitude: 31.2304 },
-  'guangzhou': { offset: 8, longitude: 113.2644, latitude: 23.1291 },
-  'shenzhen': { offset: 8, longitude: 114.0579, latitude: 22.5431 },
-  'hong kong': { offset: 8, longitude: 114.1694, latitude: 22.3193 },
-  'taipei': { offset: 8, longitude: 121.5654, latitude: 25.033 },
-  'singapore': { offset: 8, longitude: 103.8198, latitude: 1.3521 },
-  'bangkok': { offset: 7, longitude: 100.5018, latitude: 13.7563 },
-  'jakarta': { offset: 7, longitude: 106.8456, latitude: -6.2088 },
-  'ho chi minh': { offset: 7, longitude: 106.6297, latitude: 10.8231 },
-  'hanoi': { offset: 7, longitude: 105.8342, latitude: 21.0278 },
-  'mumbai': { offset: 5.5, longitude: 72.8777, latitude: 19.076 },
-  'delhi': { offset: 5.5, longitude: 77.1025, latitude: 28.7041 },
-  'bangalore': { offset: 5.5, longitude: 77.5946, latitude: 12.9716 },
-  'chennai': { offset: 5.5, longitude: 80.2707, latitude: 13.0827 },
-  'dubai': { offset: 4, longitude: 55.2708, latitude: 25.2048 },
-  'abu dhabi': { offset: 4, longitude: 54.3773, latitude: 24.4539 },
-  'tel aviv': { offset: 2, longitude: 34.7818, latitude: 32.0853 },
-  'jerusalem': { offset: 2, longitude: 35.2137, latitude: 31.7683 },
+  'tokyo': { timezone: 'Asia/Tokyo', longitude: 139.6917, latitude: 35.6895 },
+  'osaka': { timezone: 'Asia/Tokyo', longitude: 135.5022, latitude: 34.6937 },
+  'kyoto': { timezone: 'Asia/Tokyo', longitude: 135.7681, latitude: 35.0116 },
+  'seoul': { timezone: 'Asia/Seoul', longitude: 126.978, latitude: 37.5665 },
+  'busan': { timezone: 'Asia/Seoul', longitude: 129.0756, latitude: 35.1796 },
+  'beijing': { timezone: 'Asia/Shanghai', longitude: 116.4074, latitude: 39.9042 },
+  'shanghai': { timezone: 'Asia/Shanghai', longitude: 121.4737, latitude: 31.2304 },
+  'guangzhou': { timezone: 'Asia/Shanghai', longitude: 113.2644, latitude: 23.1291 },
+  'shenzhen': { timezone: 'Asia/Shanghai', longitude: 114.0579, latitude: 22.5431 },
+  'hong kong': { timezone: 'Asia/Hong_Kong', longitude: 114.1694, latitude: 22.3193 },
+  'taipei': { timezone: 'Asia/Taipei', longitude: 121.5654, latitude: 25.033 },
+  'singapore': { timezone: 'Asia/Singapore', longitude: 103.8198, latitude: 1.3521 },
+  'bangkok': { timezone: 'Asia/Bangkok', longitude: 100.5018, latitude: 13.7563 },
+  'jakarta': { timezone: 'Asia/Jakarta', longitude: 106.8456, latitude: -6.2088 },
+  'ho chi minh': { timezone: 'Asia/Ho_Chi_Minh', longitude: 106.6297, latitude: 10.8231 },
+  'hanoi': { timezone: 'Asia/Ho_Chi_Minh', longitude: 105.8342, latitude: 21.0278 },
+  'mumbai': { timezone: 'Asia/Kolkata', longitude: 72.8777, latitude: 19.076 },
+  'delhi': { timezone: 'Asia/Kolkata', longitude: 77.1025, latitude: 28.7041 },
+  'bangalore': { timezone: 'Asia/Kolkata', longitude: 77.5946, latitude: 12.9716 },
+  'chennai': { timezone: 'Asia/Kolkata', longitude: 80.2707, latitude: 13.0827 },
+  'dubai': { timezone: 'Asia/Dubai', longitude: 55.2708, latitude: 25.2048 },
+  'abu dhabi': { timezone: 'Asia/Dubai', longitude: 54.3773, latitude: 24.4539 },
+  'tel aviv': { timezone: 'Asia/Jerusalem', longitude: 34.7818, latitude: 32.0853 },
+  'jerusalem': { timezone: 'Asia/Jerusalem', longitude: 35.2137, latitude: 31.7683 },
   
   // Oceania
-  'sydney': { offset: 10, longitude: 151.2093, latitude: -33.8688 },
-  'melbourne': { offset: 10, longitude: 144.9631, latitude: -37.8136 },
-  'brisbane': { offset: 10, longitude: 153.0251, latitude: -27.4698 },
-  'perth': { offset: 8, longitude: 115.8605, latitude: -31.9505 },
-  'auckland': { offset: 12, longitude: 174.7633, latitude: -36.8485 },
-  'wellington': { offset: 12, longitude: 174.7762, latitude: -41.2865 },
+  'sydney': { timezone: 'Australia/Sydney', longitude: 151.2093, latitude: -33.8688 },
+  'melbourne': { timezone: 'Australia/Melbourne', longitude: 144.9631, latitude: -37.8136 },
+  'brisbane': { timezone: 'Australia/Brisbane', longitude: 153.0251, latitude: -27.4698 }, // No DST
+  'perth': { timezone: 'Australia/Perth', longitude: 115.8605, latitude: -31.9505 }, // No DST
+  'auckland': { timezone: 'Pacific/Auckland', longitude: 174.7633, latitude: -36.8485 },
+  'wellington': { timezone: 'Pacific/Auckland', longitude: 174.7762, latitude: -41.2865 },
   
   // South America
-  'sao paulo': { offset: -3, longitude: -46.6333, latitude: -23.5505 },
-  'rio de janeiro': { offset: -3, longitude: -43.1729, latitude: -22.9068 },
-  'buenos aires': { offset: -3, longitude: -58.3816, latitude: -34.6037 },
-  'lima': { offset: -5, longitude: -77.0428, latitude: -12.0464 },
-  'bogota': { offset: -5, longitude: -74.0721, latitude: 4.711 },
-  'santiago': { offset: -4, longitude: -70.6693, latitude: -33.4489 },
+  'sao paulo': { timezone: 'America/Sao_Paulo', longitude: -46.6333, latitude: -23.5505 },
+  'rio de janeiro': { timezone: 'America/Sao_Paulo', longitude: -43.1729, latitude: -22.9068 },
+  'buenos aires': { timezone: 'America/Argentina/Buenos_Aires', longitude: -58.3816, latitude: -34.6037 },
+  'lima': { timezone: 'America/Lima', longitude: -77.0428, latitude: -12.0464 },
+  'bogota': { timezone: 'America/Bogota', longitude: -74.0721, latitude: 4.711 },
+  'santiago': { timezone: 'America/Santiago', longitude: -70.6693, latitude: -33.4489 },
   
   // Africa
-  'cairo': { offset: 2, longitude: 31.2357, latitude: 30.0444 },
-  'johannesburg': { offset: 2, longitude: 28.0473, latitude: -26.2041 },
-  'cape town': { offset: 2, longitude: 18.4241, latitude: -33.9249 },
-  'nairobi': { offset: 3, longitude: 36.8219, latitude: -1.2921 },
-  'lagos': { offset: 1, longitude: 3.3792, latitude: 6.5244 },
+  'cairo': { timezone: 'Africa/Cairo', longitude: 31.2357, latitude: 30.0444 },
+  'johannesburg': { timezone: 'Africa/Johannesburg', longitude: 28.0473, latitude: -26.2041 },
+  'cape town': { timezone: 'Africa/Johannesburg', longitude: 18.4241, latitude: -33.9249 },
+  'nairobi': { timezone: 'Africa/Nairobi', longitude: 36.8219, latitude: -1.2921 },
+  'lagos': { timezone: 'Africa/Lagos', longitude: 3.3792, latitude: 6.5244 },
+};
+
+// Get timezone offset for a specific date using IANA timezone
+// This properly handles DST transitions
+const getTimezoneOffsetForDate = (timezone: string, date: Date): number => {
+  try {
+    // Create a formatter that shows the offset
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'longOffset',
+    });
+    
+    const parts = formatter.formatToParts(date);
+    const offsetPart = parts.find(p => p.type === 'timeZoneName');
+    
+    if (offsetPart && offsetPart.value) {
+      // Parse offset like "GMT-08:00" or "GMT+05:30"
+      const match = offsetPart.value.match(/GMT([+-])(\d{2}):(\d{2})/);
+      if (match) {
+        const sign = match[1] === '+' ? 1 : -1;
+        const hours = parseInt(match[2], 10);
+        const minutes = parseInt(match[3], 10);
+        return sign * (hours + minutes / 60);
+      }
+      // Handle "GMT" (UTC+0)
+      if (offsetPart.value === 'GMT') {
+        return 0;
+      }
+    }
+    
+    // Fallback: use a different method
+    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+    const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+    return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
+  } catch (e) {
+    console.warn(`Failed to get timezone offset for ${timezone}:`, e);
+    return 0;
+  }
 };
 
 // Get city data from location string
@@ -172,10 +210,15 @@ const getCityData = (birthLocation: string | null | undefined): CityData | null 
   return null;
 };
 
-// Get timezone offset from city name (returns hours from UTC)
-const getTimezoneOffset = (birthLocation: string | null | undefined): number => {
+// Get timezone offset from city name for a specific date (returns hours from UTC)
+// This is DST-aware and returns the correct offset for the given date
+const getTimezoneOffset = (birthLocation: string | null | undefined, birthDate?: Date): number => {
   const cityData = getCityData(birthLocation);
-  return cityData?.offset ?? 0;
+  if (!cityData) return 0;
+  
+  // Use provided date or current date for offset calculation
+  const date = birthDate || new Date();
+  return getTimezoneOffsetForDate(cityData.timezone, date);
 };
 
 // Approximate moon sign calculation
@@ -200,8 +243,8 @@ export const getMoonSignFromBirthDateTime = (
     hours = h + (m / 60);
   }
   
-  // Adjust for timezone - convert local time to UTC
-  const timezoneOffset = getTimezoneOffset(birthLocation);
+  // Adjust for timezone - convert local time to UTC (DST-aware)
+  const timezoneOffset = getTimezoneOffset(birthLocation, date);
   const utcHours = hours - timezoneOffset;
   
   // Julian day calculation (simplified)
@@ -252,9 +295,11 @@ export const getRisingSign = (
   
   // Get city data for accurate coordinates
   const cityData = getCityData(birthLocation);
-  const timezoneOffset = cityData?.offset ?? 0;
   const longitude = cityData?.longitude ?? 0;
   const latitude = cityData?.latitude ?? 0;
+  
+  // Get DST-aware timezone offset for the birth date
+  const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
   if (debug) {
     console.log('=== ASCENDANT CALCULATION DEBUG ===');
@@ -414,9 +459,9 @@ export const getAscendantWithDegree = (
   const hours = h + (m / 60);
   
   const cityData = getCityData(birthLocation);
-  const timezoneOffset = cityData?.offset ?? 0;
   const longitude = cityData?.longitude ?? 0;
   const latitude = cityData?.latitude ?? 0;
+  const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
   let utcHours = hours - timezoneOffset;
   let utcDay = day;
