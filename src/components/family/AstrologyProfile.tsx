@@ -4,7 +4,9 @@ import {
   MOON_PATTERNS, 
   RISING_PRESENCE, 
   getChartSynthesis,
-  getSunRisingSynthesis 
+  getSunRisingSynthesis,
+  getSunSynthesis,
+  getMoonSynthesis
 } from "@/lib/astrology-content";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { Sun, Moon, Sparkles } from "lucide-react";
@@ -69,7 +71,18 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyPro
         subtitle="Essential self · Core identity"
         isFirst
       >
-        <TraitList traits={sunMechanics} />
+        <div className="space-y-3">
+          <p className="text-[13px] text-foreground/60 leading-relaxed">
+            {getSunSynthesis(sunSign)}
+          </p>
+          <ul className="space-y-1.5 pt-1">
+            {sunMechanics.slice(0, 3).map((trait, i) => (
+              <li key={i} className="text-[12px] text-foreground/50 leading-relaxed">
+                {trait}
+              </li>
+            ))}
+          </ul>
+        </div>
       </Section>
 
       {/* MOON SECTION */}
@@ -79,7 +92,18 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyPro
           title={`Moon in ${getZodiacName(moonSign)}`}
           subtitle="Emotional needs · Inner world"
         >
-          <TraitList traits={moonPatterns} />
+          <div className="space-y-3">
+            <p className="text-[13px] text-foreground/60 leading-relaxed">
+              {getMoonSynthesis(moonSign)}
+            </p>
+            <ul className="space-y-1.5 pt-1">
+              {moonPatterns.slice(0, 3).map((trait, i) => (
+                <li key={i} className="text-[12px] text-foreground/50 leading-relaxed">
+                  {trait}
+                </li>
+              ))}
+            </ul>
+          </div>
         </Section>
       )}
 
