@@ -230,8 +230,8 @@ export const RelationshipMap = ({
   onConnectionTap,
   centerId 
 }: RelationshipMapProps) => {
-  const width = 420;
-  const height = 520;
+  const width = 500;
+  const height = 620;
   const centerX = width * 0.50;
   const centerY = height * 0.46;
   
@@ -289,7 +289,7 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full max-w-[480px] mx-auto px-2">
+    <div className="w-full max-w-[560px] mx-auto px-2">
       {/* Microcopy header */}
       <div className="text-center mb-4">
         <h3 className="text-[15px] font-medium text-foreground/80 tracking-wide">
@@ -300,7 +300,7 @@ export const RelationshipMap = ({
         </p>
       </div>
       
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '400px' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '520px' }}>
         <defs>
           {/* Enhanced glow filter for member nodes with halo */}
           <filter id="memberGlow" x="-200%" y="-200%" width="500%" height="500%">
