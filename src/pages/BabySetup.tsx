@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -128,25 +129,45 @@ const BabySetup = () => {
     <NightSkyBackground forceMidnight>
       <div className="min-h-screen flex flex-col">
         {/* Minimal Header */}
-        <header className="px-5 pt-8 pb-4 text-center">
+        <motion.header 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="px-5 pt-8 pb-4 text-center"
+        >
           <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
             Add Child
           </p>
-        </header>
+        </motion.header>
 
         {/* Main Content */}
         <div className="flex-1 flex items-start justify-center px-5 pt-8">
-        <div className="w-full max-w-sm space-y-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="w-full max-w-sm space-y-8"
+        >
           
           {/* Intro */}
-          <div className="text-center space-y-3">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-center space-y-3"
+          >
             <p className="text-[13px] text-foreground/50 leading-[1.7]">
               We'll create a daily guide based on their age.
             </p>
-          </div>
+          </motion.div>
 
           {/* Form */}
-          <div className="bg-card/50 rounded-xl p-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-card/50 rounded-xl p-6"
+          >
             <form onSubmit={handleDetailsSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="babyName">Name</Label>
@@ -222,8 +243,8 @@ const BabySetup = () => {
                 </p>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
         </div>
       </div>
     </NightSkyBackground>
