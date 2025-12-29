@@ -21,7 +21,7 @@ const Onboarding = () => {
 
   return (
     <NightSkyBackground starCount={150} forceMidnight>
-      <div className="min-h-screen flex flex-col relative">
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
         {/* Upper Third - ASTER Title */}
         <div className="flex-1 flex items-end justify-center pb-8 pt-20">
           <div className="flex items-center justify-center gap-1">

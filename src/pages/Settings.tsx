@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   Calendar,
   Clock,
-  MapPin
+  MapPin,
+  RotateCcw
 } from "lucide-react";
 import { LocationInput } from "@/components/ui/LocationInput";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
@@ -602,6 +603,18 @@ export const Settings = () => {
         {/* Account Section */}
         {user && (
           <SettingsSection title="Account">
+            <SettingsRow
+              icon={<RotateCcw className="w-5 h-5" />}
+              title="Replay Home Intro"
+              subtitle="Watch the orientation again"
+              onClick={() => {
+                // Clear all home intro flags
+                babies.forEach(baby => {
+                  localStorage.removeItem(`home_intro_seen_${baby.id}`);
+                });
+                toast({ title: "Intro reset", description: "Visit the home tab to see the intro again", duration: 3000 });
+              }}
+            />
             <SettingsRow
               icon={<Key className="w-5 h-5" />}
               title="Change Password"
