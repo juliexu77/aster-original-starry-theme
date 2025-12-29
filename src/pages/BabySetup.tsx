@@ -129,12 +129,12 @@ const BabySetup = () => {
   return (
     <NightSkyBackground forceMidnight>
       <div className="min-h-screen flex flex-col">
-        {/* Minimal Header */}
+        {/* Header */}
         <motion.header 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="px-5 pt-8 pb-4 text-center"
+          className="px-5 pt-12 pb-2 text-center"
         >
           <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
             Add Child
@@ -142,65 +142,65 @@ const BabySetup = () => {
         </motion.header>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-start justify-center px-5 pt-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-          className="w-full max-w-sm space-y-8"
-        >
-          
-          {/* Intro */}
+        <div className="flex-1 flex items-start justify-center px-5 pt-4">
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-center space-y-3"
-          >
-            <p className="text-[13px] text-foreground/50 leading-[1.7]">
-              We'll create a daily guide based on their age.
-            </p>
-          </motion.div>
-
-          {/* Form */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-card/50 rounded-xl p-6"
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            className="w-full max-w-sm space-y-6"
           >
-            <form onSubmit={handleDetailsSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="babyName">Name</Label>
-                <Input
-                  id="babyName"
-                  type="text"
-                  value={babyName}
-                  onChange={(e) => setBabyName(e.target.value)}
-                  placeholder="e.g., Emma"
-                  required
-                  disabled={isLoading}
-                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
-                />
-              </div>
+            
+            {/* Intro */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-center"
+            >
+              <p className="text-[13px] text-foreground/50 leading-[1.7]">
+                We'll create their birth chart and track<br />
+                developmental milestones against it.
+              </p>
+            </motion.div>
 
-              <div className="space-y-2">
-                <Label htmlFor="babyBirthday">Birthday</Label>
-                <Input
-                  id="babyBirthday"
-                  type="date"
-                  value={babyBirthday}
-                  onChange={(e) => setBabyBirthday(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
-                />
-              </div>
+            {/* Form */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="bg-card/50 rounded-xl p-6"
+            >
+              <form onSubmit={handleDetailsSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="babyName">Name</Label>
+                  <Input
+                    id="babyName"
+                    type="text"
+                    value={babyName}
+                    onChange={(e) => setBabyName(e.target.value)}
+                    placeholder="Emma"
+                    required
+                    disabled={isLoading}
+                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="babyBirthday">Birthday</Label>
+                  <Input
+                    id="babyBirthday"
+                    type="date"
+                    value={babyBirthday}
+                    onChange={(e) => setBabyBirthday(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="babyBirthTime">
-                    Birth time <span className="normal-case opacity-60">(optional)</span>
+                    Birth time <span className="normal-case opacity-60">(for accurate chart)</span>
                   </Label>
                   <Input
                     id="babyBirthTime"
@@ -214,7 +214,7 @@ const BabySetup = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="babyBirthLocation">
-                    Birth location <span className="normal-case opacity-60">(optional)</span>
+                    Birth location <span className="normal-case opacity-60">(for accurate chart)</span>
                   </Label>
                   <LocationInput
                     id="babyBirthLocation"
@@ -225,27 +225,26 @@ const BabySetup = () => {
                     className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
                   />
                 </div>
-              </div>
 
-              <p className="text-[10px] text-foreground/30 pt-1">
-                Time & location help calculate moon sign accurately
-              </p>
-
-              <div className="pt-4 space-y-4">
-                <Button
-                  type="submit"
-                  className="w-full text-[13px]"
-                  disabled={isLoading || !babyName.trim()}
-                >
-                  {isLoading ? "..." : "Continue"}
-                </Button>
-                <p className="text-[10px] text-foreground/30 text-center">
-                  Add more children later in Settings
+                <p className="text-[11px] text-foreground/40 pt-2 leading-[1.6]">
+                  Time and location determine moon sign, rising sign, and house placements. Skip them and you'll only get sun sign insights.
                 </p>
-              </div>
-            </form>
+
+                <div className="pt-4 space-y-4">
+                  <Button
+                    type="submit"
+                    className="w-full text-[13px]"
+                    disabled={isLoading || !babyName.trim()}
+                  >
+                    {isLoading ? "..." : "Continue"}
+                  </Button>
+                  <p className="text-[10px] text-foreground/30 text-center">
+                    Add more children later in Settings
+                  </p>
+                </div>
+              </form>
+            </motion.div>
           </motion.div>
-        </motion.div>
         </div>
       </div>
     </NightSkyBackground>
