@@ -182,19 +182,20 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
         return { ...prev, physicalSkills: [...withoutNone, value] };
       });
     } else {
-      // For single-select, update answer and auto-advance
+      // For single-select, update answer and auto-advance to next question
       setAnswers(prev => ({ ...prev, [questionId]: value }));
-      // Auto-advance after a brief delay for visual feedback
+      
+      // Auto-advance after brief visual feedback
       setTimeout(() => {
         if (currentStep < questions.length - 1) {
           setCurrentStep(prev => prev + 1);
         } else {
-          // Last question - need to compute flags and complete
+          // Last question - compute flags and complete
           const updatedAnswers = { ...answers, [questionId]: value };
           const flags = computeEmergingFlags(ageInMonths, updatedAnswers);
           onComplete(updatedAnswers, flags);
         }
-      }, 200);
+      }, 150);
     }
   };
 
