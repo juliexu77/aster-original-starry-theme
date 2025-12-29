@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { differenceInMonths } from "date-fns";
@@ -227,7 +228,12 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
     <NightSkyBackground forceMidnight>
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header className="px-5 pt-8 pb-4">
+      <motion.header 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="px-5 pt-8 pb-4"
+      >
         <div className="flex items-center justify-between">
           <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
             Calibrate
@@ -242,27 +248,47 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
         {/* Progress */}
         <div className="flex gap-1 mt-4">
           {questions.map((_, i) => (
-            <div
+            <motion.div
               key={i}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
               className={cn(
-                "h-0.5 flex-1 rounded-full transition-colors",
+                "h-0.5 flex-1 rounded-full transition-colors origin-left",
                 i <= currentStep ? "bg-foreground/40" : "bg-foreground/10"
               )}
             />
           ))}
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col px-5 pt-6">
         <div className="flex-1 space-y-8">
           {/* Question */}
-          <h2 className="text-[18px] font-serif text-foreground/90 leading-[1.4]">
-            {currentQuestion.question}
-          </h2>
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="text-[18px] font-serif text-foreground/90 leading-[1.4]"
+            >
+              {currentQuestion.question}
+            </motion.h2>
+          </AnimatePresence>
 
           {/* Options */}
-          <div className="space-y-3 pointer-events-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="space-y-3 pointer-events-auto"
+            >
             {currentQuestion.options.map((option) => (
               <button
                 key={option.value}
@@ -297,12 +323,18 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
                 </span>
               </button>
             ))}
-          </div>
+            </motion.div>
+          </AnimatePresence>
 
           {currentQuestion.multiSelect && (
-            <p className="text-[10px] text-foreground/30">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-[10px] text-foreground/30"
+            >
               Select all that apply
-            </p>
+            </motion.p>
           )}
         </div>
 

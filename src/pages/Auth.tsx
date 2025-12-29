@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,18 +108,36 @@ const Auth = () => {
     <NightSkyBackground forceMidnight>
       <div className="min-h-screen flex flex-col">
         {/* Minimal Header */}
-        <header className="px-5 pt-8 pb-4 text-center">
+        <motion.header 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="px-5 pt-8 pb-4 text-center"
+        >
           <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
             {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
           </p>
-        </header>
+        </motion.header>
 
         {/* Main Content */}
         <div className="flex-1 flex items-start justify-center px-5 pt-8">
-        <div className="w-full max-w-sm space-y-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="w-full max-w-sm space-y-8"
+        >
           
           {/* Auth Forms */}
-          <div className="bg-card/50 rounded-xl p-6 space-y-6">
+          <AnimatePresence mode="wait">
+          <motion.div 
+            key={mode}
+            initial={{ opacity: 0, x: mode === 'signup' ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: mode === 'signup' ? 20 : -20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-card/50 rounded-xl p-6 space-y-6"
+          >
             {mode === 'signup' ? (
               <form onSubmit={handleSignUp} className="space-y-5">
                 <Button
@@ -248,10 +267,16 @@ const Auth = () => {
                 </div>
               </form>
             )}
-          </div>
+          </motion.div>
+          </AnimatePresence>
           
           {/* Toggle */}
-          <p className="text-center text-[11px] text-foreground/40">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-center text-[11px] text-foreground/40"
+          >
             {mode === 'signup' ? (
               <>
                 Already have an account?{' '}
@@ -275,8 +300,8 @@ const Auth = () => {
                 </button>
               </>
             )}
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
         </div>
       </div>
     </NightSkyBackground>
