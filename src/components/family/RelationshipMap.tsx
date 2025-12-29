@@ -289,7 +289,7 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full mx-auto px-2" style={{ maxWidth: '60vw' }}>
+    <div className="w-full mx-auto px-4" style={{ maxWidth: '90vw' }}>
       {/* Microcopy header */}
       <div className="text-center mb-4">
         <h3 className="text-[15px] font-medium text-foreground/80 tracking-wide">
@@ -300,7 +300,7 @@ export const RelationshipMap = ({
         </p>
       </div>
       
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '520px' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '65vh' }}>
         <defs>
           {/* Enhanced glow filter for member nodes with halo */}
           <filter id="memberGlow" x="-200%" y="-200%" width="500%" height="500%">
@@ -407,8 +407,8 @@ export const RelationshipMap = ({
         
         {/* LAYER 2: Zodiac watermark - subtle ethereal texture */}
         {(() => {
-          const imageWidth = width * 0.85;
-          const imageHeight = height * 0.85;
+          const imageWidth = width * 1.0;
+          const imageHeight = height * 1.0;
           const imageX = (width - imageWidth) / 2;
           const imageY = (height - imageHeight) / 2;
           

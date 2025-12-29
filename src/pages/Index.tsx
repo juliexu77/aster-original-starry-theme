@@ -7,6 +7,7 @@ import { GuideMenu } from "@/components/GuideMenu";
 import { GuideSectionView } from "@/components/GuideSectionView";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { FamilyNav } from "@/components/family/FamilyNav";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { 
@@ -82,36 +83,38 @@ const Index = () => {
   }
 
   return (
-    <div 
-      className="h-screen bg-background flex flex-col"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-24">
-        {activeBaby && (
-          <DailyCoach 
-            babyName={activeBaby.name} 
-            babyBirthday={activeBaby.birthday || undefined}
-            babyId={activeBaby.id}
-            babies={babies}
-            activeBabyId={activeBaby.id}
-            onSwitchBaby={switchBaby}
-          />
-        )}
-      </main>
+    <NightSkyBackground>
+      <div 
+        className="min-h-screen flex flex-col"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto pb-24">
+          {activeBaby && (
+            <DailyCoach 
+              babyName={activeBaby.name} 
+              babyBirthday={activeBaby.birthday || undefined}
+              babyId={activeBaby.id}
+              babies={babies}
+              activeBabyId={activeBaby.id}
+              onSwitchBaby={switchBaby}
+            />
+          )}
+        </main>
 
-      {/* Bottom Navigation */}
-      <FamilyNav />
+        {/* Bottom Navigation */}
+        <FamilyNav />
 
-      {/* Guide Menu */}
-      <GuideMenu 
-        open={menuOpen}
-        onOpenChange={setMenuOpen}
-        onSelectSection={setGuideSection} 
-      />
-    </div>
+        {/* Guide Menu */}
+        <GuideMenu 
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          onSelectSection={setGuideSection} 
+        />
+      </div>
+    </NightSkyBackground>
   );
 };
 
