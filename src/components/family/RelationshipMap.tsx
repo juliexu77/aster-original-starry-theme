@@ -172,15 +172,44 @@ const getMemberPositionsOnZodiac = (members: FamilyMember[], sign: ZodiacSign) =
   return positions;
 };
 
-// Generate random background stars for night sky effect
+// Generate random background stars for night sky effect with varied sizes and brightness
 const generateBackgroundStars = (count: number) => {
   const stars = [];
   for (let i = 0; i < count; i++) {
+    // Most stars are tiny pinpricks, some are larger
+    const sizeRoll = Math.random();
+    let size: number;
+    let hasFlare = false;
+    
+    if (sizeRoll > 0.97) {
+      // ~3% are larger "featured" stars with flares
+      size = 1.8 + Math.random() * 1.2;
+      hasFlare = true;
+    } else if (sizeRoll > 0.85) {
+      // ~12% are medium stars
+      size = 1.0 + Math.random() * 0.8;
+    } else {
+      // ~85% are tiny pinpricks
+      size = 0.3 + Math.random() * 0.6;
+    }
+    
+    // Varied brightness - some very dim, some bright
+    const brightnessRoll = Math.random();
+    let opacity: number;
+    if (brightnessRoll > 0.9) {
+      opacity = 0.35 + Math.random() * 0.25; // Bright stars
+    } else if (brightnessRoll > 0.5) {
+      opacity = 0.15 + Math.random() * 0.15; // Medium stars
+    } else {
+      opacity = 0.06 + Math.random() * 0.08; // Dim stars
+    }
+    
     stars.push({
       x: Math.random(),
       y: Math.random(),
-      size: 0.5 + Math.random() * 1.2,
-      opacity: 0.10 + Math.random() * 0.10,
+      size,
+      opacity,
+      hasFlare,
     });
   }
   return stars;
@@ -246,34 +275,70 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
     <div className="w-full max-w-[480px] mx-auto px-2">
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '400px' }}>
         <defs>
-          {/* Glow filter for member nodes */}
-          <filter id="memberGlow" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="8" result="blur" />
+          {/* Enhanced glow filter for member nodes with halo */}
+          <filter id="memberGlow" x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="4" result="innerBlur" />
+            <feGaussianBlur stdDeviation="12" result="outerBlur" />
+            <feGaussianBlur stdDeviation="25" result="haloBlur" />
+            <feMerge>
+              <feMergeNode in="haloBlur" />
+              <feMergeNode in="outerBlur" />
+              <feMergeNode in="innerBlur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          {/* Soft white halo gradient for nodes */}
+          <radialGradient id="nodeHalo">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.35" />
+            <stop offset="40%" stopColor="#ffffff" stopOpacity="0.15" />
+            <stop offset="70%" stopColor="#D4A574" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#D4A574" stopOpacity="0" />
+          </radialGradient>
+          
+          {/* Enhanced star glow with golden tint */}
+          <radialGradient id="starGlow">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+            <stop offset="30%" stopColor="#D4A574" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#D4A574" stopOpacity="0" />
+          </radialGradient>
+          
+          {/* Cross-shaped lens flare for featured stars */}
+          <filter id="starFlare" x="-300%" y="-300%" width="700%" height="700%">
+            <feGaussianBlur stdDeviation="1" result="blur1" />
+            <feGaussianBlur stdDeviation="3" result="blur2" />
+            <feMerge>
+              <feMergeNode in="blur2" />
+              <feMergeNode in="blur1" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          
+          {/* Glow for connection lines */}
+          <filter id="lineGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           
-          {/* Subtle glow for stars */}
-          <radialGradient id="starGlow">
-            <stop offset="0%" stopColor="#C4A574" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#C4A574" stopOpacity="0" />
-          </radialGradient>
+          {/* Nebula texture overlay */}
+          <filter id="nebulaFilter" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" seed="15" result="noise" />
+            <feColorMatrix in="noise" type="matrix"
+              values="0 0 0 0 0.15
+                      0 0 0 0 0.08
+                      0 0 0 0 0.25
+                      0 0 0 0.12 0" />
+          </filter>
           
-          {/* Constellation line gradient */}
-          <linearGradient id="constLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#5A5650" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="#6A6660" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#5A5650" stopOpacity="0.6" />
-          </linearGradient>
-          
-          {/* Night sky gradient - subtle twilight/dusk tones */}
+          {/* Night sky gradient with purple/blue cosmic tones */}
           <linearGradient id="nightSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0a0a12" stopOpacity="0.4" />
-            <stop offset="30%" stopColor="#0d0d18" stopOpacity="0.3" />
-            <stop offset="60%" stopColor="#12101a" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#15121c" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#0a0a12" stopOpacity="0.5" />
+            <stop offset="30%" stopColor="#0d0d1a" stopOpacity="0.4" />
+            <stop offset="60%" stopColor="#12101f" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#18142a" stopOpacity="0.3" />
           </linearGradient>
         </defs>
         
@@ -286,19 +351,78 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           fill="url(#nightSkyGradient)" 
         />
         
-        {/* Night sky scattered stars - tiny dots at varying sizes and opacities */}
+        {/* Nebula texture overlay for cosmic depth */}
+        <rect
+          x="0"
+          y="0"
+          width={width}
+          height={height}
+          filter="url(#nebulaFilter)"
+          opacity="0.12"
+        />
+        
+        {/* Night sky scattered stars - varied sizes with lens flares on featured stars */}
         {backgroundStars.map((star, i) => (
-          <circle
-            key={`bg-star-${i}`}
-            cx={star.x * width}
-            cy={star.y * height}
-            r={star.size}
-            fill="#fff"
-            opacity={star.opacity}
-          />
+          <g key={`bg-star-${i}`}>
+            {/* Base star */}
+            <circle
+              cx={star.x * width}
+              cy={star.y * height}
+              r={star.size}
+              fill="#fff"
+              opacity={star.opacity}
+              filter={star.hasFlare ? "url(#starFlare)" : undefined}
+            />
+            {/* Cross-shaped lens flare for featured stars */}
+            {star.hasFlare && (
+              <>
+                {/* Horizontal flare */}
+                <rect
+                  x={star.x * width - star.size * 6}
+                  y={star.y * height - star.size * 0.15}
+                  width={star.size * 12}
+                  height={star.size * 0.3}
+                  fill="#fff"
+                  opacity={star.opacity * 0.4}
+                  rx={star.size * 0.15}
+                />
+                {/* Vertical flare */}
+                <rect
+                  x={star.x * width - star.size * 0.15}
+                  y={star.y * height - star.size * 6}
+                  width={star.size * 0.3}
+                  height={star.size * 12}
+                  fill="#fff"
+                  opacity={star.opacity * 0.4}
+                  rx={star.size * 0.15}
+                />
+                {/* Diagonal flares (45°) */}
+                <rect
+                  x={star.x * width - star.size * 4}
+                  y={star.y * height - star.size * 0.1}
+                  width={star.size * 8}
+                  height={star.size * 0.2}
+                  fill="#fff"
+                  opacity={star.opacity * 0.2}
+                  rx={star.size * 0.1}
+                  transform={`rotate(45 ${star.x * width} ${star.y * height})`}
+                />
+                <rect
+                  x={star.x * width - star.size * 4}
+                  y={star.y * height - star.size * 0.1}
+                  width={star.size * 8}
+                  height={star.size * 0.2}
+                  fill="#fff"
+                  opacity={star.opacity * 0.2}
+                  rx={star.size * 0.1}
+                  transform={`rotate(-45 ${star.x * width} ${star.y * height})`}
+                />
+              </>
+            )}
+          </g>
         ))}
         
-        {/* LAYER 2: Zodiac illustration - ghost layer texture */}
+        {/* LAYER 2: Zodiac illustration - very subtle outline-only watermark */}
         {(() => {
           // Calculate 90% of full size, centered
           const imageWidth = width * 0.9;
@@ -309,15 +433,16 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           return (
             <>
               <defs>
+                {/* Ultra-subtle outline filter - much more ghostly */}
                 <filter id="zodiacGhostFilter" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur" />
                   <feColorMatrix
                     in="blur"
                     type="matrix"
-                    values="0 0 0 0 0.15
-                            0 0 0 0 0.12
-                            0 0 0 0 0.18
-                            0 0 0 0.18 0"
+                    values="0 0 0 0 0.12
+                            0 0 0 0 0.10
+                            0 0 0 0 0.16
+                            0 0 0 0.08 0"
                     result="colorized"
                   />
                 </filter>
@@ -330,12 +455,13 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 height={imageHeight}
                 filter="url(#zodiacGhostFilter)"
                 preserveAspectRatio="xMidYMid meet"
+                style={{ mixBlendMode: 'screen' }}
               />
             </>
           );
         })()}
         
-        {/* Family relationship connection lines - direct lines between all members */}
+        {/* Family relationship connection lines - delicate ethereal lines */}
         {connections.map((conn, connIdx) => {
           const isSelected = isConnectionSelected(conn.from.member, conn.to.member);
           
@@ -359,12 +485,23 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
                 style={{ cursor: 'pointer' }}
                 onClick={() => onConnectionTap(conn.from.member, conn.to.member)}
               />
-              {/* Visible line - thicker and more prominent */}
+              {/* Glow layer for ethereal effect */}
               <path
                 d={pathD}
-                stroke={isSelected ? "#D4A574" : "#999"}
-                strokeWidth={isSelected ? 3 : 2}
-                opacity={isSelected ? 1 : 0.7}
+                stroke={isSelected ? "#D4A574" : "#888"}
+                strokeWidth={isSelected ? 4 : 3}
+                opacity={isSelected ? 0.3 : 0.15}
+                fill="none"
+                strokeLinecap="round"
+                filter="url(#lineGlow)"
+                className="pointer-events-none"
+              />
+              {/* Visible line - thinner and more delicate */}
+              <path
+                d={pathD}
+                stroke={isSelected ? "#D4A574" : "#aaa"}
+                strokeWidth={isSelected ? 1.5 : 0.8}
+                opacity={isSelected ? 0.9 : 0.45}
                 fill="none"
                 strokeLinecap="round"
                 className="pointer-events-none transition-all duration-300"
@@ -373,55 +510,69 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
           );
         })}
         
-        {/* Family member nodes - larger and more prominent */}
-        {memberPositions.map(({ member, x, y }) => {
+        {/* Family member nodes - smaller, luminous with halos */}
+        {memberPositions.map(({ member, x, y }, idx) => {
           const px = toPixelX(x);
           const py = toPixelY(y);
           const sign = getMemberSign(member);
           const isInSelected = selectedConnection && 
             (selectedConnection.from.id === member.id || selectedConnection.to.id === member.id);
           
+          // Stagger animation delays for visual interest
+          const animDelay = idx * 0.15;
+          
           return (
             <g key={member.id}>
-              {/* Outer glow behind member node */}
+              {/* Outer soft white halo - feathered edge */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 24 : 18}
-                fill="url(#starGlow)"
-                opacity={isInSelected ? 0.9 : 0.5}
+                r={isInSelected ? 32 : 26}
+                fill="url(#nodeHalo)"
+                opacity={isInSelected ? 1 : 0.7}
+                className="animate-node-pulse"
+                style={{ animationDelay: `${animDelay}s` }}
               />
               
-              {/* Main member dot - larger and more prominent */}
+              {/* Secondary glow ring */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 10 : 8}
-                fill={isInSelected ? "#D4A574" : "#bbb"}
+                r={isInSelected ? 18 : 14}
+                fill="url(#starGlow)"
+                opacity={isInSelected ? 0.95 : 0.6}
+              />
+              
+              {/* Main member dot - smaller and more luminous */}
+              <circle
+                cx={px}
+                cy={py}
+                r={isInSelected ? 6 : 5}
+                fill={isInSelected ? "#fff" : "#e8e8e8"}
                 filter="url(#memberGlow)"
                 className="transition-all duration-300"
               />
               
-              {/* Inner bright core */}
+              {/* Inner brilliant core */}
               <circle
                 cx={px}
                 cy={py}
-                r={isInSelected ? 4 : 3}
-                fill={isInSelected ? "#fff" : "#ddd"}
-                opacity={0.8}
+                r={isInSelected ? 3 : 2.5}
+                fill="#fff"
+                opacity={isInSelected ? 1 : 0.9}
                 className="transition-all duration-300"
               />
               
-              {/* Name label - larger and more readable */}
+              {/* Name label */}
               <text
                 x={px}
-                y={py + 28}
+                y={py + 24}
                 textAnchor="middle"
-                fill={isInSelected ? "#D4A574" : "#999"}
+                fill={isInSelected ? "#D4A574" : "#aaa"}
                 style={{ 
-                  fontSize: '12px', 
+                  fontSize: '11px', 
                   fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.08em',
+                  letterSpacing: '0.1em',
                   textTransform: 'uppercase',
                   fontWeight: 500
                 }}
