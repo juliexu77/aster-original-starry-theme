@@ -31,39 +31,18 @@ const Onboarding = () => {
                 initial={{ rotateX: -90, opacity: 0 }}
                 animate={{ 
                   rotateX: 0, 
-                  opacity: [0, 1, 1],
-                  textShadow: [
-                    '0 0 20px rgba(255, 229, 180, 0), 0 0 40px rgba(255, 229, 180, 0)',
-                    '0 0 20px rgba(255, 229, 180, 0.4), 0 0 40px rgba(255, 229, 180, 0.2), 0 0 60px rgba(255, 229, 180, 0.1)',
-                    '0 0 15px rgba(255, 229, 180, 0.25), 0 0 30px rgba(255, 229, 180, 0.12)',
-                    '0 0 25px rgba(255, 229, 180, 0.5), 0 0 50px rgba(255, 229, 180, 0.25), 0 0 70px rgba(255, 229, 180, 0.15)',
-                    '0 0 15px rgba(255, 229, 180, 0.25), 0 0 30px rgba(255, 229, 180, 0.12)',
-                  ],
+                  opacity: 1,
                 }}
                 transition={{
-                  rotateX: {
-                    duration: 1.2,
-                    delay: index * 0.15,
-                    ease: [0.23, 1, 0.32, 1],
-                  },
-                  opacity: {
-                    duration: 1.2,
-                    delay: index * 0.15,
-                    ease: "easeOut",
-                  },
-                  textShadow: {
-                    duration: 4,
-                    delay: 1.5 + index * 0.15,
-                    repeat: Infinity,
-                    repeatType: "reverse",
-                    ease: "easeInOut",
-                    times: [0, 0.1, 0.5, 0.9, 1],
-                  },
+                  duration: 1.2,
+                  delay: index * 0.15,
+                  ease: [0.23, 1, 0.32, 1],
                 }}
                 className="text-[28px] text-foreground/50 uppercase inline-block"
                 style={{
                   transformStyle: 'preserve-3d',
                   letterSpacing: '0.2em',
+                  textShadow: '0 0 20px rgba(255, 229, 180, 0.4), 0 0 40px rgba(255, 229, 180, 0.2), 0 0 60px rgba(255, 229, 180, 0.1)',
                 }}
               >
                 {letter}
