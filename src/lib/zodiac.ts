@@ -69,6 +69,14 @@ const CITY_DATA: Record<string, CityData> = {
   'sf': { timezone: 'America/Los_Angeles', longitude: -122.4194, latitude: 37.7749 },
   'oakland': { timezone: 'America/Los_Angeles', longitude: -122.2711, latitude: 37.8044 },
   'berkeley': { timezone: 'America/Los_Angeles', longitude: -122.2727, latitude: 37.8716 },
+  'redwood city': { timezone: 'America/Los_Angeles', longitude: -122.2364, latitude: 37.4852 },
+  'palo alto': { timezone: 'America/Los_Angeles', longitude: -122.1430, latitude: 37.4419 },
+  'san jose': { timezone: 'America/Los_Angeles', longitude: -121.8863, latitude: 37.3382 },
+  'mountain view': { timezone: 'America/Los_Angeles', longitude: -122.0839, latitude: 37.3861 },
+  'cupertino': { timezone: 'America/Los_Angeles', longitude: -122.0322, latitude: 37.3229 },
+  'sunnyvale': { timezone: 'America/Los_Angeles', longitude: -122.0363, latitude: 37.3688 },
+  'santa clara': { timezone: 'America/Los_Angeles', longitude: -121.9552, latitude: 37.3541 },
+  'fremont': { timezone: 'America/Los_Angeles', longitude: -121.9886, latitude: 37.5485 },
   'seattle': { timezone: 'America/Los_Angeles', longitude: -122.3321, latitude: 47.6062 },
   'portland': { timezone: 'America/Los_Angeles', longitude: -122.6765, latitude: 45.5152 },
   'denver': { timezone: 'America/Denver', longitude: -104.9903, latitude: 39.7392 },
@@ -231,10 +239,14 @@ export const getMoonSignFromBirthDateTime = (
 ): ZodiacSign | null => {
   if (!birthday) return null;
   
-  const date = new Date(birthday);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  // Parse date components directly from string to avoid timezone issues
+  const dateParts = birthday.split('-');
+  const year = parseInt(dateParts[0], 10);
+  const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
+  const day = parseInt(dateParts[2], 10);
+  
+  // Create a date object for timezone offset calculation
+  const date = new Date(year, month, day);
   
   // Get time in hours (0-24)
   let hours = 12; // Default to noon if no time provided
@@ -284,10 +296,15 @@ export const getRisingSign = (
 ): ZodiacSign | null => {
   if (!birthday || !birthTime) return null;
   
-  const date = new Date(birthday);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  // Parse date components directly from string to avoid timezone issues
+  // birthday format: "YYYY-MM-DD"
+  const dateParts = birthday.split('-');
+  const year = parseInt(dateParts[0], 10);
+  const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
+  const day = parseInt(dateParts[2], 10);
+  
+  // Create a date object for timezone offset calculation
+  const date = new Date(year, month, day);
   
   // Parse birth time
   const [h, m] = birthTime.split(':').map(Number);
@@ -485,11 +502,14 @@ export const getAscendantWithDegree = (
 ): { sign: ZodiacSign; degree: number } | null => {
   if (!birthday || !birthTime) return null;
   
-  // Run the calculation to get the degree
-  const date = new Date(birthday);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
+  // Parse date components directly from string to avoid timezone issues
+  const dateParts = birthday.split('-');
+  const year = parseInt(dateParts[0], 10);
+  const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
+  const day = parseInt(dateParts[2], 10);
+  
+  // Create a date object for timezone offset calculation
+  const date = new Date(year, month, day);
   
   const [h, m] = birthTime.split(':').map(Number);
   const hours = h + (m / 60);
