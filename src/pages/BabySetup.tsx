@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { IconChevronLeft } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
 import { useToast } from "@/hooks/use-toast";
-
 type SetupPhase = 'details' | 'calibration' | 'generating';
 
 const BabySetup = () => {
@@ -129,6 +129,22 @@ const BabySetup = () => {
   return (
     <NightSkyBackground forceMidnight>
       <div className="min-h-screen flex flex-col">
+        {/* Back Button */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="absolute top-12 left-4 z-10"
+        >
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 -ml-2 text-foreground/40 hover:text-foreground/60 transition-colors"
+            aria-label="Go back"
+          >
+            <IconChevronLeft size={24} stroke={1.5} />
+          </button>
+        </motion.div>
+
         {/* Header */}
         <motion.header 
           initial={{ opacity: 0, y: -10 }}
