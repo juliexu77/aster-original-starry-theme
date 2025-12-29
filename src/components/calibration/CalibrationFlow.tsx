@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { differenceInMonths } from "date-fns";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 
 export interface CalibrationData {
   sleepNaps: string | null;
@@ -223,7 +224,8 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <NightSkyBackground forceMidnight>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
       <header className="px-5 pt-8 pb-4">
         <div className="flex items-center justify-between">
@@ -325,5 +327,6 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
         </div>
       </div>
     </div>
+    </NightSkyBackground>
   );
 }

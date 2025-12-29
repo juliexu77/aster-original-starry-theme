@@ -104,7 +104,7 @@ const Auth = () => {
   };
 
   return (
-    <NightSkyBackground>
+    <NightSkyBackground forceMidnight>
       <div className="min-h-screen flex flex-col">
         {/* Minimal Header */}
         <header className="px-5 pt-8 pb-4 text-center">
