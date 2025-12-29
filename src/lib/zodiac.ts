@@ -441,6 +441,42 @@ export const getRisingSign = (
   return resultSign;
 };
 
+// Test DST handling by comparing summer vs winter births
+export const testDSTHandling = () => {
+  const testCases = [
+    // Winter (PST = UTC-8, no DST)
+    { date: '2022-01-15', time: '15:00', location: 'San Francisco', label: 'Winter (Jan 15, 3PM SF)' },
+    // Summer (PDT = UTC-7, DST active)
+    { date: '2022-07-15', time: '15:00', location: 'San Francisco', label: 'Summer (Jul 15, 3PM SF)' },
+    // Compare with Phoenix (no DST ever)
+    { date: '2022-01-15', time: '15:00', location: 'Phoenix', label: 'Winter (Jan 15, 3PM Phoenix)' },
+    { date: '2022-07-15', time: '15:00', location: 'Phoenix', label: 'Summer (Jul 15, 3PM Phoenix)' },
+    // Sydney (Southern Hemisphere - DST in Jan, not in Jul)
+    { date: '2022-01-15', time: '15:00', location: 'Sydney', label: 'Sydney Summer (Jan 15, 3PM)' },
+    { date: '2022-07-15', time: '15:00', location: 'Sydney', label: 'Sydney Winter (Jul 15, 3PM)' },
+  ];
+
+  console.log('=== DST HANDLING TEST ===\n');
+  
+  testCases.forEach(({ date, time, location, label }) => {
+    console.log(`\n--- ${label} ---`);
+    
+    const cityData = getCityData(location);
+    const birthDate = new Date(date);
+    
+    if (cityData) {
+      const offset = getTimezoneOffsetForDate(cityData.timezone, birthDate);
+      console.log(`Timezone: ${cityData.timezone}`);
+      console.log(`Offset for ${date}: UTC${offset >= 0 ? '+' : ''}${offset}`);
+    }
+    
+    // Run the ascendant calculation with debug
+    getRisingSign(date, time, location, true);
+  });
+  
+  console.log('\n=== END DST TEST ===');
+};
+
 // Helper to get full ascendant info with degree
 export const getAscendantWithDegree = (
   birthday: string | null | undefined,
