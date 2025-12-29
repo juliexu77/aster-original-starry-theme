@@ -100,6 +100,7 @@ const BabySetup = () => {
     toast({
       title: "Ready",
       description: `${babyName}'s chart is set`,
+      duration: 3000,
     });
     navigate("/");
   };
