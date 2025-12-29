@@ -208,6 +208,9 @@ export const ChildView = ({
           sunSign={signs.sun}
           moonSign={signs.moon}
           risingSign={signs.rising}
+          birthday={selectedMember.birthday}
+          birthTime={selectedMember.birth_time}
+          birthLocation={selectedMember.birth_location}
         />
       </div>
 
