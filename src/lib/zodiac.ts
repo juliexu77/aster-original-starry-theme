@@ -386,11 +386,12 @@ export const getRisingSign = (
   const latRad = (latitude * Math.PI) / 180;
   const epsRad = (epsilon * Math.PI) / 180;
   
-  // Calculate the Ascendant using the correct formula:
-  // tan(ASC) = -cos(RAMC) / (sin(ε) * tan(φ) + cos(ε) * sin(RAMC))
-  // Where RAMC = LST (Right Ascension of the Midheaven = Local Sidereal Time)
+  // Calculate the Ascendant using the correct astronomical formula:
+  // ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
+  // Where LST = Local Sidereal Time (in radians)
   // φ = geographic latitude
   // ε = obliquity of the ecliptic
+  // Reference: https://en.wikipedia.org/wiki/Ascendant
   
   const sinLst = Math.sin(lstRad);
   const cosLst = Math.cos(lstRad);
@@ -398,24 +399,23 @@ export const getRisingSign = (
   const cosEps = Math.cos(epsRad);
   const tanLat = Math.tan(latRad);
   
-  // Numerator: -cos(RAMC)
-  const numerator = -cosLst;
-  
-  // Denominator: sin(ε) * tan(φ) + cos(ε) * sin(RAMC)
-  const denominator = sinEps * tanLat + cosEps * sinLst;
+  // Calculate ascendant using the correct formula
+  // Numerator: cos(LST)
+  // Denominator: -(sin(LST) * cos(ε) + tan(φ) * sin(ε))
+  const ascY = cosLst;
+  const ascX = -(sinLst * cosEps + tanLat * sinEps);
   
   // Use atan2 for proper quadrant handling
-  // atan2(y, x) where y = numerator, x = denominator
-  let ascendantRad = Math.atan2(numerator, denominator);
+  let ascendantRad = Math.atan2(ascY, ascX);
   
-  // Convert to degrees
+  // Convert to degrees and normalize to 0-360
   let ascendant = (ascendantRad * 180) / Math.PI;
-  
-  // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
   
   if (debug) {
-    console.log('Ascendant (raw):', ascendant, 'degrees');
+    console.log('y (numerator = cos(LST)):', ascY);
+    console.log('x (denominator):', ascX);
+    console.log('Ascendant:', ascendant, 'degrees');
     console.log('Ascendant degree within sign:', ascendant % 30);
   }
   
@@ -535,10 +535,11 @@ export const getAscendantWithDegree = (
   const cosEps = Math.cos(epsRad);
   const tanLat = Math.tan(latRad);
   
-  const numerator = -cosLst;
-  const denominator = sinEps * tanLat + cosEps * sinLst;
+  // Correct formula: ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
+  const ascY = cosLst;
+  const ascX = -(sinLst * cosEps + tanLat * sinEps);
   
-  let ascendantRad = Math.atan2(numerator, denominator);
+  let ascendantRad = Math.atan2(ascY, ascX);
   let ascendant = (ascendantRad * 180) / Math.PI;
   ascendant = ((ascendant % 360) + 360) % 360;
   
