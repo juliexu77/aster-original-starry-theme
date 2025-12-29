@@ -70,7 +70,8 @@ export const Settings = () => {
       
       toast({
         title: "Password reset email sent",
-        description: "Check your email for instructions"
+        description: "Check your email for instructions",
+        duration: 4000,
       });
     } catch (error) {
       console.error('Error sending password change email:', error);
@@ -95,7 +96,7 @@ export const Settings = () => {
       await updateUserProfile({ birthday: birthdayInput });
       await fetchUserProfile();
       setEditingBirthday(false);
-      toast({ title: "Birthday saved" });
+      toast({ title: "Birthday saved", duration: 3000 });
     } catch (error) {
       console.error('Error saving birthday:', error);
       toast({ title: "Error", description: "Failed to save birthday", variant: "destructive" });
@@ -110,7 +111,7 @@ export const Settings = () => {
       await updateUserProfile({ birth_time: birthTimeInput || null });
       await fetchUserProfile();
       setEditingBirthTime(false);
-      toast({ title: birthTimeInput ? "Birth time saved" : "Birth time cleared" });
+      toast({ title: birthTimeInput ? "Birth time saved" : "Birth time cleared", duration: 3000 });
     } catch (error) {
       console.error('Error saving birth time:', error);
       toast({ title: "Error", description: "Failed to save birth time", variant: "destructive" });
@@ -125,7 +126,7 @@ export const Settings = () => {
       await updateUserProfile({ birth_location: birthLocationInput || null });
       await fetchUserProfile();
       setEditingBirthLocation(false);
-      toast({ title: birthLocationInput ? "Birth location saved" : "Birth location cleared" });
+      toast({ title: birthLocationInput ? "Birth location saved" : "Birth location cleared", duration: 3000 });
     } catch (error) {
       console.error('Error saving birth location:', error);
       toast({ title: "Error", description: "Failed to save birth location", variant: "destructive" });
@@ -140,7 +141,7 @@ export const Settings = () => {
       await updateUserProfile({ partner_name: partnerNameInput || null });
       await fetchUserProfile();
       setEditingPartnerName(false);
-      toast({ title: "Partner name saved" });
+      toast({ title: "Partner name saved", duration: 3000 });
     } catch (error) {
       console.error('Error saving partner name:', error);
       toast({ title: "Error", description: "Failed to save", variant: "destructive" });
@@ -157,7 +158,7 @@ export const Settings = () => {
       await updateUserProfile({ partner_birthday: partnerBirthdayInput });
       await fetchUserProfile();
       setEditingPartnerBirthday(false);
-      toast({ title: "Partner birthday saved" });
+      toast({ title: "Partner birthday saved", duration: 3000 });
     } catch (error) {
       console.error('Error saving partner birthday:', error);
       toast({ title: "Error", description: "Failed to save", variant: "destructive" });
@@ -172,7 +173,7 @@ export const Settings = () => {
       await updateUserProfile({ partner_birth_time: partnerBirthTimeInput || null });
       await fetchUserProfile();
       setEditingPartnerBirthTime(false);
-      toast({ title: partnerBirthTimeInput ? "Partner birth time saved" : "Partner birth time cleared" });
+      toast({ title: partnerBirthTimeInput ? "Partner birth time saved" : "Partner birth time cleared", duration: 3000 });
     } catch (error) {
       console.error('Error saving partner birth time:', error);
       toast({ title: "Error", description: "Failed to save", variant: "destructive" });

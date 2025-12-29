@@ -17,19 +17,14 @@ const Family = () => {
   const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const navigate = useNavigate();
   
-  const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    const saved = localStorage.getItem('family-view-mode');
-    return (saved as ViewMode) || 'child';
-  });
+  // Always default to 'child' view
+  const [viewMode, setViewMode] = useState<ViewMode>('child');
   
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(() => {
     return localStorage.getItem('chart-selected-member-id');
   });
 
-  // Persist view mode
-  useEffect(() => {
-    localStorage.setItem('family-view-mode', viewMode);
-  }, [viewMode]);
+  // Persist selected member
 
   // Persist selected member
   useEffect(() => {
