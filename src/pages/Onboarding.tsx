@@ -55,7 +55,7 @@ const Onboarding = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-                className="text-[13px] leading-[1.6] text-center font-light tracking-wide text-foreground/60"
+                className="text-[10px] text-center uppercase tracking-[0.2em] text-foreground/30"
               >
                 Your baby's development, guided by the cosmos
               </motion.h1>
