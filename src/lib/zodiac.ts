@@ -232,10 +232,12 @@ export const getMoonSignFromBirthDateTime = (
 
 // Rising sign (Ascendant) calculation
 // Uses proper astronomical formulas with latitude consideration
+// Debug version with logging for verification
 export const getRisingSign = (
   birthday: string | null | undefined,
   birthTime: string | null | undefined,
-  birthLocation?: string | null | undefined
+  birthLocation?: string | null | undefined,
+  debug: boolean = false
 ): ZodiacSign | null => {
   if (!birthday || !birthTime) return null;
   
@@ -254,61 +256,224 @@ export const getRisingSign = (
   const longitude = cityData?.longitude ?? 0;
   const latitude = cityData?.latitude ?? 0;
   
-  // Convert to UTC
-  const utcHours = hours - timezoneOffset;
+  if (debug) {
+    console.log('=== ASCENDANT CALCULATION DEBUG ===');
+    console.log('Input:', { birthday, birthTime, birthLocation });
+    console.log('Parsed date:', { year, month: month + 1, day });
+    console.log('Local time (decimal hours):', hours);
+    console.log('City data:', { timezoneOffset, longitude, latitude });
+  }
   
-  // Calculate Julian Day
-  const a = Math.floor((14 - (month + 1)) / 12);
-  const y = year + 4800 - a;
-  const mm = (month + 1) + 12 * a - 3;
-  const jd = day + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  // Convert local time to UTC
+  // Note: For locations WEST of Greenwich, offset is negative (e.g., -8 for PST)
+  // UTC = Local - Offset (for negative offset: 15 - (-8) = 23)
+  let utcHours = hours - timezoneOffset;
+  let utcDay = day;
+  let utcMonth = month;
+  let utcYear = year;
   
-  // Add time component
-  const jdWithTime = jd + (utcHours - 12) / 24;
+  // Handle day overflow
+  if (utcHours >= 24) {
+    utcHours -= 24;
+    utcDay += 1;
+    // Note: Simplified - doesn't handle month boundaries perfectly
+  } else if (utcHours < 0) {
+    utcHours += 24;
+    utcDay -= 1;
+  }
   
-  // Calculate Greenwich Sidereal Time
-  const T = (jdWithTime - 2451545.0) / 36525;
-  let gst = 280.46061837 + 360.98564736629 * (jdWithTime - 2451545.0) + 0.000387933 * T * T;
-  gst = ((gst % 360) + 360) % 360;
+  if (debug) {
+    console.log('UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
+  }
   
-  // Local Sidereal Time (using actual longitude)
-  let lst = gst + longitude;
+  // Calculate Julian Day Number (JD)
+  // Using the standard algorithm
+  const a = Math.floor((14 - (utcMonth + 1)) / 12);
+  const y = utcYear + 4800 - a;
+  const mm = (utcMonth + 1) + 12 * a - 3;
+  const jdn = utcDay + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  
+  // Add time component to get Julian Date
+  // JD = JDN + (hour - 12) / 24
+  const jd = jdn + (utcHours - 12) / 24;
+  
+  if (debug) {
+    console.log('Julian Day Number (JDN):', jdn);
+    console.log('Julian Date (JD):', jd);
+  }
+  
+  // Calculate centuries since J2000.0 (Jan 1, 2000, 12:00 TT)
+  const T = (jd - 2451545.0) / 36525;
+  
+  if (debug) {
+    console.log('Centuries since J2000.0 (T):', T);
+  }
+  
+  // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
+  // Formula from the Astronomical Almanac
+  let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
+  gmst = ((gmst % 360) + 360) % 360;
+  
+  if (debug) {
+    console.log('Greenwich Mean Sidereal Time (GMST):', gmst, 'degrees');
+  }
+  
+  // Calculate Local Sidereal Time (LST)
+  // LST = GMST + East Longitude (negative for West)
+  let lst = gmst + longitude;
   lst = ((lst % 360) + 360) % 360;
   
-  // Convert LST to radians for trigonometric calculations
+  if (debug) {
+    console.log('Local Sidereal Time (LST):', lst, 'degrees');
+    console.log('LST in hours:', lst / 15);
+  }
+  
+  // Obliquity of the ecliptic (epsilon)
+  // More accurate formula including T correction
+  const epsilon = 23.439291 - 0.0130042 * T;
+  
+  if (debug) {
+    console.log('Obliquity of ecliptic (ε):', epsilon, 'degrees');
+  }
+  
+  // Convert to radians for trigonometric calculations
   const lstRad = (lst * Math.PI) / 180;
   const latRad = (latitude * Math.PI) / 180;
+  const epsRad = (epsilon * Math.PI) / 180;
   
-  // Obliquity of the ecliptic (approximate)
-  const obliquity = 23.4397; // degrees
-  const obliquityRad = (obliquity * Math.PI) / 180;
+  // Calculate the Ascendant using the correct formula:
+  // tan(ASC) = -cos(RAMC) / (sin(ε) * tan(φ) + cos(ε) * sin(RAMC))
+  // Where RAMC = LST (Right Ascension of the Midheaven = Local Sidereal Time)
+  // φ = geographic latitude
+  // ε = obliquity of the ecliptic
   
-  // Calculate the Ascendant using the proper formula:
-  // tan(ASC) = cos(LST) / -(sin(obliquity) * tan(latitude) + cos(obliquity) * sin(LST))
   const sinLst = Math.sin(lstRad);
   const cosLst = Math.cos(lstRad);
-  const sinObl = Math.sin(obliquityRad);
-  const cosObl = Math.cos(obliquityRad);
+  const sinEps = Math.sin(epsRad);
+  const cosEps = Math.cos(epsRad);
   const tanLat = Math.tan(latRad);
   
-  const denominator = -(sinObl * tanLat + cosObl * sinLst);
-  let ascendant = Math.atan2(cosLst, denominator);
+  // Numerator: -cos(RAMC)
+  const numerator = -cosLst;
+  
+  // Denominator: sin(ε) * tan(φ) + cos(ε) * sin(RAMC)
+  const denominator = sinEps * tanLat + cosEps * sinLst;
+  
+  // Use atan2 for proper quadrant handling
+  // atan2(y, x) where y = numerator, x = denominator
+  let ascendantRad = Math.atan2(numerator, denominator);
   
   // Convert to degrees
-  ascendant = (ascendant * 180) / Math.PI;
+  let ascendant = (ascendantRad * 180) / Math.PI;
   
   // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
   
+  if (debug) {
+    console.log('Ascendant (raw):', ascendant, 'degrees');
+    console.log('Ascendant degree within sign:', ascendant % 30);
+  }
+  
   // Convert to zodiac sign (30 degrees each)
+  // Aries = 0-30°, Taurus = 30-60°, etc.
   const signIndex = Math.floor(ascendant / 30);
+  const degreeInSign = ascendant % 30;
+  
   const signs: ZodiacSign[] = [
     'aries', 'taurus', 'gemini', 'cancer', 
     'leo', 'virgo', 'libra', 'scorpio', 
     'sagittarius', 'capricorn', 'aquarius', 'pisces'
   ];
   
-  return signs[signIndex % 12];
+  const resultSign = signs[signIndex % 12];
+  
+  if (debug) {
+    console.log('Sign index:', signIndex);
+    console.log('Result:', `${Math.floor(degreeInSign)}° ${resultSign.charAt(0).toUpperCase() + resultSign.slice(1)}`);
+    console.log('=== END DEBUG ===');
+  }
+  
+  return resultSign;
+};
+
+// Helper to get full ascendant info with degree
+export const getAscendantWithDegree = (
+  birthday: string | null | undefined,
+  birthTime: string | null | undefined,
+  birthLocation?: string | null | undefined
+): { sign: ZodiacSign; degree: number } | null => {
+  if (!birthday || !birthTime) return null;
+  
+  // Run the calculation to get the degree
+  const date = new Date(birthday);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  const [h, m] = birthTime.split(':').map(Number);
+  const hours = h + (m / 60);
+  
+  const cityData = getCityData(birthLocation);
+  const timezoneOffset = cityData?.offset ?? 0;
+  const longitude = cityData?.longitude ?? 0;
+  const latitude = cityData?.latitude ?? 0;
+  
+  let utcHours = hours - timezoneOffset;
+  let utcDay = day;
+  
+  if (utcHours >= 24) {
+    utcHours -= 24;
+    utcDay += 1;
+  } else if (utcHours < 0) {
+    utcHours += 24;
+    utcDay -= 1;
+  }
+  
+  const a = Math.floor((14 - (month + 1)) / 12);
+  const y = year + 4800 - a;
+  const mm = (month + 1) + 12 * a - 3;
+  const jdn = utcDay + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+  const jd = jdn + (utcHours - 12) / 24;
+  
+  const T = (jd - 2451545.0) / 36525;
+  let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
+  gmst = ((gmst % 360) + 360) % 360;
+  
+  let lst = gmst + longitude;
+  lst = ((lst % 360) + 360) % 360;
+  
+  const epsilon = 23.439291 - 0.0130042 * T;
+  
+  const lstRad = (lst * Math.PI) / 180;
+  const latRad = (latitude * Math.PI) / 180;
+  const epsRad = (epsilon * Math.PI) / 180;
+  
+  const sinLst = Math.sin(lstRad);
+  const cosLst = Math.cos(lstRad);
+  const sinEps = Math.sin(epsRad);
+  const cosEps = Math.cos(epsRad);
+  const tanLat = Math.tan(latRad);
+  
+  const numerator = -cosLst;
+  const denominator = sinEps * tanLat + cosEps * sinLst;
+  
+  let ascendantRad = Math.atan2(numerator, denominator);
+  let ascendant = (ascendantRad * 180) / Math.PI;
+  ascendant = ((ascendant % 360) + 360) % 360;
+  
+  const signIndex = Math.floor(ascendant / 30);
+  const degreeInSign = ascendant % 30;
+  
+  const signs: ZodiacSign[] = [
+    'aries', 'taurus', 'gemini', 'cancer', 
+    'leo', 'virgo', 'libra', 'scorpio', 
+    'sagittarius', 'capricorn', 'aquarius', 'pisces'
+  ];
+  
+  return {
+    sign: signs[signIndex % 12],
+    degree: degreeInSign
+  };
 };
 
 export const getZodiacSymbol = (birthday: string | null | undefined): string => {
