@@ -1,23 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
-import { ConstellationWordmark } from "@/components/ui/ConstellationWordmark";
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const [showContent, setShowContent] = useState(false);
 
+  useEffect(() => {
+    // Trigger content after a brief delay
+    const timer = setTimeout(() => setShowContent(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleGetStarted = () => {
     navigate("/auth");
   };
 
+  const letters = "ASTER".split("");
+
   return (
     <NightSkyBackground starCount={150}>
       <div className="min-h-screen flex flex-col relative">
-        {/* Upper Third - Constellation Wordmark */}
+        {/* Upper Third - ASTER Title */}
         <div className="flex-1 flex items-end justify-center pb-8 pt-20">
-          <ConstellationWordmark onComplete={() => setShowContent(true)} />
+          <div className="flex items-center justify-center gap-1">
+            {letters.map((letter, index) => (
+              <motion.span
+                key={index}
+                initial={{ rotateX: -90, opacity: 0 }}
+                animate={{ rotateX: 0, opacity: 1 }}
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.12,
+                  ease: [0.23, 1, 0.32, 1],
+                }}
+                className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]"
+                style={{
+                  display: 'inline-block',
+                  transformStyle: 'preserve-3d',
+                  fontSize: '48px',
+                  letterSpacing: '0.3em',
+                }}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </div>
         </div>
 
         {/* Middle Section - Hero Copy */}
@@ -27,9 +56,8 @@ const Onboarding = () => {
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-[28px] leading-[1.4] text-center font-light tracking-wide"
-                style={{ color: '#F5F5F0' }}
+                transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+                className="text-[28px] leading-[1.4] text-center font-light tracking-wide text-foreground/90"
               >
                 Your cosmic guide to baby's first year
               </motion.h1>
@@ -44,11 +72,10 @@ const Onboarding = () => {
               <motion.button
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                transition={{ duration: 0.8, delay: 1.1, ease: "easeOut" }}
                 onClick={handleGetStarted}
-                className="relative px-10 py-4 rounded-full text-[13px] font-medium uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95"
+                className="relative px-10 py-4 rounded-full text-[13px] font-medium uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 text-foreground/90"
                 style={{ 
-                  color: '#F5F5F0',
                   background: 'rgba(255, 255, 255, 0.05)',
                 }}
               >
@@ -66,7 +93,7 @@ const Onboarding = () => {
                   className="absolute inset-0 rounded-full overflow-hidden"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
+                  transition={{ delay: 1.5 }}
                 >
                   <motion.span
                     className="absolute inset-0"
