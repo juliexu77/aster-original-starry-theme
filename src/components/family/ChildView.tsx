@@ -4,6 +4,7 @@ import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { AstrologyProfile } from "./AstrologyProfile";
 import { BirthChartDiagram } from "./BirthChartDiagram";
 import { ChartSelectorSheet } from "./ChartSelectorSheet";
+import { ChartIntroOverlay } from "./ChartIntroOverlay";
 import { 
   getZodiacFromBirthday, 
   getMoonSignFromBirthDateTime, 
@@ -57,6 +58,7 @@ export const ChildView = ({
 }: ChildViewProps) => {
   const [showSelector, setShowSelector] = useState(false);
   const [showPulse, setShowPulse] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
   
   // Build all family members list (children + parents)
   const allMembers = useMemo(() => {
@@ -105,11 +107,29 @@ export const ChildView = ({
 
   const hasMultipleMembers = allMembers.length > 1;
   
-  // Show pulse animation on first visit with multiple members
+  // Show intro overlay on first visit
   useEffect(() => {
-    if (hasMultipleMembers) {
+    const hasSeenIntro = localStorage.getItem('chart-intro-seen');
+    if (!hasSeenIntro && allMembers.length > 0) {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setShowIntro(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [allMembers.length]);
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    localStorage.setItem('chart-intro-seen', 'true');
+  };
+
+  // Show pulse animation on first visit with multiple members (after intro)
+  useEffect(() => {
+    if (hasMultipleMembers && !showIntro) {
       const hasSeenPulse = localStorage.getItem('chart-selector-seen');
-      if (!hasSeenPulse) {
+      const hasSeenIntro = localStorage.getItem('chart-intro-seen');
+      if (!hasSeenPulse && hasSeenIntro) {
         setShowPulse(true);
         const timer = setTimeout(() => {
           setShowPulse(false);
@@ -118,7 +138,7 @@ export const ChildView = ({
         return () => clearTimeout(timer);
       }
     }
-  }, [hasMultipleMembers]);
+  }, [hasMultipleMembers, showIntro]);
 
   const selectedMember = useMemo(() => {
     if (selectedMemberId) {
@@ -166,73 +186,85 @@ export const ChildView = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Member Name */}
-      <div className="px-5 pt-6 text-center">
-        {hasMultipleMembers ? (
-          <button
-            onClick={() => setShowSelector(true)}
-            className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
-          >
-            <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
-            <ChevronDown className="w-4 h-4 text-foreground/30" />
-          </button>
-        ) : (
-          <div className="inline-flex items-center gap-2">
-            <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-            <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
-          </div>
-        )}
-        
-        <p className="text-[11px] text-foreground/40 mt-1">
-          {getSignsSubtitle()}
-        </p>
-        
-        {/* Missing data prompts */}
-        {!signs.moon && (
-          <p className="text-[10px] text-foreground/30 mt-2">
-            Add birth time for moon sign
-          </p>
-        )}
-        {signs.moon && !signs.rising && (
-          <p className="text-[10px] text-foreground/30 mt-2">
-            Add birth location for rising sign
-          </p>
-        )}
-      </div>
-
-      {/* Birth Chart Diagram */}
-      <div className="px-5">
-        <BirthChartDiagram
+    <>
+      {/* Intro Overlay */}
+      {showIntro && signs && (
+        <ChartIntroOverlay
+          name={selectedMember.name}
           sunSign={signs.sun}
           moonSign={signs.moon}
           risingSign={signs.rising}
-          birthday={selectedMember.birthday}
-          birthTime={selectedMember.birth_time}
-          birthLocation={selectedMember.birth_location}
+          onComplete={handleIntroComplete}
+        />
+      )}
+
+      <div className="space-y-6">
+        {/* Header with Member Name */}
+        <div className="px-5 pt-6 text-center">
+          {hasMultipleMembers ? (
+            <button
+              onClick={() => setShowSelector(true)}
+              className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
+            >
+              <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
+              <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+              <ChevronDown className="w-4 h-4 text-foreground/30" />
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-2">
+              <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
+              <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+            </div>
+          )}
+          
+          <p className="text-[11px] text-foreground/40 mt-1">
+            {getSignsSubtitle()}
+          </p>
+          
+          {/* Missing data prompts */}
+          {!signs.moon && (
+            <p className="text-[10px] text-foreground/30 mt-2">
+              Add birth time for moon sign
+            </p>
+          )}
+          {signs.moon && !signs.rising && (
+            <p className="text-[10px] text-foreground/30 mt-2">
+              Add birth location for rising sign
+            </p>
+          )}
+        </div>
+
+        {/* Birth Chart Diagram */}
+        <div className="px-5">
+          <BirthChartDiagram
+            sunSign={signs.sun}
+            moonSign={signs.moon}
+            risingSign={signs.rising}
+            birthday={selectedMember.birthday}
+            birthTime={selectedMember.birth_time}
+            birthLocation={selectedMember.birth_location}
+          />
+        </div>
+
+        {/* Astrology Profile */}
+        <div className="px-5">
+          <AstrologyProfile 
+            sunSign={signs.sun} 
+            moonSign={signs.moon} 
+            risingSign={signs.rising} 
+          />
+        </div>
+
+        {/* Member Selector Sheet */}
+        <ChartSelectorSheet
+          open={showSelector}
+          onOpenChange={setShowSelector}
+          members={allMembers}
+          selectedMemberId={selectedMember.id}
+          onSelectMember={onSelectMember}
+          onAddChild={onAddChild}
         />
       </div>
-
-      {/* Astrology Profile */}
-      <div className="px-5">
-        <AstrologyProfile 
-          sunSign={signs.sun} 
-          moonSign={signs.moon} 
-          risingSign={signs.rising} 
-        />
-      </div>
-
-      {/* Member Selector Sheet */}
-      <ChartSelectorSheet
-        open={showSelector}
-        onOpenChange={setShowSelector}
-        members={allMembers}
-        selectedMemberId={selectedMember.id}
-        onSelectMember={onSelectMember}
-        onAddChild={onAddChild}
-      />
-
-    </div>
+    </>
   );
 };
