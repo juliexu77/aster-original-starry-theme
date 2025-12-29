@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { LocationInput } from "@/components/ui/LocationInput";
 import { CalibrationFlow } from "@/components/calibration/CalibrationFlow";
 import { ChartGenerating } from "@/components/calibration/ChartGenerating";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
 import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
@@ -124,16 +125,17 @@ const BabySetup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Minimal Header */}
-      <header className="px-5 pt-8 pb-4 text-center">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
-          Add Child
-        </p>
-      </header>
+    <NightSkyBackground>
+      <div className="min-h-screen flex flex-col">
+        {/* Minimal Header */}
+        <header className="px-5 pt-8 pb-4 text-center">
+          <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+            Add Child
+          </p>
+        </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-start justify-center px-5 pt-8">
+        {/* Main Content */}
+        <div className="flex-1 flex items-start justify-center px-5 pt-8">
         <div className="w-full max-w-sm space-y-8">
           
           {/* Intro */}
@@ -222,8 +224,9 @@ const BabySetup = () => {
             </form>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </NightSkyBackground>
   );
 };
 

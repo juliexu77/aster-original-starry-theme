@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -103,16 +104,17 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Minimal Header */}
-      <header className="px-5 pt-8 pb-4 text-center">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
-          {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
-        </p>
-      </header>
+    <NightSkyBackground>
+      <div className="min-h-screen flex flex-col">
+        {/* Minimal Header */}
+        <header className="px-5 pt-8 pb-4 text-center">
+          <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+            {mode === 'signup' ? 'Create Account' : 'Welcome Back'}
+          </p>
+        </header>
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-start justify-center px-5 pt-8">
+        {/* Main Content */}
+        <div className="flex-1 flex items-start justify-center px-5 pt-8">
         <div className="w-full max-w-sm space-y-8">
           
           {/* Auth Forms */}
@@ -275,8 +277,9 @@ const Auth = () => {
             )}
           </p>
         </div>
+        </div>
       </div>
-    </div>
+    </NightSkyBackground>
   );
 };
 
