@@ -73,10 +73,6 @@ export const ChartIntroOverlay = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm"
-          onClick={() => {
-            setIsExiting(true);
-            setTimeout(onComplete, 400);
-          }}
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -170,15 +166,6 @@ export const ChartIntroOverlay = ({
                 ))}
               </motion.div>
 
-              {/* Tap hint */}
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 }}
-                className="text-[10px] text-foreground/20 mt-6"
-              >
-                Tap anywhere to skip
-              </motion.p>
             </motion.div>
           </AnimatePresence>
         </motion.div>
