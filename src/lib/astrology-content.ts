@@ -414,6 +414,51 @@ export const getChartSynthesis = (
   return { strengths, growthEdges: edges };
 };
 
+// Get sun sign synthesis paragraph
+export const getSunSynthesis = (sunSign: ZodiacSign): string => {
+  const sunName = getZodiacName(sunSign);
+  const element = getElement(sunSign);
+  
+  const syntheses: Record<ZodiacSign, string> = {
+    aries: `${sunName} at the core means impulse is intelligence. This child doesn't wait to feel ready—action creates clarity. ${element === 'fire' ? 'Fire energy' : 'Their energy'} burns bright and fast, preferring movement to deliberation.`,
+    taurus: `${sunName} at the core means stability is non-negotiable. This child builds their world slowly, brick by brick, and resists anything that threatens their carefully constructed comfort. Change happens on their timeline, not yours.`,
+    gemini: `${sunName} at the core means curiosity drives everything. This child's mind runs faster than most can follow—collecting information, making connections, asking the next question before the first is answered. Stillness feels like stagnation.`,
+    cancer: `${sunName} at the core means feeling is remembering. This child holds onto emotional experiences long after they've passed, building their identity from moments of connection and belonging. Home isn't a place—it's a feeling they carry.`,
+    leo: `${sunName} at the core means being seen is being real. This child needs an audience not for validation but for existence—their warmth, creativity, and generosity expand in direct proportion to attention received.`,
+    virgo: `${sunName} at the core means improvement is instinctual. This child notices every flaw, every possibility for refinement—not from criticism but from genuine care. They make things better because leaving them imperfect feels wrong.`,
+    libra: `${sunName} at the core means harmony is essential. This child reads the room before they've fully entered it, adjusting themselves to create balance. Their own needs often get lost in the service of peace.`,
+    scorpio: `${sunName} at the core means depth is default. This child doesn't do surface level—every experience is felt fully, every relationship tested for loyalty. What they love, they love completely; what they trust, they trust absolutely.`,
+    sagittarius: `${sunName} at the core means expansion is oxygen. This child needs to grow, explore, understand—staying put feels like shrinking. Their optimism isn't naive; it's a refusal to accept limitation as final.`,
+    capricorn: `${sunName} at the core means responsibility is identity. This child takes things seriously, perhaps too seriously—they feel the weight of expectations even when none have been placed. Achievement isn't ambition; it's security.`,
+    aquarius: `${sunName} at the core means difference is destiny. This child needs to think their own thoughts, follow their own path—conformity feels like erasure. They're building a future that doesn't exist yet.`,
+    pisces: `${sunName} at the core means boundaries are permeable. This child feels what others feel, dreams what others can't imagine, and moves between reality and fantasy with unsettling ease. Separation is an illusion they never quite believe.`
+  };
+  
+  return syntheses[sunSign];
+};
+
+// Get moon sign synthesis paragraph
+export const getMoonSynthesis = (moonSign: ZodiacSign): string => {
+  const moonName = getZodiacName(moonSign);
+  
+  const syntheses: Record<ZodiacSign, string> = {
+    aries: `Moon in ${moonName} means emotions arrive like weather—sudden, intense, and soon passed. This child processes feelings through action, not reflection. When upset, they need to move, not sit with it.`,
+    taurus: `Moon in ${moonName} means emotions need anchoring. This child processes feelings slowly, through comfort, routine, and physical presence. What they feel today, they'll still feel next month—loyalty runs deep.`,
+    gemini: `Moon in ${moonName} means emotions need words. This child talks through feelings, shifting perspectives until something makes sense. Silence in distress isn't calm—it's confusion.`,
+    cancer: `Moon in ${moonName} means emotions are memory. This child holds feelings close, letting them accumulate into a rich inner world. They need to feel safe before they can feel anything else.`,
+    leo: `Moon in ${moonName} means emotions need witness. This child's feelings become real when acknowledged by others. Pride protects a tender heart that wants nothing more than to be celebrated for existing.`,
+    virgo: `Moon in ${moonName} means emotions need organizing. This child worries as a way of caring, analyzing feelings until they're manageable. They feel useful when they're helping—and anxious when they're not.`,
+    libra: `Moon in ${moonName} means emotions need balance. This child absorbs the feelings of those around them, adjusting their own state to maintain harmony. Their needs often get filed under 'later.'`,
+    scorpio: `Moon in ${moonName} means emotions run at full volume. This child feels everything deeply—joy and grief, trust and betrayal. There's no dimmer switch, only on and off.`,
+    sagittarius: `Moon in ${moonName} means emotions need room to roam. This child processes through movement, adventure, and optimism. Heaviness gets converted to humor; sadness becomes philosophy.`,
+    capricorn: `Moon in ${moonName} means emotions need purpose. This child learns early to manage feelings, to be useful, to not burden others. Vulnerability feels like exposure; productivity feels like safety.`,
+    aquarius: `Moon in ${moonName} means emotions need distance. This child observes their own feelings from a step removed, analyzing rather than immersing. They need space to process privately before sharing.`,
+    pisces: `Moon in ${moonName} means emotions have no edges. This child feels everything in the room—their own feelings tangled with everyone else's. They need regular escape into imagination to survive reality.`
+  };
+  
+  return syntheses[moonSign];
+};
+
 // Get full sun-rising synthesis text
 export const getSunRisingSynthesis = (
   sunSign: ZodiacSign,
