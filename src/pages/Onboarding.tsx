@@ -13,7 +13,7 @@ const Onboarding = () => {
       {/* Minimal Header */}
       <header className="flex items-center justify-center px-5 py-4">
         <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
-          BabyRhythm
+          Aster
         </p>
       </header>
       

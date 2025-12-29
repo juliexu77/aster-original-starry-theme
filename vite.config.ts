@@ -17,9 +17,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt'],
       manifest: {
-        name: 'BabyRhythm - Baby Tracker',
-        short_name: 'BabyRhythm',
-        description: 'Beautiful baby activity tracker for feeds, diaper changes, naps, and notes',
+        name: 'Aster - Baby Guide',
+        short_name: 'Aster',
+        description: 'Your daily guide for baby care. What to expect today based on age.',
         theme_color: '#F5F1ED',
         background_color: '#F5F1ED',
         display: 'standalone',
