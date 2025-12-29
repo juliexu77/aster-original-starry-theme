@@ -121,7 +121,7 @@ const generateBackgroundStars = (count: number) => {
   return stars;
 };
 
-export const NightSkyBackground = ({ children, starCount = 150 }: NightSkyBackgroundProps) => {
+export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgroundProps) => {
   const timeOfDay = useMemo(() => getTimeOfDay(), []);
   const backgroundGradient = useMemo(() => getBackgroundGradient(timeOfDay), [timeOfDay]);
   const starOpacityMultiplier = useMemo(() => getStarOpacityMultiplier(timeOfDay), [timeOfDay]);
