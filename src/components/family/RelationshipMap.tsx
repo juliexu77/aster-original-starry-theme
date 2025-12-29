@@ -365,30 +365,9 @@ export const RelationshipMap = ({
             </feMerge>
           </filter>
           
-          {/* Nebula texture overlay */}
-          <filter id="nebulaFilter" x="0%" y="0%" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="4" seed="15" result="noise" />
-            <feColorMatrix in="noise" type="matrix"
-              values="0 0 0 0 0.15
-                      0 0 0 0 0.08
-                      0 0 0 0 0.25
-                      0 0 0 0.12 0" />
-          </filter>
-          
-          {/* Night sky gradient */}
-          <linearGradient id="nightSkyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0a0a12" stopOpacity="0.5" />
-            <stop offset="30%" stopColor="#0d0d1a" stopOpacity="0.4" />
-            <stop offset="60%" stopColor="#12101f" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#18142a" stopOpacity="0.3" />
-          </linearGradient>
         </defs>
         
-        {/* LAYER 1: Night sky background */}
-        <rect x="0" y="0" width={width} height={height} fill="url(#nightSkyGradient)" />
-        
-        {/* Nebula texture overlay */}
-        <rect x="0" y="0" width={width} height={height} filter="url(#nebulaFilter)" opacity="0.10" />
+        {/* SVG is transparent - background handled by parent container */}
         
         {/* Background stars */}
         {backgroundStars.map((star, i) => (
