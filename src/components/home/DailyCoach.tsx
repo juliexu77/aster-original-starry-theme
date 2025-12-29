@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { BabyProfileCard } from "./BabyProfileCard";
 import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
+import { HomeIntroOverlay } from "./HomeIntroOverlay";
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCalibrationPrompt, isCalibrationStale } from "@/hooks/useCalibrationPrompt";
 import { CalibrationCheckInModal } from "@/components/calibration/CalibrationCheckInModal";
@@ -65,6 +66,24 @@ export const DailyCoach = ({
   // Modal states
   const [showCheckInModal, setShowCheckInModal] = useState(shouldShowPrompt);
   const [showRecalibrationSheet, setShowRecalibrationSheet] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  
+  // Check if we should show the intro overlay (first time visiting home for this baby)
+  useEffect(() => {
+    if (!babyId) return;
+    const introKey = `home_intro_seen_${babyId}`;
+    const hasSeenIntro = localStorage.getItem(introKey);
+    if (!hasSeenIntro) {
+      setShowIntro(true);
+    }
+  }, [babyId]);
+  
+  const handleIntroComplete = () => {
+    if (babyId) {
+      localStorage.setItem(`home_intro_seen_${babyId}`, 'true');
+    }
+    setShowIntro(false);
+  };
   
   // Update check-in modal visibility when prompt status changes
   useMemo(() => {
@@ -133,6 +152,14 @@ export const DailyCoach = ({
 
   return (
     <div className="relative min-h-screen">
+      {/* Home Intro Overlay */}
+      {showIntro && (
+        <HomeIntroOverlay 
+          babyName={displayName} 
+          onComplete={handleIntroComplete} 
+        />
+      )}
+
       <TimeOfDayBackground>
         {/* Sticky Profile Card */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-foreground/5">
