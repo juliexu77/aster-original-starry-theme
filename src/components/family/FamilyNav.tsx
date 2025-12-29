@@ -10,7 +10,7 @@ export const FamilyNav = () => {
   const isSettings = location.pathname === "/settings";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[hsl(var(--background))] border-t border-border/30" style={{ backgroundColor: 'hsl(var(--background))' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/10 backdrop-blur-sm bg-transparent">
       <div className="flex items-center justify-around py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <button 
           onClick={() => navigate("/")}

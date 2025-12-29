@@ -16,6 +16,7 @@ import {
   MapPin
 } from "lucide-react";
 import { LocationInput } from "@/components/ui/LocationInput";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
@@ -248,8 +249,8 @@ export const Settings = () => {
   const partnerMoon = getMoonSignFromBirthDateTime(userProfile?.partner_birthday, userProfile?.partner_birth_time, userProfile?.partner_birth_location);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-md mx-auto px-5 py-4 space-y-4">
+    <NightSkyBackground>
+      <div className="max-w-md mx-auto px-5 py-4 space-y-4 pb-24">
         {/* Minimal Header */}
         <div className="flex items-center justify-between pt-4 pb-2">
           <Button
@@ -616,7 +617,7 @@ export const Settings = () => {
 
       {/* Bottom Navigation */}
       <FamilyNav />
-    </div>
+    </NightSkyBackground>
   );
 };
 
