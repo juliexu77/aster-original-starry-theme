@@ -99,7 +99,7 @@ export const ChildrenSection = ({
     setIsSaving(true);
     try {
       await onAddBaby(name.trim(), birthday || undefined);
-      toast({ title: `${name} added` });
+      toast({ title: `${name} added`, duration: 3000 });
       setShowAddModal(false);
     } catch (error: any) {
       toast({ 
@@ -123,7 +123,7 @@ export const ChildrenSection = ({
         birth_time: birthTime || null,
         birth_location: birthLocation || null
       });
-      toast({ title: "Updated" });
+      toast({ title: "Updated", duration: 3000 });
       setShowEditModal(false);
     } catch (error: any) {
       toast({ 
@@ -141,7 +141,7 @@ export const ChildrenSection = ({
     
     try {
       await onArchiveBaby(selectedBaby.id);
-      toast({ title: `${selectedBaby.name} archived` });
+      toast({ title: `${selectedBaby.name} archived`, duration: 3000 });
       setShowArchiveConfirm(false);
       setShowEditModal(false);
     } catch (error: any) {
