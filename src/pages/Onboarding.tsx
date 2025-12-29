@@ -20,7 +20,7 @@ const Onboarding = () => {
   const letters = "ASTER".split("");
 
   return (
-    <NightSkyBackground starCount={150}>
+    <NightSkyBackground starCount={150} forceMidnight>
       <div className="min-h-screen flex flex-col relative">
         {/* Upper Third - ASTER Title */}
         <div className="flex-1 flex items-end justify-center pb-8 pt-20">

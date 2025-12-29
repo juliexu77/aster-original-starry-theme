@@ -3,6 +3,7 @@ import { useMemo, ReactNode } from "react";
 interface NightSkyBackgroundProps {
   children: ReactNode;
   starCount?: number;
+  forceMidnight?: boolean;
 }
 
 type TimeOfDay = "morning" | "day" | "evening" | "night";
@@ -121,8 +122,8 @@ const generateBackgroundStars = (count: number) => {
   return stars;
 };
 
-export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgroundProps) => {
-  const timeOfDay = useMemo(() => getTimeOfDay(), []);
+export const NightSkyBackground = ({ children, starCount = 400, forceMidnight = false }: NightSkyBackgroundProps) => {
+  const timeOfDay = useMemo(() => forceMidnight ? "night" as TimeOfDay : getTimeOfDay(), [forceMidnight]);
   const backgroundGradient = useMemo(() => getBackgroundGradient(timeOfDay), [timeOfDay]);
   const starOpacityMultiplier = useMemo(() => getStarOpacityMultiplier(timeOfDay), [timeOfDay]);
   const backgroundStars = useMemo(() => generateBackgroundStars(starCount), [starCount]);
