@@ -300,9 +300,9 @@ export const RelationshipMap = ({ members, constellationSign, selectedConnection
         
         {/* LAYER 2: Zodiac illustration - ghost layer texture */}
         {(() => {
-          // Calculate 110% of full width, centered (will overflow)
-          const imageWidth = width * 1.1;
-          const imageHeight = height * 1.1;
+          // Calculate 90% of full size, centered
+          const imageWidth = width * 0.9;
+          const imageHeight = height * 0.9;
           const imageX = (width - imageWidth) / 2;
           const imageY = (height - imageHeight) / 2;
           
