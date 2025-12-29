@@ -9,14 +9,12 @@ import {
   getMoonSynthesis
 } from "@/lib/astrology-content";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
-import { ElementBalance } from "./ElementBalance";
-import { Sun, Moon, Sparkles, Layers } from "lucide-react";
+import { Sun, Moon, Sparkles } from "lucide-react";
 
 interface AstrologyProfileProps {
   sunSign: ZodiacSign;
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
-  name?: string;
 }
 
 interface SectionProps {
@@ -58,12 +56,11 @@ const TraitList = ({ traits }: { traits: string[] }) => (
   </ul>
 );
 
-export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name = 'They' }: AstrologyProfileProps) => {
+export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyProfileProps) => {
   const sunMechanics = SUN_MECHANICS[sunSign];
   const moonPatterns = moonSign ? MOON_PATTERNS[moonSign] : null;
   const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
   const { strengths, growthEdges } = getChartSynthesis(sunSign, moonSign, risingSign);
-  const displayName = name || 'They';
 
   return (
     <div className="bg-foreground/[0.02] border border-foreground/[0.06] rounded-xl overflow-hidden">
@@ -167,20 +164,6 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name = 'They' 
             </ul>
           </div>
         </div>
-      </Section>
-
-      {/* ELEMENT & MODALITY SECTION */}
-      <Section
-        icon={<Layers size={16} strokeWidth={1.5} />}
-        title="Elemental Balance"
-        subtitle="Element & modality distribution"
-      >
-        <ElementBalance 
-          sunSign={sunSign} 
-          moonSign={moonSign} 
-          risingSign={risingSign} 
-          name={displayName}
-        />
       </Section>
     </div>
   );
