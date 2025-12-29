@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ZodiacSign, ZODIAC_DATA } from "@/lib/zodiac";
+import { calculateBirthChart, getWholeSignHouse, BirthChartData, PlanetPosition } from "@/lib/ephemeris";
 import {
   IconZodiacAries,
   IconZodiacTaurus,
@@ -13,8 +14,6 @@ import {
   IconZodiacCapricorn,
   IconZodiacAquarius,
   IconZodiacPisces,
-  IconSun,
-  IconMoon,
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
 
@@ -22,8 +21,10 @@ interface BirthChartDiagramProps {
   sunSign: ZodiacSign;
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
-  sunDegree?: number;
-  moonDegree?: number;
+  // Birth data for ephemeris calculations
+  birthday?: string | null;
+  birthTime?: string | null;
+  birthLocation?: string | null;
 }
 
 // Zodiac icon components map
@@ -48,17 +49,17 @@ const ZODIAC_ORDER: ZodiacSign[] = [
 ];
 
 // Planet symbols
-const PLANET_SYMBOLS = {
-  sun: '☉',
-  moon: '☽',
-  mercury: '☿',
-  venus: '♀',
-  mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
-  uranus: '⛢',
-  neptune: '♆',
-  pluto: '♇',
+const PLANET_SYMBOLS: Record<string, string> = {
+  Sun: '☉',
+  Moon: '☽',
+  Mercury: '☿',
+  Venus: '♀',
+  Mars: '♂',
+  Jupiter: '♃',
+  Saturn: '♄',
+  Uranus: '⛢',
+  Neptune: '♆',
+  Pluto: '♇',
 };
 
 // Planet meanings for tooltips
@@ -73,12 +74,6 @@ const PLANET_MEANINGS: Record<string, { keyword: string; description: string }> 
   Uranus: { keyword: 'Change', description: 'Innovation, rebellion, and freedom' },
   Neptune: { keyword: 'Dreams', description: 'Intuition, imagination, and spirituality' },
   Pluto: { keyword: 'Power', description: 'Transformation, depth, and rebirth' },
-};
-
-// Convert sign + degree to absolute degree (0-360)
-const signToAbsoluteDegree = (sign: ZodiacSign, degree: number): number => {
-  const signIndex = ZODIAC_ORDER.indexOf(sign);
-  return signIndex * 30 + degree;
 };
 
 // Convert absolute degree to chart angle (0° at AC/left side, counter-clockwise)
@@ -106,31 +101,45 @@ const BackgroundStar = ({ cx, cy, opacity }: StarProps) => (
 );
 
 // Silver/muted color for chart elements (matches app text styling)
-const CHART_COLOR = '#E0E0E0'; // Brighter for better readability
+const CHART_COLOR = '#E0E0E0';
 
 export const BirthChartDiagram = ({ 
   sunSign, 
   moonSign, 
   risingSign,
-  sunDegree = 7,
-  moonDegree = 15,
+  birthday,
+  birthTime,
+  birthLocation,
 }: BirthChartDiagramProps) => {
   const size = 700;
   const center = size / 2;
-  const outerRadius = 290;      // Outer edge of zodiac ring
-  const zodiacInnerRadius = 245; // Inner edge of zodiac ring (where signs are)
-  const planetRing = 232;        // Where planets are placed - closer to zodiac inner ring
+  const outerRadius = 290;
+  const zodiacInnerRadius = 245;
+  const planetRing = 232;
   
-  // Calculate ascendant degree (start of rising sign)
+  // Calculate birth chart using ephemeris when birth data is available
+  const birthChart = useMemo((): BirthChartData | null => {
+    if (!birthday || !birthTime) {
+      return null;
+    }
+    return calculateBirthChart(birthday, birthTime, birthLocation);
+  }, [birthday, birthTime, birthLocation]);
+  
+  // Calculate ascendant degree
   const ascendantDegree = useMemo(() => {
+    // Use ephemeris ascendant if available
+    if (birthChart) {
+      return birthChart.ascendantDegree;
+    }
+    // Fallback to sign-based calculation
     if (!risingSign) return 0;
     return ZODIAC_ORDER.indexOf(risingSign) * 30;
-  }, [risingSign]);
+  }, [birthChart, risingSign]);
 
   // Generate background stars
   const stars = useMemo(() => {
     const starList: StarProps[] = [];
-    const seed = 12345; // Fixed seed for consistency
+    const seed = 12345;
     
     for (let i = 0; i < 40; i++) {
       const angle = ((seed * (i + 1)) % 360) * (Math.PI / 180);
@@ -138,7 +147,6 @@ export const BirthChartDiagram = ({
       const cx = center + Math.cos(angle) * distance;
       const cy = center + Math.sin(angle) * distance;
       
-      // Only include stars within bounds
       if (cx > 10 && cx < size - 10 && cy > 10 && cy < size - 10) {
         starList.push({
           cx,
@@ -150,88 +158,91 @@ export const BirthChartDiagram = ({
     return starList;
   }, [center, size]);
 
-  // State for selected planet with position
+  // State for selected planet
   const [selectedPlanet, setSelectedPlanet] = useState<{ name: string; x: number; y: number } | null>(null);
 
-  // Get sign name from absolute degree
-  const getSignFromDegree = (absDegree: number): ZodiacSign => {
-    const signIndex = Math.floor(absDegree / 30) % 12;
-    return ZODIAC_ORDER[signIndex];
-  };
-
-  // Get degree within sign (0-29)
-  const getDegreeInSign = (absDegree: number): number => {
-    return Math.floor(absDegree % 30);
-  };
-
-  // Calculate planet positions - true positions, all on same radius
+  // Calculate planet positions using real ephemeris data
   const planets = useMemo(() => {
     const placements: { 
       symbol: string; 
       label: string; 
-      angle: number; // True angular position on chart
+      angle: number;
       sign: ZodiacSign;
       degree: number;
       house: number;
+      isRetrograde: boolean;
     }[] = [];
     
-    // Sun position - use actual degree within sign
-    const sunAbsDegree = signToAbsoluteDegree(sunSign, sunDegree);
-    const sunChartAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
-    placements.push({
-      symbol: PLANET_SYMBOLS.sun,
-      label: 'Sun',
-      angle: sunChartAngle,
-      sign: sunSign,
-      degree: sunDegree,
-      house: Math.floor((sunAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
-    });
+    // Determine ascendant sign for house calculations
+    const ascSign = birthChart?.ascendantSign ?? risingSign ?? 'aries';
     
-    // Moon position - use actual degree within sign
-    if (moonSign) {
-      const moonAbsDegree = signToAbsoluteDegree(moonSign, moonDegree);
-      const moonChartAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
-      placements.push({
-        symbol: PLANET_SYMBOLS.moon,
-        label: 'Moon',
-        angle: moonChartAngle,
-        sign: moonSign,
-        degree: moonDegree,
-        house: Math.floor((moonAbsDegree - ascendantDegree + 360) / 30) % 12 + 1,
+    if (birthChart) {
+      // Use real ephemeris data
+      const planetList: PlanetPosition[] = [
+        birthChart.sun,
+        birthChart.moon,
+        birthChart.mercury,
+        birthChart.venus,
+        birthChart.mars,
+        birthChart.jupiter,
+        birthChart.saturn,
+        birthChart.uranus,
+        birthChart.neptune,
+        birthChart.pluto,
+      ];
+      
+      planetList.forEach((planet) => {
+        const chartAngle = degreeToChartAngle(planet.longitude, ascendantDegree);
+        const house = getWholeSignHouse(planet.longitude, ascSign);
+        
+        placements.push({
+          symbol: PLANET_SYMBOLS[planet.name] || '?',
+          label: planet.name,
+          angle: chartAngle,
+          sign: planet.sign,
+          degree: Math.floor(planet.degreeInSign),
+          house,
+          isRetrograde: planet.isRetrograde,
+        });
       });
+    } else {
+      // Fallback: Only show Sun and Moon with sign-based positions
+      const signToAbsoluteDegree = (sign: ZodiacSign, degree: number): number => {
+        const signIndex = ZODIAC_ORDER.indexOf(sign);
+        return signIndex * 30 + degree;
+      };
+      
+      // Sun
+      const sunAbsDegree = signToAbsoluteDegree(sunSign, 15);
+      const sunChartAngle = degreeToChartAngle(sunAbsDegree, ascendantDegree);
+      placements.push({
+        symbol: PLANET_SYMBOLS.Sun,
+        label: 'Sun',
+        angle: sunChartAngle,
+        sign: sunSign,
+        degree: 15,
+        house: getWholeSignHouse(sunAbsDegree, ascSign),
+        isRetrograde: false,
+      });
+      
+      // Moon (if available)
+      if (moonSign) {
+        const moonAbsDegree = signToAbsoluteDegree(moonSign, 15);
+        const moonChartAngle = degreeToChartAngle(moonAbsDegree, ascendantDegree);
+        placements.push({
+          symbol: PLANET_SYMBOLS.Moon,
+          label: 'Moon',
+          angle: moonChartAngle,
+          sign: moonSign,
+          degree: 15,
+          house: getWholeSignHouse(moonAbsDegree, ascSign),
+          isRetrograde: false,
+        });
+      }
     }
     
-    // Add other planets with offset positions from sun
-    const otherPlanets = [
-      { symbol: PLANET_SYMBOLS.mercury, label: 'Mercury', offsetFromSun: 15 },
-      { symbol: PLANET_SYMBOLS.venus, label: 'Venus', offsetFromSun: 45 },
-      { symbol: PLANET_SYMBOLS.mars, label: 'Mars', offsetFromSun: 120 },
-      { symbol: PLANET_SYMBOLS.jupiter, label: 'Jupiter', offsetFromSun: 180 },
-      { symbol: PLANET_SYMBOLS.saturn, label: 'Saturn', offsetFromSun: 240 },
-      { symbol: PLANET_SYMBOLS.uranus, label: 'Uranus', offsetFromSun: 280 },
-      { symbol: PLANET_SYMBOLS.neptune, label: 'Neptune', offsetFromSun: 310 },
-      { symbol: PLANET_SYMBOLS.pluto, label: 'Pluto', offsetFromSun: 335 },
-    ];
-    
-    otherPlanets.forEach((planet) => {
-      // Calculate absolute degree based on offset from sun
-      const absDeg = (sunAbsDegree + planet.offsetFromSun) % 360;
-      const chartAngle = degreeToChartAngle(absDeg, ascendantDegree);
-      const planetSign = getSignFromDegree(absDeg);
-      const degInSign = getDegreeInSign(absDeg);
-      
-      placements.push({
-        symbol: planet.symbol,
-        label: planet.label,
-        angle: chartAngle,
-        sign: planetSign,
-        degree: degInSign,
-        house: Math.floor((absDeg - ascendantDegree + 360) / 30) % 12 + 1,
-      });
-    });
-    
     return placements;
-  }, [sunSign, moonSign, sunDegree, moonDegree, ascendantDegree]);
+  }, [birthChart, sunSign, moonSign, risingSign, ascendantDegree]);
 
   // Calculate aspect lines between planets
   const aspectLines = useMemo(() => {
@@ -240,29 +251,26 @@ export const BirthChartDiagram = ({
       type: 'trine' | 'square' | 'opposition' | 'sextile';
     }[] = [];
     
-    const aspectRadius = planetRing - 30; // Draw aspects inside the planet circle
+    const aspectRadius = planetRing - 30;
     
-    // Check each pair of planets for aspects
     for (let i = 0; i < planets.length; i++) {
       for (let j = i + 1; j < planets.length; j++) {
         const planet1 = planets[i];
         const planet2 = planets[j];
         
-        // Calculate angular difference
         let angleDiff = Math.abs(planet1.angle - planet2.angle) % 360;
         if (angleDiff > 180) angleDiff = 360 - angleDiff;
         
-        // Determine aspect type with orb tolerance (±8°)
         let aspectType: 'trine' | 'square' | 'opposition' | 'sextile' | null = null;
         
         if (angleDiff >= 112 && angleDiff <= 128) {
-          aspectType = 'trine'; // 120° ± 8°
+          aspectType = 'trine';
         } else if (angleDiff >= 82 && angleDiff <= 98) {
-          aspectType = 'square'; // 90° ± 8°
+          aspectType = 'square';
         } else if (angleDiff >= 172 && angleDiff <= 188) {
-          aspectType = 'opposition'; // 180° ± 8°
+          aspectType = 'opposition';
         } else if (angleDiff >= 52 && angleDiff <= 68) {
-          aspectType = 'sextile'; // 60° ± 8°
+          aspectType = 'sextile';
         }
         
         if (aspectType) {
@@ -283,41 +291,20 @@ export const BirthChartDiagram = ({
     return aspects;
   }, [planets, center, planetRing]);
 
-  // Generate house lines (12 divisions from inner to outer)
-  const houseLines = useMemo(() => {
-    return Array.from({ length: 12 }, (_, i) => {
-      const angle = (i * 30 - 90) * (Math.PI / 180); // Start from top
-      return {
-        x1: center + Math.cos(angle) * zodiacInnerRadius,
-        y1: center + Math.sin(angle) * zodiacInnerRadius,
-        x2: center + Math.cos(angle) * outerRadius,
-        y2: center + Math.sin(angle) * outerRadius,
-        house: i + 1,
-      };
-    });
-  }, [center, zodiacInnerRadius, outerRadius]);
-
-  // Generate zodiac sign positions (curved text like Co-Star)
-  // Top half: text reads left-to-right curving along top
-  // Bottom half: text flipped so it reads left-to-right curving along bottom
+  // Generate zodiac sign positions (curved text)
   const zodiacPositions = useMemo(() => {
     return ZODIAC_ORDER.map((sign, i) => {
-      // Position in the middle of each 30° segment
       const signDegree = i * 30 + 15;
       const chartAngle = degreeToChartAngle(signDegree, ascendantDegree);
       const angleRad = chartAngle * (Math.PI / 180);
-      // Labels positioned in the middle of the zodiac ring
       const labelRadius = (outerRadius + zodiacInnerRadius) / 2;
       
-      // Determine if this sign is in the bottom half (angles between 0° and 180° in SVG coords)
-      // In SVG, 0° is right, 90° is down, so bottom half is roughly 0-180°
       const normalizedAngle = ((chartAngle % 360) + 360) % 360;
       const isBottomHalf = normalizedAngle > 0 && normalizedAngle < 180;
       
-      // Rotate all labels 180° so they read from inside the circle
       const textRotation = isBottomHalf 
-        ? chartAngle - 90  // Bottom: flipped
-        : chartAngle + 90; // Top: flipped
+        ? chartAngle - 90
+        : chartAngle + 90;
       
       return {
         sign,
@@ -327,7 +314,6 @@ export const BirthChartDiagram = ({
       };
     });
   }, [ascendantDegree, center, outerRadius, zodiacInnerRadius]);
-
 
   // Get selected planet details
   const selectedPlanetData = selectedPlanet 
@@ -369,7 +355,6 @@ export const BirthChartDiagram = ({
           opacity={0.7}
         />
         
-        
         {/* Aspect Lines - subtle */}
         {aspectLines.map((aspect, i) => (
           <line
@@ -383,6 +368,7 @@ export const BirthChartDiagram = ({
             opacity={0.25}
           />
         ))}
+        
         {/* Zodiac Section Divisions */}
         {Array.from({ length: 12 }, (_, i) => {
           const signDegree = i * 30;
@@ -403,7 +389,7 @@ export const BirthChartDiagram = ({
           );
         })}
         
-        {/* Zodiac Sign Labels (curved text like Co-Star) */}
+        {/* Zodiac Sign Labels */}
         {zodiacPositions.map(({ sign, labelX, labelY, textRotation }) => (
           <text
             key={`label-${sign}`}
@@ -425,15 +411,12 @@ export const BirthChartDiagram = ({
           </text>
         ))}
         
-        {/* Planet Positions - tappable */}
+        {/* Planet Positions */}
         {planets.map((planet, i) => {
           const angleRad = planet.angle * (Math.PI / 180);
-          // Use fixed planetRing radius for ALL planets to ensure same circle
           const x = center + Math.cos(angleRad) * planetRing;
           const y = center + Math.sin(angleRad) * planetRing;
           
-          // Use Tabler icons for Sun and Moon, text symbols for others
-          const isSunOrMoon = planet.label === 'Sun' || planet.label === 'Moon';
           const isSelected = selectedPlanet?.name === planet.label;
           
           return (
@@ -445,7 +428,7 @@ export const BirthChartDiagram = ({
               }}
               style={{ cursor: 'pointer' }}
             >
-              {/* Invisible hit area for better tapping */}
+              {/* Invisible hit area */}
               <circle
                 cx={x}
                 cy={y}
@@ -453,7 +436,7 @@ export const BirthChartDiagram = ({
                 fill="transparent"
               />
               
-              {/* Planet symbol - unified rendering for ALL planets */}
+              {/* Planet symbol */}
               <text
                 x={x}
                 y={y}
@@ -469,37 +452,51 @@ export const BirthChartDiagram = ({
               >
                 {planet.symbol}
               </text>
+              
+              {/* Retrograde indicator */}
+              {planet.isRetrograde && (
+                <text
+                  x={x + 14}
+                  y={y - 10}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill="#F0F0F0"
+                  opacity={0.7}
+                  style={{ 
+                    fontSize: '12px', 
+                    fontFamily: 'serif',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  ℞
+                </text>
+              )}
             </g>
           );
         })}
         
         {/* Popup tooltip for selected planet */}
         {selectedPlanet && selectedPlanetData && (() => {
-          // Calculate tooltip position - offset from planet
           const tooltipWidth = 200;
           const tooltipHeight = 100;
           const padding = 12;
           
-          // Get planet meaning
           const meaning = PLANET_MEANINGS[selectedPlanetData.label] || { keyword: '', description: '' };
           
-          // Determine best position for tooltip (avoid edges)
           let tooltipX = selectedPlanet.x - tooltipWidth / 2;
           let tooltipY = selectedPlanet.y - tooltipHeight - padding - 20;
           let pointerAtTop = false;
           
-          // Keep within bounds
           if (tooltipX < 10) tooltipX = 10;
           if (tooltipX + tooltipWidth > size - 10) tooltipX = size - tooltipWidth - 10;
           if (tooltipY < 10) {
-            // Show below planet instead
             tooltipY = selectedPlanet.y + padding + 20;
             pointerAtTop = true;
           }
           
           return (
             <g>
-              {/* Pointer triangle - above tooltip when showing below planet */}
+              {/* Pointer triangle */}
               {pointerAtTop && (
                 <polygon
                   points={`
@@ -524,7 +521,6 @@ export const BirthChartDiagram = ({
                 strokeWidth={1}
               />
               
-              {/* Pointer triangle - below tooltip when showing above planet */}
               {!pointerAtTop && (
                 <polygon
                   points={`
@@ -590,7 +586,7 @@ export const BirthChartDiagram = ({
                   letterSpacing: '0.03em'
                 }}
               >
-                {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} House
+                {selectedPlanetData.degree}° {selectedPlanetData.sign.charAt(0).toUpperCase() + selectedPlanetData.sign.slice(1)}{selectedPlanetData.isRetrograde ? ' ℞' : ''} · {selectedPlanetData.house}{getOrdinalSuffix(selectedPlanetData.house)} House
               </text>
             </g>
           );
