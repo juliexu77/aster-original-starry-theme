@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -9,13 +10,14 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Minimal Header */}
-      <header className="flex items-center justify-center px-5 py-4">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
-          Aster
-        </p>
-      </header>
+    <NightSkyBackground>
+      <div className="min-h-screen flex flex-col">
+        {/* Minimal Header */}
+        <header className="flex items-center justify-center px-5 py-4">
+          <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em]">
+            Aster
+          </p>
+        </header>
       
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-5 py-12">
@@ -49,13 +51,14 @@ const Onboarding = () => {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="pb-8 text-center">
-        <p className="text-[10px] text-foreground/15 tracking-[0.15em]">
-          Rhythm. Not rules.
-        </p>
+        {/* Footer */}
+        <div className="pb-8 text-center">
+          <p className="text-[10px] text-foreground/15 tracking-[0.15em]">
+            Rhythm. Not rules.
+          </p>
+        </div>
       </div>
-    </div>
+    </NightSkyBackground>
   );
 };
 
