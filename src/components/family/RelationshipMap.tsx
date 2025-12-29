@@ -49,42 +49,42 @@ interface RelationshipMapProps {
 }
 
 // Asymmetric orbital positions - deliberately uneven, no mirroring
-// Angles are in radians, distances are normalized (0-1 from center)
+// Angles are in radians, distances are in pixels from center
 const ORBITAL_CONFIGS = [
   // For 2 members: center + one orbit
   [
     { angle: 0, distance: 0 }, // Center
-    { angle: 0.7, distance: 0.38 }, // Asymmetric position
+    { angle: 0.7, distance: 140 },
   ],
   // For 3 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 0.32 },
-    { angle: 2.8, distance: 0.42 },
+    { angle: 0.5, distance: 120 },
+    { angle: 2.8, distance: 150 },
   ],
   // For 4 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.6, distance: 0.28 },
-    { angle: 1.9, distance: 0.40 },
-    { angle: 3.8, distance: 0.35 },
+    { angle: 0.6, distance: 110 },
+    { angle: 1.9, distance: 155 },
+    { angle: 3.8, distance: 130 },
   ],
   // For 5 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.4, distance: 0.30 },
-    { angle: 1.5, distance: 0.42 },
-    { angle: 2.7, distance: 0.33 },
-    { angle: 4.2, distance: 0.38 },
+    { angle: 0.4, distance: 115 },
+    { angle: 1.5, distance: 160 },
+    { angle: 2.7, distance: 125 },
+    { angle: 4.2, distance: 145 },
   ],
   // For 6 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 0.28 },
-    { angle: 1.3, distance: 0.40 },
-    { angle: 2.4, distance: 0.32 },
-    { angle: 3.5, distance: 0.44 },
-    { angle: 4.8, distance: 0.35 },
+    { angle: 0.5, distance: 105 },
+    { angle: 1.3, distance: 155 },
+    { angle: 2.4, distance: 120 },
+    { angle: 3.5, distance: 165 },
+    { angle: 4.8, distance: 135 },
   ],
 ];
 
@@ -99,7 +99,6 @@ const getOrbitalPositions = (
   
   const centerX = width * 0.50;
   const centerY = height * 0.46; // Slightly above center for visual balance
-  const maxRadius = Math.min(width, height) * 0.38;
   
   // Find center member (first child, or specified centerId)
   let centerMember = members.find(m => m.id === centerId);
@@ -129,10 +128,10 @@ const getOrbitalPositions = (
     if (orbital) {
       // Add slight randomization to break any remaining patterns
       const jitterAngle = (Math.sin(member.id.charCodeAt(0) * 0.5) * 0.15);
-      const jitterDist = (Math.cos(member.id.charCodeAt(1) * 0.3) * 0.05);
+      const jitterDist = (Math.cos(member.id.charCodeAt(1) * 0.3) * 10);
       
       const angle = orbital.angle + jitterAngle;
-      const distance = (orbital.distance + jitterDist) * maxRadius;
+      const distance = orbital.distance + jitterDist;
       
       positions.push({
         member,
