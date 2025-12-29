@@ -133,17 +133,17 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Constellation Header */}
       <div className="px-5 pt-6 text-center">
-        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em] mb-6">
+        <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em]">
           Your Constellation
         </p>
       </div>
 
-      {/* Relationship Map */}
+      {/* Relationship Map - only show with 2+ members */}
       <div className="px-5">
-        {familyMembers.length > 0 ? (
+        {familyMembers.length >= 2 ? (
           <RelationshipMap
             members={familyMembers}
             constellationSign={constellationSign}
@@ -153,7 +153,10 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         ) : (
           <div className="text-center py-12">
             <p className="text-[13px] text-foreground/40">
-              Add your birthday to see your family constellation.
+              Add at least two family members to see your constellation.
+            </p>
+            <p className="text-[11px] text-foreground/30 mt-2">
+              Add your birthday and a partner or child to get started.
             </p>
           </div>
         )}
@@ -172,14 +175,14 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
 
       {/* Parent Birthday Prompt */}
       {!parentHasBirthday && (
-        <div className="px-5 pt-2">
+        <div className="px-5">
           <ParentBirthdayPrompt onSaved={onBirthdaySaved} />
         </div>
       )}
 
       {/* Subtle hint about evolving content */}
-      {familyMembers.length > 1 && !selectedConnection && (
-        <div className="px-5 pt-2 text-center">
+      {familyMembers.length >= 2 && !selectedConnection && (
+        <div className="px-5 text-center">
           <p className="text-[10px] text-foreground/20 tracking-wide">
             Insights evolve monthly with your child's growth
           </p>
