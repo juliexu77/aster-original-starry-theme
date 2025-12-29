@@ -35,7 +35,7 @@ const Onboarding = () => {
                   delay: index * 0.12,
                   ease: [0.23, 1, 0.32, 1],
                 }}
-                className="text-[10px] text-foreground/30 uppercase inline-block"
+                className="text-[28px] text-foreground/30 uppercase inline-block"
                 style={{
                   transformStyle: 'preserve-3d',
                   letterSpacing: '0.2em',
