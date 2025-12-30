@@ -33,73 +33,299 @@ interface Question {
   multiSelect?: boolean;
 }
 
-const getQuestions = (babyName: string): Question[] => [
-  {
-    id: 'sleepNaps',
-    question: `How many naps does ${babyName} typically take?`,
-    options: [
-      { value: '3+', label: '3+ naps per day' },
-      { value: '2', label: '2 naps per day' },
-      { value: '1', label: '1 nap per day' },
-      { value: 'irregular', label: 'Sleep is all over the place' },
-    ],
-  },
-  {
-    id: 'feedingSolids',
-    question: `Where is ${babyName} with solid foods?`,
-    options: [
-      { value: 'not_started', label: "Hasn't started yet" },
-      { value: 'starting', label: 'Just starting to explore' },
-      { value: 'regular', label: 'Eating solids regularly' },
-      { value: 'confident', label: 'Eating a wide variety confidently' },
-    ],
-  },
-  {
-    id: 'physicalSkills',
-    question: `Which of these can ${babyName} do?`,
-    options: [
-      { value: 'sit', label: 'Sit without support' },
-      { value: 'crawl', label: 'Crawl or scoot around' },
-      { value: 'pull_stand', label: 'Pull to stand' },
-      { value: 'stand', label: 'Stand independently' },
-      { value: 'cruise', label: 'Take steps while holding on' },
-      { value: 'none', label: 'None of these yet' },
-    ],
-    multiSelect: true,
-  },
-  {
-    id: 'languageSounds',
-    question: `What sounds is ${babyName} making?`,
-    options: [
-      { value: 'coos', label: 'Mostly coos and vowel sounds' },
-      { value: 'babbling', label: 'Babbling (ba-ba, da-da) without meaning' },
-      { value: 'intentional', label: 'Babbling that seems intentional' },
-      { value: 'words_few', label: 'Says 1-2 words with meaning' },
-      { value: 'words_many', label: 'Says several words' },
-    ],
-  },
-  {
-    id: 'socialSeparation',
-    question: `How does ${babyName} respond when you leave the room?`,
-    options: [
-      { value: 'unaware', label: "Doesn't seem to notice much" },
-      { value: 'calm', label: 'Notices but stays calm' },
-      { value: 'upset', label: 'Gets upset or cries' },
-      { value: 'follows', label: 'Follows me or crawls after me' },
-    ],
-  },
-  {
-    id: 'currentChallenge',
-    question: `What's been most challenging lately?`,
-    options: [
-      { value: 'sleep', label: 'Sleep (naps, nights, or both)' },
-      { value: 'feeding', label: 'Feeding (starting solids, pickiness)' },
-      { value: 'fussiness', label: 'Fussiness or mood' },
-      { value: 'milestones', label: 'Developmental milestones' },
-      { value: 'none', label: 'Nothing major right now' },
-    ],
-  },
-];
+// Age groups: infant (0-12 months), toddler (1-3 years), preschool (3-5 years), child (5+ years)
+type AgeGroup = 'infant' | 'toddler' | 'preschool' | 'child';
+
+const getAgeGroup = (ageInMonths: number): AgeGroup => {
+  if (ageInMonths < 12) return 'infant';
+  if (ageInMonths < 36) return 'toddler';
+  if (ageInMonths < 60) return 'preschool';
+  return 'child';
+};
+
+const getQuestions = (babyName: string, ageInMonths: number): Question[] => {
+  const ageGroup = getAgeGroup(ageInMonths);
+  
+  // Infant questions (0-12 months)
+  if (ageGroup === 'infant') {
+    return [
+      {
+        id: 'sleepNaps',
+        question: `How many naps does ${babyName} typically take?`,
+        options: [
+          { value: '3+', label: '3+ naps per day' },
+          { value: '2', label: '2 naps per day' },
+          { value: '1', label: '1 nap per day' },
+          { value: 'irregular', label: 'Sleep is all over the place' },
+        ],
+      },
+      {
+        id: 'feedingSolids',
+        question: `Where is ${babyName} with solid foods?`,
+        options: [
+          { value: 'not_started', label: "Hasn't started yet" },
+          { value: 'starting', label: 'Just starting to explore' },
+          { value: 'regular', label: 'Eating solids regularly' },
+          { value: 'confident', label: 'Eating a wide variety confidently' },
+        ],
+      },
+      {
+        id: 'physicalSkills',
+        question: `Which of these can ${babyName} do?`,
+        options: [
+          { value: 'sit', label: 'Sit without support' },
+          { value: 'crawl', label: 'Crawl or scoot around' },
+          { value: 'pull_stand', label: 'Pull to stand' },
+          { value: 'stand', label: 'Stand independently' },
+          { value: 'cruise', label: 'Take steps while holding on' },
+          { value: 'none', label: 'None of these yet' },
+        ],
+        multiSelect: true,
+      },
+      {
+        id: 'languageSounds',
+        question: `What sounds is ${babyName} making?`,
+        options: [
+          { value: 'coos', label: 'Mostly coos and vowel sounds' },
+          { value: 'babbling', label: 'Babbling (ba-ba, da-da) without meaning' },
+          { value: 'intentional', label: 'Babbling that seems intentional' },
+          { value: 'words_few', label: 'Says 1-2 words with meaning' },
+          { value: 'words_many', label: 'Says several words' },
+        ],
+      },
+      {
+        id: 'socialSeparation',
+        question: `How does ${babyName} respond when you leave the room?`,
+        options: [
+          { value: 'unaware', label: "Doesn't seem to notice much" },
+          { value: 'calm', label: 'Notices but stays calm' },
+          { value: 'upset', label: 'Gets upset or cries' },
+          { value: 'follows', label: 'Follows me or crawls after me' },
+        ],
+      },
+      {
+        id: 'currentChallenge',
+        question: `What's been most challenging lately?`,
+        options: [
+          { value: 'sleep', label: 'Sleep (naps, nights, or both)' },
+          { value: 'feeding', label: 'Feeding (starting solids, pickiness)' },
+          { value: 'fussiness', label: 'Fussiness or mood' },
+          { value: 'milestones', label: 'Developmental milestones' },
+          { value: 'none', label: 'Nothing major right now' },
+        ],
+      },
+    ];
+  }
+  
+  // Toddler questions (1-3 years)
+  if (ageGroup === 'toddler') {
+    return [
+      {
+        id: 'sleepNaps',
+        question: `What's ${babyName}'s nap schedule like?`,
+        options: [
+          { value: '2', label: '2 naps per day' },
+          { value: '1', label: '1 nap per day' },
+          { value: 'transitioning', label: 'Transitioning away from naps' },
+          { value: 'none', label: 'No longer naps' },
+        ],
+      },
+      {
+        id: 'feedingSolids',
+        question: `How is ${babyName} with eating?`,
+        options: [
+          { value: 'adventurous', label: 'Eats most things we offer' },
+          { value: 'selective', label: 'Somewhat picky but manageable' },
+          { value: 'picky', label: 'Very selective eater' },
+          { value: 'struggles', label: 'Mealtime is often a struggle' },
+        ],
+      },
+      {
+        id: 'physicalSkills',
+        question: `Which of these can ${babyName} do?`,
+        options: [
+          { value: 'walking', label: 'Walking steadily' },
+          { value: 'running', label: 'Running' },
+          { value: 'climbing', label: 'Climbing on furniture' },
+          { value: 'jumping', label: 'Jumping with both feet' },
+          { value: 'stairs', label: 'Going up/down stairs' },
+          { value: 'none', label: 'Still working on walking' },
+        ],
+        multiSelect: true,
+      },
+      {
+        id: 'languageSounds',
+        question: `Where is ${babyName} with talking?`,
+        options: [
+          { value: 'words_few', label: 'Says a handful of words' },
+          { value: 'words_many', label: 'Has a vocabulary of 20+ words' },
+          { value: 'phrases', label: 'Putting 2-3 words together' },
+          { value: 'sentences', label: 'Speaking in simple sentences' },
+          { value: 'fluent', label: 'Talking in full sentences' },
+        ],
+      },
+      {
+        id: 'socialSeparation',
+        question: `How does ${babyName} handle being with other kids?`,
+        options: [
+          { value: 'parallel', label: 'Plays alongside but not with others' },
+          { value: 'emerging', label: 'Starting to interact with other kids' },
+          { value: 'interactive', label: 'Plays well with other children' },
+          { value: 'struggles', label: 'Has difficulty with peers' },
+        ],
+      },
+      {
+        id: 'currentChallenge',
+        question: `What's been most challenging lately?`,
+        options: [
+          { value: 'sleep', label: 'Sleep (bedtime battles, night waking)' },
+          { value: 'tantrums', label: 'Big emotions and tantrums' },
+          { value: 'feeding', label: 'Picky eating' },
+          { value: 'potty', label: 'Potty training' },
+          { value: 'none', label: 'Nothing major right now' },
+        ],
+      },
+    ];
+  }
+  
+  // Preschool questions (3-5 years)
+  if (ageGroup === 'preschool') {
+    return [
+      {
+        id: 'sleepNaps',
+        question: `What's ${babyName}'s sleep like?`,
+        options: [
+          { value: 'naps', label: 'Still napping regularly' },
+          { value: 'occasional', label: 'Occasional naps' },
+          { value: 'no_naps', label: 'No longer naps' },
+          { value: 'bedtime_struggles', label: 'Bedtime is challenging' },
+        ],
+      },
+      {
+        id: 'feedingSolids',
+        question: `How would you describe ${babyName}'s eating habits?`,
+        options: [
+          { value: 'good', label: 'Eats a variety of foods well' },
+          { value: 'typical', label: 'Typical picky preschooler' },
+          { value: 'very_picky', label: 'Extremely limited diet' },
+          { value: 'sensory', label: 'Has texture or sensory issues with food' },
+        ],
+      },
+      {
+        id: 'physicalSkills',
+        question: `Which activities does ${babyName} enjoy or do well?`,
+        options: [
+          { value: 'gross_motor', label: 'Running, jumping, climbing' },
+          { value: 'fine_motor', label: 'Drawing, writing, cutting' },
+          { value: 'sports', label: 'Ball games, riding bikes' },
+          { value: 'dancing', label: 'Dancing and movement' },
+          { value: 'building', label: 'Building with blocks/Legos' },
+          { value: 'developing', label: 'Still developing these skills' },
+        ],
+        multiSelect: true,
+      },
+      {
+        id: 'languageSounds',
+        question: `How is ${babyName}'s communication?`,
+        options: [
+          { value: 'clear', label: 'Speaks clearly and is understood by others' },
+          { value: 'developing', label: 'Some sounds still developing' },
+          { value: 'speech_help', label: 'May need speech support' },
+          { value: 'advanced', label: 'Very advanced vocabulary and expression' },
+        ],
+      },
+      {
+        id: 'socialSeparation',
+        question: `How does ${babyName} do socially?`,
+        options: [
+          { value: 'social', label: 'Makes friends easily' },
+          { value: 'shy', label: 'Takes time to warm up' },
+          { value: 'independent', label: 'Prefers solo play' },
+          { value: 'learning', label: 'Still learning social skills' },
+        ],
+      },
+      {
+        id: 'currentChallenge',
+        question: `What's been most on your mind?`,
+        options: [
+          { value: 'behavior', label: 'Behavior and discipline' },
+          { value: 'school', label: 'School readiness' },
+          { value: 'emotions', label: 'Emotional regulation' },
+          { value: 'social', label: 'Making friends' },
+          { value: 'none', label: 'Things are going smoothly' },
+        ],
+      },
+    ];
+  }
+  
+  // Child questions (5+ years)
+  return [
+    {
+      id: 'sleepNaps',
+      question: `How is ${babyName}'s sleep?`,
+      options: [
+        { value: 'good', label: 'Sleeps well most nights' },
+        { value: 'bedtime', label: 'Bedtime resistance' },
+        { value: 'waking', label: 'Wakes during the night' },
+        { value: 'early', label: 'Wakes too early' },
+      ],
+    },
+    {
+      id: 'feedingSolids',
+      question: `How does ${babyName} approach food and eating?`,
+      options: [
+        { value: 'healthy', label: 'Good, varied diet' },
+        { value: 'picky', label: 'Still somewhat picky' },
+        { value: 'snacker', label: 'Prefers snacks to meals' },
+        { value: 'independent', label: 'Becoming more independent with food choices' },
+      ],
+    },
+    {
+      id: 'physicalSkills',
+      question: `What activities does ${babyName} gravitate toward?`,
+      options: [
+        { value: 'sports', label: 'Sports and physical activities' },
+        { value: 'creative', label: 'Art, music, or creative projects' },
+        { value: 'academic', label: 'Reading, learning, puzzles' },
+        { value: 'social', label: 'Playing with friends' },
+        { value: 'screens', label: 'Screen time and games' },
+        { value: 'outdoors', label: 'Outdoor exploration' },
+        ],
+      multiSelect: true,
+    },
+    {
+      id: 'languageSounds',
+      question: `How does ${babyName} express themselves?`,
+      options: [
+        { value: 'verbal', label: 'Very verbal and expressive' },
+        { value: 'quiet', label: 'More quiet and reserved' },
+        { value: 'physical', label: 'Shows emotions physically' },
+        { value: 'creative', label: 'Through art, writing, or play' },
+      ],
+    },
+    {
+      id: 'socialSeparation',
+      question: `How is ${babyName} doing with peers?`,
+      options: [
+        { value: 'thriving', label: 'Has good friendships' },
+        { value: 'few', label: 'Prefers one or two close friends' },
+        { value: 'struggles', label: 'Sometimes struggles socially' },
+        { value: 'independent', label: 'Happy playing alone' },
+      ],
+    },
+    {
+      id: 'currentChallenge',
+      question: `What's most on your mind about ${babyName}?`,
+      options: [
+        { value: 'school', label: 'School performance or adjustment' },
+        { value: 'behavior', label: 'Behavior at home' },
+        { value: 'confidence', label: 'Self-confidence' },
+        { value: 'emotions', label: 'Managing emotions' },
+        { value: 'none', label: 'Things are going well' },
+      ],
+    },
+  ];
+};
 
 // Compute emerging early flags based on age and responses
 function computeEmergingFlags(
@@ -149,8 +375,8 @@ function computeEmergingFlags(
 }
 
 export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: CalibrationFlowProps) {
-  const questions = getQuestions(babyName);
-  const [currentStep, setCurrentStep] = useState(0);
+  const ageInMonths = differenceInMonths(new Date(), new Date(babyBirthday));
+  const questions = getQuestions(babyName, ageInMonths);
   const [answers, setAnswers] = useState<CalibrationData>({
     sleepNaps: null,
     feedingSolids: null,
@@ -160,7 +386,7 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
     currentChallenge: null,
   });
 
-  const ageInMonths = differenceInMonths(new Date(), new Date(babyBirthday));
+  const [currentStep, setCurrentStep] = useState(0);
   const currentQuestion = questions[currentStep];
   const isLastQuestion = currentStep === questions.length - 1;
 
