@@ -34,11 +34,25 @@ const getAgeInMonths = (ageInWeeks: number): number => {
   return Math.floor(ageInWeeks / 4.33);
 };
 
+// Format age as "X years Y months" when over 2 years, otherwise just months
+const formatAge = (ageInMonths: number): string => {
+  if (ageInMonths >= 24) {
+    const years = Math.floor(ageInMonths / 12);
+    const months = ageInMonths % 12;
+    if (months === 0) {
+      return `${years} year${years > 1 ? 's' : ''}`;
+    }
+    return `${years} year${years > 1 ? 's' : ''} ${months} month${months > 1 ? 's' : ''}`;
+  }
+  return `${ageInMonths || 1} month${ageInMonths !== 1 ? 's' : ''}`;
+};
+
 // All domains synthesis content by age
 const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary: string; bullets: string[] } => {
+  const ageDisplay = formatAge(ageInMonths);
   if (ageInMonths < 3) {
     return {
-      summary: `At ${ageInMonths || 1} months, ${babyName} is building foundational connections. Expect lots of feeding (Stage 1), frequent sleep cycles (Stage 1), and the emergence of social smiles (Stage 1). This is a period of rapid brain development through simple interactions.`,
+      summary: `At ${ageDisplay}, ${babyName} is building foundational connections. Expect lots of feeding (Stage 1), frequent sleep cycles (Stage 1), and the emergence of social smiles (Stage 1). This is a period of rapid brain development through simple interactions.`,
       bullets: [
         "Respond to cries promptly to build security",
         "Make eye contact and talk during feeds",
@@ -49,7 +63,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 5) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is becoming more interactive and alert. Sleep may consolidate into longer stretches (Stage 2), and you'll see more intentional reaching and batting at objects (Stage 2). Social engagement is blossoming with laughter and vocal play.`,
+      summary: `At ${ageDisplay}, ${babyName} is becoming more interactive and alert. Sleep may consolidate into longer stretches (Stage 2), and you'll see more intentional reaching and batting at objects (Stage 2). Social engagement is blossoming with laughter and vocal play.`,
       bullets: [
         "Longer wake windows mean more playtime",
         "Introduce rattles and soft toys to grasp",
@@ -60,7 +74,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 7) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is entering a major developmental period. Starting solids (Stage 2) coincides with sitting independently (Stage 3) - these skills support each other. Stranger awareness is emerging as cognitive abilities grow.`,
+      summary: `At ${ageDisplay}, ${babyName} is entering a major developmental period. Starting solids (Stage 2) coincides with sitting independently (Stage 3) - these skills support each other. Stranger awareness is emerging as cognitive abilities grow.`,
       bullets: [
         "Sitting up enables self-feeding exploration",
         "Let baby explore food textures - it's messy but important",
@@ -71,7 +85,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 9) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is experiencing a significant cognitive leap. Object permanence (Stage 3) changes everything - causing sleep regression (Stage 3) and separation anxiety (Stage 3), but enabling new play and problem-solving skills.`,
+      summary: `At ${ageDisplay}, ${babyName} is experiencing a significant cognitive leap. Object permanence (Stage 3) changes everything - causing sleep regression (Stage 3) and separation anxiety (Stage 3), but enabling new play and problem-solving skills.`,
       bullets: [
         "Sleep disruptions are caused by brain growth, not regression",
         "Practice peek-a-boo to reinforce object permanence",
@@ -82,7 +96,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 11) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is increasingly mobile and independent. Pulling to stand (Stage 5) and cruising (Stage 6) create new perspectives. Sleep often stabilizes into two predictable naps (Stage 4). Self-feeding with finger foods becomes more intentional.`,
+      summary: `At ${ageDisplay}, ${babyName} is increasingly mobile and independent. Pulling to stand (Stage 5) and cruising (Stage 6) create new perspectives. Sleep often stabilizes into two predictable naps (Stage 4). Self-feeding with finger foods becomes more intentional.`,
       bullets: [
         "Childproof as mobility increases dramatically",
         "Two-nap schedule provides rhythm to the day",
@@ -93,7 +107,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 14) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is transitioning to toddlerhood. First words with meaning (Stage 4) emerge as language explodes. Walking may begin (Stage 7). Table foods (Stage 4) replace purees as baby joins family meals more fully.`,
+      summary: `At ${ageDisplay}, ${babyName} is transitioning to toddlerhood. First words with meaning (Stage 4) emerge as language explodes. Walking may begin (Stage 7). Table foods (Stage 4) replace purees as baby joins family meals more fully.`,
       bullets: [
         "Language comprehension far exceeds expression",
         "Support wobbly walking without pressure",
@@ -104,7 +118,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 17) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is asserting independence while still needing security. One nap transition (Stage 5) can make days unpredictable. Walking becomes confident. Self-feeding with utensils emerges (Stage 5). Word explosion begins.`,
+      summary: `At ${ageDisplay}, ${babyName} is asserting independence while still needing security. One nap transition (Stage 5) can make days unpredictable. Walking becomes confident. Self-feeding with utensils emerges (Stage 5). Word explosion begins.`,
       bullets: [
         "Nap transition creates temporary schedule chaos",
         "More mobility means more bumps and falls - stay calm",
@@ -115,7 +129,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 20) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is a busy toddler with strong opinions. One predictable afternoon nap (Stage 6) provides structure. Two-word phrases (Stage 6) begin. Picky eating phase (Stage 6) can be frustrating but is developmentally normal.`,
+      summary: `At ${ageDisplay}, ${babyName} is a busy toddler with strong opinions. One predictable afternoon nap (Stage 6) provides structure. Two-word phrases (Stage 6) begin. Picky eating phase (Stage 6) can be frustrating but is developmentally normal.`,
       bullets: [
         "Consistent nap schedule supports nighttime sleep",
         "Food pickiness is about control, not actual preferences",
@@ -126,7 +140,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 27) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is rapidly developing language and social skills. Simple sentences (Stage 7) enable better communication. Picky phase (Stage 6) may continue. Play becomes more imaginative. Emotional expression is big and dramatic.`,
+      summary: `At ${ageDisplay}, ${babyName} is rapidly developing language and social skills. Simple sentences (Stage 7) enable better communication. Picky phase (Stage 6) may continue. Play becomes more imaginative. Emotional expression is big and dramatic.`,
       bullets: [
         "Language reduces frustration tantrums",
         "Don't engage in food battles during picky phase",
@@ -137,7 +151,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 33) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is developing self-awareness and independence. Language skills (Stage 7) are exploding. One nap (Stage 6) is well-established. Interactive play (Stage 8) with peers is emerging. Self-regulation is improving but still developing.`,
+      summary: `At ${ageDisplay}, ${babyName} is developing self-awareness and independence. Language skills (Stage 7) are exploding. One nap (Stage 6) is well-established. Interactive play (Stage 8) with peers is emerging. Self-regulation is improving but still developing.`,
       bullets: [
         "More verbal ability doesn't equal emotional maturity",
         "Consistent boundaries help with big feelings",
@@ -148,7 +162,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 40) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is becoming more independent and social. Nap may be dropping (Stage 7) which affects mood. Complex sentences (Stage 8) allow real conversations. Cooperative play (Stage 9) with other children begins. Self-regulation improves.`,
+      summary: `At ${ageDisplay}, ${babyName} is becoming more independent and social. Nap may be dropping (Stage 7) which affects mood. Complex sentences (Stage 8) allow real conversations. Cooperative play (Stage 9) with other children begins. Self-regulation improves.`,
       bullets: [
         "Some days need nap, some don't - stay flexible",
         "Verbal skills don't mean emotional maturity",
@@ -159,7 +173,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 46) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is developing complex social and cognitive skills. Most children transitioning away from naps (Stage 7). Language is sophisticated (Stage 8). Cooperative play (Stage 9) and problem-solving (Stage 8) are strong. Emotional awareness deepening.`,
+      summary: `At ${ageDisplay}, ${babyName} is developing complex social and cognitive skills. Most children transitioning away from naps (Stage 7). Language is sophisticated (Stage 8). Cooperative play (Stage 9) and problem-solving (Stage 8) are strong. Emotional awareness deepening.`,
       bullets: [
         "Quiet time replaces nap on most days",
         "'Why' questions show active learning",
@@ -170,7 +184,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 52) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is preschool-ready with developed language, social skills, and self-regulation. Most children done napping (Stage 8). Clear speech and complex grammar (Stage 9). Friendships deepen (Stage 10). Independent eating (Stage 8).`,
+      summary: `At ${ageDisplay}, ${babyName} is preschool-ready with developed language, social skills, and self-regulation. Most children done napping (Stage 8). Clear speech and complex grammar (Stage 9). Friendships deepen (Stage 10). Independent eating (Stage 8).`,
       bullets: [
         "Quiet rest time replaces nap",
         "'Why' questions show cognitive leaps",
@@ -181,7 +195,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   if (ageInMonths < 58) {
     return {
-      summary: `At ${ageInMonths} months, ${babyName} is mastering preschool skills and preparing for kindergarten. No napping (Stage 8). Conversational language (Stage 9). Strong friendships (Stage 10). Pre-academic skills (Stage 9) emerging. Complex emotions (Stage 9) well-expressed.`,
+      summary: `At ${ageDisplay}, ${babyName} is mastering preschool skills and preparing for kindergarten. No napping (Stage 8). Conversational language (Stage 9). Strong friendships (Stage 10). Pre-academic skills (Stage 9) emerging. Complex emotions (Stage 9) well-expressed.`,
       bullets: [
         "Consistent bedtime routine without nap",
         "Enjoys storytelling and complex conversations",
@@ -192,7 +206,7 @@ const getAllDomainsContent = (ageInMonths: number, babyName: string): { summary:
   }
   // 5+ years
   return {
-    summary: `At ${ageInMonths} months, ${babyName} is kindergarten-ready with strong skills across all domains. Sleep is consistent without naps (Stage 8). Language is clear and sophisticated (Stage 9). Deep friendships (Stage 10). Pre-academic skills (Stage 9) developed. Emotional regulation strong (Stage 9).`,
+    summary: `At ${ageDisplay}, ${babyName} is kindergarten-ready with strong skills across all domains. Sleep is consistent without naps (Stage 8). Language is clear and sophisticated (Stage 9). Deep friendships (Stage 10). Pre-academic skills (Stage 9) developed. Emotional regulation strong (Stage 9).`,
     bullets: [
       "Reads bedtime stories together",
       "Vocabulary supports academic learning",
