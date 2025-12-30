@@ -33,10 +33,23 @@ const Family = () => {
     }
   }, [selectedMemberId]);
 
-  // Set initial member if none selected (prefer first child)
+  // Set initial member if none selected or if stored ID doesn't exist
   useEffect(() => {
-    if (!selectedMemberId && babies.length > 0) {
-      setSelectedMemberId(babies[0].id);
+    if (babies.length > 0) {
+      const storedId = localStorage.getItem('chart-selected-member-id');
+      const storedIdExists = storedId && (
+        babies.some(b => b.id === storedId) || 
+        storedId === 'parent' || 
+        storedId === 'partner'
+      );
+      
+      if (!storedIdExists) {
+        // Default to first baby with a birthday, or first baby
+        const firstWithBirthday = babies.find(b => b.birthday);
+        setSelectedMemberId(firstWithBirthday?.id || babies[0].id);
+      } else if (!selectedMemberId) {
+        setSelectedMemberId(storedId);
+      }
     }
   }, [babies, selectedMemberId]);
 
