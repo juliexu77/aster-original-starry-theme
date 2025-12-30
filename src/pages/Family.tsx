@@ -20,45 +20,37 @@ const Family = () => {
   // Always default to 'child' view
   const [viewMode, setViewMode] = useState<ViewMode>('child');
   
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(() => {
-    return localStorage.getItem('chart-selected-member-id');
-  });
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Persist selected member
+  // Initialize and validate selected member when babies load
+  useEffect(() => {
+    if (babies.length === 0) return;
+    
+    const storedId = localStorage.getItem('chart-selected-member-id');
+    
+    // Check if stored ID is valid (exists in babies with birthday, or is parent/partner)
+    const isValidBabyId = storedId && babies.some(b => b.id === storedId && b.birthday);
+    const isValidParentId = storedId === 'parent' || storedId === 'partner';
+    const storedIdIsValid = isValidBabyId || isValidParentId;
+    
+    if (storedIdIsValid) {
+      setSelectedMemberId(storedId);
+    } else {
+      // Default to first baby with a birthday
+      const firstWithBirthday = babies.find(b => b.birthday);
+      if (firstWithBirthday) {
+        setSelectedMemberId(firstWithBirthday.id);
+        localStorage.setItem('chart-selected-member-id', firstWithBirthday.id);
+      }
+    }
+  }, [babies]);
 
-  // Persist selected member
+  // Persist selected member to localStorage when it changes
   useEffect(() => {
     if (selectedMemberId) {
       localStorage.setItem('chart-selected-member-id', selectedMemberId);
     }
   }, [selectedMemberId]);
-
-  // Set initial member when babies load - always validate and set if needed
-  useEffect(() => {
-    if (babies.length > 0) {
-      const storedId = localStorage.getItem('chart-selected-member-id');
-      
-      // Check if stored ID is valid (exists in babies or is parent/partner)
-      const storedIdIsValid = storedId && (
-        babies.some(b => b.id === storedId) || 
-        storedId === 'parent' || 
-        storedId === 'partner'
-      );
-      
-      if (storedIdIsValid) {
-        // Use valid stored ID if we don't have one selected yet
-        if (!selectedMemberId || selectedMemberId !== storedId) {
-          setSelectedMemberId(storedId);
-        }
-      } else {
-        // Default to first baby with a birthday, or first baby
-        const firstWithBirthday = babies.find(b => b.birthday);
-        const defaultId = firstWithBirthday?.id || babies[0].id;
-        setSelectedMemberId(defaultId);
-        localStorage.setItem('chart-selected-member-id', defaultId);
-      }
-    }
-  }, [babies]);
 
   const handleBirthdaySaved = () => {
     fetchUserProfile();
