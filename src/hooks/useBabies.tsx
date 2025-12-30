@@ -73,8 +73,8 @@ export const useBabies = () => {
       setBabies(babiesData || []);
       
       // Set active baby to first one if not set
-      if (babiesData && babiesData.length > 0 && !activeBabyId) {
-        setActiveBabyId(babiesData[0].id);
+      if (babiesData && babiesData.length > 0) {
+        setActiveBabyId(prev => prev || babiesData[0].id);
       }
 
     } catch (error) {
@@ -83,7 +83,7 @@ export const useBabies = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, activeBabyId]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -94,7 +94,7 @@ export const useBabies = () => {
       setHouseholdId(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchBabies]);
 
   const activeBaby = babies.find(b => b.id === activeBabyId) || babies[0] || null;
 

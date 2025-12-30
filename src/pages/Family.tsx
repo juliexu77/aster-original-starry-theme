@@ -33,25 +33,32 @@ const Family = () => {
     }
   }, [selectedMemberId]);
 
-  // Set initial member if none selected or if stored ID doesn't exist
+  // Set initial member when babies load - always validate and set if needed
   useEffect(() => {
     if (babies.length > 0) {
       const storedId = localStorage.getItem('chart-selected-member-id');
-      const storedIdExists = storedId && (
+      
+      // Check if stored ID is valid (exists in babies or is parent/partner)
+      const storedIdIsValid = storedId && (
         babies.some(b => b.id === storedId) || 
         storedId === 'parent' || 
         storedId === 'partner'
       );
       
-      if (!storedIdExists) {
+      if (storedIdIsValid) {
+        // Use valid stored ID if we don't have one selected yet
+        if (!selectedMemberId || selectedMemberId !== storedId) {
+          setSelectedMemberId(storedId);
+        }
+      } else {
         // Default to first baby with a birthday, or first baby
         const firstWithBirthday = babies.find(b => b.birthday);
-        setSelectedMemberId(firstWithBirthday?.id || babies[0].id);
-      } else if (!selectedMemberId) {
-        setSelectedMemberId(storedId);
+        const defaultId = firstWithBirthday?.id || babies[0].id;
+        setSelectedMemberId(defaultId);
+        localStorage.setItem('chart-selected-member-id', defaultId);
       }
     }
-  }, [babies, selectedMemberId]);
+  }, [babies]);
 
   const handleBirthdaySaved = () => {
     fetchUserProfile();
