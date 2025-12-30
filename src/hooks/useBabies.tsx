@@ -98,7 +98,7 @@ export const useBabies = () => {
 
   const activeBaby = babies.find(b => b.id === activeBabyId) || babies[0] || null;
 
-  const addBaby = async (name: string, birthday?: string) => {
+  const addBaby = async (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => {
     if (!user || !householdId) throw new Error('No household');
 
     const { data, error } = await supabase
@@ -106,7 +106,9 @@ export const useBabies = () => {
       .insert([{
         household_id: householdId,
         name,
-        birthday: birthday || null
+        birthday: birthday || null,
+        birth_time: birthTime || null,
+        birth_location: birthLocation || null
       }])
       .select()
       .single();

@@ -64,10 +64,10 @@ export const ChildView = ({
   const allMembers = useMemo(() => {
     const members: FamilyMember[] = [];
     
-    // Add children
-    babies
-      .filter(baby => baby.birthday)
-      .forEach(baby => {
+    // Add children with birthdays
+    babies.forEach(baby => {
+      console.log('[ChildView] Processing baby:', baby.name, 'birthday:', baby.birthday);
+      if (baby.birthday) {
         members.push({
           id: baby.id,
           name: baby.name,
@@ -76,7 +76,8 @@ export const ChildView = ({
           birth_time: baby.birth_time,
           birth_location: baby.birth_location,
         });
-      });
+      }
+    });
     
     // Add parent (user)
     if (userProfile?.birthday) {
@@ -102,6 +103,7 @@ export const ChildView = ({
       });
     }
     
+    console.log('[ChildView] allMembers result:', members.length, members.map(m => m.name));
     return members;
   }, [babies, userProfile]);
 
