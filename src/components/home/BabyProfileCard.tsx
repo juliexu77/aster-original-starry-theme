@@ -37,11 +37,11 @@ const getAgeInWeeks = (birthday?: string): number => {
 const getAgeLabel = (ageInWeeks: number): string => {
   if (ageInWeeks < 4) return `${ageInWeeks} week${ageInWeeks !== 1 ? 's' : ''} old`;
   const months = Math.floor(ageInWeeks / 4.33);
-  if (months < 12) return `${months} month${months !== 1 ? 's' : ''} old`;
+  if (months < 24) return `${months} month${months !== 1 ? 's' : ''} old`;
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
   if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''} old`;
-  return `${years}y ${remainingMonths}m`;
+  return `${years} year${years !== 1 ? 's' : ''} ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''} old`;
 };
 
 const getCurrentPhase = (ageInWeeks: number): string => {
