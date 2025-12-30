@@ -55,7 +55,7 @@ export const ChartIntroOverlay = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsReady(true);
-    }, 1500);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
