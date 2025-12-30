@@ -33,7 +33,7 @@ import { CalibrationData } from "@/components/calibration/CalibrationFlow";
 
 interface ChildrenSectionProps {
   babies: BabyType[];
-  onAddBaby: (name: string, birthday?: string) => Promise<void>;
+  onAddBaby: (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => Promise<void>;
   onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => Promise<void>;
   onArchiveBaby: (babyId: string) => Promise<void>;
 }
@@ -81,6 +81,8 @@ export const ChildrenSection = ({
   const handleOpenAdd = () => {
     setName("");
     setBirthday("");
+    setBirthTime("");
+    setBirthLocation("");
     setShowAddModal(true);
   };
 
@@ -98,7 +100,7 @@ export const ChildrenSection = ({
     
     setIsSaving(true);
     try {
-      await onAddBaby(name.trim(), birthday || undefined);
+      await onAddBaby(name.trim(), birthday || undefined, birthTime || undefined, birthLocation || undefined);
       toast({ title: `${name} added`, duration: 3000 });
       setShowAddModal(false);
     } catch (error: any) {
@@ -200,6 +202,31 @@ export const ChildrenSection = ({
                 className="text-[13px]"
               />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="addBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
+                <Input
+                  id="addBirthTime"
+                  type="time"
+                  value={birthTime}
+                  onChange={(e) => setBirthTime(e.target.value)}
+                  className="text-[13px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="addBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
+                <LocationInput
+                  id="addBirthLocation"
+                  value={birthLocation}
+                  onChange={setBirthLocation}
+                  placeholder="Start typing a city..."
+                  className="text-[13px]"
+                />
+              </div>
+            </div>
+            <p className="text-[10px] text-foreground/30">
+              Time & location help calculate moon sign accurately
+            </p>
           </div>
           <DialogFooter>
             <Button 
