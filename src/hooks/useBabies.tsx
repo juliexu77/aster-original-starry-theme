@@ -31,6 +31,7 @@ export const useBabies = () => {
 
     try {
       setError(null);
+      setLoading(true);
 
       // Get user's household membership
       const { data: memberData, error: memberError } = await supabase
@@ -48,6 +49,7 @@ export const useBabies = () => {
       }
 
       if (!memberData) {
+        console.log('No household membership found for user:', user.id);
         setBabies([]);
         setHouseholdId(null);
         setLoading(false);
@@ -70,11 +72,15 @@ export const useBabies = () => {
         return;
       }
 
+      console.log('Fetched babies:', babiesData);
       setBabies(babiesData || []);
       
-      // Set active baby to first one if not set
-      if (babiesData && babiesData.length > 0 && !activeBabyId) {
-        setActiveBabyId(babiesData[0].id);
+      // Set active baby to first one if not set or if current active baby doesn't exist
+      if (babiesData && babiesData.length > 0) {
+        setActiveBabyId(currentId => {
+          const exists = babiesData.some(b => b.id === currentId);
+          return exists ? currentId : babiesData[0].id;
+        });
       }
 
     } catch (error) {
@@ -83,7 +89,7 @@ export const useBabies = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, activeBabyId]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -94,7 +100,7 @@ export const useBabies = () => {
       setHouseholdId(null);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, fetchBabies]);
 
   const activeBaby = babies.find(b => b.id === activeBabyId) || babies[0] || null;
 
