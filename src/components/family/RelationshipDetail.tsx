@@ -284,15 +284,31 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
 
   const hasInsights = isAdultRelationship ? !!partnerInsights : !!childInsights;
 
+  // Get relationship label
+  const getRelationshipLabel = (): string => {
+    if (isAdultRelationship) {
+      return 'Partner Relationship';
+    }
+    // Identify who is the parent in the display
+    const parentDisplay = from.type === 'child' ? to : from;
+    const childDisplay = from.type === 'child' ? from : to;
+    return `${parentDisplay.name}'s bond with ${childDisplay.name}`;
+  };
+
   return (
     <div className="mt-6 pt-6 border-t border-foreground/10">
       {/* Header with close button */}
       <div className="flex items-start justify-between mb-4">
         <div>
+          {/* Relationship type label */}
+          <p className="text-[9px] text-foreground/30 uppercase tracking-[0.15em] mb-1.5">
+            {isChildRelationship ? 'Parent-Child Dynamic' : 'Partnership'}
+          </p>
+          
           <div className="flex items-center gap-2 mb-1">
             {fromSign && <ZodiacIcon sign={fromSign} size={16} className="text-[#C4A574]" />}
             <h2 className="text-[18px] text-foreground/90" style={{ fontFamily: 'Source Serif 4, serif' }}>
-              {from.name} & {to.name}
+              {isChildRelationship ? getRelationshipLabel() : `${from.name} & ${to.name}`}
             </h2>
           </div>
           
