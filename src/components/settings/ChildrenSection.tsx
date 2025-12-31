@@ -202,27 +202,25 @@ export const ChildrenSection = ({
                 className="text-[13px]"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="addBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
-                <Input
-                  id="addBirthTime"
-                  type="time"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  className="text-[13px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="addBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
-                <LocationInput
-                  id="addBirthLocation"
-                  value={birthLocation}
-                  onChange={setBirthLocation}
-                  placeholder="Start typing a city..."
-                  className="text-[13px]"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="addBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
+              <Input
+                id="addBirthTime"
+                type="time"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                className="text-[13px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
+              <LocationInput
+                id="addBirthLocation"
+                value={birthLocation}
+                onChange={setBirthLocation}
+                placeholder="Start typing a city..."
+                className="text-[13px]"
+              />
             </div>
             <p className="text-[10px] text-foreground/30">
               Time & location help calculate moon sign accurately
@@ -267,27 +265,25 @@ export const ChildrenSection = ({
                 className="text-[13px]"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="editBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
-                <Input
-                  id="editBirthTime"
-                  type="time"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  className="text-[13px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="editBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
-                <LocationInput
-                  id="editBirthLocation"
-                  value={birthLocation}
-                  onChange={setBirthLocation}
-                  placeholder="Start typing a city..."
-                  className="text-[13px]"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="editBirthTime" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Time</Label>
+              <Input
+                id="editBirthTime"
+                type="time"
+                value={birthTime}
+                onChange={(e) => setBirthTime(e.target.value)}
+                className="text-[13px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editBirthLocation" className="text-[11px] text-foreground/40 uppercase tracking-wider">Birth Location</Label>
+              <LocationInput
+                id="editBirthLocation"
+                value={birthLocation}
+                onChange={setBirthLocation}
+                placeholder="Start typing a city..."
+                className="text-[13px]"
+              />
             </div>
             <p className="text-[10px] text-foreground/30">
               Time & location help calculate moon sign accurately
