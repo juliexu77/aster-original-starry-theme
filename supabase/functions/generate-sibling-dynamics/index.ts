@@ -40,26 +40,30 @@ serve(async (req) => {
       return `${c.name} (${ageLabel}, ${c.sunSign} Sun${c.moonSign ? `, ${c.moonSign} Moon` : ''})`;
     }).join(" and ");
 
-    const prompt = `You are an expert in personality-based child development. Analyze the sibling dynamics between these children:
+    const prompt = `You are an expert in personality-based child development, writing for a PARENT about their children's sibling relationship. Analyze the sibling dynamics between these children:
 
 ${childDescriptions}
 
-IMPORTANT: Do NOT mention zodiac signs, sun signs, moon signs, or any astrological terminology in your response. Focus only on personality traits, behaviors, and practical insights. Write as if you're describing their natural temperaments.
+IMPORTANT: 
+- Address the PARENT directly using "your children", "your kids", etc.
+- Do NOT mention zodiac signs, sun signs, moon signs, or any astrological terminology
+- Focus on personality traits, behaviors, and practical insights for the parent
+- Write as if you're describing their natural temperaments to their parent
 
 Provide insights in this JSON structure:
 {
-  "currentDynamic": "2-3 sentences about how they interact right now given their ages and personalities",
+  "currentDynamic": "2-3 sentences about how your children interact right now given their ages. Address the parent directly. Example: 'Right now, your kids are learning to share space. The older one's natural leadership helps guide the younger, while the younger one's curiosity keeps things interesting for both.'",
   "whatEachBrings": [
-    {"child": "name", "gifts": ["trait1", "trait2", "trait3"]}
+    {"child": "child's name", "gifts": ["trait1", "trait2", "trait3"]}
   ],
   "compatibilityLabel": "High Harmony" or "Complementary Energy" or "Dynamic Tension" etc,
-  "compatibilityNote": "One punchy sentence about their overall connection",
-  "earlyChildhood": "2-3 sentences about ages 0-5 dynamics",
-  "schoolYears": "2-3 sentences about ages 6-12 dynamics",
-  "teenYears": "2-3 sentences about teen dynamics"
+  "compatibilityNote": "One punchy sentence about their overall connection as siblings, addressed to the parent. Example: 'These two balance each other beautifully—expect them to become each other's biggest supporters.'",
+  "earlyChildhood": "2-3 sentences about their dynamics in ages 0-5, written to the parent. Example: 'In these early years, you'll see your children develop their own private world of games and inside jokes.'",
+  "schoolYears": "2-3 sentences about ages 6-12 dynamics, addressed to the parent. Example: 'As your kids enter school, expect some friendly competition. Channel it into teamwork activities.'",
+  "teenYears": "2-3 sentences about teen dynamics for the parent. Example: 'The teen years may bring distance, but your children's foundation will hold. They'll rediscover each other as young adults.'"
 }
 
-Keep the tone warm, insightful, and practical. Focus on personality traits and how they interact - never reference astrology or zodiac signs. Be specific to their personalities, not generic.`;
+Keep the tone warm, insightful, and practical. Always address the parent as "you" and refer to the children as "your children" or "your kids" or by name. Be specific to their personalities, not generic.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
