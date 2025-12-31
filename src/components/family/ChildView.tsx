@@ -142,15 +142,34 @@ export const ChildView = ({
     }
   }, [hasMultipleMembers, showIntro]);
 
+  // Find the selected member - fallback to first member if selectedMemberId is null or not found
   const selectedMember = useMemo(() => {
+    console.log('[ChildView] Finding selectedMember. selectedMemberId:', selectedMemberId, 'allMembers:', allMembers.length);
+    
     if (selectedMemberId) {
-      return allMembers.find(m => m.id === selectedMemberId);
+      const found = allMembers.find(m => m.id === selectedMemberId);
+      if (found) {
+        console.log('[ChildView] Found selected member:', found.name);
+        return found;
+      }
+      console.log('[ChildView] selectedMemberId not found in allMembers, falling back to first');
     }
-    return allMembers[0];
+    
+    // Fallback to first member
+    if (allMembers.length > 0) {
+      console.log('[ChildView] Using first member as fallback:', allMembers[0].name);
+      return allMembers[0];
+    }
+    
+    console.log('[ChildView] No members available');
+    return undefined;
   }, [allMembers, selectedMemberId]);
 
   const signs = useMemo(() => {
-    if (!selectedMember?.birthday) return null;
+    if (!selectedMember?.birthday) {
+      console.log('[ChildView] No selectedMember or birthday for signs calculation');
+      return null;
+    }
     
     const sun = getZodiacFromBirthday(selectedMember.birthday);
     const moon = getMoonSignFromBirthDateTime(
@@ -164,6 +183,7 @@ export const ChildView = ({
       selectedMember.birth_location
     );
     
+    console.log('[ChildView] Calculated signs for', selectedMember.name, ':', { sun, moon, rising });
     return { sun, moon, rising };
   }, [selectedMember]);
 
@@ -177,11 +197,30 @@ export const ChildView = ({
     return parts.join(' • ');
   };
 
-  if (!selectedMember || !signs?.sun) {
+  // Show empty state only if there are truly no members with birthdays
+  if (allMembers.length === 0) {
+    console.log('[ChildView] Showing empty state - no members with birthdays');
     return (
       <div className="px-5 py-12 text-center">
         <p className="text-[13px] text-foreground/40">
           Add a family member with their birthday to see their astrological profile.
+        </p>
+      </div>
+    );
+  }
+
+  // If we have members but no selected member or signs, there's a bug - log it
+  if (!selectedMember || !signs?.sun) {
+    console.error('[ChildView] Bug: Have members but no selectedMember or signs', {
+      allMembersCount: allMembers.length,
+      selectedMember,
+      signs,
+      selectedMemberId
+    });
+    return (
+      <div className="px-5 py-12 text-center">
+        <p className="text-[13px] text-foreground/40">
+          Loading chart...
         </p>
       </div>
     );

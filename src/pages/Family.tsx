@@ -60,6 +60,17 @@ const Family = () => {
     navigate('/baby-setup');
   };
 
+  // Debug logging
+  console.log('[Family] Render state:', {
+    authLoading,
+    babiesLoading,
+    profileLoading,
+    babiesCount: babies.length,
+    babies: babies.map(b => ({ id: b.id, name: b.name, birthday: b.birthday })),
+    selectedMemberId,
+    user: user?.id
+  });
+
   if (authLoading || babiesLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
