@@ -423,18 +423,18 @@ export const getSunSynthesis = (sunSign: ZodiacSign): string => {
   const element = getElement(sunSign);
   
   const syntheses: Record<ZodiacSign, string> = {
-    aries: `${sunName} at the core means impulse is intelligence. This child doesn't wait to feel ready—action creates clarity. ${element === 'fire' ? 'Fire energy' : 'Their energy'} burns bright and fast, preferring movement to deliberation.`,
-    taurus: `${sunName} at the core means stability is non-negotiable. This child builds their world slowly, brick by brick, and resists anything that threatens their carefully constructed comfort. Change happens on their timeline, not yours.`,
-    gemini: `${sunName} at the core means curiosity drives everything. This child's mind runs faster than most can follow—collecting information, making connections, asking the next question before the first is answered. Stillness feels like stagnation.`,
-    cancer: `${sunName} at the core means feeling is remembering. This child holds onto emotional experiences long after they've passed, building their identity from moments of connection and belonging. Home isn't a place—it's a feeling they carry.`,
-    leo: `${sunName} at the core means being seen is being real. This child needs an audience not for validation but for existence—their warmth, creativity, and generosity expand in direct proportion to attention received.`,
-    virgo: `${sunName} at the core means improvement is instinctual. This child notices every flaw, every possibility for refinement—not from criticism but from genuine care. They make things better because leaving them imperfect feels wrong.`,
-    libra: `${sunName} at the core means harmony is essential. This child reads the room before they've fully entered it, adjusting themselves to create balance. Their own needs often get lost in the service of peace.`,
-    scorpio: `${sunName} at the core means depth is default. This child doesn't do surface level—every experience is felt fully, every relationship tested for loyalty. What they love, they love completely; what they trust, they trust absolutely.`,
-    sagittarius: `${sunName} at the core means expansion is oxygen. This child needs to grow, explore, understand—staying put feels like shrinking. Their optimism isn't naive; it's a refusal to accept limitation as final.`,
-    capricorn: `${sunName} at the core means responsibility is identity. This child takes things seriously, perhaps too seriously—they feel the weight of expectations even when none have been placed. Achievement isn't ambition; it's security.`,
-    aquarius: `${sunName} at the core means difference is destiny. This child needs to think their own thoughts, follow their own path—conformity feels like erasure. They're building a future that doesn't exist yet.`,
-    pisces: `${sunName} at the core means boundaries are permeable. This child feels what others feel, dreams what others can't imagine, and moves between reality and fantasy with unsettling ease. Separation is an illusion they never quite believe.`
+    aries: `${sunName} core: impulse is intelligence. Action creates clarity—movement over deliberation.`,
+    taurus: `${sunName} core: stability is non-negotiable. Change happens on their timeline, not yours.`,
+    gemini: `${sunName} core: curiosity drives everything. The mind runs faster than most can follow.`,
+    cancer: `${sunName} core: feeling is remembering. Home isn't a place—it's a feeling they carry.`,
+    leo: `${sunName} core: being seen is being real. Warmth and generosity expand with attention.`,
+    virgo: `${sunName} core: improvement is instinctual. They make things better because imperfection feels wrong.`,
+    libra: `${sunName} core: harmony is essential. Their needs often get lost in service of peace.`,
+    scorpio: `${sunName} core: depth is default. What they love, they love completely.`,
+    sagittarius: `${sunName} core: expansion is oxygen. Optimism isn't naive—it refuses to accept limitation.`,
+    capricorn: `${sunName} core: responsibility is identity. Achievement isn't ambition; it's security.`,
+    aquarius: `${sunName} core: difference is destiny. Conformity feels like erasure.`,
+    pisces: `${sunName} core: boundaries are permeable. They feel what others feel, dream what others can't.`
   };
   
   return syntheses[sunSign];
@@ -445,18 +445,18 @@ export const getMoonSynthesis = (moonSign: ZodiacSign): string => {
   const moonName = getZodiacName(moonSign);
   
   const syntheses: Record<ZodiacSign, string> = {
-    aries: `Moon in ${moonName} means emotions arrive like weather—sudden, intense, and soon passed. This child processes feelings through action, not reflection. When upset, they need to move, not sit with it.`,
-    taurus: `Moon in ${moonName} means emotions need anchoring. This child processes feelings slowly, through comfort, routine, and physical presence. What they feel today, they'll still feel next month—loyalty runs deep.`,
-    gemini: `Moon in ${moonName} means emotions need words. This child talks through feelings, shifting perspectives until something makes sense. Silence in distress isn't calm—it's confusion.`,
-    cancer: `Moon in ${moonName} means emotions are memory. This child holds feelings close, letting them accumulate into a rich inner world. They need to feel safe before they can feel anything else.`,
-    leo: `Moon in ${moonName} means emotions need witness. This child's feelings become real when acknowledged by others. Pride protects a tender heart that wants nothing more than to be celebrated for existing.`,
-    virgo: `Moon in ${moonName} means emotions need organizing. This child worries as a way of caring, analyzing feelings until they're manageable. They feel useful when they're helping—and anxious when they're not.`,
-    libra: `Moon in ${moonName} means emotions need balance. This child absorbs the feelings of those around them, adjusting their own state to maintain harmony. Their needs often get filed under 'later.'`,
-    scorpio: `Moon in ${moonName} means emotions run at full volume. This child feels everything deeply—joy and grief, trust and betrayal. There's no dimmer switch, only on and off.`,
-    sagittarius: `Moon in ${moonName} means emotions need room to roam. This child processes through movement, adventure, and optimism. Heaviness gets converted to humor; sadness becomes philosophy.`,
-    capricorn: `Moon in ${moonName} means emotions need purpose. This child learns early to manage feelings, to be useful, to not burden others. Vulnerability feels like exposure; productivity feels like safety.`,
-    aquarius: `Moon in ${moonName} means emotions need distance. This child observes their own feelings from a step removed, analyzing rather than immersing. They need space to process privately before sharing.`,
-    pisces: `Moon in ${moonName} means emotions have no edges. This child feels everything in the room—their own feelings tangled with everyone else's. They need regular escape into imagination to survive reality.`
+    aries: `${moonName} moon: emotions arrive sudden and intense. They need to move, not sit with it.`,
+    taurus: `${moonName} moon: emotions need anchoring. What they feel today, they'll still feel next month.`,
+    gemini: `${moonName} moon: emotions need words. Silence in distress isn't calm—it's confusion.`,
+    cancer: `${moonName} moon: emotions are memory. They need to feel safe before anything else.`,
+    leo: `${moonName} moon: emotions need witness. Pride protects a tender heart.`,
+    virgo: `${moonName} moon: emotions need organizing. Useful when helping, anxious when not.`,
+    libra: `${moonName} moon: emotions need balance. Their needs get filed under 'later.'`,
+    scorpio: `${moonName} moon: emotions run at full volume. No dimmer switch, only on and off.`,
+    sagittarius: `${moonName} moon: emotions need room. Heaviness converts to humor, sadness to philosophy.`,
+    capricorn: `${moonName} moon: emotions need purpose. Vulnerability is exposure; productivity is safety.`,
+    aquarius: `${moonName} moon: emotions need distance. They process privately before sharing.`,
+    pisces: `${moonName} moon: emotions have no edges. Their feelings tangle with everyone else's.`
   };
   
   return syntheses[moonSign];
@@ -476,40 +476,40 @@ export const getSunRisingSynthesis = (
   const risingElement = getElement(risingSign);
   
   if (sunElement === risingElement) {
-    return `${risingName} rising amplifies this ${sunName}'s natural tendencies. ${rising.instinct}. Double ${sunElement} energy means what you see is what you get—no hidden layers, just pure expression.`;
+    return `${risingName} rising amplifies ${sunName}. Double ${sunElement}—what you see is what you get.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'fire')) {
-    return `${risingName} rising fans this ${sunName}'s flames. ${rising.instinct}. The combination creates someone who thinks fast and acts faster, ideas becoming action almost instantaneously.`;
+    return `${risingName} rising fans ${sunName}'s flames. Thinks fast, acts faster.`;
   }
   
   if ((sunElement === 'earth' && risingElement === 'water') || 
       (sunElement === 'water' && risingElement === 'earth')) {
-    return `${risingName} rising grounds this ${sunName}'s depths. ${rising.instinct}. There's substance beneath the surface—feelings have roots, and instincts are reliable.`;
+    return `${risingName} rising grounds ${sunName}'s depths. Feelings have roots, instincts are reliable.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'water') || 
       (sunElement === 'water' && risingElement === 'fire')) {
-    return `${risingName} rising creates steam with this ${sunName} energy. ${rising.instinct}. The combination produces emotional intensity that others feel before they understand.`;
+    return `${risingName} rising creates steam with ${sunName}. Emotional intensity others feel before they understand.`;
   }
   
   if ((sunElement === 'earth' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'earth')) {
-    return `${risingName} rising intellectualizes this ${sunName}'s groundedness. ${rising.instinct}. Practical ideas and idealistic plans merge into something actually achievable.`;
+    return `${risingName} rising intellectualizes ${sunName}'s groundedness. Practical meets idealistic.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'earth') || 
       (sunElement === 'earth' && risingElement === 'fire')) {
-    return `${risingName} rising channels this ${sunName}'s drive into tangible results. ${rising.instinct}. Ambition meets patience—they want it all and they'll build it brick by brick.`;
+    return `${risingName} rising channels ${sunName}'s drive. Ambition meets patience.`;
   }
   
   if ((sunElement === 'water' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'water')) {
-    return `${risingName} rising gives this ${sunName}'s feelings an intellectual frame. ${rising.instinct}. They understand emotions conceptually while feeling them deeply—sometimes simultaneously, sometimes alternating.`;
+    return `${risingName} rising frames ${sunName}'s feelings. Understands emotions while feeling them deeply.`;
   }
   
-  return `${risingName} rising modifies how this ${sunName} shows up. ${rising.instinct}. What you see first isn't the whole story—the core takes time to reveal itself.`;
+  return `${risingName} rising modifies ${sunName}. What you see first isn't the whole story.`;
 };
 
 const getElement = (sign: ZodiacSign): string => {
