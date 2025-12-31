@@ -83,38 +83,40 @@ const Index = () => {
   }
 
   return (
-    <NightSkyBackground>
-      <div 
-        className="min-h-screen flex flex-col"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto pb-24">
-          {activeBaby && (
-            <DailyCoach 
-              babyName={activeBaby.name} 
-              babyBirthday={activeBaby.birthday || undefined}
-              babyId={activeBaby.id}
-              babies={babies}
-              activeBabyId={activeBaby.id}
-              onSwitchBaby={switchBaby}
-            />
-          )}
-        </main>
+    <div className="min-h-screen">
+      <NightSkyBackground>
+        <div 
+          className="min-h-screen flex flex-col"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+        >
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto pb-24">
+            {activeBaby && (
+              <DailyCoach 
+                babyName={activeBaby.name} 
+                babyBirthday={activeBaby.birthday || undefined}
+                babyId={activeBaby.id}
+                babies={babies}
+                activeBabyId={activeBaby.id}
+                onSwitchBaby={switchBaby}
+              />
+            )}
+          </main>
 
-        {/* Bottom Navigation */}
-        <FamilyNav />
+          {/* Guide Menu */}
+          <GuideMenu 
+            open={menuOpen}
+            onOpenChange={setMenuOpen}
+            onSelectSection={setGuideSection} 
+          />
+        </div>
+      </NightSkyBackground>
 
-        {/* Guide Menu */}
-        <GuideMenu 
-          open={menuOpen}
-          onOpenChange={setMenuOpen}
-          onSelectSection={setGuideSection} 
-        />
-      </div>
-    </NightSkyBackground>
+      {/* Bottom Navigation */}
+      <FamilyNav />
+    </div>
   );
 };
 
