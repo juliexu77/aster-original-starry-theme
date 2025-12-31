@@ -15,6 +15,7 @@ interface AstrologyProfileProps {
   sunSign: ZodiacSign;
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
+  name: string;
 }
 
 interface SectionProps {
@@ -56,18 +57,21 @@ const TraitList = ({ traits }: { traits: string[] }) => (
   </ul>
 );
 
-export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyProfileProps) => {
+export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name }: AstrologyProfileProps) => {
   const sunMechanics = SUN_MECHANICS[sunSign];
   const moonPatterns = moonSign ? MOON_PATTERNS[moonSign] : null;
   const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
   const { strengths, growthEdges } = getChartSynthesis(sunSign, moonSign, risingSign);
+  
+  // Get first name for personalization
+  const firstName = name.split(' ')[0];
 
   return (
     <div className="bg-foreground/[0.02] border border-foreground/[0.06] rounded-xl overflow-hidden">
       {/* SUN SECTION */}
       <Section
         icon={<Sun size={16} strokeWidth={1.5} />}
-        title={`Sun in ${getZodiacName(sunSign)}`}
+        title={`${firstName}'s Sun in ${getZodiacName(sunSign)}`}
         subtitle="Essential self · Core identity"
         isFirst
       >
@@ -89,7 +93,7 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyPro
       {moonSign && moonPatterns && (
         <Section
           icon={<ZodiacIcon sign={moonSign} size={16} strokeWidth={1.5} />}
-          title={`Moon in ${getZodiacName(moonSign)}`}
+          title={`${firstName}'s Moon in ${getZodiacName(moonSign)}`}
           subtitle="Emotional needs · Inner world"
         >
           <div className="space-y-3">
@@ -111,7 +115,7 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyPro
       {risingSign && risingPresence && (
         <Section
           icon={<ZodiacIcon sign={risingSign} size={16} strokeWidth={1.5} />}
-          title={`${getZodiacName(risingSign)} Rising`}
+          title={`${firstName}'s ${getZodiacName(risingSign)} Rising`}
           subtitle="First impression · Instinctual response"
         >
           <div className="space-y-3">
@@ -132,7 +136,7 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign }: AstrologyPro
       {/* CHART DYNAMICS SECTION */}
       <Section
         icon={<Sparkles size={16} strokeWidth={1.5} />}
-        title="How These Work Together"
+        title={`How ${firstName}'s Chart Works Together`}
         subtitle="Chart synthesis · Light & shadow"
       >
         <div className="space-y-4">

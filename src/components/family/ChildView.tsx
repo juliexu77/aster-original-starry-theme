@@ -292,7 +292,8 @@ export const ChildView = ({
           <AstrologyProfile 
             sunSign={signs.sun} 
             moonSign={signs.moon} 
-            risingSign={signs.rising} 
+            risingSign={signs.rising}
+            name={selectedMember.name}
           />
         </div>
 
