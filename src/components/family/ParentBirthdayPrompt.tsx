@@ -63,7 +63,7 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   const hasAnyData = birthday || partnerBirthday;
 
   return (
-    <GlassCard className="mx-5">
+    <GlassCard>
       {/* Header */}
       <div className="px-4 py-3 border-b border-border/30">
         <div className="flex items-center gap-3">
