@@ -87,7 +87,7 @@ export const ChartIntroOverlay = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
         >
           <div className="flex-1 flex items-center justify-center w-full">
             <AnimatePresence mode="wait">
@@ -186,12 +186,12 @@ export const ChartIntroOverlay = ({
             </AnimatePresence>
           </div>
 
-          {/* Navigation buttons */}
+          {/* Navigation buttons - above nav bar */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="flex items-center justify-between w-full px-8 pb-12"
+            className="flex items-center justify-between w-full px-8 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
           >
             <button
               onClick={handleBack}
