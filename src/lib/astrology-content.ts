@@ -1,268 +1,271 @@
 import { ZodiacSign, getZodiacName } from './zodiac';
 
-// Sun sign core mechanics - NOT generic adjectives, but personality patterns
+// Sun sign core mechanics - the essential nature of the soul's expression
+// The Sun represents your core identity, life force, and the central theme of your existence
 export const SUN_MECHANICS: Record<ZodiacSign, string[]> = {
   aries: [
-    'Needs to be first, not best—first',
-    'Boredom registers as physical discomfort',
-    'Emotions happen in bursts, then disappear',
-    'Conflict is clarifying, not scary'
+    'The pioneer spirit—driven by an inner fire that demands forward motion and new beginnings',
+    'Possesses an instinctual courage that acts before fear has time to form objections',
+    'Experiences emotions as pure energy bursts that fuel immediate action, then naturally dissipate',
+    'Finds clarity through confrontation; conflict reveals truth rather than creating chaos'
   ],
   taurus: [
-    'Processes change on their own timeline, not yours',
-    'Comfort is a non-negotiable, not a preference',
-    'Stubbornness is actually deep self-trust',
-    'Physical environment directly affects mood'
+    'Embodies the principle of sacred timing—rushing destroys what patience would perfect',
+    'Seeks security through sensory anchoring; physical comfort is a spiritual necessity, not indulgence',
+    'What others call stubbornness is actually profound self-trust and unshakeable values',
+    'The body is the temple—environment, texture, and beauty directly influence emotional state'
   ],
   gemini: [
-    'Two opinions on everything, both genuine',
-    'Silence feels like abandonment',
-    'Easily bored but never boring',
-    'Learning is a hunger, not a hobby'
+    'Houses a multifaceted mind that genuinely holds contradictory truths simultaneously',
+    'Experiences silence as a kind of exile—connection and exchange are life force',
+    'Possesses a nervous system wired for variety; sameness creates genuine distress',
+    'Learning is not a hobby but a hunger—the mind must be fed constantly or it withers'
   ],
   cancer: [
-    'Remembers feelings more than facts',
-    'Home is the emotional control center',
-    'Protective instincts override logic',
-    'Needs permission to need things'
+    'Lives through an emotional memory that stores feelings with photographic precision',
+    'Home is not a location but an internal sanctuary that travels everywhere',
+    'Protective instincts bypass rational thought—the heart knows who needs sheltering',
+    'Often needs permission to acknowledge their own needs, so attuned are they to others'
   ],
   leo: [
-    'Needs to be the center of gravity',
-    'Emotions as performance art',
-    'Restless without novelty or audience',
-    'Generosity as identity, not just behavior'
+    'Radiates a solar presence that naturally draws others into orbit',
+    'Expresses emotions as creative acts—feelings become performance, art, and generous display',
+    'Grows restless without creative expression or appreciative audience',
+    'Generosity defines identity; giving is not what they do but who they are'
   ],
   virgo: [
-    'Notices what everyone else misses',
-    'Anxiety disguised as helpfulness',
-    'Perfectionism as self-protection',
-    'Criticism is their love language'
+    'Possesses a refined perception that notices the details everyone else overlooks',
+    'Channels nervous energy into service—helping others soothes inner anxiety',
+    'Perfectionism is protective armor; if they can control quality, they can control chaos',
+    'Expresses love through improvement and critique—noticing flaws means caring enough to look'
   ],
   libra: [
-    'Absorbs the mood of whoever is closest',
-    'Fairness is an obsession, not a preference',
-    'Decisions feel like existential threats',
-    'Harmony at any personal cost'
+    'Functions as an emotional barometer, unconsciously absorbing the moods of everyone present',
+    'Experiences fairness as a visceral imperative, not an abstract ideal',
+    'Decision-making triggers genuine existential anxiety—each choice means a path not taken',
+    'Will sacrifice personal truth to preserve harmony; peace is oxygen'
   ],
   scorpio: [
-    'Trust is earned in years, lost in seconds',
-    'All or nothing, no middle ground',
-    'Secrets feel safer than openness',
-    'Intensity as default setting'
+    'Trust is sacred currency—earned through years of observation, destroyed in single moments',
+    'Operates only in absolutes; half-measures and casual commitments feel meaningless',
+    'Guards inner depths behind composed exterior; vulnerability is reserved for the chosen few',
+    'Lives at emotional depth that others visit only occasionally'
   ],
   sagittarius: [
-    'Commitment feels like a cage',
-    'Optimism that borders on denial',
-    'Truth-telling without editing',
-    'Motion as emotional regulation'
+    'Experiences commitment as potential limitation; freedom is the prerequisite for joy',
+    'Maintains optimism as philosophical stance, sometimes refusing to see darkness even when present',
+    'Speaks truth as naturally as breathing, without calculating consequences',
+    'Processes emotion through motion—travel, exploration, and expansion heal what stillness cannot'
   ],
   capricorn: [
-    'Takes responsibility for things that aren\'t theirs',
-    'Achievement as emotional security',
-    'Pessimism disguised as realism',
-    'Work before play, always'
+    'Assumes responsibility reflexively, carrying burdens that were never theirs to carry',
+    'Equates achievement with emotional safety; success is not ambition but survival',
+    'Views life through realistic lens that others mistake for pessimism',
+    'Prioritizes work and duty above pleasure; delayed gratification is natural state'
   ],
   aquarius: [
-    'Needs to be different, not better',
-    'Emotional detachment as survival strategy',
-    'Ideas matter more than feelings',
-    'Rebellion for its own sake'
+    'Needs to express uniqueness—fitting in feels like self-betrayal',
+    'Maintains emotional distance as self-preservation; detachment enables objectivity',
+    'Values ideas and principles above personal feelings; concepts feel more real than emotions',
+    'Challenges convention instinctively; rebellion is identity expression'
   ],
   pisces: [
-    'Boundaries are suggestions, not rules',
-    'Other people\'s feelings feel like their own',
-    'Reality is negotiable',
-    'Escape routes always mapped'
+    'Experiences boundaries as permeable membranes rather than solid walls',
+    'Absorbs others\' emotional states as naturally as breathing; empathy is uncontrollable',
+    'Lives between worlds—reality and imagination blend seamlessly',
+    'Always knows the escape routes; when life becomes too harsh, retreat is survival'
   ]
 };
 
-// Moon sign emotional patterns - how feelings actually work
+// Moon sign emotional patterns - the hidden emotional landscape
+// The Moon represents your inner emotional nature, instinctual reactions, and what you need to feel safe
 export const MOON_PATTERNS: Record<ZodiacSign, string[]> = {
   aries: [
-    'Feelings arrive fast and hot, then evaporate',
-    'Needs action when upset, not comfort',
-    'Emotional memory is mercifully short',
-    'Vulnerability feels like weakness'
+    'Emotions flash like lightning—intense, illuminating, and quickly dissipated',
+    'Needs physical movement and active response when emotionally activated; stillness amplifies distress',
+    'Blessed with emotional resilience; yesterday\'s wounds rarely carry into tomorrow',
+    'Experiences vulnerability as exposure; showing softness feels like showing weakness'
   ],
   taurus: [
-    'Slow to feel, slower to unfeel',
-    'Comfort objects are emotionally essential',
-    'Needs physical presence, not words',
-    'Change triggers deep anxiety'
+    'Emotions move like seasons—slow to shift, but profound when they arrive',
+    'Finds emotional grounding through tactile comfort; specific objects and textures provide real security',
+    'Needs physical presence and consistent routine over verbal reassurance',
+    'Experiences change and unpredictability as genuine threats to emotional stability'
   ],
   gemini: [
-    'Talks to process, can\'t feel in silence',
-    'Mood shifts without clear trigger',
-    'Intellectualizes to avoid feeling',
-    'Needs variety even in comfort'
+    'Must verbalize to process; feelings remain shapeless until words give them form',
+    'Mood can shift rapidly without obvious external cause—the mind processes constantly',
+    'Instinctively intellectualizes emotions as a coping mechanism; analyzing feelings feels safer than drowning in them',
+    'Requires variety and mental stimulation even in emotional comfort'
   ],
   cancer: [
-    'Absorbs ambient emotion like a sponge',
-    'Past feelings stay present',
-    'Needs reassurance on repeat',
-    'Nurtures others to avoid own needs'
+    'Functions as an emotional sponge, absorbing the ambient feelings of any environment',
+    'The past remains emotionally present; old feelings resurface with remarkable clarity',
+    'Requires repeated reassurance; one declaration of love is not enough for lasting security',
+    'Often nurtures others as a way of deflecting attention from personal emotional needs'
   ],
   leo: [
-    'Needs feelings witnessed to feel real',
-    'Pride protects soft center',
-    'Wounded by being ignored, not criticized',
-    'Dramatic expression is authentic expression'
+    'Needs emotions to be witnessed and acknowledged to feel fully real',
+    'Beneath proud exterior lies a tender heart that bruises easily',
+    'Being overlooked or ignored causes deeper wounds than direct criticism',
+    'Expresses feelings with theatrical flair; dramatic expression is authentic, not performative'
   ],
   virgo: [
-    'Worry is the baseline emotional state',
-    'Helps others to feel useful enough to exist',
-    'Self-critical inner monologue on loop',
-    'Needs order to feel safe'
+    'Anxiety serves as emotional baseline; the system runs on productive worry',
+    'Finds emotional purpose through usefulness; being helpful justifies existence',
+    'Carries a relentlessly self-critical inner voice that rarely offers praise',
+    'Requires external order to achieve internal calm; chaos in environment creates chaos in psyche'
   ],
   libra: [
-    'Other people\'s emotions come first',
-    'Conflict is viscerally disturbing',
-    'Needs external validation to trust own feelings',
-    'Peace at any personal cost'
+    'Prioritizes others\' emotional needs before acknowledging their own',
+    'Experiences interpersonal conflict as physically and emotionally disturbing',
+    'Struggles to trust personal feelings without external validation or agreement',
+    'Sacrifices authentic emotional expression to maintain relational harmony'
   ],
   scorpio: [
-    'Feelings at full volume, always',
-    'Protective of inner world despite outward confidence',
-    'Grows through intensity, not gradually',
-    'Betrayal is never forgotten'
+    'Feels emotions at maximum intensity; there is no volume control',
+    'Guards emotional depths fiercely despite projecting outward confidence and control',
+    'Transforms and evolves through emotional intensity rather than gradual adjustment',
+    'Stores betrayals in permanent memory; forgiveness is possible, forgetting is not'
   ],
   sagittarius: [
-    'Optimism as emotional defense',
-    'Needs freedom to feel safe',
-    'Avoids heavy emotions through motion',
-    'Honesty without tact'
+    'Defaults to optimism as emotional armor against life\'s disappointments',
+    'Requires freedom and space to feel emotionally secure; containment creates panic',
+    'Escapes heavy emotions through movement, humor, or philosophical reframing',
+    'Speaks emotional truth without diplomatic packaging; honesty overrides tact'
   ],
   capricorn: [
-    'Suppresses feelings to function',
-    'Vulnerability feels dangerous',
-    'Needs to be useful to feel loved',
-    'Emotions on a schedule'
+    'Compartmentalizes and manages emotions to maintain functionality',
+    'Experiences vulnerability as dangerous exposure; showing feelings feels like showing weakness',
+    'Equates being useful with being worthy of love',
+    'Prefers to process emotions on a schedule; unexpected feelings feel disruptive'
   ],
   aquarius: [
-    'Observes own feelings from a distance',
-    'Uncomfortable with emotional intensity',
-    'Needs space to process privately',
-    'Intellectual about feelings'
+    'Observes personal emotions from detached, analytical perspective',
+    'Feels genuinely uncomfortable with intense emotional exchanges; prefers rational discussion',
+    'Needs significant private time and space to process feelings internally',
+    'Approaches emotions intellectually; understanding feelings matters more than expressing them'
   ],
   pisces: [
-    'Boundaries dissolve under emotional pressure',
-    'Feels everything in the room',
-    'Needs fantasy to cope with reality',
-    'Compassion without limits'
+    'Boundaries dissolve under emotional pressure; saying no to others\' pain is nearly impossible',
+    'Absorbs the emotional atmosphere of any room as if it were personal experience',
+    'Requires regular retreats into imagination and fantasy to recover from reality\'s demands',
+    'Offers compassion without limits, sometimes to personal detriment'
   ]
 };
 
-// Rising sign first impressions - how they enter rooms
+// Rising sign first impressions - how they enter rooms and are perceived by others
+// The Ascendant (Rising) represents your social mask, first impressions, and how you instinctively approach new situations
 export const RISING_PRESENCE: Record<ZodiacSign, {
   instinct: string;
   modification: string[];
 }> = {
   aries: {
-    instinct: 'First impulse is always movement',
+    instinct: 'Projects an aura of dynamic energy and initiative; others immediately sense someone who makes things happen',
     modification: [
-      'Leads with action, not observation',
-      'Confidence is instinctual, not performed',
-      'Meets new situations with immediate engagement',
-      'Impatience reads as energy, not rudeness'
+      'Leads with direct action rather than observation or deliberation',
+      'Radiates self-assurance that feels innate rather than cultivated',
+      'Approaches new situations with immediate engagement and forward momentum',
+      'What might be perceived as impatience actually communicates vitality and readiness'
     ]
   },
   taurus: {
-    instinct: 'First impulse is to assess stability',
+    instinct: 'Projects calm authority and sensual awareness; others feel immediately grounded in their presence',
     modification: [
-      'Enters slowly, stays indefinitely',
-      'Physical presence is grounding to others',
-      'Deliberate pace masks inner fire',
-      'Charm through steadiness, not sparkle'
+      'Enters situations deliberately and tends to establish lasting presence once settled',
+      'Offers others a sense of stability and reliability simply by being present',
+      'Measured pace conceals passionate nature; the surface calm masks inner intensity',
+      'Attracts through quiet magnetism and steadfast demeanor rather than flashy display'
     ]
   },
   gemini: {
-    instinct: 'First impulse is to gather information',
+    instinct: 'Projects quick intelligence and adaptive curiosity; others sense a mind that\'s constantly processing',
     modification: [
-      'Leads with questions and curiosity',
-      'Adapts persona to each room',
-      'Nervous energy reads as enthusiasm',
-      'Words come before feelings show'
+      'Opens encounters with questions, observations, and genuine interest in others',
+      'Unconsciously adjusts communication style and persona to match each social context',
+      'Nervous energy translates to others as engaging enthusiasm and mental agility',
+      'Verbal expression precedes emotional vulnerability; words form the bridge to connection'
     ]
   },
   cancer: {
-    instinct: 'First impulse is to read emotional safety',
+    instinct: 'Projects protective warmth and emotional attunement; others sense someone who truly notices them',
     modification: [
-      'Scans for threat before relaxing',
-      'Protective shell hides soft center',
-      'Nurtures before revealing self',
-      'Warmth emerges once trust is established'
+      'Instinctively assesses emotional safety before allowing relaxation or openness',
+      'Presents a protective exterior that shields a remarkably tender interior',
+      'Offers nurturing care to others before revealing personal vulnerabilities',
+      'True warmth and depth emerge gradually once trust has been established'
     ]
   },
   leo: {
-    instinct: 'First impulse is to be seen',
+    instinct: 'Projects radiant confidence and warm generosity; others naturally orient toward their presence',
     modification: [
-      'Natural spotlight magnetism',
-      'Confidence requires no warm-up',
-      'Generosity is immediate and theatrical',
-      'Presence fills the room automatically'
+      'Possesses natural charisma that draws attention without conscious effort',
+      'Confidence arrives fully formed, requiring no warm-up period or external validation',
+      'Expresses generosity immediately and with theatrical flair',
+      'Physical and energetic presence naturally expands to fill available space'
     ]
   },
   virgo: {
-    instinct: 'First impulse is to analyze and categorize',
+    instinct: 'Projects competent attentiveness and refined perception; others sense someone who notices every detail',
     modification: [
-      'Observes before participating',
-      'Helpfulness is the entry point',
-      'Precision masks inner chaos',
-      'Service as connection strategy'
+      'Prefers to observe and analyze before actively participating',
+      'Offers practical help as the primary mode of initial connection',
+      'Careful, precise exterior conceals richer emotional complexity beneath',
+      'Service and usefulness form the natural strategy for building relationships'
     ]
   },
   libra: {
-    instinct: 'First impulse is to harmonize',
+    instinct: 'Projects graceful diplomacy and aesthetic awareness; others feel immediately at ease and appreciated',
     modification: [
-      'Mirrors whoever is present',
-      'Charm is automatic, not calculated',
-      'Smooths rough edges in any room',
-      'Aesthetically aware at all times'
+      'Naturally reflects and validates those they encounter',
+      'Charm flows effortlessly and genuinely without conscious calculation',
+      'Instinctively softens tension and creates atmosphere of social harmony',
+      'Maintains constant awareness of beauty, balance, and aesthetic considerations'
     ]
   },
   scorpio: {
-    instinct: 'First impulse is to observe without revealing',
+    instinct: 'Projects compelling intensity and penetrating awareness; others sense depth they cannot quite read',
     modification: [
-      'Intensity is felt before seen',
-      'Reveals nothing while seeing everything',
-      'Presence is magnetic and unnerving',
-      'Trust must be proven, not assumed'
+      'Radiates emotional intensity that is felt before it is understood',
+      'Observes everything while revealing nothing; a master of strategic disclosure',
+      'Exerts magnetic presence that simultaneously attracts and unsettles',
+      'Requires demonstrated trustworthiness before allowing genuine access'
     ]
   },
   sagittarius: {
-    instinct: 'First impulse is to explore and expand',
+    instinct: 'Projects infectious optimism and expansive enthusiasm; others feel invited into larger possibilities',
     modification: [
-      'Enthusiasm is uncontainable',
-      'Boundaries feel optional',
-      'Optimism is immediately apparent',
-      'Movement is constant'
+      'Enthusiasm cannot be contained or hidden; it overflows naturally',
+      'Approaches social boundaries as suggestions rather than rules',
+      'Optimistic worldview is immediately apparent in demeanor and expression',
+      'Constant movement and energy; rarely found in stillness'
     ]
   },
   capricorn: {
-    instinct: 'First impulse is to assess structure and hierarchy',
+    instinct: 'Projects mature authority and quiet ambition; others sense capability and serious purpose',
     modification: [
-      'Reserved exterior masks ambition',
-      'Maturity beyond their years',
-      'Takes situations seriously from the start',
-      'Authority feels natural, not forced'
+      'Reserved, composed exterior conceals significant drive and aspiration',
+      'Projects wisdom and groundedness beyond chronological years',
+      'Takes situations seriously from the first moment; levity comes later if at all',
+      'Natural authority that feels earned rather than assumed or forced'
     ]
   },
   aquarius: {
-    instinct: 'First impulse is to differentiate from the group',
+    instinct: 'Projects intellectual independence and unconventional perspective; others sense someone who thinks differently',
     modification: [
-      'Deliberately unusual first impression',
-      'Friendly but emotionally distant',
-      'Independence is non-negotiable',
-      'Observes social rules to break them'
+      'Deliberately creates distinctive first impression; conformity feels like invisibility',
+      'Offers genuine friendliness while maintaining clear emotional boundaries',
+      'Independence is communicated immediately as non-negotiable personal requirement',
+      'Studies social conventions primarily to understand how to transcend them'
     ]
   },
   pisces: {
-    instinct: 'First impulse is to merge with the environment',
+    instinct: 'Projects ethereal sensitivity and intuitive perception; others sense someone who perceives beyond the visible',
     modification: [
-      'Dreamy presence, hard to pin down',
-      'Absorbs mood of the room',
-      'Gentle entry, deep impact',
-      'Boundaries unclear from the start'
+      'Dreamlike quality of presence makes them difficult to fully categorize',
+      'Naturally absorbs and reflects the emotional atmosphere of any environment',
+      'Gentle, unassuming entry often creates surprisingly profound impact',
+      'Personal boundaries appear fluid or undefined from initial encounter'
     ]
   }
 };
