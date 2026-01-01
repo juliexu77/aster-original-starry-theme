@@ -266,22 +266,39 @@ export const ChildView = ({
       <div className="space-y-6">
         {/* Header with Member Name */}
         <div className="px-5 pt-6">
-          <div className="text-center">
-            {hasMultipleMembers ? (
-              <button
-                onClick={() => setShowSelector(true)}
-                className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
-              >
-                <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-                <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
-                <ChevronDown className="w-4 h-4 text-foreground/30" />
-              </button>
-            ) : (
-              <div className="inline-flex items-center gap-2">
-                <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
-                <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
-              </div>
-            )}
+          <div className="flex items-center justify-between">
+            {/* Left spacer for centering */}
+            <div className="w-9" />
+            
+            {/* Center: Name and selector */}
+            <div className="text-center flex-1">
+              {hasMultipleMembers ? (
+                <button
+                  onClick={() => setShowSelector(true)}
+                  className={`inline-flex items-center gap-2 transition-all ${showPulse ? 'animate-pulse' : ''}`}
+                >
+                  <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
+                  <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+                  <ChevronDown className="w-4 h-4 text-foreground/30" />
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2">
+                  <ZodiacIcon sign={signs.sun} size={18} strokeWidth={1.5} className="text-foreground/50" />
+                  <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Right: Share button */}
+            <ShareChartSheet
+              name={selectedMember.name}
+              birthday={selectedMember.birthday!}
+              birthTime={selectedMember.birth_time}
+              birthLocation={selectedMember.birth_location}
+              sunSign={signs.sun}
+              moonSign={signs.moon}
+              risingSign={signs.rising}
+            />
           </div>
           
           <p className="text-[11px] text-foreground/40 mt-1 text-center">
@@ -301,22 +318,8 @@ export const ChildView = ({
           )}
         </div>
 
-        {/* Birth Chart Diagram with Share button row */}
+        {/* Birth Chart Diagram */}
         <div className="px-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] text-foreground/40 uppercase tracking-[0.15em]">
-              {selectedMember.name}'s Chart
-            </p>
-            <ShareChartSheet
-              name={selectedMember.name}
-              birthday={selectedMember.birthday!}
-              birthTime={selectedMember.birth_time}
-              birthLocation={selectedMember.birth_location}
-              sunSign={signs.sun}
-              moonSign={signs.moon}
-              risingSign={signs.rising}
-            />
-          </div>
           <BirthChartDiagram
             sunSign={signs.sun}
             moonSign={signs.moon}
