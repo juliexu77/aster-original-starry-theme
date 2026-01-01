@@ -64,11 +64,8 @@ export const CosmosView = ({
   const allMembers = useMemo(() => {
     const members: FamilyMember[] = [];
     
-    console.log('[CosmosView] Building members. babies:', babies?.length, 'userProfile:', !!userProfile);
-    
     // Add children with birthdays
     babies.forEach(baby => {
-      console.log('[CosmosView] Baby:', baby.name, 'birthday:', baby.birthday);
       if (baby.birthday) {
         members.push({
           id: baby.id,
@@ -105,20 +102,17 @@ export const CosmosView = ({
       });
     }
     
-    console.log('[CosmosView] Final members:', members.map(m => ({ id: m.id, name: m.name })));
     return members;
   }, [babies, userProfile]);
 
-  // Find selected member
+  // Find selected member - fallback to first member if selectedMemberId doesn't match
   const selectedMember = useMemo(() => {
-    console.log('[CosmosView] Finding member. selectedMemberId:', selectedMemberId, 'allMembers.length:', allMembers.length);
     if (selectedMemberId) {
       const found = allMembers.find(m => m.id === selectedMemberId);
-      console.log('[CosmosView] Found by ID:', found?.name);
-      return found;
+      if (found) return found;
     }
-    console.log('[CosmosView] Using first member:', allMembers[0]?.name);
-    return allMembers[0];
+    // Default to first member
+    return allMembers[0] || null;
   }, [allMembers, selectedMemberId]);
 
   // Get signs for selected member
