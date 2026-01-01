@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { FamilyMember, CHILD_QUESTIONS, ADULT_QUESTIONS, IntakeResponses } from "./types";
 
 interface CosmosQuestionsFlowProps {
@@ -187,8 +187,8 @@ export const CosmosQuestionsFlow = ({
         >
           {currentQuestion === 3 ? (
             <>
-              <Sparkles className="w-4 h-4" />
-              Generate Reading
+              Continue
+              <ArrowRight className="w-4 h-4" />
             </>
           ) : (
             <>
