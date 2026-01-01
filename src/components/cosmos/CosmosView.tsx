@@ -60,7 +60,7 @@ export const CosmosView = ({
   // Store pending intake data when moving to options step
   const pendingIntakeRef = useRef<{ type: 'questions' | 'voice'; data: IntakeResponses | VoiceIntakeData } | null>(null);
 
-  // Build all family members list
+  // Build all family members list - include parent even without birthday
   const allMembers = useMemo(() => {
     const members: FamilyMember[] = [];
     
@@ -78,8 +78,8 @@ export const CosmosView = ({
       }
     });
     
-    // Add parent (user) - only if they have a birthday set
-    if (userProfile?.birthday) {
+    // Always add parent (user) - they can add birthday later
+    if (userProfile) {
       members.push({
         id: 'parent',
         name: userProfile.display_name?.split(' ')[0] || 'You',
