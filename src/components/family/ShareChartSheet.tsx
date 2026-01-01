@@ -136,7 +136,11 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
             <div className="text-center space-y-1">
               <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Birth Chart</p>
               <h2 className="text-xl font-light text-white">{name}</h2>
-              <p className="text-[11px] text-white/40">{new Date(birthday).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+              <p className="text-[11px] text-white/40">{(() => {
+                const [year, month, day] = birthday.split('-').map(Number);
+                const date = new Date(year, month - 1, day);
+                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+              })()}</p>
             </div>
 
             {/* Signs Grid */}
