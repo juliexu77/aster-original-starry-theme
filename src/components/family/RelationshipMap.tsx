@@ -556,23 +556,42 @@ export const RelationshipMap = ({
                 className="transition-all duration-300"
               />
               
-              {/* Name label */}
-              <text
-                x={x}
-                y={y + 26 * sizeMultiplier}
-                textAnchor="middle"
-                fill={isInSelected ? "#D4A574" : isCenter ? "#c8c8c8" : "#aaa"}
-                style={{ 
-                  fontSize: isCenter ? '12px' : '11px', 
-                  fontFamily: 'DM Sans, sans-serif',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  fontWeight: isCenter ? 600 : 500
-                }}
-                className="transition-all duration-300"
-              >
-                {member.name}
-              </text>
+              {/* Name label - split into multiple lines if needed */}
+              {(() => {
+                const nameParts = member.name.split(' ');
+                const maxCharsPerLine = 10;
+                let lines: string[] = [];
+                
+                if (member.name.length <= maxCharsPerLine) {
+                  lines = [member.name];
+                } else if (nameParts.length >= 2) {
+                  // Split by words
+                  lines = [nameParts[0], nameParts.slice(1).join(' ')];
+                } else {
+                  // Single long word - just use it
+                  lines = [member.name];
+                }
+                
+                return lines.map((line, lineIndex) => (
+                  <text
+                    key={lineIndex}
+                    x={x}
+                    y={y + 26 * sizeMultiplier + (lineIndex * 12)}
+                    textAnchor="middle"
+                    fill={isInSelected ? "#D4A574" : isCenter ? "#c8c8c8" : "#aaa"}
+                    style={{ 
+                      fontSize: '11px', 
+                      fontFamily: 'DM Sans, sans-serif',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      fontWeight: 500
+                    }}
+                    className="transition-all duration-300"
+                  >
+                    {line}
+                  </text>
+                ));
+              })()}
             </g>
           );
         })}
