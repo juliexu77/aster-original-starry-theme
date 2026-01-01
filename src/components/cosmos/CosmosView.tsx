@@ -7,7 +7,7 @@ import { CosmosQuestionsFlow } from "./CosmosQuestionsFlow";
 import { CosmosVoiceRecorder } from "./CosmosVoiceRecorder";
 import { CosmosLoading } from "./CosmosLoading";
 import { CosmosReadingDisplay } from "./CosmosReadingDisplay";
-import { FamilyMember, IntakeResponses, VoiceIntakeData } from "./types";
+import { FamilyMember, IntakeResponses, VoiceIntakeData, ReadingOptions } from "./types";
 import { useCosmosReading } from "@/hooks/useCosmosReading";
 import { 
   getZodiacFromBirthday, 
@@ -54,6 +54,7 @@ export const CosmosView = ({
 }: CosmosViewProps) => {
   const [flowState, setFlowState] = useState<FlowState>('reading');
   const [showSelector, setShowSelector] = useState(false);
+  const [currentOptions, setCurrentOptions] = useState<ReadingOptions>({ period: 'month', zodiacSystem: 'western' });
 
   // Build all family members list
   const allMembers = useMemo(() => {
@@ -151,7 +152,7 @@ export const CosmosView = ({
         birthday: selectedMember.birthday,
         birth_time: selectedMember.birth_time,
         birth_location: selectedMember.birth_location
-      });
+      }, currentOptions);
       setFlowState('reading');
     } catch (error) {
       toast.error('Failed to generate reading. Please try again.');
@@ -171,12 +172,22 @@ export const CosmosView = ({
         birthday: selectedMember.birthday,
         birth_time: selectedMember.birth_time,
         birth_location: selectedMember.birth_location
-      });
+      }, currentOptions);
       setFlowState('reading');
     } catch (error) {
       toast.error('Failed to generate reading. Please try again.');
       setFlowState('voice');
     }
+  };
+
+  const handleSelectQuestions = (options: ReadingOptions) => {
+    setCurrentOptions(options);
+    setFlowState('questions');
+  };
+
+  const handleSelectVoice = (options: ReadingOptions) => {
+    setCurrentOptions(options);
+    setFlowState('voice');
   };
 
   const handleRefresh = () => {
@@ -245,8 +256,8 @@ export const CosmosView = ({
           >
             <CosmosIntakeSelection
               member={selectedMember}
-              onSelectQuestions={() => setFlowState('questions')}
-              onSelectVoice={() => setFlowState('voice')}
+              onSelectQuestions={handleSelectQuestions}
+              onSelectVoice={handleSelectVoice}
             />
           </motion.div>
         ) : flowState === 'questions' ? (

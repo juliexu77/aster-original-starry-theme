@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageSquare, Mic } from "lucide-react";
-import { FamilyMember } from "./types";
+import { MessageSquare, Mic, Settings2 } from "lucide-react";
+import { FamilyMember, ReadingPeriod, ZodiacSystem, ReadingOptions } from "./types";
+import { CosmosOptionsSheet } from "./CosmosOptionsSheet";
 
 interface CosmosIntakeSelectionProps {
   member: FamilyMember;
-  onSelectQuestions: () => void;
-  onSelectVoice: () => void;
+  onSelectQuestions: (options: ReadingOptions) => void;
+  onSelectVoice: (options: ReadingOptions) => void;
 }
 
 export const CosmosIntakeSelection = ({
@@ -13,6 +15,19 @@ export const CosmosIntakeSelection = ({
   onSelectQuestions,
   onSelectVoice
 }: CosmosIntakeSelectionProps) => {
+  const [period, setPeriod] = useState<ReadingPeriod>('month');
+  const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>('western');
+  const [showOptions, setShowOptions] = useState(false);
+
+  const options: ReadingOptions = { period, zodiacSystem };
+
+  const getPeriodLabel = () => period === 'month' ? 'Monthly' : 'Yearly';
+  const getZodiacLabel = () => {
+    if (zodiacSystem === 'western') return 'Western';
+    if (zodiacSystem === 'eastern') return 'Chinese';
+    return 'Western + Chinese';
+  };
+
   return (
     <div className="space-y-8 px-5 py-8">
       {/* Header */}
@@ -23,7 +38,7 @@ export const CosmosIntakeSelection = ({
         className="text-center space-y-3"
       >
         <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em]">
-          Monthly Cosmic Guidance
+          {period === 'month' ? 'Monthly' : 'Yearly'} Cosmic Guidance
         </p>
         <h2 className="text-xl font-serif text-foreground/90">
           Before we look at the stars together...
@@ -33,6 +48,24 @@ export const CosmosIntakeSelection = ({
         </p>
       </motion.div>
 
+      {/* Options Button */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        onClick={() => setShowOptions(true)}
+        className="w-full flex items-center justify-between p-4 rounded-xl border border-foreground/10 bg-foreground/5 hover:border-foreground/20 transition-all"
+      >
+        <div className="flex items-center gap-3">
+          <Settings2 className="w-4 h-4 text-foreground/40" />
+          <span className="text-[13px] text-foreground/60">Reading options</span>
+        </div>
+        <div className="flex items-center gap-2 text-[12px] text-foreground/40">
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300/70">{getPeriodLabel()}</span>
+          <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300/70">{getZodiacLabel()}</span>
+        </div>
+      </motion.button>
+
       {/* Selection Cards */}
       <div className="space-y-4">
         {/* Quick Questions Card */}
@@ -40,7 +73,7 @@ export const CosmosIntakeSelection = ({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          onClick={onSelectQuestions}
+          onClick={() => onSelectQuestions(options)}
           className="w-full text-left group"
         >
           <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-950/30 via-purple-950/20 to-transparent backdrop-blur-sm p-6 transition-all duration-300 hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)]">
@@ -72,7 +105,7 @@ export const CosmosIntakeSelection = ({
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          onClick={onSelectVoice}
+          onClick={() => onSelectVoice(options)}
           className="w-full text-left group"
         >
           <div className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-950/30 via-indigo-950/20 to-transparent backdrop-blur-sm p-6 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.1)]">
@@ -109,6 +142,16 @@ export const CosmosIntakeSelection = ({
       >
         Your responses personalize this reading and remain private.
       </motion.p>
+
+      {/* Options Sheet */}
+      <CosmosOptionsSheet
+        open={showOptions}
+        onOpenChange={setShowOptions}
+        period={period}
+        zodiacSystem={zodiacSystem}
+        onPeriodChange={setPeriod}
+        onZodiacSystemChange={setZodiacSystem}
+      />
     </div>
   );
 };

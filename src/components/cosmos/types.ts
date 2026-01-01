@@ -1,5 +1,13 @@
 import { ZodiacSign } from "@/lib/zodiac";
 
+export type ReadingPeriod = 'month' | 'year';
+export type ZodiacSystem = 'western' | 'eastern' | 'both';
+
+export interface ReadingOptions {
+  period: ReadingPeriod;
+  zodiacSystem: ZodiacSystem;
+}
+
 export interface FamilyMember {
   id: string;
   name: string;
@@ -34,12 +42,16 @@ export interface CosmosReading {
   sunSign: ZodiacSign;
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
+  chineseZodiac?: string;
+  chineseElement?: string;
   astrologicalSeason: string;
   lunarPhase: string;
   opening: string;
   sections: ReadingSection[];
   significantDates: string[];
   generatedAt: string;
+  readingPeriod?: ReadingPeriod;
+  zodiacSystem?: ZodiacSystem;
 }
 
 export interface CosmosReadingDB {

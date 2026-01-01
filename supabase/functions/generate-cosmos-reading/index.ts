@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { memberId, memberData, intakeType, intakeData, householdId, monthYear } = await req.json();
+    const { memberId, memberData, intakeType, intakeData, householdId, monthYear, readingOptions } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
@@ -22,7 +22,11 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Generating cosmos reading for:', memberId, memberData.name);
+    // Reading options with defaults
+    const period = readingOptions?.period || 'month';
+    const zodiacSystem = readingOptions?.zodiacSystem || 'western';
+
+    console.log('Generating cosmos reading for:', memberId, memberData.name, 'Period:', period, 'System:', zodiacSystem);
 
     // ========================================
     // FETCH ALL CONTEXTUAL DATA FROM THE APP
@@ -203,13 +207,45 @@ ${intakeData.q4 ? `Q4 (Additional context): ${intakeData.q4}` : ''}`;
 
     const currentDate = new Date();
     const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
+    const yearNum = currentDate.getFullYear();
 
     // Build context section
     const appContextSection = contextData.length > 0 
       ? `\n\nAdditional Context from App Data:\n${contextData.map(c => `- ${c}`).join('\n')}`
       : '';
 
-    const systemPrompt = `You are an expert astrologer creating personalized monthly readings. Write with authority but warmth, mystical but grounded. Be specific, never vague. Weave astrology with practical reality. 
+    // Calculate Chinese zodiac if needed
+    let chineseZodiacInfo = '';
+    if (zodiacSystem === 'eastern' || zodiacSystem === 'both') {
+      const birthYear = new Date(memberData.birthday).getFullYear();
+      const { animal, element } = getChineseZodiac(birthYear);
+      chineseZodiacInfo = `\n\nChinese Zodiac: ${element} ${animal} (born ${birthYear})`;
+    }
+
+    // Period-specific prompt adjustments
+    const periodDescription = period === 'year' 
+      ? `yearly reading for ${yearNum}` 
+      : `monthly reading for ${monthName} ${yearNum}`;
+    
+    const periodGuidance = period === 'year'
+      ? 'Focus on major themes, seasons of growth, and overarching energies for the entire year. Include quarterly highlights.'
+      : 'Focus on the specific energies and opportunities for this month with weekly nuances where relevant.';
+
+    // Zodiac system prompt adjustments
+    let zodiacPrompt = '';
+    if (zodiacSystem === 'western') {
+      zodiacPrompt = 'Use Western astrology (Sun, Moon, Rising signs) as the primary framework.';
+    } else if (zodiacSystem === 'eastern') {
+      zodiacPrompt = `Use Chinese astrology as the primary framework. ${chineseZodiacInfo}\nFocus on the animal sign characteristics, elemental influences, and Chinese astrological cycles (e.g., lucky/unlucky years, clash animals, compatible energies).`;
+    } else {
+      zodiacPrompt = `Blend both Western and Chinese astrology. ${chineseZodiacInfo}\nIntegrate insights from both systems, noting where they align or create interesting tensions.`;
+    }
+
+    const systemPrompt = `You are an expert astrologer creating personalized ${period === 'year' ? 'yearly' : 'monthly'} readings. Write with authority but warmth, mystical but grounded. Be specific, never vague. Weave astrology with practical reality.
+
+${zodiacPrompt}
+
+${periodGuidance}
 
 For children: Blend developmental psychology with astrology. Reference their specific developmental stage and any challenges the family is experiencing. Make guidance age-appropriate.
 
@@ -217,32 +253,36 @@ For adults: Acknowledge their full personhood beyond parenting. Reference their 
 
 Use ALL the contextual data provided to make the reading deeply personal and relevant.`;
 
-    const userPrompt = `Create a personalized monthly astrological reading for ${memberData.name} (${isChild ? 'child' : 'adult'}).
+    const userPrompt = `Create a personalized ${periodDescription} for ${memberData.name} (${isChild ? 'child' : 'adult'}).
 
 Birth Data:
 - Birthday: ${memberData.birthday}
 - Birth time: ${memberData.birth_time || 'Unknown'}
 - Birth location: ${memberData.birth_location || 'Unknown'}
+${chineseZodiacInfo}
 
-Current Month: ${monthName} ${currentDate.getFullYear()}
+Reading Type: ${period === 'year' ? 'YEARLY OVERVIEW' : 'MONTHLY GUIDANCE'}
+Zodiac System: ${zodiacSystem === 'both' ? 'Western + Chinese' : zodiacSystem === 'eastern' ? 'Chinese' : 'Western'}
 
 ${intakeContext}
 ${appContextSection}
 
 Generate a JSON response with this exact structure:
 {
-  "astrologicalSeason": "e.g. Capricorn Season",
-  "lunarPhase": "e.g. Waxing Gibbous",
+  "astrologicalSeason": "${period === 'year' ? 'Year of the [relevant theme]' : 'e.g. Capricorn Season'}",
+  "lunarPhase": "${period === 'year' ? 'Yearly lunar themes' : 'e.g. Waxing Gibbous'}",
+  ${zodiacSystem !== 'western' ? `"chineseZodiac": "e.g. Wood Dragon",\n  "chineseElement": "e.g. Wood",` : ''}
   "opening": "3-4 sentences setting cosmic weather and acknowledging their current situation based on the context provided",
   "sections": [
-    {"title": "${isChild ? 'Energy & Temperament' : 'Energy & Focus'}", "content": "2-3 paragraphs. ${isChild ? 'Reference their developmental stage and recent patterns.' : 'Reference their parenting journey and family dynamics.'}"},
+    {"title": "${isChild ? 'Energy & Temperament' : 'Energy & Focus'}", "content": "2-3 paragraphs. ${isChild ? 'Reference their developmental stage and recent patterns.' : 'Reference their parenting journey and family dynamics.'}${period === 'year' ? ' Include seasonal variations throughout the year.' : ''}"},
     {"title": "${isChild ? 'Development & Learning' : 'Work & Ambition'}", "content": "2-3 paragraphs. ${isChild ? 'Be specific about what developmental leaps to expect based on their age.' : 'Reference their life stage as a parent.'}"},
     {"title": "${isChild ? 'Rhythm & Routine' : 'Parenting & Family'}", "content": "2-3 paragraphs. ${isChild ? 'Address sleep and feeding based on their actual patterns if known.' : 'Reference their children and partner dynamics.'}"},
     {"title": "${isChild ? 'Parenting Guidance' : 'Self-Care & Growth'}", "content": "2-3 paragraphs with 3-5 specific, actionable suggestions aligned with the challenges they mentioned"},
     {"title": "Watch For", "content": "1-2 paragraphs about challenging transits and how they might manifest given this specific child/person"},
-    {"title": "${isChild ? "What's Coming" : 'Relationships'}", "content": "1-2 paragraphs"}
+    {"title": "${isChild ? "What's Coming" : 'Relationships'}", "content": "1-2 paragraphs"}${period === 'year' ? `,
+    {"title": "Quarterly Highlights", "content": "Brief overview of each quarter's distinct energy and opportunities"}` : ''}
   ],
-  "significantDates": ["Jan 15 - Jupiter direct: expect mood lift", "Jan 22 - New Moon in Aquarius: fresh starts"]
+  "significantDates": [${period === 'year' ? '"Q1: Jan-Mar key dates", "Q2: Apr-Jun key dates", "Q3: Jul-Sep key dates", "Q4: Oct-Dec key dates"' : '"Jan 15 - Jupiter direct: expect mood lift", "Jan 22 - New Moon in Aquarius: fresh starts"'}]
 }
 
 Make the reading deeply personalized based on ALL the data provided - intake responses AND app context. Address their specific concerns naturally throughout. Reference siblings, developmental stage, and family dynamics where relevant.`;
@@ -282,6 +322,17 @@ Make the reading deeply personalized based on ALL the data provided - intake res
     // Calculate signs
     const sunSign = getSunSign(memberData.birthday);
     
+    // Calculate Chinese zodiac if needed
+    let chineseData = {};
+    if (zodiacSystem === 'eastern' || zodiacSystem === 'both') {
+      const birthYear = new Date(memberData.birthday).getFullYear();
+      const { animal, element } = getChineseZodiac(birthYear);
+      chineseData = {
+        chineseZodiac: animal,
+        chineseElement: element
+      };
+    }
+    
     const reading = {
       id: crypto.randomUUID(),
       monthYear,
@@ -290,7 +341,10 @@ Make the reading deeply personalized based on ALL the data provided - intake res
       sunSign,
       moonSign: null,
       risingSign: null,
+      ...chineseData,
       ...readingData,
+      readingPeriod: period,
+      zodiacSystem: zodiacSystem,
       generatedAt: new Date().toISOString()
     };
 
@@ -409,4 +463,24 @@ function calculateDetailedAge(birthday: string): { description: string; stage: s
   }
 
   return { description, stage };
+}
+
+function getChineseZodiac(year: number): { animal: string; element: string } {
+  const animals = [
+    'Rat', 'Ox', 'Tiger', 'Rabbit', 'Dragon', 'Snake',
+    'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'
+  ];
+  
+  const elements = ['Wood', 'Wood', 'Fire', 'Fire', 'Earth', 'Earth', 'Metal', 'Metal', 'Water', 'Water'];
+  
+  // Chinese zodiac starts from 1900 which was Year of the Rat
+  const baseYear = 1900;
+  const animalIndex = (year - baseYear) % 12;
+  const elementIndex = (year - baseYear) % 10;
+  
+  // Handle negative modulo for years before 1900
+  const animal = animals[((animalIndex % 12) + 12) % 12];
+  const element = elements[((elementIndex % 10) + 10) % 10];
+  
+  return { animal, element };
 }
