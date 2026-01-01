@@ -133,16 +133,16 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Constellation Header */}
-      <div className="px-5 pt-6 text-center">
+      <div className="px-5 pt-2 text-center">
         <p className="text-[10px] text-foreground/30 uppercase tracking-[0.2em]">
           Your Constellation
         </p>
       </div>
 
       {/* Relationship Map - only show with 2+ members */}
-      <div className="px-5">
+      <div className="px-2">
         {familyMembers.length >= 2 ? (
           <RelationshipMap
             members={familyMembers}
