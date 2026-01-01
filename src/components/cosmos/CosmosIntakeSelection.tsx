@@ -37,7 +37,7 @@ export const CosmosIntakeSelection = ({
         transition={{ duration: 0.6 }}
         className="text-center space-y-3"
       >
-        <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em]">
+        <p className="text-[10px] text-foreground/40 uppercase tracking-[0.3em]">
           {period === 'month' ? 'Monthly' : 'Yearly'} Cosmic Guidance
         </p>
         <h2 className="text-xl font-serif text-foreground/90">
@@ -61,8 +61,8 @@ export const CosmosIntakeSelection = ({
           <span className="text-[13px] text-foreground/60">Reading options</span>
         </div>
         <div className="flex items-center gap-2 text-[12px] text-foreground/40">
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300/70">{getPeriodLabel()}</span>
-          <span className="px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300/70">{getZodiacLabel()}</span>
+          <span className="px-2 py-0.5 rounded-full bg-foreground/10 text-foreground/60">{getPeriodLabel()}</span>
+          <span className="px-2 py-0.5 rounded-full bg-foreground/10 text-foreground/60">{getZodiacLabel()}</span>
         </div>
       </motion.button>
 
@@ -76,13 +76,13 @@ export const CosmosIntakeSelection = ({
           onClick={() => onSelectQuestions(options)}
           className="w-full text-left group"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-950/30 via-purple-950/20 to-transparent backdrop-blur-sm p-6 transition-all duration-300 hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)]">
+          <div className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/5 backdrop-blur-sm p-6 transition-all duration-300 hover:border-foreground/20 hover:bg-foreground/[0.07]">
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                <MessageSquare className="w-5 h-5 text-amber-300/70" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-foreground/10 border border-foreground/15 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-foreground/60" />
               </div>
               
               <div className="flex-1 space-y-1">
@@ -92,7 +92,7 @@ export const CosmosIntakeSelection = ({
                 <p className="text-[12px] text-foreground/50">
                   Answer a few questions
                 </p>
-                <p className="text-[11px] text-amber-300/50 mt-2">
+                <p className="text-[11px] text-foreground/40 mt-2">
                   ~90 seconds
                 </p>
               </div>
@@ -108,13 +108,13 @@ export const CosmosIntakeSelection = ({
           onClick={() => onSelectVoice(options)}
           className="w-full text-left group"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-950/30 via-indigo-950/20 to-transparent backdrop-blur-sm p-6 transition-all duration-300 hover:border-purple-500/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+          <div className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/5 backdrop-blur-sm p-6 transition-all duration-300 hover:border-foreground/20 hover:bg-foreground/[0.07]">
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <div className="relative flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                <Mic className="w-5 h-5 text-purple-300/70" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-foreground/10 border border-foreground/15 flex items-center justify-center">
+                <Mic className="w-5 h-5 text-foreground/60" />
               </div>
               
               <div className="flex-1 space-y-1">
@@ -124,7 +124,7 @@ export const CosmosIntakeSelection = ({
                 <p className="text-[12px] text-foreground/50">
                   Tell me what's happening
                 </p>
-                <p className="text-[11px] text-purple-300/50 mt-2">
+                <p className="text-[11px] text-foreground/40 mt-2">
                   Speak for 60-90 seconds
                 </p>
               </div>
