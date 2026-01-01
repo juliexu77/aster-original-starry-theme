@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, Calendar, Globe, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ArrowRight, Sparkles, Check } from "lucide-react";
 import { ReadingPeriod, ZodiacSystem, ReadingOptions } from "./types";
 
 interface CosmosOptionsStepProps {
@@ -12,22 +12,24 @@ export const CosmosOptionsStep = ({
   onComplete,
   onBack
 }: CosmosOptionsStepProps) => {
+  const [step, setStep] = useState<0 | 1>(0);
   const [period, setPeriod] = useState<ReadingPeriod>('month');
   const [zodiacSystem, setZodiacSystem] = useState<ZodiacSystem>('western');
 
-  const periodOptions: { value: ReadingPeriod; label: string; description: string }[] = [
-    { value: 'month', label: 'Monthly', description: 'Detailed guidance for this month' },
-    { value: 'year', label: 'Yearly', description: 'Overview themes for the full year' }
-  ];
+  const handleNext = () => {
+    if (step === 0) {
+      setStep(1);
+    } else {
+      onComplete({ period, zodiacSystem });
+    }
+  };
 
-  const zodiacOptions: { value: ZodiacSystem; label: string; description: string }[] = [
-    { value: 'western', label: 'Western', description: 'Sun, Moon & Rising signs' },
-    { value: 'eastern', label: 'Chinese', description: 'Year animal & element' },
-    { value: 'both', label: 'Both', description: 'Western + Chinese combined' }
-  ];
-
-  const handleGenerate = () => {
-    onComplete({ period, zodiacSystem });
+  const handleBack = () => {
+    if (step === 0) {
+      onBack();
+    } else {
+      setStep(0);
+    }
   };
 
   return (
@@ -35,110 +37,193 @@ export const CosmosOptionsStep = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
         >
           <ArrowLeft className="w-5 h-5 text-foreground/50" />
         </button>
+        
+        {/* Progress dots */}
+        <div className="flex gap-2">
+          {[0, 1].map(i => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === step 
+                  ? 'w-6 bg-amber-400/80' 
+                  : i < step 
+                    ? 'bg-amber-400/40' 
+                    : 'bg-foreground/10'
+              }`}
+            />
+          ))}
+        </div>
+        
         <div className="w-9" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <h3 className="text-[16px] font-serif text-foreground/90 mb-2">
-          Choose your reading style
-        </h3>
-        <p className="text-[12px] text-foreground/50">
-          How would you like the stars to speak to you?
-        </p>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        {step === 0 ? (
+          <motion.div
+            key="period"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-[16px] font-serif text-foreground/90 mb-3">
+                What timeframe feels right?
+              </h3>
+              <p className="text-[12px] text-foreground/50 max-w-[300px] mx-auto leading-relaxed">
+                A monthly reading offers detailed, actionable guidance for immediate situations. 
+                A yearly reading reveals broader themes and turning points across the seasons.
+              </p>
+            </div>
 
-      <div className="flex-1 space-y-6">
-        {/* Period Selection */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-3"
-        >
-          <div className="flex items-center gap-2 px-1">
-            <Calendar className="w-4 h-4 text-amber-300/60" />
-            <span className="text-[11px] text-foreground/40 uppercase tracking-wider">Time Period</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {periodOptions.map((option) => (
+            <div className="space-y-3">
               <button
-                key={option.value}
-                onClick={() => setPeriod(option.value)}
-                className={`relative p-4 rounded-xl border text-left transition-all ${
-                  period === option.value
+                onClick={() => setPeriod('month')}
+                className={`relative w-full p-5 rounded-xl border text-left transition-all ${
+                  period === 'month'
                     ? 'border-amber-500/40 bg-amber-500/10'
                     : 'border-foreground/10 bg-foreground/5 hover:border-foreground/20'
                 }`}
               >
-                {period === option.value && (
-                  <div className="absolute top-2 right-2">
+                {period === 'month' && (
+                  <div className="absolute top-4 right-4">
                     <Check className="w-4 h-4 text-amber-300" />
                   </div>
                 )}
-                <p className="text-[14px] font-medium text-foreground/80">{option.label}</p>
-                <p className="text-[11px] text-foreground/40 mt-1">{option.description}</p>
+                <p className="text-[15px] font-medium text-foreground/85 mb-1">This Month</p>
+                <p className="text-[12px] text-foreground/50 leading-relaxed pr-6">
+                  Specific guidance for the weeks ahead—ideal when you're navigating something right now
+                </p>
               </button>
-            ))}
-          </div>
-        </motion.div>
 
-        {/* Zodiac System Selection */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-3"
-        >
-          <div className="flex items-center gap-2 px-1">
-            <Globe className="w-4 h-4 text-purple-300/60" />
-            <span className="text-[11px] text-foreground/40 uppercase tracking-wider">Zodiac System</span>
-          </div>
-          <div className="space-y-2">
-            {zodiacOptions.map((option) => (
               <button
-                key={option.value}
-                onClick={() => setZodiacSystem(option.value)}
-                className={`relative w-full p-4 rounded-xl border text-left transition-all ${
-                  zodiacSystem === option.value
+                onClick={() => setPeriod('year')}
+                className={`relative w-full p-5 rounded-xl border text-left transition-all ${
+                  period === 'year'
+                    ? 'border-amber-500/40 bg-amber-500/10'
+                    : 'border-foreground/10 bg-foreground/5 hover:border-foreground/20'
+                }`}
+              >
+                {period === 'year' && (
+                  <div className="absolute top-4 right-4">
+                    <Check className="w-4 h-4 text-amber-300" />
+                  </div>
+                )}
+                <p className="text-[15px] font-medium text-foreground/85 mb-1">This Year</p>
+                <p className="text-[12px] text-foreground/50 leading-relaxed pr-6">
+                  The big picture—major themes, growth periods, and cosmic weather patterns for the full year
+                </p>
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="zodiac"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="flex-1"
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-[16px] font-serif text-foreground/90 mb-3">
+                Which cosmic lens?
+              </h3>
+              <p className="text-[12px] text-foreground/50 max-w-[300px] mx-auto leading-relaxed">
+                Western astrology reads your Sun, Moon & Rising signs. Chinese astrology reveals your birth year animal and element. 
+                Each offers unique insights—or combine them for a richer picture.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => setZodiacSystem('western')}
+                className={`relative w-full p-5 rounded-xl border text-left transition-all ${
+                  zodiacSystem === 'western'
                     ? 'border-purple-500/40 bg-purple-500/10'
                     : 'border-foreground/10 bg-foreground/5 hover:border-foreground/20'
                 }`}
               >
-                {zodiacSystem === option.value && (
-                  <div className="absolute top-1/2 -translate-y-1/2 right-4">
+                {zodiacSystem === 'western' && (
+                  <div className="absolute top-4 right-4">
                     <Check className="w-4 h-4 text-purple-300" />
                   </div>
                 )}
-                <p className="text-[14px] font-medium text-foreground/80">{option.label}</p>
-                <p className="text-[11px] text-foreground/40 mt-1">{option.description}</p>
+                <p className="text-[15px] font-medium text-foreground/85 mb-1">Western Astrology</p>
+                <p className="text-[12px] text-foreground/50 leading-relaxed pr-6">
+                  Sun sign personality, Moon sign emotions, Rising sign outward energy—based on planetary positions at birth
+                </p>
               </button>
-            ))}
-          </div>
-        </motion.div>
-      </div>
 
-      {/* Generate button */}
+              <button
+                onClick={() => setZodiacSystem('eastern')}
+                className={`relative w-full p-5 rounded-xl border text-left transition-all ${
+                  zodiacSystem === 'eastern'
+                    ? 'border-purple-500/40 bg-purple-500/10'
+                    : 'border-foreground/10 bg-foreground/5 hover:border-foreground/20'
+                }`}
+              >
+                {zodiacSystem === 'eastern' && (
+                  <div className="absolute top-4 right-4">
+                    <Check className="w-4 h-4 text-purple-300" />
+                  </div>
+                )}
+                <p className="text-[15px] font-medium text-foreground/85 mb-1">Chinese Astrology</p>
+                <p className="text-[12px] text-foreground/50 leading-relaxed pr-6">
+                  Your birth year animal (Dragon, Rabbit, etc.) and element (Wood, Fire, Earth, Metal, Water)
+                </p>
+              </button>
+
+              <button
+                onClick={() => setZodiacSystem('both')}
+                className={`relative w-full p-5 rounded-xl border text-left transition-all ${
+                  zodiacSystem === 'both'
+                    ? 'border-purple-500/40 bg-purple-500/10'
+                    : 'border-foreground/10 bg-foreground/5 hover:border-foreground/20'
+                }`}
+              >
+                {zodiacSystem === 'both' && (
+                  <div className="absolute top-4 right-4">
+                    <Check className="w-4 h-4 text-purple-300" />
+                  </div>
+                )}
+                <p className="text-[15px] font-medium text-foreground/85 mb-1">Both Systems</p>
+                <p className="text-[12px] text-foreground/50 leading-relaxed pr-6">
+                  A blended reading that weaves Western and Chinese insights together for the fullest picture
+                </p>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Continue button */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
         className="mt-8"
       >
         <button
-          onClick={handleGenerate}
+          onClick={handleNext}
           className="w-full py-4 rounded-2xl font-medium text-[14px] flex items-center justify-center gap-2 transition-all duration-300 bg-gradient-to-r from-amber-500/80 to-amber-600/80 text-background hover:from-amber-500 hover:to-amber-600"
         >
-          <Sparkles className="w-4 h-4" />
-          Generate Reading
+          {step === 1 ? (
+            <>
+              <Sparkles className="w-4 h-4" />
+              Generate Reading
+            </>
+          ) : (
+            <>
+              Continue
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </motion.div>
     </div>
