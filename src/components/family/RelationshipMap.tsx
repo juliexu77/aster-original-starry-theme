@@ -49,42 +49,42 @@ interface RelationshipMapProps {
 }
 
 // Asymmetric orbital positions - deliberately uneven, no mirroring
-// Angles are in radians, distances are in pixels from center
+// Angles are in radians, distances are in pixels from center (increased for better spacing)
 const ORBITAL_CONFIGS = [
   // For 2 members: center + one orbit
   [
     { angle: 0, distance: 0 }, // Center
-    { angle: 0.7, distance: 140 },
+    { angle: 0.7, distance: 160 },
   ],
   // For 3 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 120 },
-    { angle: 2.8, distance: 150 },
+    { angle: 0.5, distance: 145 },
+    { angle: 2.8, distance: 175 },
   ],
   // For 4 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.6, distance: 110 },
-    { angle: 1.9, distance: 155 },
-    { angle: 3.8, distance: 130 },
+    { angle: 0.6, distance: 135 },
+    { angle: 1.9, distance: 180 },
+    { angle: 3.8, distance: 155 },
   ],
   // For 5 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.4, distance: 115 },
-    { angle: 1.5, distance: 160 },
-    { angle: 2.7, distance: 125 },
-    { angle: 4.2, distance: 145 },
+    { angle: 0.4, distance: 140 },
+    { angle: 1.5, distance: 185 },
+    { angle: 2.7, distance: 150 },
+    { angle: 4.2, distance: 170 },
   ],
   // For 6 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 105 },
-    { angle: 1.3, distance: 155 },
-    { angle: 2.4, distance: 120 },
-    { angle: 3.5, distance: 165 },
-    { angle: 4.8, distance: 135 },
+    { angle: 0.5, distance: 130 },
+    { angle: 1.3, distance: 180 },
+    { angle: 2.4, distance: 145 },
+    { angle: 3.5, distance: 190 },
+    { angle: 4.8, distance: 160 },
   ],
 ];
 
@@ -98,7 +98,7 @@ const getOrbitalPositions = (
   if (members.length === 0) return [];
   
   const centerX = width * 0.50;
-  const centerY = height * 0.46; // Slightly above center for visual balance
+  const centerY = height * 0.50;
   
   // Find center member (first child, or specified centerId)
   let centerMember = members.find(m => m.id === centerId);
@@ -230,9 +230,9 @@ export const RelationshipMap = ({
   centerId 
 }: RelationshipMapProps) => {
   const width = 500;
-  const height = 620;
+  const height = 500;
   const centerX = width * 0.50;
-  const centerY = height * 0.46;
+  const centerY = height * 0.50;
   
   const memberPositions = useMemo(
     () => getOrbitalPositions(members, centerId, width, height), 
@@ -288,13 +288,13 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full mx-auto px-4" style={{ maxWidth: '90vw' }}>
+    <div className="w-full mx-auto px-2" style={{ maxWidth: '95vw' }}>
       {/* Instruction text */}
-      <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-4">
+      <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-2">
         Tap a connection to explore
       </p>
       
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ minHeight: '65vh' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
         <defs>
           {/* Enhanced glow filter for member nodes with halo */}
           <filter id="memberGlow" x="-200%" y="-200%" width="500%" height="500%">
