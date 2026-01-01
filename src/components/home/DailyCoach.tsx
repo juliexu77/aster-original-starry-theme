@@ -105,12 +105,21 @@ export const DailyCoach = ({
   const [showRecalibrationSheet, setShowRecalibrationSheet] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   
-  // Check if we should show the intro overlay (only for truly new users)
+  // Check if we should show the intro overlay - for new users or manual reset
   useEffect(() => {
     if (!babyId) return;
     const introKey = `home_intro_seen_${babyId}`;
     const hasSeenIntro = localStorage.getItem(introKey);
     if (hasSeenIntro) return;
+    
+    // Check if user manually reset the intro (via Settings)
+    const introReset = localStorage.getItem(`home_intro_reset_${babyId}`);
+    if (introReset) {
+      // User manually reset - show the intro and clear the reset flag
+      localStorage.removeItem(`home_intro_reset_${babyId}`);
+      setShowIntro(true);
+      return;
+    }
     
     // Check if this is a truly new user by looking at baby creation time
     const isNewUser = babyCreatedAt 
