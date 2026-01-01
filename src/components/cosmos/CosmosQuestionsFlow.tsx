@@ -1,7 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { FamilyMember, CHILD_QUESTIONS, ADULT_QUESTIONS, IntakeResponses } from "./types";
+
+// Storage key for intake progress
+const getStorageKey = (memberId: string) => `cosmos-intake-${memberId}`;
+
+interface SavedProgress {
+  currentQuestion: number;
+  responses: IntakeResponses;
+  memberType: 'child' | 'parent' | 'partner';
+}
+
+// Helper to clear saved progress for a member
+export const clearIntakeProgress = (memberId: string) => {
+  try {
+    localStorage.removeItem(getStorageKey(memberId));
+  } catch (e) {
+    console.error('Failed to clear intake progress', e);
+  }
+};
 
 interface CosmosQuestionsFlowProps {
   member: FamilyMember;
@@ -14,13 +32,46 @@ export const CosmosQuestionsFlow = ({
   onComplete,
   onBack
 }: CosmosQuestionsFlowProps) => {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [responses, setResponses] = useState<IntakeResponses>({
+  // Load saved progress from localStorage
+  const loadSavedProgress = useCallback((): SavedProgress | null => {
+    try {
+      const saved = localStorage.getItem(getStorageKey(member.id));
+      if (saved) {
+        const parsed = JSON.parse(saved) as SavedProgress;
+        // Only restore if member type matches (questions differ between child/adult)
+        if (parsed.memberType === member.type) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load intake progress', e);
+    }
+    return null;
+  }, [member.id, member.type]);
+
+  const savedProgress = loadSavedProgress();
+  
+  const [currentQuestion, setCurrentQuestion] = useState(savedProgress?.currentQuestion ?? 0);
+  const [responses, setResponses] = useState<IntakeResponses>(savedProgress?.responses ?? {
     q1: [],
     q2: [],
     q3: '',
     q4: ''
   });
+
+  // Save progress to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      const progress: SavedProgress = {
+        currentQuestion,
+        responses,
+        memberType: member.type
+      };
+      localStorage.setItem(getStorageKey(member.id), JSON.stringify(progress));
+    } catch (e) {
+      console.error('Failed to save intake progress', e);
+    }
+  }, [currentQuestion, responses, member.id, member.type]);
 
   const questions = member.type === 'child' ? CHILD_QUESTIONS : ADULT_QUESTIONS;
   const questionKeys = ['q1', 'q2', 'q3', 'q4'] as const;
