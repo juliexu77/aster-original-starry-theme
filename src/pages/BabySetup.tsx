@@ -127,7 +127,7 @@ const BabySetup = () => {
   }
 
   return (
-    <NightSkyBackground forceMidnight>
+    <NightSkyBackground>
       <div className="min-h-screen flex flex-col">
         {/* Back Button */}
         <motion.div

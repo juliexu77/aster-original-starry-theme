@@ -6,7 +6,7 @@ interface TimeOfDayBackgroundProps {
 
 export const TimeOfDayBackground = ({ children }: TimeOfDayBackgroundProps) => {
   return (
-    <NightSkyBackground forceMidnight>
+    <NightSkyBackground>
       {children}
     </NightSkyBackground>
   );

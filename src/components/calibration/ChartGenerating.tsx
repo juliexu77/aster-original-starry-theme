@@ -28,7 +28,7 @@ export function ChartGenerating({ babyName, onComplete }: ChartGeneratingProps) 
   }, [onComplete]);
 
   return (
-    <NightSkyBackground forceMidnight>
+    <NightSkyBackground>
       <div className="min-h-[50vh] flex flex-col items-center justify-center px-5">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
