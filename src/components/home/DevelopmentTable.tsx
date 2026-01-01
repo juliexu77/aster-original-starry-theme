@@ -10,6 +10,7 @@ interface DevelopmentTableProps {
   babyId?: string;
   calibration?: Calibration | null;
   onMilestoneConfirm?: (domainId: string, stageNumber: number, date: string) => void;
+  shareSheet?: React.ReactNode;
 }
 
 // Stage data structure
@@ -367,7 +368,7 @@ export const getDomainData = (ageInWeeks: number, calibration?: Calibration | nu
   });
 };
 
-export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, babyId, calibration, onMilestoneConfirm }: DevelopmentTableProps) => {
+export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, babyId, calibration, onMilestoneConfirm, shareSheet }: DevelopmentTableProps) => {
   const domains = getDomainData(ageInWeeks, calibration);
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
 
@@ -378,11 +379,13 @@ export const DevelopmentTable = ({ ageInWeeks, birthday, babyName, babyId, calib
   return (
     <>
       <div className="px-4 mt-8">
-        {/* Section header */}
-        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] mb-4 text-center font-light">
-          {babyName ? `${babyName}'s Development` : "Development"}
-        </p>
-
+        {/* Section header with share button */}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] font-light">
+            {babyName ? `${babyName}'s Development` : "Development"}
+          </p>
+          {shareSheet}
+        </div>
         {/* Table container with side labels */}
         <div className="flex items-stretch">
           {/* Vertical DOMAINS label on left - stacked letters at top */}
