@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
@@ -142,6 +142,18 @@ export const CosmosView = ({
     generateReading,
     hasReading 
   } = useCosmosReading(selectedMember?.id || null);
+
+  // Sync flowState with reading status when loading completes
+  // This ensures that if a reading exists in the DB (e.g., after screen sleep/wake),
+  // we show it instead of resetting to intake
+  useEffect(() => {
+    if (!readingLoading && !generating) {
+      if (hasReading && flowState === 'intake-selection') {
+        // Reading was loaded from DB, show it
+        setFlowState('reading');
+      }
+    }
+  }, [readingLoading, generating, hasReading, flowState]);
 
   // Determine initial state based on whether we have a reading
   const showIntake = !hasReading && !readingLoading && flowState === 'reading';
