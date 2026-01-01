@@ -197,95 +197,101 @@ serve(async (req) => {
     // BUILD THE PROMPT WITH ALL CONTEXT
     // ========================================
     
-    const intakeContext = intakeType === 'voice' 
-      ? `User voice message transcript: "${intakeData.transcript}"`
-      : `User intake responses:
-Q1 (Focus areas): ${intakeData.q1.join(', ')}
-Q2 (Energy observations): ${intakeData.q2.join(', ')}
-Q3 (Reading goal): ${intakeData.q3}
-${intakeData.q4 ? `Q4 (Additional context): ${intakeData.q4}` : ''}`;
+    // Format intake as natural conversation the astrologer had
+    const clientSession = intakeType === 'voice' 
+      ? `The client shared: "${intakeData.transcript}"`
+      : `During the consultation, the client mentioned focusing on: ${intakeData.q1.join(', ')}. They've observed: ${intakeData.q2.join(', ')}. They're seeking: ${intakeData.q3}.${intakeData.q4 ? ` They asked: "${intakeData.q4}"` : ''}`;
 
     const currentDate = new Date();
     const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
     const yearNum = currentDate.getFullYear();
 
-    // Build context section
-    const appContextSection = contextData.length > 0 
-      ? `\n\nAdditional Context from App Data:\n${contextData.map(c => `- ${c}`).join('\n')}`
-      : '';
-
     // Calculate Chinese zodiac if needed
     let chineseZodiacInfo = '';
+    let chineseAnimal = '';
+    let chineseElement = '';
     if (zodiacSystem === 'eastern' || zodiacSystem === 'both') {
       const birthYear = new Date(memberData.birthday).getFullYear();
-      const { animal, element } = getChineseZodiac(birthYear);
-      chineseZodiacInfo = `\n\nChinese Zodiac: ${element} ${animal} (born ${birthYear})`;
+      const zodiacData = getChineseZodiac(birthYear);
+      chineseAnimal = zodiacData.animal;
+      chineseElement = zodiacData.element;
+      chineseZodiacInfo = `${chineseElement} ${chineseAnimal}`;
     }
 
-    // Period-specific prompt adjustments
-    const periodDescription = period === 'year' 
-      ? `yearly reading for ${yearNum}` 
-      : `monthly reading for ${monthName} ${yearNum}`;
-    
-    const periodGuidance = period === 'year'
-      ? 'Focus on major themes, seasons of growth, and overarching energies for the entire year. Include quarterly highlights.'
-      : 'Focus on the specific energies and opportunities for this month with weekly nuances where relevant.';
+    // Current year's Chinese zodiac for context
+    const currentYearZodiac = getChineseZodiac(yearNum);
 
-    // Zodiac system prompt adjustments
-    let zodiacPrompt = '';
+    // Period-specific adjustments
+    const isYearly = period === 'year';
+
+    // Build Eastern zodiac specific sections
+    let easternSections = '';
+    if (zodiacSystem === 'eastern' || zodiacSystem === 'both') {
+      easternSections = `
+    {"title": "Your ${chineseAnimal} Nature", "content": "2-3 paragraphs exploring how the ${chineseElement} ${chineseAnimal} energy manifests, including strengths, shadow aspects, and how ${yearNum} (Year of the ${currentYearZodiac.element} ${currentYearZodiac.animal}) interacts with their chart"},
+    {"title": "Elemental Balance", "content": "2 paragraphs on their ${chineseElement} element - how to nurture it, what depletes it, and practical ways to stay in harmony"},`;
+    }
+
+    // Zodiac system specific framing
+    let zodiacFramework = '';
     if (zodiacSystem === 'western') {
-      zodiacPrompt = 'Use Western astrology (Sun, Moon, Rising signs) as the primary framework.';
+      zodiacFramework = `You practice Western astrology with deep knowledge of planetary transits, houses, and aspects. You naturally reference Sun, Moon, and Rising sign dynamics.`;
     } else if (zodiacSystem === 'eastern') {
-      zodiacPrompt = `Use Chinese astrology as the primary framework. ${chineseZodiacInfo}\nFocus on the animal sign characteristics, elemental influences, and Chinese astrological cycles (e.g., lucky/unlucky years, clash animals, compatible energies).`;
+      zodiacFramework = `You practice Chinese astrology with mastery of the 12 animal signs, five elements, and the complex interplay of yearly, monthly, and hourly pillars. This client is a ${chineseZodiacInfo}. This is the Year of the ${currentYearZodiac.element} ${currentYearZodiac.animal} (${yearNum}). You understand clash animals, compatible allies, secret friends, and elemental cycles.`;
     } else {
-      zodiacPrompt = `Blend both Western and Chinese astrology. ${chineseZodiacInfo}\nIntegrate insights from both systems, noting where they align or create interesting tensions.`;
+      zodiacFramework = `You are a rare practitioner fluent in both Western and Chinese astrology. You see how this client's Western chart (their Sun sign, transits) and their Chinese chart (${chineseZodiacInfo}) create a unified picture. This is the Year of the ${currentYearZodiac.element} ${currentYearZodiac.animal}. You weave both systems seamlessly, never treating them as separate.`;
     }
 
-    const systemPrompt = `You are an expert astrologer creating personalized ${period === 'year' ? 'yearly' : 'monthly'} readings. Write with authority but warmth, mystical but grounded. Be specific, never vague. Weave astrology with practical reality.
+    const systemPrompt = `You are a gifted, experienced astrologer with decades of practice. You have an intuitive gift - you sense things about your clients that you weave naturally into readings without explaining how you know.
 
-${zodiacPrompt}
+${zodiacFramework}
 
-${periodGuidance}
+Your style:
+- Speak as if you're sitting across from the client, sharing wisdom accumulated over years
+- Never say "based on what you told me" or "according to your responses" - you simply KNOW these things
+- Reference specific details naturally, as observations or intuitions, not as data points
+- Be warm but authoritative. You've seen these patterns before.
+- Blend the cosmic with the practical seamlessly
+- For children: You understand child development intimately and see how celestial patterns influence their unfolding
+- For parents: You see the whole person, not just the parent role
 
-For children: Blend developmental psychology with astrology. Reference their specific developmental stage and any challenges the family is experiencing. Make guidance age-appropriate.
+CRITICAL: Never explicitly reference "intake responses," "app data," "calibration data," or anything that sounds like you're reading from a file. You are a wise counselor who simply perceives.`;
 
-For adults: Acknowledge their full personhood beyond parenting. Reference their family dynamics and relationship with their children where relevant.
+    const contextNarrative = contextData.length > 0 
+      ? `\n\n[Your intuitive sense about this client - integrate naturally, never reference directly:\n${contextData.join('\n')}]`
+      : '';
 
-Use ALL the contextual data provided to make the reading deeply personal and relevant.`;
+    const userPrompt = `Create a ${isYearly ? 'yearly' : 'monthly'} reading for ${memberData.name}.
 
-    const userPrompt = `Create a personalized ${periodDescription} for ${memberData.name} (${isChild ? 'child' : 'adult'}).
+[Chart data you're working from:]
+Birthday: ${memberData.birthday}${memberData.birth_time ? `, born at ${memberData.birth_time}` : ''}${memberData.birth_location ? ` in ${memberData.birth_location}` : ''}
+${zodiacSystem !== 'western' ? `Chinese zodiac: ${chineseZodiacInfo}` : ''}
+Reading for: ${isYearly ? yearNum : `${monthName} ${yearNum}`}
 
-Birth Data:
-- Birthday: ${memberData.birthday}
-- Birth time: ${memberData.birth_time || 'Unknown'}
-- Birth location: ${memberData.birth_location || 'Unknown'}
-${chineseZodiacInfo}
+[${clientSession}]
+${contextNarrative}
 
-Reading Type: ${period === 'year' ? 'YEARLY OVERVIEW' : 'MONTHLY GUIDANCE'}
-Zodiac System: ${zodiacSystem === 'both' ? 'Western + Chinese' : zodiacSystem === 'eastern' ? 'Chinese' : 'Western'}
+Write as if speaking directly to ${isChild ? 'the parents about their child' : 'the client'}. Generate JSON:
 
-${intakeContext}
-${appContextSection}
-
-Generate a JSON response with this exact structure:
 {
-  "astrologicalSeason": "${period === 'year' ? 'Year of the [relevant theme]' : 'e.g. Capricorn Season'}",
-  "lunarPhase": "${period === 'year' ? 'Yearly lunar themes' : 'e.g. Waxing Gibbous'}",
-  ${zodiacSystem !== 'western' ? `"chineseZodiac": "e.g. Wood Dragon",\n  "chineseElement": "e.g. Wood",` : ''}
-  "opening": "3-4 sentences setting cosmic weather and acknowledging their current situation based on the context provided",
+  "astrologicalSeason": "${isYearly ? `Year of powerful ${zodiacSystem === 'western' ? 'transformation' : currentYearZodiac.animal + ' energy'}` : 'e.g., Capricorn Season'}",
+  "lunarPhase": "${isYearly ? 'Key lunar themes for the year' : 'Current lunar phase and meaning'}",
+  ${zodiacSystem !== 'western' ? `"chineseZodiac": "${chineseAnimal}",\n  "chineseElement": "${chineseElement}",` : ''}
+  "opening": "3-4 sentences. Speak directly and warmly. Set the cosmic scene while acknowledging what you sense about their current situation - don't explain how you know, just show that you understand.",
   "sections": [
-    {"title": "${isChild ? 'Energy & Temperament' : 'Energy & Focus'}", "content": "2-3 paragraphs. ${isChild ? 'Reference their developmental stage and recent patterns.' : 'Reference their parenting journey and family dynamics.'}${period === 'year' ? ' Include seasonal variations throughout the year.' : ''}"},
-    {"title": "${isChild ? 'Development & Learning' : 'Work & Ambition'}", "content": "2-3 paragraphs. ${isChild ? 'Be specific about what developmental leaps to expect based on their age.' : 'Reference their life stage as a parent.'}"},
-    {"title": "${isChild ? 'Rhythm & Routine' : 'Parenting & Family'}", "content": "2-3 paragraphs. ${isChild ? 'Address sleep and feeding based on their actual patterns if known.' : 'Reference their children and partner dynamics.'}"},
-    {"title": "${isChild ? 'Parenting Guidance' : 'Self-Care & Growth'}", "content": "2-3 paragraphs with 3-5 specific, actionable suggestions aligned with the challenges they mentioned"},
-    {"title": "Watch For", "content": "1-2 paragraphs about challenging transits and how they might manifest given this specific child/person"},
-    {"title": "${isChild ? "What's Coming" : 'Relationships'}", "content": "1-2 paragraphs"}${period === 'year' ? `,
-    {"title": "Quarterly Highlights", "content": "Brief overview of each quarter's distinct energy and opportunities"}` : ''}
+    ${zodiacSystem !== 'western' ? easternSections : ''}
+    {"title": "${isChild ? 'Their Energy Right Now' : 'Your Energy This ' + (isYearly ? 'Year' : 'Month')}", "content": "2-3 paragraphs. Describe what you see in their chart and how it's manifesting. Be specific."},
+    {"title": "${isChild ? 'Growth & Unfolding' : 'Purpose & Direction'}", "content": "2-3 paragraphs on development/ambition. For children, speak to their developmental moment with astrological insight."},
+    {"title": "${isChild ? 'Daily Rhythms' : 'Home & Heart'}", "content": "2-3 paragraphs on practical daily life, sleep/feeding for children, family dynamics for adults."},
+    {"title": "Guidance", "content": "2-3 paragraphs with 3-5 specific suggestions. Frame as astrological wisdom, not advice from a form."},
+    {"title": "Shadows to Navigate", "content": "1-2 paragraphs on challenges ahead. Be honest but compassionate."},
+    {"title": "${isChild ? 'What\'s Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"}${isYearly ? `,
+    {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
   ],
-  "significantDates": [${period === 'year' ? '"Q1: Jan-Mar key dates", "Q2: Apr-Jun key dates", "Q3: Jul-Sep key dates", "Q4: Oct-Dec key dates"' : '"Jan 15 - Jupiter direct: expect mood lift", "Jan 22 - New Moon in Aquarius: fresh starts"'}]
+  "significantDates": ["${isYearly ? 'Key dates across the year with specific cosmic events' : 'Specific dates this month with planetary aspects'}"]
 }
 
-Make the reading deeply personalized based on ALL the data provided - intake responses AND app context. Address their specific concerns naturally throughout. Reference siblings, developmental stage, and family dynamics where relevant.`;
+Remember: You KNOW this person. Speak from that knowing.`;
 
     console.log('Sending prompt with context items:', contextData.length);
 

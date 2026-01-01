@@ -5,6 +5,24 @@ import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacName } from "@/lib/zodiac";
 import { ShareCosmosSheet } from "./ShareCosmosSheet";
 
+const getChineseZodiacEmoji = (animal: string): string => {
+  const emojiMap: Record<string, string> = {
+    'Rat': '🐀',
+    'Ox': '🐂',
+    'Tiger': '🐅',
+    'Rabbit': '🐇',
+    'Dragon': '🐉',
+    'Snake': '🐍',
+    'Horse': '🐴',
+    'Goat': '🐐',
+    'Monkey': '🐒',
+    'Rooster': '🐓',
+    'Dog': '🐕',
+    'Pig': '🐷'
+  };
+  return emojiMap[animal] || '✨';
+};
+
 interface CosmosReadingProps {
   reading: CosmosReadingType;
   onRefresh?: () => void;
@@ -15,10 +33,17 @@ export const CosmosReadingDisplay = ({
   onRefresh
 }: CosmosReadingProps) => {
   const formatMonthYear = (monthYear: string) => {
+    // Handle yearly readings (just year like "2026")
+    if (!monthYear.includes('-')) {
+      return monthYear;
+    }
     const [year, month] = monthYear.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
+  
+  const isYearly = reading.readingPeriod === 'year';
+  const hasChineseZodiac = reading.chineseZodiac && reading.chineseElement;
 
   return (
     <div className="space-y-6 pb-8">
@@ -76,20 +101,35 @@ export const CosmosReadingDisplay = ({
 
           {/* Signs display */}
           <div className="flex items-center justify-center gap-6 pt-3">
-            <div className="flex flex-col items-center gap-1">
-              <ZodiacIcon sign={reading.sunSign} size={24} className="text-amber-300/70" />
-              <span className="text-[10px] text-foreground/40">{getZodiacName(reading.sunSign)}</span>
-            </div>
-            {reading.moonSign && (
-              <div className="flex flex-col items-center gap-1">
-                <ZodiacIcon sign={reading.moonSign} size={24} className="text-purple-300/70" />
-                <span className="text-[10px] text-foreground/40">{getZodiacName(reading.moonSign)} Moon</span>
-              </div>
+            {/* Western zodiac signs */}
+            {reading.zodiacSystem !== 'eastern' && (
+              <>
+                <div className="flex flex-col items-center gap-1">
+                  <ZodiacIcon sign={reading.sunSign} size={24} className="text-amber-300/70" />
+                  <span className="text-[10px] text-foreground/40">{getZodiacName(reading.sunSign)}</span>
+                </div>
+                {reading.moonSign && (
+                  <div className="flex flex-col items-center gap-1">
+                    <ZodiacIcon sign={reading.moonSign} size={24} className="text-purple-300/70" />
+                    <span className="text-[10px] text-foreground/40">{getZodiacName(reading.moonSign)} Moon</span>
+                  </div>
+                )}
+                {reading.risingSign && (
+                  <div className="flex flex-col items-center gap-1">
+                    <ZodiacIcon sign={reading.risingSign} size={24} className="text-indigo-300/70" />
+                    <span className="text-[10px] text-foreground/40">{getZodiacName(reading.risingSign)} Rising</span>
+                  </div>
+                )}
+              </>
             )}
-            {reading.risingSign && (
+            
+            {/* Chinese zodiac */}
+            {hasChineseZodiac && (
               <div className="flex flex-col items-center gap-1">
-                <ZodiacIcon sign={reading.risingSign} size={24} className="text-indigo-300/70" />
-                <span className="text-[10px] text-foreground/40">{getZodiacName(reading.risingSign)} Rising</span>
+                <span className="text-2xl">{getChineseZodiacEmoji(reading.chineseZodiac!)}</span>
+                <span className="text-[10px] text-foreground/40">
+                  {reading.chineseElement} {reading.chineseZodiac}
+                </span>
               </div>
             )}
           </div>
@@ -104,7 +144,7 @@ export const CosmosReadingDisplay = ({
         className="px-5"
       >
         <h3 className="text-[11px] text-amber-300/60 uppercase tracking-[0.2em] mb-3">
-          This Month for {reading.memberName}
+          {isYearly ? `${reading.memberName}'s Year Ahead` : `This Month for ${reading.memberName}`}
         </h3>
         <p className="text-[14px] text-foreground/80 leading-relaxed font-serif">
           {reading.opening}
