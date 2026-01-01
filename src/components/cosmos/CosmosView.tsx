@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { CosmosIntakeSelection } from "./CosmosIntakeSelection";
 import { CosmosQuestionsFlow } from "./CosmosQuestionsFlow";
 import { CosmosVoiceRecorder } from "./CosmosVoiceRecorder";
+import { CosmosOptionsStep } from "./CosmosOptionsStep";
 import { CosmosLoading } from "./CosmosLoading";
 import { CosmosReadingDisplay } from "./CosmosReadingDisplay";
 import { FamilyMember, IntakeResponses, VoiceIntakeData, ReadingOptions } from "./types";
@@ -44,7 +45,7 @@ interface CosmosViewProps {
   onSelectMember: (memberId: string) => void;
 }
 
-type FlowState = 'reading' | 'intake-selection' | 'questions' | 'voice' | 'loading';
+type FlowState = 'reading' | 'intake-selection' | 'questions' | 'voice' | 'options' | 'loading';
 
 export const CosmosView = ({
   babies,
@@ -55,6 +56,9 @@ export const CosmosView = ({
   const [flowState, setFlowState] = useState<FlowState>('reading');
   const [showSelector, setShowSelector] = useState(false);
   const [currentOptions, setCurrentOptions] = useState<ReadingOptions>({ period: 'month', zodiacSystem: 'western' });
+  
+  // Store pending intake data when moving to options step
+  const pendingIntakeRef = useRef<{ type: 'questions' | 'voice'; data: IntakeResponses | VoiceIntakeData } | null>(null);
 
   // Build all family members list
   const allMembers = useMemo(() => {
@@ -140,57 +144,53 @@ export const CosmosView = ({
   // Determine initial state based on whether we have a reading
   const showIntake = !hasReading && !readingLoading && flowState === 'reading';
 
-  const handleQuestionsComplete = async (responses: IntakeResponses) => {
-    if (!selectedMember?.birthday) return;
-    
-    setFlowState('loading');
-    
-    try {
-      await generateReading('questions', responses, {
-        name: selectedMember.name,
-        type: selectedMember.type,
-        birthday: selectedMember.birthday,
-        birth_time: selectedMember.birth_time,
-        birth_location: selectedMember.birth_location
-      }, currentOptions);
-      setFlowState('reading');
-    } catch (error) {
-      toast.error('Failed to generate reading. Please try again.');
-      setFlowState('questions');
-    }
+  // Called when questions flow completes - store data and show options
+  const handleQuestionsComplete = (responses: IntakeResponses) => {
+    pendingIntakeRef.current = { type: 'questions', data: responses };
+    setFlowState('options');
   };
 
-  const handleVoiceComplete = async (data: VoiceIntakeData) => {
-    if (!selectedMember?.birthday) return;
-    
-    setFlowState('loading');
-    
-    try {
-      await generateReading('voice', data, {
-        name: selectedMember.name,
-        type: selectedMember.type,
-        birthday: selectedMember.birthday,
-        birth_time: selectedMember.birth_time,
-        birth_location: selectedMember.birth_location
-      }, currentOptions);
-      setFlowState('reading');
-    } catch (error) {
-      toast.error('Failed to generate reading. Please try again.');
-      setFlowState('voice');
-    }
+  // Called when voice flow completes - store data and show options
+  const handleVoiceComplete = (data: VoiceIntakeData) => {
+    pendingIntakeRef.current = { type: 'voice', data: data };
+    setFlowState('options');
   };
 
-  const handleSelectQuestions = (options: ReadingOptions) => {
+  // Called when options step completes - generate the reading
+  const handleOptionsComplete = async (options: ReadingOptions) => {
+    if (!selectedMember?.birthday || !pendingIntakeRef.current) return;
+    
     setCurrentOptions(options);
+    setFlowState('loading');
+    
+    const { type, data } = pendingIntakeRef.current;
+    
+    try {
+      await generateReading(type, data, {
+        name: selectedMember.name,
+        type: selectedMember.type,
+        birthday: selectedMember.birthday,
+        birth_time: selectedMember.birth_time,
+        birth_location: selectedMember.birth_location
+      }, options);
+      pendingIntakeRef.current = null;
+      setFlowState('reading');
+    } catch (error) {
+      toast.error('Failed to generate reading. Please try again.');
+      setFlowState('options');
+    }
+  };
+
+  const handleSelectQuestions = () => {
     setFlowState('questions');
   };
 
-  const handleSelectVoice = (options: ReadingOptions) => {
-    setCurrentOptions(options);
+  const handleSelectVoice = () => {
     setFlowState('voice');
   };
 
   const handleRefresh = () => {
+    pendingIntakeRef.current = null;
     setFlowState('intake-selection');
   };
 
@@ -284,6 +284,18 @@ export const CosmosView = ({
               member={selectedMember}
               onComplete={handleVoiceComplete}
               onBack={() => setFlowState('intake-selection')}
+            />
+          </motion.div>
+        ) : flowState === 'options' ? (
+          <motion.div
+            key="options"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <CosmosOptionsStep
+              onComplete={handleOptionsComplete}
+              onBack={() => setFlowState(pendingIntakeRef.current?.type === 'voice' ? 'voice' : 'questions')}
             />
           </motion.div>
         ) : flowState === 'loading' ? (
