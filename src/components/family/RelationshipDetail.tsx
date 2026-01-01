@@ -3,6 +3,7 @@ import { X, RefreshCw } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
+import { ShareDynamicSheet } from "./ShareDynamicSheet";
 import { 
   ZodiacSign, 
   getZodiacFromBirthday, 
@@ -448,12 +449,27 @@ export const RelationshipDetail = ({ from, to, onClose }: RelationshipDetailProp
           </div>
         </div>
         
-        <button
-          onClick={onClose}
-          className="p-1 text-foreground/30 hover:text-foreground/50 transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Share button */}
+          <ShareDynamicSheet
+            fromName={from.name}
+            toName={to.name}
+            fromSign={fromSign}
+            toSign={toSign}
+            relationshipType={isSiblingRelationship ? 'sibling' : isAdultRelationship ? 'partner' : 'parent-child'}
+            ageLabel={ageLabel}
+            childInsights={childInsights}
+            partnerInsights={partnerInsights}
+            siblingInsights={siblingInsights}
+          />
+          
+          <button
+            onClick={onClose}
+            className="p-1 text-foreground/30 hover:text-foreground/50 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
       
       {/* Tabs */}
