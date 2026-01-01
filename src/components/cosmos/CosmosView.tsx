@@ -263,9 +263,19 @@ export const CosmosView = ({
 
       {/* Content based on state */}
       <AnimatePresence mode="wait">
-        {readingLoading || generating ? (
+        {readingLoading ? (
+          // Show loading while fetching - prevents flash of intake screen
           <motion.div
-            key="loading"
+            key="initial-loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <CosmosLoading />
+          </motion.div>
+        ) : generating || flowState === 'loading' ? (
+          <motion.div
+            key="generating"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -286,7 +296,7 @@ export const CosmosView = ({
             />
           </motion.div>
         ) : flowState === 'intake-selection' || (!hasReading && flowState === 'reading') ? (
-          // Show intake: either user tapped refresh OR no reading exists yet
+          // Show intake: either user tapped refresh OR no reading exists yet (confirmed after fetch)
           <motion.div
             key="intake-selection"
             initial={{ opacity: 0 }}
@@ -336,15 +346,6 @@ export const CosmosView = ({
               onComplete={handleOptionsComplete}
               onBack={() => setFlowState(pendingIntakeRef.current?.type === 'voice' ? 'voice' : 'questions')}
             />
-          </motion.div>
-        ) : flowState === 'loading' ? (
-          <motion.div
-            key="generating"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <CosmosLoading />
           </motion.div>
         ) : null}
       </AnimatePresence>
