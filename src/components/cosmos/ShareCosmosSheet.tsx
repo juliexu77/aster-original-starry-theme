@@ -107,9 +107,6 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
     URL.revokeObjectURL(url);
   };
 
-  // Get first 2 sections for preview
-  const previewSections = sections.slice(0, 2);
-
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -123,7 +120,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
         </SheetHeader>
         
         <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
-          {/* Preview Card */}
+          {/* Full Reading Card */}
           <div 
             ref={readingRef}
             className="bg-gradient-to-br from-[#0a0a12] via-[#0f0a18] to-[#0a0a12] rounded-2xl p-5 space-y-4"
@@ -187,54 +184,52 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
             {/* Opening */}
             <div className="bg-white/5 rounded-xl p-4">
               <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.15em] mb-2">
-                This Month
+                Overview
               </p>
               <p className="text-[12px] text-white/80 leading-relaxed font-serif">
                 {opening}
               </p>
             </div>
 
-            {/* Key Sections (first 2) */}
-            {previewSections.map((section, index) => (
+            {/* All Sections */}
+            {sections.map((section, index) => (
               <div key={index} className="bg-white/5 rounded-xl p-4">
                 <p className="text-[10px] text-purple-300/60 uppercase tracking-[0.1em] mb-2">
                   {section.title}
                 </p>
-                <p className="text-[11px] text-white/70 leading-relaxed">
-                  {section.content.split('\n\n')[0]}
-                </p>
+                <div className="space-y-2">
+                  {(section.content || '').split('\n\n').map((paragraph, pIndex) => (
+                    paragraph.trim() && (
+                      <p key={pIndex} className="text-[11px] text-white/70 leading-relaxed">
+                        {paragraph}
+                      </p>
+                    )
+                  ))}
+                </div>
               </div>
             ))}
 
-            {/* Significant Dates Preview */}
+            {/* All Significant Dates */}
             {significantDates.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4">
                 <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.1em] mb-2">
                   Key Dates
                 </p>
                 <ul className="space-y-1.5">
-                  {significantDates.slice(0, 3).map((date, i) => (
+                  {significantDates.map((date, i) => (
                     <li key={i} className="text-[10px] text-white/60 flex items-start gap-2">
                       <span className="text-amber-300/40">•</span>
                       {date}
                     </li>
                   ))}
-                  {significantDates.length > 3 && (
-                    <li className="text-[10px] text-white/40 italic">
-                      + {significantDates.length - 3} more dates...
-                    </li>
-                  )}
                 </ul>
               </div>
             )}
 
             {/* Footer */}
-            <div className="text-center pt-3 space-y-1">
+            <div className="text-center pt-3">
               <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">
                 Generated with Aster
-              </p>
-              <p className="text-[9px] text-white/15">
-                Full reading available in app
               </p>
             </div>
           </div>
