@@ -477,7 +477,8 @@ function getChineseZodiac(year: number): { animal: string; element: string } {
     'Horse', 'Goat', 'Monkey', 'Rooster', 'Dog', 'Pig'
   ];
   
-  const elements = ['Wood', 'Wood', 'Fire', 'Fire', 'Earth', 'Earth', 'Metal', 'Metal', 'Water', 'Water'];
+  // Element cycle starting from 1900 (Metal): Metal, Water, Wood, Fire, Earth (each element covers 2 years)
+  const elements = ['Metal', 'Metal', 'Water', 'Water', 'Wood', 'Wood', 'Fire', 'Fire', 'Earth', 'Earth'];
   
   // Chinese zodiac starts from 1900 which was Year of the Rat
   const baseYear = 1900;
