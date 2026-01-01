@@ -288,7 +288,7 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full mx-auto">
+    <div className="w-full mx-auto px-4">
       {/* Instruction text */}
       <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-2">
         Tap a connection to explore
