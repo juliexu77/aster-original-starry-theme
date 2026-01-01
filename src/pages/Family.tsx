@@ -83,10 +83,10 @@ const Family = () => {
                 onClick={() => setViewMode('child')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'child' 
-                    ? 'text-gold border-gold/50' 
+                    ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'child' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
+                style={viewMode === 'child' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
               >
                 Child
               </button>
@@ -94,10 +94,10 @@ const Family = () => {
                 onClick={() => setViewMode('family')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'family' 
-                    ? 'text-gold border-gold/50' 
+                    ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'family' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
+                style={viewMode === 'family' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
               >
                 Family
               </button>
@@ -105,10 +105,10 @@ const Family = () => {
                 onClick={() => setViewMode('cosmos')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'cosmos' 
-                    ? 'text-gold border-gold/50' 
+                    ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'cosmos' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
+                style={viewMode === 'cosmos' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
               >
                 Cosmos
               </button>
