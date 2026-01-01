@@ -155,9 +155,6 @@ export const CosmosView = ({
     }
   }, [readingLoading, generating, hasReading, flowState]);
 
-  // Only show intake if we definitely don't have a reading AND we're not still loading
-  // The key fix: don't show intake while readingLoading is true (prevents flash during remount)
-  const showIntake = !hasReading && !readingLoading && !generating && flowState === 'reading';
 
   // Called when questions flow completes - store data and show options
   const handleQuestionsComplete = (responses: IntakeResponses) => {
@@ -275,7 +272,21 @@ export const CosmosView = ({
           >
             <CosmosLoading />
           </motion.div>
-        ) : showIntake || flowState === 'intake-selection' ? (
+        ) : hasReading && flowState === 'reading' ? (
+          // Priority: Show existing reading if we have one and user hasn't started refresh flow
+          <motion.div
+            key="reading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <CosmosReadingDisplay
+              reading={reading!}
+              onRefresh={handleRefresh}
+            />
+          </motion.div>
+        ) : flowState === 'intake-selection' || (!hasReading && flowState === 'reading') ? (
+          // Show intake: either user tapped refresh OR no reading exists yet
           <motion.div
             key="intake-selection"
             initial={{ opacity: 0 }}
@@ -334,18 +345,6 @@ export const CosmosView = ({
             exit={{ opacity: 0 }}
           >
             <CosmosLoading />
-          </motion.div>
-        ) : reading ? (
-          <motion.div
-            key="reading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <CosmosReadingDisplay
-              reading={reading}
-              onRefresh={handleRefresh}
-            />
           </motion.div>
         ) : null}
       </AnimatePresence>
