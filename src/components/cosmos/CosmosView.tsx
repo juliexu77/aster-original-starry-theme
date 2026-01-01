@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { CosmosIntakeSelection } from "./CosmosIntakeSelection";
-import { CosmosQuestionsFlow } from "./CosmosQuestionsFlow";
+import { CosmosQuestionsFlow, clearIntakeProgress } from "./CosmosQuestionsFlow";
 import { CosmosVoiceRecorder } from "./CosmosVoiceRecorder";
 import { CosmosOptionsStep } from "./CosmosOptionsStep";
 import { CosmosLoading } from "./CosmosLoading";
@@ -175,6 +175,8 @@ export const CosmosView = ({
         birth_time: selectedMember.birth_time,
         birth_location: selectedMember.birth_location
       }, options);
+      // Clear saved intake progress on successful generation
+      clearIntakeProgress(selectedMember.id);
       pendingIntakeRef.current = null;
       setFlowState('reading');
     } catch (error) {
