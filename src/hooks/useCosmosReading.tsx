@@ -37,7 +37,7 @@ export const useCosmosReading = (memberId: string | null) => {
     return null;
   }, [babies]);
 
-  // Fetch existing reading for current month
+  // Fetch existing reading for current month or year
   const fetchReading = useCallback(async () => {
     if (!memberId) {
       setLoading(false);
@@ -53,14 +53,18 @@ export const useCosmosReading = (memberId: string | null) => {
         return;
       }
 
-      const monthYear = getCurrentMonth();
+      const monthKey = getCurrentMonth();
+      const yearKey = getCurrentYear();
       
+      // Check for both monthly and yearly readings
       const { data, error: fetchError } = await supabase
         .from('cosmos_readings')
         .select('*')
         .eq('household_id', householdId)
         .eq('member_id', memberId)
-        .eq('month_year', monthYear)
+        .in('month_year', [monthKey, yearKey])
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (fetchError) {
