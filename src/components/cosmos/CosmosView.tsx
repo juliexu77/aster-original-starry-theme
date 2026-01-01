@@ -205,11 +205,22 @@ export const CosmosView = ({
     );
   }
 
-  if (!selectedMember || !signs?.sun) {
+  if (!selectedMember) {
     return (
       <div className="px-5 py-12 text-center">
         <p className="text-[13px] text-foreground/40">
           Loading...
+        </p>
+      </div>
+    );
+  }
+
+  // If member exists but has no birthday, prompt to add one
+  if (!selectedMember.birthday || !signs?.sun) {
+    return (
+      <div className="px-5 py-12 text-center">
+        <p className="text-[13px] text-foreground/40">
+          Add {selectedMember.name}'s birthday to receive cosmic guidance.
         </p>
       </div>
     );
