@@ -63,7 +63,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
         className="fixed inset-0 pointer-events-none"
         style={{
           background: 'hsl(25 10% 4%)',
-          zIndex: -4,
+          zIndex: -6,
         }}
       />
       
@@ -71,7 +71,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          zIndex: -3,
+          zIndex: -5,
           background: `
             linear-gradient(
               135deg,
@@ -86,6 +86,38 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
               transparent 100%
             )
           `,
+        }}
+      />
+      
+      {/* Cloudy texture overlay - nebula-like patches */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -4,
+          background: `
+            radial-gradient(ellipse 80% 50% at 20% 30%, rgba(160, 140, 120, 0.04) 0%, transparent 70%),
+            radial-gradient(ellipse 60% 40% at 75% 60%, rgba(140, 130, 120, 0.03) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 30% at 50% 80%, rgba(150, 135, 120, 0.025) 0%, transparent 50%)
+          `,
+        }}
+      />
+      
+      {/* Vignette - darker edges */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -3,
+          background: `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.4) 100%)`,
+        }}
+      />
+      
+      {/* Dust/grain texture */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          zIndex: -2,
+          opacity: 0.3,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         }}
       />
       
