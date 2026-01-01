@@ -464,7 +464,7 @@ export function CalibrationFlow({ babyName, babyBirthday, onComplete, onSkip }: 
   };
 
   return (
-    <NightSkyBackground forceMidnight>
+    <NightSkyBackground>
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <motion.header 
