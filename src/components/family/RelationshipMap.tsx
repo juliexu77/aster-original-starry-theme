@@ -288,13 +288,14 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full mx-auto px-2" style={{ maxWidth: '95vw' }}>
+    <div className="w-full mx-auto">
       {/* Instruction text */}
       <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-2">
         Tap a connection to explore
       </p>
       
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+      <div className="aspect-square w-full">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
         <defs>
           {/* Enhanced glow filter for member nodes with halo */}
           <filter id="memberGlow" x="-200%" y="-200%" width="500%" height="500%">
@@ -576,6 +577,7 @@ export const RelationshipMap = ({
           );
         })}
       </svg>
+      </div>
       
       {/* Tap hint */}
       {!selectedConnection && (
