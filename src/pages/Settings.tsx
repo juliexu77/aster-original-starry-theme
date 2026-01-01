@@ -605,14 +605,17 @@ export const Settings = () => {
           <SettingsSection title="Account">
             <SettingsRow
               icon={<RotateCcw className="w-5 h-5" />}
-              title="Replay Home Intro"
+              title="Replay Onboarding Intro Screens"
               subtitle="Watch the orientation again"
               onClick={() => {
                 // Clear all home intro flags
                 babies.forEach(baby => {
                   localStorage.removeItem(`home_intro_seen_${baby.id}`);
                 });
-                toast({ title: "Intro reset", description: "Visit the home tab to see the intro again", duration: 3000 });
+                // Clear chart intro flag
+                localStorage.removeItem('chart-intro-seen');
+                localStorage.removeItem('chart-selector-seen');
+                toast({ title: "Intro screens reset", description: "Visit the Child or Chart tab to see the intros again", duration: 3000 });
               }}
             />
             <SettingsRow
