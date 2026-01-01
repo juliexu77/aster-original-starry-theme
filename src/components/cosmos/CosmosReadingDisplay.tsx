@@ -172,10 +172,12 @@ export const CosmosReadingDisplay = ({
           </h4>
           
           <div className="space-y-3">
-            {section.content.split('\n\n').map((paragraph, pIndex) => (
-              <p key={pIndex} className="text-[13px] text-foreground/70 leading-relaxed">
-                {paragraph}
-              </p>
+            {(section.content || '').split('\n\n').map((paragraph, pIndex) => (
+              paragraph.trim() && (
+                <p key={pIndex} className="text-[13px] text-foreground/70 leading-relaxed">
+                  {paragraph}
+                </p>
+              )
             ))}
           </div>
         </motion.div>
