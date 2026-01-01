@@ -282,6 +282,8 @@ export const ChildView = ({
             <ShareChartSheet
               name={selectedMember.name}
               birthday={selectedMember.birthday!}
+              birthTime={selectedMember.birth_time}
+              birthLocation={selectedMember.birth_location}
               sunSign={signs.sun}
               moonSign={signs.moon}
               risingSign={signs.rising}
