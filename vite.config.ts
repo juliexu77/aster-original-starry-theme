@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt'],
       manifest: {
-        name: 'Aster - Baby Guide',
+        name: 'Aster',
         short_name: 'Aster',
         description: 'Your daily guide for baby care. What to expect today based on age.',
         theme_color: '#F5F1ED',
