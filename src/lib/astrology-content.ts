@@ -271,150 +271,211 @@ export const RISING_PRESENCE: Record<ZodiacSign, {
 };
 
 // Chart synthesis - how placements work together
+// This creates specific insights based on the actual combination of sun, moon, and rising
 export const getChartSynthesis = (
   sunSign: ZodiacSign,
   moonSign: ZodiacSign | null,
   risingSign: ZodiacSign | null
 ): { strengths: string[]; growthEdges: string[] } => {
-  // These are specific combinations, not generic traits
-  const synthStrengths: Record<ZodiacSign, string[]> = {
-    aries: [
-      'Assumes they belong in any room',
-      'Short emotional memory, rebounds fast',
-      'Infectious confidence that pulls others along'
-    ],
-    taurus: [
-      'Unshakeable once committed',
-      'Creates stability for everyone around them',
-      'Patience that outlasts any opposition'
-    ],
-    gemini: [
-      'Connects ideas no one else sees',
-      'Adapts instantly to any social situation',
-      'Makes complexity look effortless'
-    ],
-    cancer: [
-      'Emotional intelligence off the charts',
-      'Creates belonging wherever they go',
-      'Remembers what matters to people'
-    ],
-    leo: [
-      'Makes others feel special by association',
-      'Courage to be visible when it counts',
-      'Generosity that creates loyalty'
-    ],
-    virgo: [
-      'Notices what everyone else misses',
-      'Improves everything they touch',
-      'Reliability that becomes invisible because it\'s constant'
-    ],
-    libra: [
-      'Natural mediator in any conflict',
-      'Creates beauty and harmony automatically',
-      'Makes difficult people feel understood'
-    ],
-    scorpio: [
-      'Reads emotional undercurrents instinctively',
-      'Loyalty that is absolute and fierce',
-      'Transformative presence that changes systems'
-    ],
-    sagittarius: [
-      'Optimism that is genuinely contagious',
-      'Sees possibility where others see problems',
-      'Adventure spirit that expands everyone\'s world'
-    ],
-    capricorn: [
-      'Gets things done when no one else will',
-      'Builds structures that last',
-      'Earns respect through quiet competence'
-    ],
-    aquarius: [
-      'Thinks thoughts no one else is thinking',
-      'Challenges systems that need challenging',
-      'Comfortable being the only one'
-    ],
-    pisces: [
-      'Understands what people can\'t articulate',
-      'Creative vision that transcends the ordinary',
-      'Compassion that is boundless and healing'
-    ]
-  };
-
-  const synthEdges: Record<ZodiacSign, string[]> = {
-    aries: [
-      'Expects immediate emotional response from others',
-      'Collapses when not stimulated',
-      'Needs constant proof of being prioritized'
-    ],
-    taurus: [
-      'Treats preferences as non-negotiable truths',
-      'Digs in when flexibility is required',
-      'Comfort-seeking overrides growth'
-    ],
-    gemini: [
-      'Consistency feels like a trap',
-      'Depth requires uncomfortable stillness',
-      'Talks around feelings instead of through them'
-    ],
-    cancer: [
-      'Takes everything personally, even when it\'s not',
-      'Past hurts stay present indefinitely',
-      'Needs reassurance more than independence'
-    ],
-    leo: [
-      'Being ignored wounds more than criticism',
-      'Needs audience to feel real',
-      'Pride protects but also isolates'
-    ],
-    virgo: [
-      'Perfectionism is a cage, not a standard',
-      'Criticizes self and others reflexively',
-      'Anxiety masquerades as productivity'
-    ],
-    libra: [
-      'Avoids conflict at cost of authenticity',
-      'Other people\'s needs eclipse their own',
-      'Decisions paralyze instead of clarify'
-    ],
-    scorpio: [
-      'Trust issues that become self-fulfilling',
-      'Intensity that exhausts others',
-      'Forgiveness is a foreign concept'
-    ],
-    sagittarius: [
-      'Commitment phobia dressed as freedom-seeking',
-      'Bluntness that wounds without intention',
-      'Avoids depth through constant motion'
-    ],
-    capricorn: [
-      'Work becomes identity, not just activity',
-      'Emotional vulnerability feels like failure',
-      'Takes responsibility for things that aren\'t theirs'
-    ],
-    aquarius: [
-      'Emotional distance that hurts those closest',
-      'Contrarian for its own sake',
-      'Ideas valued over people\'s feelings'
-    ],
-    pisces: [
-      'Boundaries that dissolve under pressure',
-      'Escapes when reality gets difficult',
-      'Takes on others\' pain as their own'
-    ]
-  };
-
-  let strengths = [...synthStrengths[sunSign]];
-  let edges = [...synthEdges[sunSign]];
-
-  // Moon adds emotional coloring
-  if (moonSign && moonSign !== sunSign) {
-    const moonEdge = synthEdges[moonSign][0];
-    if (!edges.includes(moonEdge)) {
-      edges[2] = moonEdge;
+  const strengths: string[] = [];
+  const edges: string[] = [];
+  
+  const sunElement = getElement(sunSign);
+  const moonElement = moonSign ? getElement(moonSign) : null;
+  const risingElement = risingSign ? getElement(risingSign) : null;
+  
+  // === SUN-MOON INTEGRATION ===
+  if (moonSign) {
+    if (sunSign === moonSign) {
+      // Double sign - intensified nature
+      strengths.push(`Double ${getZodiacName(sunSign)} creates remarkable consistency—inner world and outer expression align perfectly`);
+      edges.push(`No counterbalancing energy means ${getZodiacName(sunSign)} traits can become excessive`);
+    } else if (sunElement === moonElement) {
+      // Same element - natural harmony
+      const elementName = sunElement;
+      strengths.push(`${getZodiacName(sunSign)} sun and ${getZodiacName(moonSign)} moon share ${elementName} energy—instincts and identity naturally align`);
+    } else {
+      // Different elements - creative tension
+      const sunMoonCombos: Record<string, { strength: string; edge: string }> = {
+        'fire-earth': {
+          strength: `${getZodiacName(sunSign)}'s drive is grounded by ${getZodiacName(moonSign)} moon's need for stability—ambition with patience`,
+          edge: `The ${getZodiacName(moonSign)} moon's caution can frustrate ${getZodiacName(sunSign)}'s impulse to act`
+        },
+        'earth-fire': {
+          strength: `${getZodiacName(sunSign)}'s steadiness is enlivened by ${getZodiacName(moonSign)} moon's spark—practical with passion`,
+          edge: `Internal restlessness from ${getZodiacName(moonSign)} moon conflicts with ${getZodiacName(sunSign)}'s need for security`
+        },
+        'fire-water': {
+          strength: `${getZodiacName(sunSign)}'s boldness is deepened by ${getZodiacName(moonSign)} moon's emotional intensity—courage with depth`,
+          edge: `${getZodiacName(moonSign)} moon's sensitivity can overwhelm ${getZodiacName(sunSign)}'s forward momentum`
+        },
+        'water-fire': {
+          strength: `${getZodiacName(sunSign)}'s intuition is activated by ${getZodiacName(moonSign)} moon's enthusiasm—feeling that inspires action`,
+          edge: `${getZodiacName(moonSign)} moon's impatience can bypass ${getZodiacName(sunSign)}'s need to process deeply`
+        },
+        'fire-air': {
+          strength: `${getZodiacName(sunSign)}'s passion is amplified by ${getZodiacName(moonSign)} moon's ideas—action meets inspiration`,
+          edge: `All acceleration, little grounding—${getZodiacName(moonSign)} moon fans ${getZodiacName(sunSign)}'s flames without pause`
+        },
+        'air-fire': {
+          strength: `${getZodiacName(sunSign)}'s ideas gain momentum from ${getZodiacName(moonSign)} moon's drive—thinking that leads to doing`,
+          edge: `Can burn through relationships with intensity before depth develops`
+        },
+        'earth-water': {
+          strength: `${getZodiacName(sunSign)}'s reliability is enriched by ${getZodiacName(moonSign)} moon's emotional depth—steady and feeling`,
+          edge: `Can become emotionally heavy; both elements tend toward inward focus`
+        },
+        'water-earth': {
+          strength: `${getZodiacName(sunSign)}'s sensitivity is anchored by ${getZodiacName(moonSign)} moon's practicality—dreams with structure`,
+          edge: `Emotional currents can be suppressed by ${getZodiacName(moonSign)} moon's need for control`
+        },
+        'earth-air': {
+          strength: `${getZodiacName(sunSign)}'s groundedness gains perspective from ${getZodiacName(moonSign)} moon's objectivity—practical meets philosophical`,
+          edge: `${getZodiacName(moonSign)} moon's detachment can feel cold to ${getZodiacName(sunSign)}'s material nature`
+        },
+        'air-earth': {
+          strength: `${getZodiacName(sunSign)}'s ideas are given form by ${getZodiacName(moonSign)} moon's need for tangible results`,
+          edge: `${getZodiacName(moonSign)} moon's attachment to routine can limit ${getZodiacName(sunSign)}'s mental freedom`
+        },
+        'water-air': {
+          strength: `${getZodiacName(sunSign)}'s intuition is articulated by ${getZodiacName(moonSign)} moon's mental clarity—feelings find words`,
+          edge: `${getZodiacName(moonSign)} moon's rationality can dismiss ${getZodiacName(sunSign)}'s emotional knowing`
+        },
+        'air-water': {
+          strength: `${getZodiacName(sunSign)}'s objectivity is humanized by ${getZodiacName(moonSign)} moon's emotional attunement`,
+          edge: `${getZodiacName(moonSign)} moon's sensitivity can overwhelm ${getZodiacName(sunSign)}'s need for logic`
+        }
+      };
+      
+      const combo = `${sunElement}-${moonElement}`;
+      const comboData = sunMoonCombos[combo];
+      if (comboData) {
+        strengths.push(comboData.strength);
+        edges.push(comboData.edge);
+      }
+    }
+  }
+  
+  // === SUN-RISING INTEGRATION ===
+  if (risingSign) {
+    if (sunSign === risingSign) {
+      strengths.push(`${getZodiacName(sunSign)} sun and rising—what others see is exactly who they are. No mask, pure authenticity`);
+    } else if (sunElement === risingElement) {
+      strengths.push(`${getZodiacName(risingSign)} rising naturally expresses ${getZodiacName(sunSign)} core—comfortable in their own presentation`);
+    } else {
+      // Different elements create interesting first impression dynamics
+      const risingModifies: Record<string, string> = {
+        'fire-earth': `${getZodiacName(risingSign)} rising grounds ${getZodiacName(sunSign)}'s fire—appears calmer than the inner drive`,
+        'earth-fire': `${getZodiacName(risingSign)} rising ignites ${getZodiacName(sunSign)}'s earth—appears bolder than the cautious core`,
+        'fire-water': `${getZodiacName(risingSign)} rising softens ${getZodiacName(sunSign)}'s intensity—appears more receptive than the active core`,
+        'water-fire': `${getZodiacName(risingSign)} rising activates ${getZodiacName(sunSign)}'s depths—appears more dynamic than the reflective core`,
+        'fire-air': `${getZodiacName(risingSign)} rising intellectualizes ${getZodiacName(sunSign)}'s passion—appears more rational than the impulsive core`,
+        'air-fire': `${getZodiacName(risingSign)} rising energizes ${getZodiacName(sunSign)}'s ideas—appears more action-oriented than the mental core`,
+        'earth-water': `${getZodiacName(risingSign)} rising adds emotional coloring to ${getZodiacName(sunSign)}'s practicality—appears more feeling than the grounded core`,
+        'water-earth': `${getZodiacName(risingSign)} rising steadies ${getZodiacName(sunSign)}'s emotions—appears more composed than the sensitive core`,
+        'earth-air': `${getZodiacName(risingSign)} rising lightens ${getZodiacName(sunSign)}'s groundedness—appears more flexible than the stable core`,
+        'air-earth': `${getZodiacName(risingSign)} rising anchors ${getZodiacName(sunSign)}'s abstractions—appears more practical than the conceptual core`,
+        'water-air': `${getZodiacName(risingSign)} rising clarifies ${getZodiacName(sunSign)}'s intuition—appears more detached than the emotional core`,
+        'air-water': `${getZodiacName(risingSign)} rising deepens ${getZodiacName(sunSign)}'s intellect—appears more mysterious than the logical core`
+      };
+      
+      const sunRisingCombo = `${sunElement}-${risingElement}`;
+      if (risingModifies[sunRisingCombo]) {
+        strengths.push(risingModifies[sunRisingCombo]);
+      }
+    }
+  }
+  
+  // === MOON-RISING INTEGRATION ===
+  if (moonSign && risingSign) {
+    if (moonSign === risingSign) {
+      strengths.push(`${getZodiacName(moonSign)} moon and rising—emotional needs are visible in first impressions. Transparent and authentic`);
+    } else if (moonElement !== risingElement) {
+      // Tension between inner emotional needs and outer presentation
+      const moonRisingEdges: Record<string, string> = {
+        'fire-earth': `${getZodiacName(risingSign)} rising's composure hides ${getZodiacName(moonSign)} moon's impatience—may seem calmer than they feel`,
+        'earth-fire': `${getZodiacName(risingSign)} rising's boldness masks ${getZodiacName(moonSign)} moon's need for security—may seem braver than they feel`,
+        'fire-water': `${getZodiacName(risingSign)} rising's sensitivity conceals ${getZodiacName(moonSign)} moon's restlessness—may seem gentler than they feel`,
+        'water-fire': `${getZodiacName(risingSign)} rising's energy obscures ${getZodiacName(moonSign)} moon's vulnerability—may seem tougher than they feel`,
+        'fire-air': `${getZodiacName(risingSign)} rising's detachment hides ${getZodiacName(moonSign)} moon's intensity—may seem cooler than they feel`,
+        'air-fire': `${getZodiacName(risingSign)} rising's enthusiasm masks ${getZodiacName(moonSign)} moon's need for space—may seem more engaged than comfortable`,
+        'earth-water': `${getZodiacName(risingSign)} rising's emotionality contrasts ${getZodiacName(moonSign)} moon's containment—inner world is more controlled`,
+        'water-earth': `${getZodiacName(risingSign)} rising's steadiness conceals ${getZodiacName(moonSign)} moon's depths—appears simpler than the inner landscape`,
+        'earth-air': `${getZodiacName(risingSign)} rising's lightness hides ${getZodiacName(moonSign)} moon's heaviness—appears more carefree than they feel`,
+        'air-earth': `${getZodiacName(risingSign)} rising's groundedness masks ${getZodiacName(moonSign)} moon's mental restlessness—appears more settled than the inner chatter`,
+        'water-air': `${getZodiacName(risingSign)} rising's reason contrasts ${getZodiacName(moonSign)} moon's intuition—thinking and feeling pull in different directions`,
+        'air-water': `${getZodiacName(risingSign)} rising's depth conceals ${getZodiacName(moonSign)} moon's objectivity—appears more emotional than the analytical core`
+      };
+      
+      const moonRisingCombo = `${moonElement}-${risingElement}`;
+      if (moonRisingEdges[moonRisingCombo]) {
+        edges.push(moonRisingEdges[moonRisingCombo]);
+      }
+    }
+  }
+  
+  // === THREE-SIGN ELEMENTAL BALANCE ===
+  if (moonSign && risingSign) {
+    const elements = [sunElement, moonElement, risingElement].filter(Boolean);
+    const uniqueElements = [...new Set(elements)];
+    
+    if (uniqueElements.length === 1) {
+      // All same element - powerful but unbalanced
+      edges.push(`Triple ${uniqueElements[0]} energy creates remarkable consistency but lacks counterbalancing perspectives`);
+    } else if (uniqueElements.length === 3) {
+      // All different elements - versatile
+      strengths.push(`${getZodiacName(sunSign)}/${getZodiacName(moonSign)}/${getZodiacName(risingSign)} blend creates versatile access to different modes of being`);
+    }
+    
+    // Check for missing elements and note the gap
+    const allElements = ['fire', 'earth', 'air', 'water'];
+    const presentElements = new Set(elements);
+    const missingElements = allElements.filter(e => !presentElements.has(e));
+    
+    if (missingElements.length >= 2) {
+      const missingDescriptions: Record<string, string> = {
+        'fire': 'spontaneous action',
+        'earth': 'practical grounding',
+        'air': 'objective perspective', 
+        'water': 'emotional depth'
+      };
+      const missingQualities = missingElements.map(e => missingDescriptions[e]).join(' and ');
+      edges.push(`May need to consciously cultivate ${missingQualities}—not naturally accessible`);
+    }
+  }
+  
+  // Ensure we have at least 3 items each
+  const fallbackStrengths = [
+    `${getZodiacName(sunSign)} core provides consistent identity foundation`,
+    moonSign ? `${getZodiacName(moonSign)} moon adds emotional richness` : 'Emotional processing is internalized',
+    risingSign ? `${getZodiacName(risingSign)} rising creates approachable first impression` : 'Natural authenticity in presentation'
+  ];
+  
+  const fallbackEdges = [
+    `${getZodiacName(sunSign)} shadow emerges under stress`,
+    moonSign ? `${getZodiacName(moonSign)} moon needs may be overlooked` : 'Emotional needs can go unrecognized',
+    risingSign ? `${getZodiacName(risingSign)} rising may mask deeper needs` : 'True self may take time to reveal'
+  ];
+  
+  while (strengths.length < 3) {
+    const fallback = fallbackStrengths[strengths.length];
+    if (!strengths.includes(fallback)) {
+      strengths.push(fallback);
+    } else {
+      break;
+    }
+  }
+  
+  while (edges.length < 3) {
+    const fallback = fallbackEdges[edges.length];
+    if (!edges.includes(fallback)) {
+      edges.push(fallback);
+    } else {
+      break;
     }
   }
 
-  return { strengths, growthEdges: edges };
+  return { strengths: strengths.slice(0, 3), growthEdges: edges.slice(0, 3) };
 };
 
 // Get sun sign synthesis paragraph
