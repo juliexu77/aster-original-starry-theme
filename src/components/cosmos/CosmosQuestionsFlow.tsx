@@ -181,21 +181,12 @@ export const CosmosQuestionsFlow = ({
           disabled={!canProceed() && currentQ.required}
           className={`w-full py-4 rounded-2xl font-medium text-[14px] flex items-center justify-center gap-2 transition-all duration-300 ${
             canProceed() || !currentQ.required
-              ? 'bg-gradient-to-r from-amber-500/80 to-amber-600/80 text-background hover:from-amber-500 hover:to-amber-600'
+              ? 'bg-gradient-to-r from-amber-500/80 to-amber-600/80 text-white hover:from-amber-500 hover:to-amber-600'
               : 'bg-foreground/10 text-foreground/30 cursor-not-allowed'
           }`}
         >
-          {currentQuestion === 3 ? (
-            <>
-              Continue
-              <ArrowRight className="w-4 h-4" />
-            </>
-          ) : (
-            <>
-              Continue
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
+          Continue
+          <ArrowRight className="w-4 h-4" />
         </button>
         
         {!canProceed() && currentQ.required && (
