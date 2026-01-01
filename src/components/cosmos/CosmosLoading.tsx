@@ -190,11 +190,11 @@ export const CosmosLoading = () => {
           className="drop-shadow-lg"
         >
           <defs>
-            {/* Gold gradient */}
-            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F5C842" />
-              <stop offset="50%" stopColor="#E5A832" />
-              <stop offset="100%" stopColor="#C4922A" />
+            {/* Silver/muted gradient - matching chart styling */}
+            <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#E0E0E0" />
+              <stop offset="50%" stopColor="#D0D0D0" />
+              <stop offset="100%" stopColor="#B0B0B0" />
             </linearGradient>
             
             {/* Glow filter for aspect lines */}
@@ -208,8 +208,8 @@ export const CosmosLoading = () => {
 
             {/* Subtle glow for center */}
             <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#F5C842" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#F5C842" stopOpacity="0" />
+              <stop offset="0%" stopColor="#E0E0E0" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#E0E0E0" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -222,9 +222,9 @@ export const CosmosLoading = () => {
             cy={centerY}
             r={outerRadius}
             fill="none"
-            stroke="url(#goldGradient)"
-            strokeWidth="1"
-            opacity="0.4"
+            stroke="url(#chartGradient)"
+            strokeWidth="1.5"
+            opacity="0.9"
           />
 
           {/* Inner circle */}
@@ -233,9 +233,9 @@ export const CosmosLoading = () => {
             cy={centerY}
             r={natalRadius - 10}
             fill="none"
-            stroke="url(#goldGradient)"
-            strokeWidth="0.5"
-            opacity="0.2"
+            stroke="url(#chartGradient)"
+            strokeWidth="1"
+            opacity="0.7"
           />
 
           {/* Zodiac signs around perimeter */}
@@ -249,7 +249,7 @@ export const CosmosLoading = () => {
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="fill-[#C4922A]/60 text-[10px] font-light select-none"
+                className="fill-foreground/70 text-[10px] font-light select-none"
                 style={{ fontFamily: 'serif' }}
               >
                 {glyph}
@@ -269,9 +269,9 @@ export const CosmosLoading = () => {
                 y1={inner.y}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="#C4922A"
-                strokeWidth="0.5"
-                opacity="0.2"
+                stroke="#E0E0E0"
+                strokeWidth="1"
+                opacity="0.6"
               />
             );
           })}
@@ -291,13 +291,12 @@ export const CosmosLoading = () => {
                   y1={from.y}
                   x2={to.x}
                   y2={to.y}
-                  stroke="#F5C842"
-                  strokeWidth="1"
+                  stroke="#E0E0E0"
+                  strokeWidth="0.5"
                   initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: opacity * 0.5 }}
+                  animate={{ pathLength: 1, opacity: opacity * 0.25 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  filter="url(#aspectGlow)"
                 />
               );
             })}
@@ -313,7 +312,7 @@ export const CosmosLoading = () => {
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="fill-[#C4922A]/40 text-[8px] select-none"
+                className="fill-foreground/40 text-[8px] select-none"
                 style={{ fontFamily: 'serif' }}
               >
                 {planet.symbol}
@@ -326,23 +325,14 @@ export const CosmosLoading = () => {
             const pos = getPosition(planetAngles[i], planet.orbitRadius * natalRadius);
             return (
               <g key={`transit-${i}`}>
-                {/* Glow behind planet */}
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={8}
-                  fill="#F5C842"
-                  opacity={0.15}
-                />
                 <text
                   x={pos.x}
                   y={pos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="fill-[#F5C842] text-[11px] select-none"
+                  className="fill-foreground/90 text-[11px] select-none"
                   style={{ 
                     fontFamily: 'serif',
-                    filter: 'drop-shadow(0 0 3px rgba(245, 200, 66, 0.5))'
                   }}
                 >
                   {planet.symbol}
@@ -361,7 +351,7 @@ export const CosmosLoading = () => {
                 <path
                   key={angle}
                   d={`M 0 ${-length} L ${width/2} 0 L 0 ${length * 0.3} L ${-width/2} 0 Z`}
-                  fill="url(#goldGradient)"
+                  fill="url(#chartGradient)"
                   transform={`rotate(${angle})`}
                   opacity="0.8"
                 />
@@ -379,7 +369,7 @@ export const CosmosLoading = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.5 }}
-          className="text-[14px] text-[#E5A832]/80 font-serif text-center tracking-wide"
+          className="text-[14px] text-foreground/60 font-serif text-center tracking-wide"
         >
           {LOADING_MESSAGES[messageIndex]}
         </motion.p>
@@ -400,7 +390,7 @@ export const CosmosLoading = () => {
               delay: i * 0.25,
               ease: "easeInOut"
             }}
-            className="w-1.5 h-1.5 rounded-full bg-[#C4922A]/50"
+            className="w-1.5 h-1.5 rounded-full bg-foreground/40"
           />
         ))}
       </div>
