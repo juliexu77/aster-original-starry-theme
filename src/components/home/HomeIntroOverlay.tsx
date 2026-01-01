@@ -165,12 +165,12 @@ export const HomeIntroOverlay = ({
             </AnimatePresence>
           </div>
 
-          {/* Navigation buttons */}
+          {/* Navigation buttons - above nav bar */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
-            className="flex items-center justify-between w-full px-8 pb-12"
+            className="flex items-center justify-between w-full px-8 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
           >
             <button
               onClick={handleBack}
