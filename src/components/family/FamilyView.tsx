@@ -142,7 +142,7 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
       </div>
 
       {/* Relationship Map - only show with 2+ members */}
-      <div className="px-2">
+      <div>
         {familyMembers.length >= 2 ? (
           <RelationshipMap
             members={familyMembers}
