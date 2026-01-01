@@ -86,7 +86,7 @@ const Family = () => {
                     ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'child' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
+                style={viewMode === 'child' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
               >
                 Child
               </button>
@@ -97,7 +97,7 @@ const Family = () => {
                     ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'family' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
+                style={viewMode === 'family' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
               >
                 Family
               </button>
@@ -108,7 +108,7 @@ const Family = () => {
                     ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'cosmos' ? { textShadow: '0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(200, 220, 255, 0.4)' } : undefined}
+                style={viewMode === 'cosmos' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
               >
                 Cosmos
               </button>
