@@ -64,8 +64,11 @@ export const CosmosView = ({
   const allMembers = useMemo(() => {
     const members: FamilyMember[] = [];
     
+    console.log('[CosmosView] babies prop:', babies);
+    
     // Add children with birthdays
     babies.forEach(baby => {
+      console.log('[CosmosView] Processing baby:', baby.name, 'birthday:', baby.birthday);
       if (baby.birthday) {
         members.push({
           id: baby.id,
