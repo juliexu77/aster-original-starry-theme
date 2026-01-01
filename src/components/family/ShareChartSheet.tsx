@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Share2, Download, Loader2 } from "lucide-react";
+import { Upload, Download, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
@@ -25,7 +25,7 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
   const sunMechanics = SUN_MECHANICS[sunSign];
   const moonPatterns = moonSign ? MOON_PATTERNS[moonSign] : null;
   const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
-  const { strengths } = getChartSynthesis(sunSign, moonSign, risingSign);
+  const { strengths, growthEdges } = getChartSynthesis(sunSign, moonSign, risingSign);
 
   const generateImageBlob = async (): Promise<Blob | null> => {
     if (!chartRef.current) return null;
@@ -118,15 +118,15 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <button className="p-2 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-colors">
-          <Share2 size={18} strokeWidth={1.5} className="text-foreground/60" />
+          <Upload size={18} strokeWidth={1.5} className="text-foreground/60" />
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl bg-background border-foreground/10">
+      <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl bg-background border-foreground/10">
         <SheetHeader className="pb-4">
           <SheetTitle className="text-center text-foreground/90">Share {firstName}'s Chart</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-4 overflow-y-auto max-h-[calc(85vh-140px)] pb-4">
+        <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
           {/* Preview Card */}
           <div 
             ref={chartRef}
@@ -167,37 +167,77 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
               )}
             </div>
 
-            {/* Key Traits - use first item from each array */}
-            <div className="space-y-3">
-              <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Core Identity</p>
-                <p className="text-[12px] text-white/70 leading-relaxed">{sunMechanics?.[0]}</p>
-              </div>
-              
-              {moonPatterns && (
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Emotional World</p>
-                  <p className="text-[12px] text-white/70 leading-relaxed">{moonPatterns[0]}</p>
-                </div>
-              )}
-              
-              {risingPresence && (
-                <div className="bg-white/5 rounded-xl p-3">
-                  <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">First Impression</p>
-                  <p className="text-[12px] text-white/70 leading-relaxed">{risingPresence.instinct}</p>
-                </div>
-              )}
+            {/* Sun Section - Full Content */}
+            <div className="bg-white/5 rounded-xl p-4">
+              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">{firstName}'s Sun in {getZodiacName(sunSign)}</p>
+              <p className="text-[9px] text-white/30 mb-2">Essential self · Core identity</p>
+              <ul className="space-y-2">
+                {sunMechanics?.map((trait, i) => (
+                  <li key={i} className="text-[11px] text-white/70 leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
+                    {trait}
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* Strengths */}
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Natural Gifts</p>
-              <div className="flex flex-wrap gap-1.5">
-                {strengths.slice(0, 4).map((strength, i) => (
-                  <span key={i} className="text-[11px] bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
-                    {strength}
-                  </span>
-                ))}
+            {/* Moon Section - Full Content */}
+            {moonPatterns && moonSign && (
+              <div className="bg-white/5 rounded-xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">{firstName}'s Moon in {getZodiacName(moonSign)}</p>
+                <p className="text-[9px] text-white/30 mb-2">Emotional needs · Inner world</p>
+                <ul className="space-y-2">
+                  {moonPatterns.map((trait, i) => (
+                    <li key={i} className="text-[11px] text-white/70 leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
+                      {trait}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Rising Section - Full Content */}
+            {risingPresence && risingSign && (
+              <div className="bg-white/5 rounded-xl p-4">
+                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">{firstName}'s {getZodiacName(risingSign)} Rising</p>
+                <p className="text-[9px] text-white/30 mb-2">First impression · Instinctual response</p>
+                <p className="text-[11px] text-white/70 leading-relaxed mb-3">{risingPresence.instinct}</p>
+                <ul className="space-y-2">
+                  {risingPresence.modification.map((trait, i) => (
+                    <li key={i} className="text-[11px] text-white/70 leading-relaxed pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
+                      {trait}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Chart Synthesis */}
+            <div className="bg-white/5 rounded-xl p-4">
+              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">How {firstName}'s Chart Works Together</p>
+              <p className="text-[9px] text-white/30 mb-2">Chart synthesis · Light & shadow</p>
+              
+              <div className="space-y-3">
+                <div>
+                  <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5">Natural Gifts</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {strengths.map((strength, i) => (
+                      <span key={i} className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
+                        {strength}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-[9px] text-white/30 uppercase tracking-wider mb-1.5">Growth Edges</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {growthEdges.map((edge, i) => (
+                      <span key={i} className="text-[10px] bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
+                        {edge}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -222,7 +262,7 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
             disabled={isGenerating}
             className="flex-1 h-12 gap-2"
           >
-            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
             Share
           </Button>
         </div>
