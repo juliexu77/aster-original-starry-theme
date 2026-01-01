@@ -130,6 +130,15 @@ export const NightSkyBackground = ({ children, starCount = 400, forceMidnight = 
 
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Solid base layer to fully cover body gradient */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'hsl(25 10% 4%)',
+          zIndex: -4,
+        }}
+      />
+      
       {/* Dynamic background based on time of day */}
       <div 
         className="fixed inset-0 pointer-events-none transition-all duration-1000"
