@@ -66,15 +66,52 @@ serve(async (req) => {
       }
     }
 
-    // 2. Fetch all babies in household (for sibling context)
+    // 2. Fetch all babies in household (for sibling context and family load assessment)
     const { data: allBabies } = await supabase
       .from('babies')
       .select('id, name, birthday, birth_time, birth_location')
       .eq('household_id', householdId);
 
     if (allBabies && allBabies.length > 0) {
-      // Calculate ages
-      const siblings = allBabies.filter(b => b.id !== memberId && b.birthday);
+      // Calculate ages for all children
+      const childrenWithAges = allBabies
+        .filter(b => b.birthday)
+        .map(b => ({
+          ...b,
+          ageMonths: Math.floor((new Date().getTime() - new Date(b.birthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+        }));
+
+      // Family load assessment
+      const numChildren = childrenWithAges.length;
+      const underTwo = childrenWithAges.filter(c => c.ageMonths < 24).length;
+      const underFive = childrenWithAges.filter(c => c.ageMonths < 60).length;
+      const schoolAge = childrenWithAges.filter(c => c.ageMonths >= 60).length;
+      
+      let familyLoadDescription = '';
+      if (underTwo >= 2) {
+        familyLoadDescription = `Very demanding phase: ${underTwo} children under 2 years old - sleep deprivation likely, constant physical demands, little personal time`;
+      } else if (underTwo === 1 && underFive >= 2) {
+        familyLoadDescription = `High-demand phase: baby plus young toddler(s) - juggling infant needs with toddler energy and attention needs`;
+      } else if (underTwo === 1) {
+        familyLoadDescription = `Baby phase: one infant requiring intensive care - disrupted sleep, feeding demands, adjustment period`;
+      } else if (underFive >= 2 && schoolAge === 0) {
+        familyLoadDescription = `Active toddler/preschool phase: ${underFive} young children - high supervision needs, sibling dynamics emerging`;
+      } else if (schoolAge > 0 && underFive > 0) {
+        familyLoadDescription = `Mixed ages phase: balancing school-age independence with younger child needs - logistical complexity`;
+      } else if (schoolAge >= 2) {
+        familyLoadDescription = `Established family phase: ${schoolAge} school-age children - more independence but emotional complexity increases`;
+      } else if (numChildren === 1 && childrenWithAges[0]?.ageMonths >= 24) {
+        familyLoadDescription = `Single child beyond infancy - more focused attention possible, developing relationship deepens`;
+      }
+
+      if (familyLoadDescription) {
+        contextData.push(`Family situation: ${familyLoadDescription}`);
+      }
+      
+      contextData.push(`Total children: ${numChildren}`);
+
+      // Sibling info
+      const siblings = childrenWithAges.filter(b => b.id !== memberId);
       if (siblings.length > 0) {
         const siblingInfo = siblings.map(s => {
           const age = calculateAge(s.birthday);
@@ -86,7 +123,7 @@ serve(async (req) => {
 
       // For the target child, calculate their exact age
       if (isChild) {
-        const targetBaby = allBabies.find(b => b.id === memberId);
+        const targetBaby = childrenWithAges.find(b => b.id === memberId);
         if (targetBaby?.birthday) {
           const ageInfo = calculateDetailedAge(targetBaby.birthday);
           contextData.push(`Child's age: ${ageInfo.description}`);
