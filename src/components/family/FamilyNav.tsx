@@ -18,7 +18,7 @@ export const FamilyNav = () => {
         >
           <Users className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
           <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
-            Child
+            Growth
           </span>
         </button>
 
