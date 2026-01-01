@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Moon, Star, Sun } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const LOADING_MESSAGES = [
   "Consulting the cosmos...",
@@ -28,21 +28,21 @@ export const CosmosLoading = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 border border-amber-500/10 rounded-full"
+          className="absolute inset-0 border border-foreground/10 rounded-full"
         />
         
         {/* Middle orbit */}
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-[25px] border border-purple-500/10 rounded-full"
+          className="absolute inset-[25px] border border-foreground/10 rounded-full"
         >
           <motion.div 
             className="absolute -top-1.5 left-1/2 -translate-x-1/2"
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Star className="w-3 h-3 text-amber-300/60" fill="currentColor" />
+            <div className="w-3 h-3 rounded-full bg-foreground/30" />
           </motion.div>
         </motion.div>
 
@@ -50,29 +50,54 @@ export const CosmosLoading = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-[50px] border border-indigo-500/10 rounded-full"
+          className="absolute inset-[50px] border border-foreground/10 rounded-full"
         >
           <motion.div 
             className="absolute -right-1 top-1/2 -translate-y-1/2"
             animate={{ scale: [1, 1.3, 1] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           >
-            <Moon className="w-3 h-3 text-purple-300/60" />
+            <div className="w-3 h-3 rounded-full bg-foreground/20" />
           </motion.div>
         </motion.div>
 
-        {/* Center sun */}
+        {/* Center - 8-pointed star matching app icon */}
         <motion.div
           animate={{ 
-            scale: [1, 1.1, 1],
-            opacity: [0.8, 1, 0.8]
+            scale: [1, 1.05, 1],
+            opacity: [0.9, 1, 0.9]
           }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-[75px] flex items-center justify-center"
+          className="absolute inset-[65px] flex items-center justify-center"
         >
-          <div className="w-full h-full rounded-full bg-gradient-to-br from-amber-400/30 to-amber-600/20 flex items-center justify-center">
-            <Sun className="w-6 h-6 text-amber-300/70" />
-          </div>
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {/* 8-pointed star */}
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+              const isCardinal = angle % 90 === 0;
+              const length = isCardinal ? 42 : 30;
+              const width = isCardinal ? 12 : 8;
+              return (
+                <g key={angle} transform={`rotate(${angle} 50 50)`}>
+                  {/* Diamond/petal shape */}
+                  <path
+                    d={`M 50 ${50 - length} 
+                        L ${50 + width/2} 50 
+                        L 50 ${50 + 8} 
+                        L ${50 - width/2} 50 Z`}
+                    fill="url(#goldGradient)"
+                    className="drop-shadow-sm"
+                  />
+                </g>
+              );
+            })}
+            <defs>
+              <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#F5C842" />
+                <stop offset="50%" stopColor="#E5A832" />
+                <stop offset="100%" stopColor="#D49A28" />
+              </linearGradient>
+            </defs>
+          </svg>
         </motion.div>
 
         {/* Floating particles */}
@@ -86,7 +111,7 @@ export const CosmosLoading = () => {
             }}
             animate={{ 
               y: [null, Math.random() * -50 - 20],
-              opacity: [0, 0.6, 0]
+              opacity: [0, 0.4, 0]
             }}
             transition={{ 
               duration: 3 + Math.random() * 2,
@@ -96,7 +121,7 @@ export const CosmosLoading = () => {
             }}
             className="absolute left-1/2 top-1/2"
           >
-            <Sparkles className="w-2 h-2 text-amber-300/40" />
+            <Sparkles className="w-2 h-2 text-foreground/30" />
           </motion.div>
         ))}
       </div>
@@ -122,14 +147,14 @@ export const CosmosLoading = () => {
             key={i}
             animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.3, 0.8, 0.3]
+              opacity: [0.3, 0.6, 0.3]
             }}
             transition={{
               duration: 1.2,
               repeat: Infinity,
               delay: i * 0.2
             }}
-            className="w-1.5 h-1.5 rounded-full bg-amber-400/60"
+            className="w-1.5 h-1.5 rounded-full bg-foreground/40"
           />
         ))}
       </div>

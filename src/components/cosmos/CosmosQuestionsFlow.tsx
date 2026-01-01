@@ -82,9 +82,9 @@ export const CosmosQuestionsFlow = ({
   };
 
   return (
-    <div className="min-h-[60vh] flex flex-col px-5 py-6">
+    <div className="flex flex-col px-5 py-6 h-full">
       {/* Progress indicator */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-shrink-0">
         <button
           onClick={handlePrev}
           className="p-2 rounded-full hover:bg-foreground/5 transition-colors"
@@ -110,71 +110,72 @@ export const CosmosQuestionsFlow = ({
         <div className="w-9" /> {/* Spacer */}
       </div>
 
-      {/* Question */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentQuestion}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-          className="flex-1"
-        >
-          <h3 className="text-[16px] font-serif text-foreground/90 mb-6 leading-relaxed">
-            {questionText}
-          </h3>
+      {/* Scrollable question content */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h3 className="text-[16px] font-serif text-foreground/90 mb-6 leading-relaxed">
+              {questionText}
+            </h3>
 
-          {/* Options */}
-          {'freeText' in currentQ && currentQ.freeText ? (
-            <textarea
-              value={responses.q4 || ''}
-              onChange={(e) => handleTextChange(e.target.value)}
-              placeholder={currentQ.placeholder}
-              rows={4}
-              className="w-full px-4 py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/80 text-[14px] placeholder:text-foreground/30 focus:outline-none focus:border-amber-500/30 resize-none"
-              maxLength={500}
-            />
-          ) : (
-            <div className="space-y-2">
-              {'options' in currentQ && currentQ.options?.map((option: string) => (
-                <button
-                  key={option}
-                  onClick={() => handleOptionToggle(option)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 flex items-center gap-3 ${
-                    isSelected(option)
-                      ? 'border-amber-500/40 bg-amber-500/10 text-foreground/90'
-                      : 'border-foreground/10 bg-foreground/5 text-foreground/60 hover:border-foreground/20'
-                  }`}
-                >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
-                    isSelected(option)
-                      ? 'border-amber-400 bg-amber-400'
-                      : 'border-foreground/20'
-                  }`}>
-                    {isSelected(option) && (
-                      <Check className="w-3 h-3 text-background" />
-                    )}
-                  </div>
-                  <span className="text-[13px]">{option}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            {/* Options */}
+            {'freeText' in currentQ && currentQ.freeText ? (
+              <textarea
+                value={responses.q4 || ''}
+                onChange={(e) => handleTextChange(e.target.value)}
+                placeholder={currentQ.placeholder}
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/80 text-[14px] placeholder:text-foreground/30 focus:outline-none focus:border-amber-500/30 resize-none"
+                maxLength={500}
+              />
+            ) : (
+              <div className="space-y-2">
+                {'options' in currentQ && currentQ.options?.map((option: string) => (
+                  <button
+                    key={option}
+                    onClick={() => handleOptionToggle(option)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border transition-all duration-200 flex items-center gap-3 ${
+                      isSelected(option)
+                        ? 'border-amber-500/40 bg-amber-500/10 text-foreground/90'
+                        : 'border-foreground/10 bg-foreground/5 text-foreground/60 hover:border-foreground/20'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                      isSelected(option)
+                        ? 'border-amber-400 bg-amber-400'
+                        : 'border-foreground/20'
+                    }`}>
+                      {isSelected(option) && (
+                        <Check className="w-3 h-3 text-background" />
+                      )}
+                    </div>
+                    <span className="text-[13px]">{option}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
-          {/* Multi-select hint */}
-          {currentQ.multiSelect && (
-            <p className="text-[11px] text-foreground/30 mt-3">
-              Select all that apply
-            </p>
-          )}
-        </motion.div>
-      </AnimatePresence>
+            {/* Multi-select hint */}
+            {currentQ.multiSelect && (
+              <p className="text-[11px] text-foreground/30 mt-3">
+                Select all that apply
+              </p>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-      {/* Continue button */}
+      {/* Continue button - always visible */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mt-8"
+        className="pt-6 flex-shrink-0"
       >
         <button
           onClick={handleNext}
