@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Moon, Utensils, Footprints, Hand, MessageCircle, Users, Brain, Heart } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacFromBirthday, getZodiacName } from "@/lib/zodiac";
+import { getDomainData, DomainData } from "./DevelopmentTable";
+import { Calibration } from "@/hooks/useCalibration";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
@@ -12,6 +14,8 @@ interface ShareChildSheetProps {
   birthday: string;
   ageLabel: string;
   phase: string;
+  ageInWeeks: number;
+  calibration?: Calibration | null;
 }
 
 const getPhaseDescription = (phase: string): string => {
@@ -38,13 +42,29 @@ const getPhaseDescription = (phase: string): string => {
   return descriptions[phase] || "Growing and developing beautifully";
 };
 
-export const ShareChildSheet = ({ name, birthday, ageLabel, phase }: ShareChildSheetProps) => {
+const getDomainIcon = (domainId: string) => {
+  const iconClass = "w-3 h-3";
+  switch (domainId) {
+    case "sleep": return <Moon className={iconClass} />;
+    case "feeding": return <Utensils className={iconClass} />;
+    case "physical": return <Footprints className={iconClass} />;
+    case "fine_motor": return <Hand className={iconClass} />;
+    case "language": return <MessageCircle className={iconClass} />;
+    case "social": return <Users className={iconClass} />;
+    case "cognitive": return <Brain className={iconClass} />;
+    case "emotional": return <Heart className={iconClass} />;
+    default: return null;
+  }
+};
+
+export const ShareChildSheet = ({ name, birthday, ageLabel, phase, ageInWeeks, calibration }: ShareChildSheetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const firstName = name.split(' ')[0];
   const zodiacSign = getZodiacFromBirthday(birthday);
+  const domains = getDomainData(ageInWeeks, calibration);
 
   const generateImageBlob = async (): Promise<Blob | null> => {
     if (!contentRef.current) return null;
@@ -131,58 +151,93 @@ export const ShareChildSheet = ({ name, birthday, ageLabel, phase }: ShareChildS
           {/* Preview Card */}
           <div 
             ref={contentRef}
-            className="bg-[#0a0a12] rounded-2xl p-6 space-y-5"
+            className="bg-[#0a0a12] rounded-2xl p-5 space-y-4"
           >
-            {/* Header with Avatar */}
-            <div className="text-center space-y-3">
-              <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+            {/* Header with Avatar and Phase */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
                 {zodiacSign ? (
-                  <ZodiacIcon sign={zodiacSign} size={32} strokeWidth={1.5} className="text-white/50" />
+                  <ZodiacIcon sign={zodiacSign} size={24} strokeWidth={1.5} className="text-white/50" />
                 ) : (
-                  <span className="text-2xl font-serif text-white/50">
+                  <span className="text-xl font-serif text-white/50">
                     {firstName.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
               
-              <div>
-                <h2 className="text-2xl font-serif text-white">{name}</h2>
-                <p className="text-[12px] text-white/40 mt-1">{ageLabel}</p>
-              </div>
-            </div>
-
-            {/* Zodiac Sign */}
-            {zodiacSign && (
-              <div className="bg-white/5 rounded-xl p-4 text-center">
-                <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Sun Sign</p>
-                <div className="flex items-center justify-center gap-2">
-                  <ZodiacIcon sign={zodiacSign} size={20} className="text-amber-400/80" />
-                  <span className="text-white/90">{getZodiacName(zodiacSign)}</span>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-serif text-white truncate">{name}</h2>
+                <p className="text-[11px] text-white/40">{ageLabel}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] text-white/60 font-medium">{phase}</span>
+                  {zodiacSign && (
+                    <>
+                      <span className="text-white/20">·</span>
+                      <div className="flex items-center gap-1">
+                        <ZodiacIcon sign={zodiacSign} size={12} className="text-amber-400/70" />
+                        <span className="text-[10px] text-white/50">{getZodiacName(zodiacSign)}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            )}
-
-            {/* Current Phase */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Current Phase</p>
-              <p className="text-[15px] text-white/90 font-medium">{phase}</p>
-              <p className="text-[12px] text-white/50 mt-1">{getPhaseDescription(phase)}</p>
             </div>
 
-            {/* Birthday */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-2">Birthday</p>
-              <p className="text-[13px] text-white/80">
-                {(() => {
-                  const [year, month, day] = birthday.split('-').map(Number);
-                  const date = new Date(year, month - 1, day);
-                  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-                })()}
-              </p>
+            {/* Phase Description */}
+            <div className="bg-white/5 rounded-xl p-3">
+              <p className="text-[11px] text-white/60 leading-relaxed">{getPhaseDescription(phase)}</p>
+            </div>
+
+            {/* Development Table */}
+            <div>
+              <p className="text-[9px] text-white/30 uppercase tracking-[0.2em] mb-2">Development Stages</p>
+              <div className="border border-white/10 rounded-lg overflow-hidden">
+                {domains.map((domain, idx) => (
+                  <div 
+                    key={domain.id}
+                    className={`flex items-center ${idx !== domains.length - 1 ? 'border-b border-white/10' : ''}`}
+                  >
+                    {/* Domain icon & label */}
+                    <div className="w-20 flex items-center gap-1.5 py-2 px-2 border-r border-white/10">
+                      <span className="text-white/40">{getDomainIcon(domain.id)}</span>
+                      <span className="text-[8px] uppercase tracking-wide text-white/50">
+                        {domain.label}
+                      </span>
+                    </div>
+                    
+                    {/* Stage name */}
+                    <div className="flex-1 py-2 px-2.5 border-r border-white/10">
+                      <span className="text-[11px] text-white/80">{domain.stageName}</span>
+                    </div>
+                    
+                    {/* Stage number */}
+                    <div className="w-10 py-2 px-2 text-right">
+                      <span className="text-[11px] text-white/50">{domain.currentStage}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Domain Summaries */}
+            <div className="space-y-2">
+              <p className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Stage Details</p>
+              <div className="grid grid-cols-2 gap-2">
+                {domains.map((domain) => (
+                  <div key={domain.id} className="bg-white/5 rounded-lg p-2.5">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-white/40">{getDomainIcon(domain.id)}</span>
+                      <span className="text-[9px] uppercase tracking-wide text-white/50">{domain.label}</span>
+                    </div>
+                    <p className="text-[10px] text-white/70 font-medium mb-0.5">{domain.stageName}</p>
+                    <p className="text-[9px] text-white/40 leading-snug line-clamp-2">{domain.stageDescription}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Footer */}
-            <p className="text-[11px] text-white/25 text-center pt-2 uppercase tracking-[0.2em]">
+            <p className="text-[10px] text-white/20 text-center pt-1 uppercase tracking-[0.15em]">
               Generated with Aster
             </p>
           </div>
