@@ -20,9 +20,20 @@ import { LocationInput } from "@/components/ui/LocationInput";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SettingsSection } from "@/components/settings/SettingsSection";
+import { SwipeableRow } from "@/components/settings/SwipeableRow";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getZodiacFromBirthday, getZodiacName, getMoonSignFromBirthDateTime } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { FamilyNav } from "@/components/family/FamilyNav";
@@ -58,6 +69,24 @@ export const Settings = () => {
   const [savingPartnerBirthday, setSavingPartnerBirthday] = useState(false);
   const [savingPartnerBirthTime, setSavingPartnerBirthTime] = useState(false);
   const [savingPartnerBirthLocation, setSavingPartnerBirthLocation] = useState(false);
+  const [showDeletePartnerConfirm, setShowDeletePartnerConfirm] = useState(false);
+
+  const handleDeletePartner = async () => {
+    try {
+      await updateUserProfile({ 
+        partner_name: null, 
+        partner_birthday: null, 
+        partner_birth_time: null, 
+        partner_birth_location: null 
+      });
+      await fetchUserProfile();
+      setShowDeletePartnerConfirm(false);
+      toast({ title: "Partner removed", duration: 3000 });
+    } catch (error) {
+      console.error('Error deleting partner:', error);
+      toast({ title: "Error", description: "Failed to remove partner", variant: "destructive" });
+    }
+  };
 
   const handleChangePassword = async () => {
     if (!user?.email) return;
@@ -421,43 +450,85 @@ export const Settings = () => {
 
           {/* Partner Section */}
           <SettingsSection title="Partner">
-            {/* Partner Name Row */}
-            {editingPartnerName ? (
-              <div className="px-4 py-3 flex items-center gap-3">
-                <Users className="w-5 h-5 text-foreground/30" />
-                <div className="flex-1 flex items-center gap-2">
-                  <Input
-                    type="text"
-                    value={partnerNameInput}
-                    onChange={(e) => setPartnerNameInput(e.target.value)}
-                    placeholder="Partner's name"
-                    className="flex-1 text-[13px]"
-                  />
-                  <Button 
-                    size="sm" 
-                    onClick={handleSavePartnerName}
-                    disabled={savingPartnerName}
-                    className="text-[11px]"
-                  >
-                    {savingPartnerName ? "..." : "Save"}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    onClick={() => setEditingPartnerName(false)}
-                    className="text-[11px]"
-                  >
-                    Cancel
-                  </Button>
+            {/* Partner Name Row - Swipeable to delete if partner exists */}
+            {userProfile?.partner_name ? (
+              editingPartnerName ? (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <Users className="w-5 h-5 text-foreground/30" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={partnerNameInput}
+                      onChange={(e) => setPartnerNameInput(e.target.value)}
+                      placeholder="Partner's name"
+                      className="flex-1 text-[13px]"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSavePartnerName}
+                      disabled={savingPartnerName}
+                      className="text-[11px]"
+                    >
+                      {savingPartnerName ? "..." : "Save"}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setEditingPartnerName(false)}
+                      className="text-[11px]"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <SwipeableRow onDelete={() => setShowDeletePartnerConfirm(true)}>
+                  <SettingsRow
+                    icon={<Users className="w-5 h-5" />}
+                    title="Name"
+                    subtitle={userProfile.partner_name}
+                    onClick={handleStartEditPartnerName}
+                  />
+                </SwipeableRow>
+              )
             ) : (
-              <SettingsRow
-                icon={<Users className="w-5 h-5" />}
-                title="Name"
-                subtitle={userProfile?.partner_name || "Add partner's name"}
-                onClick={handleStartEditPartnerName}
-              />
+              editingPartnerName ? (
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <Users className="w-5 h-5 text-foreground/30" />
+                  <div className="flex-1 flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={partnerNameInput}
+                      onChange={(e) => setPartnerNameInput(e.target.value)}
+                      placeholder="Partner's name"
+                      className="flex-1 text-[13px]"
+                    />
+                    <Button 
+                      size="sm" 
+                      onClick={handleSavePartnerName}
+                      disabled={savingPartnerName}
+                      className="text-[11px]"
+                    >
+                      {savingPartnerName ? "..." : "Save"}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      onClick={() => setEditingPartnerName(false)}
+                      className="text-[11px]"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <SettingsRow
+                  icon={<Users className="w-5 h-5" />}
+                  title="Name"
+                  subtitle="Add partner's name"
+                  onClick={handleStartEditPartnerName}
+                />
+              )
             )}
 
             {/* Partner Birthday Row */}
@@ -631,6 +702,24 @@ export const Settings = () => {
           </SettingsSection>
         )}
       </div>
+
+      {/* Delete Partner Confirmation */}
+      <AlertDialog open={showDeletePartnerConfirm} onOpenChange={setShowDeletePartnerConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {userProfile?.partner_name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove all partner information. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePartner} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Bottom Navigation */}
       <FamilyNav />

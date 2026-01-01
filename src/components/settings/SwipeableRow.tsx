@@ -71,7 +71,7 @@ export const SwipeableRow = ({
         animate={{ x: showConfirm ? -CONFIRM_WIDTH : 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         style={{ x }}
-        className="relative bg-card touch-pan-y"
+        className="relative touch-pan-y"
         onClick={showConfirm ? handleReset : undefined}
       >
         {children}
