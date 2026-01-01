@@ -98,6 +98,7 @@ const Index = () => {
                 babyName={activeBaby.name} 
                 babyBirthday={activeBaby.birthday || undefined}
                 babyId={activeBaby.id}
+                babyCreatedAt={activeBaby.created_at}
                 babies={babies}
                 activeBabyId={activeBaby.id}
                 onSwitchBaby={switchBaby}

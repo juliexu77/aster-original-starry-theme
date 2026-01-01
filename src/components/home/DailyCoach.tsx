@@ -15,12 +15,14 @@ interface Baby {
   id: string;
   name: string;
   birthday: string | null;
+  created_at?: string;
 }
 
 interface DailyCoachProps {
   babyName?: string;
   babyBirthday?: string;
   babyId?: string;
+  babyCreatedAt?: string;
   babies?: Baby[];
   activeBabyId?: string;
   onSwitchBaby?: (babyId: string) => void;
@@ -48,6 +50,7 @@ export const DailyCoach = ({
   babyName, 
   babyBirthday,
   babyId,
+  babyCreatedAt,
   babies = [],
   activeBabyId,
   onSwitchBaby
@@ -68,15 +71,26 @@ export const DailyCoach = ({
   const [showRecalibrationSheet, setShowRecalibrationSheet] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   
-  // Check if we should show the intro overlay (first time visiting home for this baby)
+  // Check if we should show the intro overlay (only for truly new users)
   useEffect(() => {
     if (!babyId) return;
     const introKey = `home_intro_seen_${babyId}`;
     const hasSeenIntro = localStorage.getItem(introKey);
-    if (!hasSeenIntro) {
-      setShowIntro(true);
+    if (hasSeenIntro) return;
+    
+    // Check if this is a truly new user by looking at baby creation time
+    const isNewUser = babyCreatedAt 
+      ? (Date.now() - new Date(babyCreatedAt).getTime()) < 5 * 60 * 1000 // 5 minutes
+      : false;
+    
+    if (!isNewUser) {
+      // Returning user on new device - mark as seen and don't show intro
+      localStorage.setItem(introKey, 'true');
+      return;
     }
-  }, [babyId]);
+    
+    setShowIntro(true);
+  }, [babyId, babyCreatedAt]);
   
   const handleIntroComplete = () => {
     if (babyId) {
