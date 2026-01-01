@@ -63,7 +63,29 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
         className="fixed inset-0 pointer-events-none"
         style={{
           background: 'hsl(25 10% 4%)',
+          zIndex: -4,
+        }}
+      />
+      
+      {/* Milky Way band - subtle diagonal glow */}
+      <div
+        className="fixed inset-0 pointer-events-none"
+        style={{
           zIndex: -3,
+          background: `
+            linear-gradient(
+              135deg,
+              transparent 0%,
+              transparent 35%,
+              rgba(180, 160, 140, 0.03) 40%,
+              rgba(200, 180, 160, 0.05) 45%,
+              rgba(220, 200, 180, 0.06) 50%,
+              rgba(200, 180, 160, 0.05) 55%,
+              rgba(180, 160, 140, 0.03) 60%,
+              transparent 65%,
+              transparent 100%
+            )
+          `,
         }}
       />
       
