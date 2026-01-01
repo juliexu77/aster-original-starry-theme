@@ -124,6 +124,56 @@ export type Database = {
           },
         ]
       }
+      cosmos_readings: {
+        Row: {
+          created_at: string
+          generated_at: string
+          household_id: string
+          id: string
+          intake_responses: Json | null
+          intake_type: string
+          member_id: string
+          member_type: string
+          month_year: string
+          reading_content: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          household_id: string
+          id?: string
+          intake_responses?: Json | null
+          intake_type: string
+          member_id: string
+          member_type: string
+          month_year: string
+          reading_content: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          household_id?: string
+          id?: string
+          intake_responses?: Json | null
+          intake_type?: string
+          member_id?: string
+          member_type?: string
+          month_year?: string
+          reading_content?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cosmos_readings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           household_id: string
