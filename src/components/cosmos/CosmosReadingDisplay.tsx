@@ -47,6 +47,16 @@ export const CosmosReadingDisplay = ({
   const significantDates = reading?.significantDates || [];
   const isYearly = reading?.readingPeriod === 'year';
   const hasChineseZodiac = reading?.chineseZodiac && reading?.chineseElement;
+  const zodiacSystem = reading?.zodiacSystem || 'western';
+  const sunSign = reading?.sunSign || 'aries';
+  const moonSign = reading?.moonSign;
+  const risingSign = reading?.risingSign;
+  const memberName = reading?.memberName || '';
+  const opening = reading?.opening || '';
+  const astrologicalSeason = reading?.astrologicalSeason || '';
+  const lunarPhase = reading?.lunarPhase || '';
+  const monthYear = reading?.monthYear || '';
+  const generatedAt = reading?.generatedAt || new Date().toISOString();
 
   return (
     <div className="space-y-6 pb-8">
@@ -89,38 +99,38 @@ export const CosmosReadingDisplay = ({
 
           {/* Month and season */}
           <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em]">
-            {formatMonthYear(reading.monthYear)}
+            {formatMonthYear(monthYear)}
           </p>
           
           <h2 className="text-xl font-serif text-foreground/90">
-            {reading.astrologicalSeason}
+            {astrologicalSeason}
           </h2>
           
           {/* Lunar phase */}
           <div className="flex items-center justify-center gap-2 text-[12px] text-foreground/50">
             <Moon className="w-4 h-4 text-purple-300/60" />
-            {reading.lunarPhase}
+            {lunarPhase}
           </div>
 
           {/* Signs display */}
           <div className="flex items-center justify-center gap-6 pt-3">
             {/* Western zodiac signs */}
-            {reading.zodiacSystem !== 'eastern' && (
+            {zodiacSystem !== 'eastern' && (
               <>
                 <div className="flex flex-col items-center gap-1">
-                  <ZodiacIcon sign={reading.sunSign} size={24} className="text-amber-300/70" />
-                  <span className="text-[10px] text-foreground/40">{getZodiacName(reading.sunSign)}</span>
+                  <ZodiacIcon sign={sunSign} size={24} className="text-amber-300/70" />
+                  <span className="text-[10px] text-foreground/40">{getZodiacName(sunSign)}</span>
                 </div>
-                {reading.moonSign && (
+                {moonSign && (
                   <div className="flex flex-col items-center gap-1">
-                    <ZodiacIcon sign={reading.moonSign} size={24} className="text-purple-300/70" />
-                    <span className="text-[10px] text-foreground/40">{getZodiacName(reading.moonSign)} Moon</span>
+                    <ZodiacIcon sign={moonSign} size={24} className="text-purple-300/70" />
+                    <span className="text-[10px] text-foreground/40">{getZodiacName(moonSign)} Moon</span>
                   </div>
                 )}
-                {reading.risingSign && (
+                {risingSign && (
                   <div className="flex flex-col items-center gap-1">
-                    <ZodiacIcon sign={reading.risingSign} size={24} className="text-indigo-300/70" />
-                    <span className="text-[10px] text-foreground/40">{getZodiacName(reading.risingSign)} Rising</span>
+                    <ZodiacIcon sign={risingSign} size={24} className="text-indigo-300/70" />
+                    <span className="text-[10px] text-foreground/40">{getZodiacName(risingSign)} Rising</span>
                   </div>
                 )}
               </>
@@ -147,10 +157,10 @@ export const CosmosReadingDisplay = ({
         className="px-5"
       >
         <h3 className="text-[11px] text-amber-300/60 uppercase tracking-[0.2em] mb-3">
-          {isYearly ? `${reading.memberName}'s Year Ahead` : `This Month for ${reading.memberName}`}
+          {isYearly ? `${memberName}'s Year Ahead` : `This Month for ${memberName}`}
         </h3>
         <p className="text-[14px] text-foreground/80 leading-relaxed font-serif">
-          {reading.opening}
+          {opening}
         </p>
       </motion.div>
 
@@ -236,7 +246,7 @@ export const CosmosReadingDisplay = ({
       {/* Footer */}
       <div className="pt-4 text-center px-5">
         <p className="text-[10px] text-foreground/20 tracking-[0.2em]">
-          Reading generated {new Date(reading.generatedAt).toLocaleDateString()}
+          Reading generated {new Date(generatedAt).toLocaleDateString()}
         </p>
       </div>
     </div>
