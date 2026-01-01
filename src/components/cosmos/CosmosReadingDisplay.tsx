@@ -34,16 +34,19 @@ export const CosmosReadingDisplay = ({
 }: CosmosReadingProps) => {
   const formatMonthYear = (monthYear: string) => {
     // Handle yearly readings (just year like "2026")
-    if (!monthYear.includes('-')) {
-      return monthYear;
+    if (!monthYear || !monthYear.includes('-')) {
+      return monthYear || '';
     }
     const [year, month] = monthYear.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
   
-  const isYearly = reading.readingPeriod === 'year';
-  const hasChineseZodiac = reading.chineseZodiac && reading.chineseElement;
+  // Safely access reading properties with defaults
+  const sections = reading?.sections || [];
+  const significantDates = reading?.significantDates || [];
+  const isYearly = reading?.readingPeriod === 'year';
+  const hasChineseZodiac = reading?.chineseZodiac && reading?.chineseElement;
 
   return (
     <div className="space-y-6 pb-8">
@@ -152,7 +155,7 @@ export const CosmosReadingDisplay = ({
       </motion.div>
 
       {/* Content Sections */}
-      {(reading.sections || []).map((section, index) => (
+      {sections.map((section, index) => (
         <motion.div
           key={section.title}
           initial={{ opacity: 0, y: 20 }}
@@ -184,7 +187,7 @@ export const CosmosReadingDisplay = ({
       ))}
 
       {/* Significant Dates */}
-      {(reading.significantDates || []).length > 0 && (
+      {significantDates.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -202,7 +205,7 @@ export const CosmosReadingDisplay = ({
           </h4>
           
           <ul className="space-y-2">
-            {(reading.significantDates || []).map((date, i) => (
+            {significantDates.map((date, i) => (
               <li key={i} className="text-[13px] text-foreground/70 flex items-start gap-2">
                 <span className="text-amber-300/50">•</span>
                 {date}
