@@ -208,7 +208,7 @@ export const CosmosOptionsStep = ({
       <div className="flex-shrink-0 pt-6 pb-2">
         <button
           onClick={handleNext}
-          className="w-full py-4 rounded-2xl font-medium text-[14px] flex items-center justify-center gap-2 transition-all duration-300 bg-gradient-to-r from-amber-500 to-amber-600 text-[#0a0a12] hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/25"
+          className="w-full py-4 rounded-2xl font-medium text-[14px] flex items-center justify-center gap-2 transition-all duration-300 bg-gradient-to-r from-amber-500/80 to-amber-600/80 text-white hover:from-amber-500 hover:to-amber-600"
         >
           {step === 1 ? (
             <>
