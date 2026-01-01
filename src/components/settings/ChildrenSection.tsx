@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Baby, Plus, Archive, RefreshCw } from "lucide-react";
+import { Baby, Plus, RefreshCw } from "lucide-react";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { SettingsRow } from "@/components/settings/SettingsRow";
+import { SwipeableRow } from "@/components/settings/SwipeableRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -155,17 +156,27 @@ export const ChildrenSection = ({
     }
   };
 
+  const handleDeleteBaby = (baby: BabyType) => {
+    setSelectedBaby(baby);
+    setShowArchiveConfirm(true);
+  };
+
   return (
     <>
       <SettingsSection title="Children">
         {babies.map((baby) => (
-          <SettingsRow
+          <SwipeableRow
             key={baby.id}
-            icon={<Baby className="w-5 h-5" />}
-            title={baby.name}
-            subtitle={getAgeLabel(baby.birthday)}
-            onClick={() => handleOpenEdit(baby)}
-          />
+            onDelete={() => handleDeleteBaby(baby)}
+            deleteLabel="Delete"
+          >
+            <SettingsRow
+              icon={<Baby className="w-5 h-5" />}
+              title={baby.name}
+              subtitle={getAgeLabel(baby.birthday)}
+              onClick={() => handleOpenEdit(baby)}
+            />
+          </SwipeableRow>
         ))}
         <SettingsRow
           icon={<Plus className="w-5 h-5" />}
@@ -308,7 +319,7 @@ export const ChildrenSection = ({
               </button>
             </div>
           </div>
-          <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <DialogFooter>
             <Button 
               onClick={handleUpdate} 
               disabled={isSaving || !name.trim()}
@@ -316,32 +327,24 @@ export const ChildrenSection = ({
             >
               {isSaving ? "Saving..." : "Save"}
             </Button>
-            {babies.length > 1 && (
-              <Button 
-                variant="ghost" 
-                onClick={() => setShowArchiveConfirm(true)}
-                className="w-full text-foreground/40 text-[13px]"
-              >
-                <Archive className="w-4 h-4 mr-2" />
-                Archive
-              </Button>
-            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Archive Confirmation */}
+      {/* Delete Confirmation */}
       <AlertDialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Archive {selectedBaby?.name}?</AlertDialogTitle>
+            <AlertDialogTitle>Delete {selectedBaby?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove {selectedBaby?.name} from your daily view. This action cannot be undone.
+              This will permanently remove {selectedBaby?.name} and all their data. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive}>Archive</AlertDialogAction>
+            <AlertDialogAction onClick={handleArchive} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
