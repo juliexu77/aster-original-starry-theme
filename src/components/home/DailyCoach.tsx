@@ -230,6 +230,8 @@ export const DailyCoach = ({
                   birthday={babyBirthday}
                   ageLabel={ageLabel}
                   phase={currentPhase}
+                  ageInWeeks={ageInWeeks}
+                  calibration={calibration}
                 />
               </div>
             )}
