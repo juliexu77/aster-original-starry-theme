@@ -242,7 +242,9 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
             </div>
 
             {/* Footer */}
-            <p className="text-[9px] text-white/20 text-center pt-2">Generated with BabyGuide</p>
+            <p className="text-[11px] text-white/25 text-center pt-2 uppercase tracking-[0.2em]">
+              Generated with Aster
+            </p>
           </div>
         </div>
 
