@@ -148,15 +148,16 @@ export const CosmosView = ({
   // we show it instead of resetting to intake
   useEffect(() => {
     if (!readingLoading && !generating) {
-      if (hasReading && flowState === 'intake-selection') {
-        // Reading was loaded from DB, show it
+      // If we have a reading and we're not in a user-initiated flow, show the reading
+      if (hasReading && (flowState === 'intake-selection' || flowState === 'reading')) {
         setFlowState('reading');
       }
     }
   }, [readingLoading, generating, hasReading, flowState]);
 
-  // Determine initial state based on whether we have a reading
-  const showIntake = !hasReading && !readingLoading && flowState === 'reading';
+  // Only show intake if we definitely don't have a reading AND we're not still loading
+  // The key fix: don't show intake while readingLoading is true (prevents flash during remount)
+  const showIntake = !hasReading && !readingLoading && !generating && flowState === 'reading';
 
   // Called when questions flow completes - store data and show options
   const handleQuestionsComplete = (responses: IntakeResponses) => {
