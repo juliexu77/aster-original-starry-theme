@@ -31,6 +31,7 @@ interface UserProfile {
   partner_birthday: string | null;
   partner_birth_time: string | null;
   partner_birth_location: string | null;
+  created_at?: string;
 }
 
 interface FamilyMember {
@@ -110,17 +111,28 @@ export const ChildView = ({
 
   const hasMultipleMembers = allMembers.length > 1;
   
-  // Show intro overlay on first visit
+  // Show intro overlay only for truly new users (profile created within last 5 minutes)
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem('chart-intro-seen');
-    if (!hasSeenIntro && allMembers.length > 0) {
-      // Small delay to let the page render first
-      const timer = setTimeout(() => {
-        setShowIntro(true);
-      }, 500);
-      return () => clearTimeout(timer);
+    if (hasSeenIntro || allMembers.length === 0) return;
+    
+    // Check if this is a truly new user by looking at profile creation time
+    const isNewUser = userProfile?.created_at 
+      ? (Date.now() - new Date(userProfile.created_at).getTime()) < 5 * 60 * 1000 // 5 minutes
+      : false;
+    
+    if (!isNewUser) {
+      // Returning user on new device - mark as seen and don't show intro
+      localStorage.setItem('chart-intro-seen', 'true');
+      return;
     }
-  }, [allMembers.length]);
+    
+    // Small delay to let the page render first
+    const timer = setTimeout(() => {
+      setShowIntro(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [allMembers.length, userProfile?.created_at]);
 
   const handleIntroComplete = () => {
     setShowIntro(false);
