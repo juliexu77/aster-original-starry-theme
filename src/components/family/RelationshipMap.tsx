@@ -49,42 +49,42 @@ interface RelationshipMapProps {
 }
 
 // Asymmetric orbital positions - deliberately uneven, no mirroring
-// Angles are in radians, distances are in pixels from center (increased for better spacing)
+// Angles are in radians, distances are in pixels from center (reduced to keep names from edge)
 const ORBITAL_CONFIGS = [
   // For 2 members: center + one orbit
   [
     { angle: 0, distance: 0 }, // Center
-    { angle: 0.7, distance: 160 },
+    { angle: 0.7, distance: 120 },
   ],
   // For 3 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 145 },
-    { angle: 2.8, distance: 175 },
+    { angle: 0.5, distance: 110 },
+    { angle: 2.8, distance: 130 },
   ],
   // For 4 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.6, distance: 135 },
-    { angle: 1.9, distance: 180 },
-    { angle: 3.8, distance: 155 },
+    { angle: 0.6, distance: 105 },
+    { angle: 1.9, distance: 135 },
+    { angle: 3.8, distance: 115 },
   ],
   // For 5 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.4, distance: 140 },
-    { angle: 1.5, distance: 185 },
-    { angle: 2.7, distance: 150 },
-    { angle: 4.2, distance: 170 },
+    { angle: 0.4, distance: 105 },
+    { angle: 1.5, distance: 140 },
+    { angle: 2.7, distance: 115 },
+    { angle: 4.2, distance: 130 },
   ],
   // For 6 members
   [
     { angle: 0, distance: 0 },
-    { angle: 0.5, distance: 130 },
-    { angle: 1.3, distance: 180 },
-    { angle: 2.4, distance: 145 },
-    { angle: 3.5, distance: 190 },
-    { angle: 4.8, distance: 160 },
+    { angle: 0.5, distance: 100 },
+    { angle: 1.3, distance: 135 },
+    { angle: 2.4, distance: 110 },
+    { angle: 3.5, distance: 145 },
+    { angle: 4.8, distance: 120 },
   ],
 ];
 
@@ -288,7 +288,7 @@ export const RelationshipMap = ({
   }
 
   return (
-    <div className="w-full mx-auto px-4">
+    <div className="w-full mx-auto">
       {/* Instruction text */}
       <p className="text-center text-[11px] text-foreground/40 tracking-wider mb-2">
         Tap a connection to explore
