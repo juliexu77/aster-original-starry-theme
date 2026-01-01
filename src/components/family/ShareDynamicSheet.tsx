@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Share2, Download, Loader2 } from "lucide-react";
+import { Upload, Download, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
@@ -180,7 +180,7 @@ export const ShareDynamicSheet = ({
           className="p-1.5 rounded-full bg-foreground/5 hover:bg-foreground/10 transition-colors"
           disabled={!hasInsights}
         >
-          <Share2 size={14} strokeWidth={1.5} className="text-foreground/40" />
+          <Upload size={14} strokeWidth={1.5} className="text-foreground/40" />
         </button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl bg-background border-foreground/10">
@@ -314,7 +314,7 @@ export const ShareDynamicSheet = ({
             disabled={isGenerating}
             className="flex-1 h-12 gap-2"
           >
-            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
             Share
           </Button>
         </div>
