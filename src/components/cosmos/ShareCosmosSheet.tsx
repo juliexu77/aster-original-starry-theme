@@ -17,8 +17,23 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const readingRef = useRef<HTMLDivElement>(null);
 
-  const formatMonthYear = (monthYear: string) => {
-    const [year, month] = monthYear.split('-');
+  // Safely access reading properties with defaults
+  const sections = reading?.sections || [];
+  const significantDates = reading?.significantDates || [];
+  const memberName = reading?.memberName || '';
+  const monthYear = reading?.monthYear || '';
+  const sunSign = reading?.sunSign || 'aries';
+  const moonSign = reading?.moonSign;
+  const risingSign = reading?.risingSign;
+  const astrologicalSeason = reading?.astrologicalSeason || '';
+  const lunarPhase = reading?.lunarPhase || '';
+  const opening = reading?.opening || '';
+
+  const formatMonthYear = (my: string) => {
+    if (!my || !my.includes('-')) {
+      return my || '';
+    }
+    const [year, month] = my.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
@@ -53,14 +68,14 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
         return;
       }
 
-      const fileName = `${reading.memberName}-cosmos-${reading.monthYear}.png`;
+      const fileName = `${memberName}-cosmos-${monthYear}.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `${reading.memberName}'s Cosmic Reading`,
-          text: `${reading.memberName}'s cosmic guidance for ${formatMonthYear(reading.monthYear)}`,
+          title: `${memberName}'s Cosmic Reading`,
+          text: `${memberName}'s cosmic guidance for ${formatMonthYear(monthYear)}`,
         });
         toast.success("Shared!");
       } else {
@@ -72,7 +87,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
         console.error('Share error:', error);
         const blob = await generateImageBlob();
         if (blob) {
-          downloadBlob(blob, `${reading.memberName}-cosmos-${reading.monthYear}.png`);
+          downloadBlob(blob, `${memberName}-cosmos-${monthYear}.png`);
           toast.success("Reading downloaded!");
         } else {
           toast.error("Couldn't share reading");
@@ -93,7 +108,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
   };
 
   // Get first 2 sections for preview
-  const previewSections = reading.sections.slice(0, 2);
+  const previewSections = sections.slice(0, 2);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -104,7 +119,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl bg-background border-foreground/10">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-center text-foreground/90">Share {reading.memberName}'s Reading</SheetTitle>
+          <SheetTitle className="text-center text-foreground/90">Share {memberName}'s Reading</SheetTitle>
         </SheetHeader>
         
         <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
@@ -133,30 +148,30 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
               <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.3em]">
                 Cosmic Guidance
               </p>
-              <h2 className="text-xl font-serif text-white">{reading.memberName}</h2>
-              <p className="text-[13px] text-white/60">{formatMonthYear(reading.monthYear)}</p>
+              <h2 className="text-xl font-serif text-white">{memberName}</h2>
+              <p className="text-[13px] text-white/60">{formatMonthYear(monthYear)}</p>
               
               <div className="flex items-center justify-center gap-2 text-[11px] text-purple-300/60 pt-1">
                 <Moon className="w-3 h-3" />
-                {reading.astrologicalSeason} • {reading.lunarPhase}
+                {astrologicalSeason} • {lunarPhase}
               </div>
 
               {/* Signs row */}
               <div className="flex items-center justify-center gap-4 pt-3">
                 <div className="flex flex-col items-center">
-                  <ZodiacIcon sign={reading.sunSign} size={20} className="text-amber-300/70" />
-                  <span className="text-[9px] text-white/40">{getZodiacName(reading.sunSign)}</span>
+                  <ZodiacIcon sign={sunSign} size={20} className="text-amber-300/70" />
+                  <span className="text-[9px] text-white/40">{getZodiacName(sunSign)}</span>
                 </div>
-                {reading.moonSign && (
+                {moonSign && (
                   <div className="flex flex-col items-center">
-                    <ZodiacIcon sign={reading.moonSign} size={20} className="text-purple-300/70" />
-                    <span className="text-[9px] text-white/40">{getZodiacName(reading.moonSign)} ☽</span>
+                    <ZodiacIcon sign={moonSign} size={20} className="text-purple-300/70" />
+                    <span className="text-[9px] text-white/40">{getZodiacName(moonSign)} ☽</span>
                   </div>
                 )}
-                {reading.risingSign && (
+                {risingSign && (
                   <div className="flex flex-col items-center">
-                    <ZodiacIcon sign={reading.risingSign} size={20} className="text-indigo-300/70" />
-                    <span className="text-[9px] text-white/40">{getZodiacName(reading.risingSign)} ↑</span>
+                    <ZodiacIcon sign={risingSign} size={20} className="text-indigo-300/70" />
+                    <span className="text-[9px] text-white/40">{getZodiacName(risingSign)} ↑</span>
                   </div>
                 )}
               </div>
@@ -175,7 +190,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
                 This Month
               </p>
               <p className="text-[12px] text-white/80 leading-relaxed font-serif">
-                {reading.opening}
+                {opening}
               </p>
             </div>
 
@@ -192,21 +207,21 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
             ))}
 
             {/* Significant Dates Preview */}
-            {reading.significantDates.length > 0 && (
+            {significantDates.length > 0 && (
               <div className="bg-white/5 rounded-xl p-4">
                 <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.1em] mb-2">
                   Key Dates
                 </p>
                 <ul className="space-y-1.5">
-                  {reading.significantDates.slice(0, 3).map((date, i) => (
+                  {significantDates.slice(0, 3).map((date, i) => (
                     <li key={i} className="text-[10px] text-white/60 flex items-start gap-2">
                       <span className="text-amber-300/40">•</span>
                       {date}
                     </li>
                   ))}
-                  {reading.significantDates.length > 3 && (
+                  {significantDates.length > 3 && (
                     <li className="text-[10px] text-white/40 italic">
-                      + {reading.significantDates.length - 3} more dates...
+                      + {significantDates.length - 3} more dates...
                     </li>
                   )}
                 </ul>
