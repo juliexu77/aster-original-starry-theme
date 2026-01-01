@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
-import { CosmosReading, IntakeResponses, VoiceIntakeData } from "@/components/cosmos/types";
+import { CosmosReading, IntakeResponses, VoiceIntakeData, ReadingOptions } from "@/components/cosmos/types";
 
 export const useCosmosReading = (memberId: string | null) => {
   const { user } = useAuth();
@@ -16,6 +16,11 @@ export const useCosmosReading = (memberId: string | null) => {
   const getCurrentMonth = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  // Get current year
+  const getCurrentYear = () => {
+    return `${new Date().getFullYear()}`;
   };
 
   // Get household ID from babies
@@ -84,7 +89,8 @@ export const useCosmosReading = (memberId: string | null) => {
       birthday: string;
       birth_time?: string | null;
       birth_location?: string | null;
-    }
+    },
+    options?: ReadingOptions
   ) => {
     if (!memberId) return;
 
@@ -97,6 +103,9 @@ export const useCosmosReading = (memberId: string | null) => {
         throw new Error('No household found');
       }
 
+      const readingOptions = options || { period: 'month' as const, zodiacSystem: 'western' as const };
+      const periodKey = readingOptions.period === 'year' ? getCurrentYear() : getCurrentMonth();
+
       // Call edge function to generate reading
       const { data, error: funcError } = await supabase.functions.invoke('generate-cosmos-reading', {
         body: {
@@ -105,7 +114,8 @@ export const useCosmosReading = (memberId: string | null) => {
           intakeType,
           intakeData,
           householdId,
-          monthYear: getCurrentMonth()
+          monthYear: periodKey,
+          readingOptions
         }
       });
 
