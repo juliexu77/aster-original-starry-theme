@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.generate-partner-insights]
 verify_jwt = false
+
+[functions.generate-cosmos-reading]
+verify_jwt = false
+
+[functions.transcribe-voice]
+verify_jwt = false

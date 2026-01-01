@@ -8,8 +8,9 @@ import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { ChildView } from "@/components/family/ChildView";
 import { FamilyView } from "@/components/family/FamilyView";
+import { CosmosView } from "@/components/cosmos/CosmosView";
 
-type ViewMode = 'child' | 'family';
+type ViewMode = 'child' | 'family' | 'cosmos';
 
 const Family = () => {
   const { user, loading: authLoading } = useAuth();
@@ -17,18 +18,13 @@ const Family = () => {
   const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const navigate = useNavigate();
   
-  // Always default to 'child' view
   const [viewMode, setViewMode] = useState<ViewMode>('child');
-  
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  // Initialize and validate selected member when babies load
   useEffect(() => {
     if (babies.length === 0) return;
     
     const storedId = localStorage.getItem('chart-selected-member-id');
-    
-    // Check if stored ID is valid (exists in babies with birthday, or is parent/partner)
     const isValidBabyId = storedId && babies.some(b => b.id === storedId && b.birthday);
     const isValidParentId = storedId === 'parent' || storedId === 'partner';
     const storedIdIsValid = isValidBabyId || isValidParentId;
@@ -36,7 +32,6 @@ const Family = () => {
     if (storedIdIsValid) {
       setSelectedMemberId(storedId);
     } else {
-      // Default to first baby with a birthday
       const firstWithBirthday = babies.find(b => b.birthday);
       if (firstWithBirthday) {
         setSelectedMemberId(firstWithBirthday.id);
@@ -45,7 +40,6 @@ const Family = () => {
     }
   }, [babies]);
 
-  // Persist selected member to localStorage when it changes
   useEffect(() => {
     if (selectedMemberId) {
       localStorage.setItem('chart-selected-member-id', selectedMemberId);
@@ -59,17 +53,6 @@ const Family = () => {
   const handleAddChild = () => {
     navigate('/baby-setup');
   };
-
-  // Debug logging
-  console.log('[Family] Render state:', {
-    authLoading,
-    babiesLoading,
-    profileLoading,
-    babiesCount: babies.length,
-    babies: babies.map(b => ({ id: b.id, name: b.name, birthday: b.birthday })),
-    selectedMemberId,
-    user: user?.id
-  });
 
   if (authLoading || babiesLoading || profileLoading) {
     return (
@@ -94,8 +77,8 @@ const Family = () => {
               Your Family
             </p>
             
-            {/* View Toggle */}
-            <div className="flex items-center justify-center gap-8">
+            {/* View Toggle - Now with 3 options */}
+            <div className="flex items-center justify-center gap-6">
               <button
                 onClick={() => setViewMode('child')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
@@ -116,6 +99,16 @@ const Family = () => {
               >
                 Family
               </button>
+              <button
+                onClick={() => setViewMode('cosmos')}
+                className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
+                  viewMode === 'cosmos' 
+                    ? 'text-amber-300/80 border-amber-300/40' 
+                    : 'text-foreground/30 border-transparent hover:text-foreground/50'
+                }`}
+              >
+                Cosmos
+              </button>
             </div>
           </div>
 
@@ -128,11 +121,18 @@ const Family = () => {
               onSelectMember={setSelectedMemberId}
               onAddChild={handleAddChild}
             />
-          ) : (
+          ) : viewMode === 'family' ? (
             <FamilyView
               babies={babies}
               userProfile={userProfile}
               onBirthdaySaved={handleBirthdaySaved}
+            />
+          ) : (
+            <CosmosView
+              babies={babies}
+              userProfile={userProfile}
+              selectedMemberId={selectedMemberId}
+              onSelectMember={setSelectedMemberId}
             />
           )}
 
