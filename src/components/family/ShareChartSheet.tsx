@@ -5,18 +5,21 @@ import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { SUN_MECHANICS, MOON_PATTERNS, RISING_PRESENCE, getChartSynthesis } from "@/lib/astrology-content";
+import { BirthChartDiagram } from "./BirthChartDiagram";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
 interface ShareChartSheetProps {
   name: string;
   birthday: string;
+  birthTime?: string | null;
+  birthLocation?: string | null;
   sunSign: ZodiacSign;
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
 }
 
-export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign }: ShareChartSheetProps) => {
+export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunSign, moonSign, risingSign }: ShareChartSheetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -136,11 +139,25 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
             <div className="text-center space-y-1">
               <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Birth Chart</p>
               <h2 className="text-xl font-light text-white">{name}</h2>
-              <p className="text-[11px] text-white/40">{(() => {
+            <p className="text-[11px] text-white/40">{(() => {
                 const [year, month, day] = birthday.split('-').map(Number);
                 const date = new Date(year, month - 1, day);
                 return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
               })()}</p>
+            </div>
+
+            {/* Birth Chart Diagram */}
+            <div className="flex justify-center py-2">
+              <div className="w-[280px]">
+                <BirthChartDiagram
+                  sunSign={sunSign}
+                  moonSign={moonSign}
+                  risingSign={risingSign}
+                  birthday={birthday}
+                  birthTime={birthTime}
+                  birthLocation={birthLocation}
+                />
+              </div>
             </div>
 
             {/* Signs Grid */}
