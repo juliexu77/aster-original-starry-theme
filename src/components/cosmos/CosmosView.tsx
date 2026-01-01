@@ -168,6 +168,12 @@ export const CosmosView = ({
     setFlowState('options');
   };
 
+  // Called when user skips intake - proceed with empty intake
+  const handleSkipIntake = () => {
+    pendingIntakeRef.current = { type: 'questions', data: {} as IntakeResponses };
+    setFlowState('options');
+  };
+
   // Called when options step completes - generate the reading
   const handleOptionsComplete = async (options: ReadingOptions) => {
     if (!selectedMember?.birthday || !pendingIntakeRef.current) return;
@@ -307,6 +313,7 @@ export const CosmosView = ({
               member={selectedMember}
               onSelectQuestions={handleSelectQuestions}
               onSelectVoice={handleSelectVoice}
+              onSkip={handleSkipIntake}
             />
           </motion.div>
         ) : flowState === 'questions' ? (

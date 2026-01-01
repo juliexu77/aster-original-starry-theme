@@ -6,12 +6,14 @@ interface CosmosIntakeSelectionProps {
   member: FamilyMember;
   onSelectQuestions: () => void;
   onSelectVoice: () => void;
+  onSkip: () => void;
 }
 
 export const CosmosIntakeSelection = ({
   member,
   onSelectQuestions,
-  onSelectVoice
+  onSelectVoice,
+  onSkip
 }: CosmosIntakeSelectionProps) => {
   return (
     <div className="space-y-8 px-5 py-8">
@@ -99,6 +101,19 @@ export const CosmosIntakeSelection = ({
           </div>
         </motion.button>
       </div>
+
+      {/* Skip option */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        onClick={onSkip}
+        className="w-full text-center py-3"
+      >
+        <span className="text-[13px] text-foreground/40 underline underline-offset-4 decoration-foreground/20 hover:text-foreground/60 transition-colors">
+          Skip and get a general reading
+        </span>
+      </motion.button>
 
       {/* Privacy note */}
       <motion.p
