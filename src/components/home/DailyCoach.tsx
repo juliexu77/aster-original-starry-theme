@@ -4,7 +4,7 @@ import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 import { HomeIntroOverlay } from "./HomeIntroOverlay";
-import { ShareChildSheet } from "./ShareChildSheet";
+
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCalibrationPrompt, isCalibrationStale } from "@/hooks/useCalibrationPrompt";
 import { CalibrationCheckInModal } from "@/components/calibration/CalibrationCheckInModal";
@@ -240,16 +240,6 @@ export const DailyCoach = ({
             babyId={babyId}
             calibration={calibration}
             onMilestoneConfirm={handleMilestoneConfirm}
-            shareSheet={
-              <ShareChildSheet 
-                name={displayName}
-                birthday={babyBirthday}
-                ageLabel={ageLabel}
-                phase={currentPhase}
-                ageInWeeks={ageInWeeks}
-                calibration={calibration}
-              />
-            }
           />
 
           {/* Focus This Month */}
