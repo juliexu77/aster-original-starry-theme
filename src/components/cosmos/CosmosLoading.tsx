@@ -1,27 +1,68 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  IconZodiacAries,
+  IconZodiacTaurus,
+  IconZodiacGemini,
+  IconZodiacCancer,
+  IconZodiacLeo,
+  IconZodiacVirgo,
+  IconZodiacLibra,
+  IconZodiacScorpio,
+  IconZodiacSagittarius,
+  IconZodiacCapricorn,
+  IconZodiacAquarius,
+  IconZodiacPisces,
+  IconMoon,
+  IconSun,
+} from "@tabler/icons-react";
+import { ZodiacSign } from "@/lib/zodiac";
 
-// Zodiac glyphs in order
-const ZODIAC_GLYPHS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
-
-// Planet symbols and their orbital speeds (degrees per second for animation)
-const PLANETS = [
-  { symbol: '☽', name: 'Moon', speed: 12, orbitRadius: 0.85 },    // Moon fastest
-  { symbol: '☿', name: 'Mercury', speed: 8, orbitRadius: 0.75 },
-  { symbol: '♀', name: 'Venus', speed: 6, orbitRadius: 0.65 },
-  { symbol: '☉', name: 'Sun', speed: 4, orbitRadius: 0.55 },
-  { symbol: '♂', name: 'Mars', speed: 2, orbitRadius: 0.45 },     // Mars slowest
+// Zodiac signs in order with their icons
+const ZODIAC_SIGNS: { sign: ZodiacSign; Icon: typeof IconZodiacAries }[] = [
+  { sign: 'aries', Icon: IconZodiacAries },
+  { sign: 'taurus', Icon: IconZodiacTaurus },
+  { sign: 'gemini', Icon: IconZodiacGemini },
+  { sign: 'cancer', Icon: IconZodiacCancer },
+  { sign: 'leo', Icon: IconZodiacLeo },
+  { sign: 'virgo', Icon: IconZodiacVirgo },
+  { sign: 'libra', Icon: IconZodiacLibra },
+  { sign: 'scorpio', Icon: IconZodiacScorpio },
+  { sign: 'sagittarius', Icon: IconZodiacSagittarius },
+  { sign: 'capricorn', Icon: IconZodiacCapricorn },
+  { sign: 'aquarius', Icon: IconZodiacAquarius },
+  { sign: 'pisces', Icon: IconZodiacPisces },
 ];
 
-// Natal planet positions (fixed, dimmer) - positioned around the wheel
+// Planet symbols for text rendering (keeping these as they match the chart)
+const PLANET_SYMBOLS = {
+  moon: '☽',
+  mercury: '☿',
+  venus: '♀',
+  sun: '☉',
+  mars: '♂',
+  jupiter: '♃',
+  saturn: '♄',
+};
+
+// Planet data with orbital speeds
+const PLANETS = [
+  { symbol: PLANET_SYMBOLS.moon, name: 'Moon', speed: 12, orbitRadius: 0.85 },
+  { symbol: PLANET_SYMBOLS.mercury, name: 'Mercury', speed: 8, orbitRadius: 0.75 },
+  { symbol: PLANET_SYMBOLS.venus, name: 'Venus', speed: 6, orbitRadius: 0.65 },
+  { symbol: PLANET_SYMBOLS.sun, name: 'Sun', speed: 4, orbitRadius: 0.55 },
+  { symbol: PLANET_SYMBOLS.mars, name: 'Mars', speed: 2, orbitRadius: 0.45 },
+];
+
+// Natal planet positions (fixed, dimmer)
 const NATAL_POSITIONS = [
-  { symbol: '☉', angle: 45 },   // Sun natal
-  { symbol: '☽', angle: 130 },  // Moon natal
-  { symbol: '☿', angle: 75 },   // Mercury natal
-  { symbol: '♀', angle: 200 },  // Venus natal
-  { symbol: '♂', angle: 280 },  // Mars natal
-  { symbol: '♃', angle: 320 },  // Jupiter natal
-  { symbol: '♄', angle: 160 },  // Saturn natal
+  { symbol: PLANET_SYMBOLS.sun, angle: 45 },
+  { symbol: PLANET_SYMBOLS.moon, angle: 130 },
+  { symbol: PLANET_SYMBOLS.mercury, angle: 75 },
+  { symbol: PLANET_SYMBOLS.venus, angle: 200 },
+  { symbol: PLANET_SYMBOLS.mars, angle: 280 },
+  { symbol: PLANET_SYMBOLS.jupiter, angle: 320 },
+  { symbol: PLANET_SYMBOLS.saturn, angle: 160 },
 ];
 
 // Aspect angles (major aspects)
@@ -239,21 +280,13 @@ export const CosmosLoading = () => {
           />
 
           {/* Zodiac signs around perimeter */}
-          {ZODIAC_GLYPHS.map((glyph, i) => {
+          {ZODIAC_SIGNS.map(({ Icon }, i) => {
             const angle = (i * 30) + 15; // 30 degrees per sign, centered
             const pos = getPosition(angle, zodiacRadius);
             return (
-              <text
-                key={i}
-                x={pos.x}
-                y={pos.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                className="fill-foreground/70 text-[10px] font-light select-none"
-                style={{ fontFamily: 'serif' }}
-              >
-                {glyph}
-              </text>
+              <g key={i} transform={`translate(${pos.x - 6}, ${pos.y - 6})`}>
+                <Icon size={12} strokeWidth={1.5} className="text-foreground/70" />
+              </g>
             );
           })}
 
