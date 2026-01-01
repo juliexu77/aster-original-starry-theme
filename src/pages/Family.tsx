@@ -74,7 +74,7 @@ const Family = () => {
           {/* Header with Toggle */}
           <div className="px-5 pt-8 pb-2">
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em] text-center mb-6">
-              Your Family
+              Your Chart
             </p>
             
             {/* View Toggle - Now with 3 options */}
