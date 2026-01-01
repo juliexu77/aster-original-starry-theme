@@ -111,10 +111,21 @@ export const ChildView = ({
 
   const hasMultipleMembers = allMembers.length > 1;
   
-  // Show intro overlay only for truly new users (profile created within last 5 minutes)
+  // Show intro overlay - either for new users or when manually reset via settings
   useEffect(() => {
     const hasSeenIntro = localStorage.getItem('chart-intro-seen');
     if (hasSeenIntro || allMembers.length === 0) return;
+    
+    // Check if user manually reset the intro (via Settings)
+    const introReset = localStorage.getItem('chart-intro-reset');
+    if (introReset) {
+      // User manually reset - show the intro and clear the reset flag
+      localStorage.removeItem('chart-intro-reset');
+      const timer = setTimeout(() => {
+        setShowIntro(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
     
     // Check if this is a truly new user by looking at profile creation time
     const isNewUser = userProfile?.created_at 

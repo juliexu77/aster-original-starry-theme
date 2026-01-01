@@ -24,16 +24,6 @@ import { SwipeableRow } from "@/components/settings/SwipeableRow";
 import { ChildrenSection } from "@/components/settings/ChildrenSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { getZodiacFromBirthday, getZodiacName, getMoonSignFromBirthDateTime } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { FamilyNav } from "@/components/family/FamilyNav";
@@ -69,7 +59,6 @@ export const Settings = () => {
   const [savingPartnerBirthday, setSavingPartnerBirthday] = useState(false);
   const [savingPartnerBirthTime, setSavingPartnerBirthTime] = useState(false);
   const [savingPartnerBirthLocation, setSavingPartnerBirthLocation] = useState(false);
-  const [showDeletePartnerConfirm, setShowDeletePartnerConfirm] = useState(false);
 
   const handleDeletePartner = async () => {
     try {
@@ -80,7 +69,6 @@ export const Settings = () => {
         partner_birth_location: null 
       });
       await fetchUserProfile();
-      setShowDeletePartnerConfirm(false);
       toast({ title: "Partner removed", duration: 3000 });
     } catch (error) {
       console.error('Error deleting partner:', error);
@@ -482,7 +470,7 @@ export const Settings = () => {
                   </div>
                 </div>
               ) : (
-                <SwipeableRow onDelete={() => setShowDeletePartnerConfirm(true)}>
+                <SwipeableRow onDelete={handleDeletePartner}>
                   <SettingsRow
                     icon={<Users className="w-5 h-5" />}
                     title="Name"
@@ -679,12 +667,14 @@ export const Settings = () => {
               title="Replay Onboarding Intro Screens"
               subtitle="Watch the orientation again"
               onClick={() => {
-                // Clear all home intro flags
+                // Clear all home intro flags and set reset flags
                 babies.forEach(baby => {
                   localStorage.removeItem(`home_intro_seen_${baby.id}`);
+                  localStorage.setItem(`home_intro_reset_${baby.id}`, 'true');
                 });
-                // Clear chart intro flag
+                // Clear chart intro flag and set reset flag
                 localStorage.removeItem('chart-intro-seen');
+                localStorage.setItem('chart-intro-reset', 'true');
                 localStorage.removeItem('chart-selector-seen');
                 toast({ title: "Intro screens reset", description: "Visit the Child or Chart tab to see the intros again", duration: 3000 });
               }}
@@ -702,24 +692,6 @@ export const Settings = () => {
           </SettingsSection>
         )}
       </div>
-
-      {/* Delete Partner Confirmation */}
-      <AlertDialog open={showDeletePartnerConfirm} onOpenChange={setShowDeletePartnerConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove {userProfile?.partner_name}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will remove all partner information. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeletePartner} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Remove
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Bottom Navigation */}
       <FamilyNav />

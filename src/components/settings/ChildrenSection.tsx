@@ -14,16 +14,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Baby as BabyType } from "@/hooks/useBabies";
 import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
@@ -67,7 +57,6 @@ export const ChildrenSection = ({
   const { household } = useHousehold();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [showRecalibration, setShowRecalibration] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<BabyType | null>(null);
   const [name, setName] = useState("");
@@ -139,26 +128,17 @@ export const ChildrenSection = ({
     }
   };
 
-  const handleArchive = async () => {
-    if (!selectedBaby) return;
-    
+  const handleDeleteBaby = async (baby: BabyType) => {
     try {
-      await onArchiveBaby(selectedBaby.id);
-      toast({ title: `${selectedBaby.name} archived`, duration: 3000 });
-      setShowArchiveConfirm(false);
-      setShowEditModal(false);
+      await onArchiveBaby(baby.id);
+      toast({ title: `${baby.name} deleted`, duration: 3000 });
     } catch (error: any) {
       toast({ 
         title: "Error", 
-        description: error.message || "Failed to archive",
+        description: error.message || "Failed to delete",
         variant: "destructive" 
       });
     }
-  };
-
-  const handleDeleteBaby = (baby: BabyType) => {
-    setSelectedBaby(baby);
-    setShowArchiveConfirm(true);
   };
 
   return (
@@ -331,23 +311,6 @@ export const ChildrenSection = ({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
-      <AlertDialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {selectedBaby?.name}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove {selectedBaby?.name} and all their data. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleArchive} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Recalibration Sheet */}
       {selectedBaby?.birthday && (
