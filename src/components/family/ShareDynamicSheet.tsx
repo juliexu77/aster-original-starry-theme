@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import html2canvas from "html2canvas";
-import { Share } from "@capacitor/share";
-import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "sonner";
 
 interface ChildRelationshipInsights {
@@ -70,7 +68,7 @@ export const ShareDynamicSheet = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const generateImage = async (): Promise<string | null> => {
+  const generateImageBlob = async (): Promise<Blob | null> => {
     if (!contentRef.current) return null;
     
     try {
@@ -80,7 +78,10 @@ export const ShareDynamicSheet = ({
         useCORS: true,
         logging: false,
       });
-      return canvas.toDataURL('image/png');
+      
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+      });
     } catch (error) {
       console.error('Error generating image:', error);
       return null;
@@ -90,67 +91,61 @@ export const ShareDynamicSheet = ({
   const handleShare = async () => {
     setIsGenerating(true);
     try {
-      const imageData = await generateImage();
-      if (!imageData) {
+      const blob = await generateImageBlob();
+      if (!blob) {
         toast.error("Couldn't generate image");
+        setIsGenerating(false);
         return;
       }
 
-      const canShare = await Share.canShare();
-      
-      if (canShare.value) {
-        const base64Data = imageData.replace('data:image/png;base64,', '');
-        const fileName = `${fromName}-${toName}-dynamic.png`;
-        
-        await Filesystem.writeFile({
-          path: fileName,
-          data: base64Data,
-          directory: Directory.Cache,
-        });
-        
-        const fileUri = await Filesystem.getUri({
-          path: fileName,
-          directory: Directory.Cache,
-        });
+      const fileName = `${fromName}-${toName}-dynamic.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
 
-        await Share.share({
+      // Check if Web Share API with files is supported
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
           title: `${fromName} & ${toName} Dynamic`,
           text: `Check out this relationship dynamic!`,
-          url: fileUri.uri,
-          dialogTitle: 'Share Dynamic',
         });
+        toast.success("Shared!");
       } else {
-        downloadImage(imageData);
-      }
-      
-      toast.success("Ready to share!");
-    } catch (error) {
-      console.error('Share error:', error);
-      const imageData = await generateImage();
-      if (imageData) {
-        downloadImage(imageData);
+        // Fallback: download the image
+        downloadBlob(blob, fileName);
         toast.success("Downloaded!");
-      } else {
-        toast.error("Couldn't share");
+      }
+    } catch (error) {
+      // User cancelled share or error occurred
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Share error:', error);
+        const blob = await generateImageBlob();
+        if (blob) {
+          downloadBlob(blob, `${fromName}-${toName}-dynamic.png`);
+          toast.success("Downloaded!");
+        } else {
+          toast.error("Couldn't share");
+        }
       }
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const downloadImage = (dataUrl: string) => {
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `${fromName}-${toName}-dynamic.png`;
-    link.href = dataUrl;
+    link.download = fileName;
+    link.href = url;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleDownload = async () => {
     setIsGenerating(true);
     try {
-      const imageData = await generateImage();
-      if (imageData) {
-        downloadImage(imageData);
+      const blob = await generateImageBlob();
+      if (blob) {
+        downloadBlob(blob, `${fromName}-${toName}-dynamic.png`);
         toast.success("Downloaded!");
       } else {
         toast.error("Couldn't generate image");

@@ -6,8 +6,6 @@ import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { SUN_MECHANICS, MOON_PATTERNS, RISING_PRESENCE, getChartSynthesis } from "@/lib/astrology-content";
 import html2canvas from "html2canvas";
-import { Share } from "@capacitor/share";
-import { Filesystem, Directory } from "@capacitor/filesystem";
 import { toast } from "sonner";
 
 interface ShareChartSheetProps {
@@ -29,7 +27,7 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
   const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
   const { strengths } = getChartSynthesis(sunSign, moonSign, risingSign);
 
-  const generateImage = async (): Promise<string | null> => {
+  const generateImageBlob = async (): Promise<Blob | null> => {
     if (!chartRef.current) return null;
     
     try {
@@ -39,7 +37,10 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
         useCORS: true,
         logging: false,
       });
-      return canvas.toDataURL('image/png');
+      
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+      });
     } catch (error) {
       console.error('Error generating image:', error);
       return null;
@@ -49,71 +50,61 @@ export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign 
   const handleShare = async () => {
     setIsGenerating(true);
     try {
-      const imageData = await generateImage();
-      if (!imageData) {
+      const blob = await generateImageBlob();
+      if (!blob) {
         toast.error("Couldn't generate chart image");
+        setIsGenerating(false);
         return;
       }
 
-      // Check if native share is available (Capacitor)
-      const canShare = await Share.canShare();
-      
-      if (canShare.value) {
-        // Save to temp file for native share
-        const base64Data = imageData.replace('data:image/png;base64,', '');
-        const fileName = `${firstName}-birth-chart.png`;
-        
-        await Filesystem.writeFile({
-          path: fileName,
-          data: base64Data,
-          directory: Directory.Cache,
-        });
-        
-        const fileUri = await Filesystem.getUri({
-          path: fileName,
-          directory: Directory.Cache,
-        });
+      const fileName = `${firstName}-birth-chart.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
 
-        await Share.share({
+      // Check if Web Share API with files is supported
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
           title: `${firstName}'s Birth Chart`,
           text: `Check out ${firstName}'s astrological birth chart!`,
-          url: fileUri.uri,
-          dialogTitle: 'Share Birth Chart',
         });
+        toast.success("Shared!");
       } else {
         // Fallback: download the image
-        downloadImage(imageData);
-      }
-      
-      toast.success("Chart ready to share!");
-    } catch (error) {
-      console.error('Share error:', error);
-      // Fallback to download on any error
-      const imageData = await generateImage();
-      if (imageData) {
-        downloadImage(imageData);
+        downloadBlob(blob, fileName);
         toast.success("Chart downloaded!");
-      } else {
-        toast.error("Couldn't share chart");
+      }
+    } catch (error) {
+      // User cancelled share or error occurred
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Share error:', error);
+        const blob = await generateImageBlob();
+        if (blob) {
+          downloadBlob(blob, `${firstName}-birth-chart.png`);
+          toast.success("Chart downloaded!");
+        } else {
+          toast.error("Couldn't share chart");
+        }
       }
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const downloadImage = (dataUrl: string) => {
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `${firstName}-birth-chart.png`;
-    link.href = dataUrl;
+    link.download = fileName;
+    link.href = url;
     link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleDownload = async () => {
     setIsGenerating(true);
     try {
-      const imageData = await generateImage();
-      if (imageData) {
-        downloadImage(imageData);
+      const blob = await generateImageBlob();
+      if (blob) {
+        downloadBlob(blob, `${firstName}-birth-chart.png`);
         toast.success("Chart downloaded!");
       } else {
         toast.error("Couldn't generate chart");
