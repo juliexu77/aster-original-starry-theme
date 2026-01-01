@@ -32,6 +32,14 @@ export const CosmosReadingDisplay = ({
   reading,
   onRefresh
 }: CosmosReadingProps) => {
+  // Early return if no reading data
+  if (!reading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-5">
+        <p className="text-foreground/50 text-sm">No reading available</p>
+      </div>
+    );
+  }
   const formatMonthYear = (monthYear: string) => {
     // Handle yearly readings (just year like "2026")
     if (!monthYear || !monthYear.includes('-')) {
