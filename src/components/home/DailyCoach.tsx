@@ -220,31 +220,15 @@ export const DailyCoach = ({
       <TimeOfDayBackground>
         {/* Sticky Profile Card */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <BabyProfileCard 
-                babyName={displayName} 
-                babyBirthday={babyBirthday}
-                babies={babies}
-                activeBabyId={activeBabyId}
-                onSwitchBaby={onSwitchBaby}
-                onTapProfile={handleTapProfile}
-                isCalibrationStale={staleCalibration}
-              />
-            </div>
-            {babyBirthday && (
-              <div className="pt-6 pr-5">
-                <ShareChildSheet 
-                  name={displayName}
-                  birthday={babyBirthday}
-                  ageLabel={ageLabel}
-                  phase={currentPhase}
-                  ageInWeeks={ageInWeeks}
-                  calibration={calibration}
-                />
-              </div>
-            )}
-          </div>
+          <BabyProfileCard 
+            babyName={displayName} 
+            babyBirthday={babyBirthday}
+            babies={babies}
+            activeBabyId={activeBabyId}
+            onSwitchBaby={onSwitchBaby}
+            onTapProfile={handleTapProfile}
+            isCalibrationStale={staleCalibration}
+          />
         </div>
 
         <div className="pb-24 space-y-4 pt-4">
@@ -256,6 +240,16 @@ export const DailyCoach = ({
             babyId={babyId}
             calibration={calibration}
             onMilestoneConfirm={handleMilestoneConfirm}
+            shareSheet={
+              <ShareChildSheet 
+                name={displayName}
+                birthday={babyBirthday}
+                ageLabel={ageLabel}
+                phase={currentPhase}
+                ageInWeeks={ageInWeeks}
+                calibration={calibration}
+              />
+            }
           />
 
           {/* Focus This Month */}
