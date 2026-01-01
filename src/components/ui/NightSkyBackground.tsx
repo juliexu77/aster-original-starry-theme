@@ -62,7 +62,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
       <div 
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'hsl(25 10% 4%)',
+          background: 'linear-gradient(180deg, hsl(230 20% 6%) 0%, hsl(240 15% 4%) 50%, hsl(250 18% 5%) 100%)',
           zIndex: -3,
         }}
       />
@@ -71,7 +71,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
         {backgroundStars.map((star, i) => (
             <div key={`night-star-${i}`}>
-              {/* Base star - warm white/cream color */}
+              {/* Base star - cool white/silver color with celestial glow */}
               <div
                 className="absolute rounded-full"
                 style={{
@@ -79,12 +79,12 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                   top: `${star.y}%`,
                   width: `${star.size}px`,
                   height: `${star.size}px`,
-                  backgroundColor: star.hasFlare ? '#fffef8' : '#f8f6f0',
+                  backgroundColor: star.hasFlare ? '#e8f0ff' : '#d4e0f7',
                   opacity: star.opacity,
                   boxShadow: star.hasFlare 
-                    ? `0 0 ${star.size * 4}px ${star.size * 1.5}px rgba(255,252,240,0.4), 0 0 ${star.size * 8}px ${star.size * 2}px rgba(255,250,235,0.15)` 
+                    ? `0 0 ${star.size * 5}px ${star.size * 2}px rgba(180,200,255,0.5), 0 0 ${star.size * 10}px ${star.size * 3}px rgba(150,180,255,0.2)` 
                     : star.size > 1 
-                      ? `0 0 ${star.size * 2}px ${star.size * 0.5}px rgba(255,250,240,0.2)`
+                      ? `0 0 ${star.size * 3}px ${star.size}px rgba(180,200,255,0.3)`
                       : undefined,
                 }}
               />
@@ -99,7 +99,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                       top: `calc(${star.y}% - 0.5px)`,
                       width: `${star.size * 12}px`,
                       height: '1px',
-                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.6}) 50%, transparent 100%)`,
+                      background: `linear-gradient(90deg, transparent 0%, rgba(180,200,255,${star.opacity * 0.7}) 50%, transparent 100%)`,
                     }}
                   />
                   {/* Vertical flare */}
@@ -110,7 +110,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                       top: `calc(${star.y}% - ${star.size * 6}px)`,
                       width: '1px',
                       height: `${star.size * 12}px`,
-                      background: `linear-gradient(180deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.6}) 50%, transparent 100%)`,
+                      background: `linear-gradient(180deg, transparent 0%, rgba(180,200,255,${star.opacity * 0.7}) 50%, transparent 100%)`,
                     }}
                   />
                   {/* Diagonal flares for more prominent stars */}
@@ -121,7 +121,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                       top: `calc(${star.y}% - ${star.size * 3}px)`,
                       width: `${star.size * 6}px`,
                       height: '1px',
-                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.3}) 50%, transparent 100%)`,
+                      background: `linear-gradient(90deg, transparent 0%, rgba(180,200,255,${star.opacity * 0.4}) 50%, transparent 100%)`,
                       transform: 'rotate(45deg)',
                       transformOrigin: 'center',
                     }}
@@ -133,7 +133,7 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                       top: `calc(${star.y}% + ${star.size * 3}px)`,
                       width: `${star.size * 6}px`,
                       height: '1px',
-                      background: `linear-gradient(90deg, transparent 0%, rgba(255,252,240,${star.opacity * 0.3}) 50%, transparent 100%)`,
+                      background: `linear-gradient(90deg, transparent 0%, rgba(180,200,255,${star.opacity * 0.4}) 50%, transparent 100%)`,
                       transform: 'rotate(-45deg)',
                       transformOrigin: 'center',
                     }}
