@@ -51,6 +51,10 @@
     --accent-1: 320 13% 58%; /* #9B8A94 - Muted rose-grey */
     --accent-2: 320 12% 61%; /* #A38A97 - Active state */
     
+    /* Gold accent for highlights */
+    --gold: 42 70% 55%; /* Warm champagne gold */
+    --gold-glow: 42 65% 50%; /* Slightly deeper for glow */
+    
     /* Atmospheric glow */
     --radial-glow: 265 19% 25%; /* #40344A */
     

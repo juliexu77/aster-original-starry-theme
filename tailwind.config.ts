@@ -44,6 +44,11 @@ export default {
         'terracotta': 'hsl(8, 45%, 60%)',
         'berry-mauve': 'hsl(350, 35%, 46%)',
         'warm-beige': 'hsl(20, 40%, 93%)',
+        // Gold accent
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          glow: "hsl(var(--gold-glow))",
+        },
         // Standard tokens
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
