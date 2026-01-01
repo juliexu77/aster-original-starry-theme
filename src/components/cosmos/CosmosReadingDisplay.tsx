@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Moon, Sun, Star, RefreshCw, Share2 } from "lucide-react";
+import { Moon, Sun, Star, RefreshCw } from "lucide-react";
 import { CosmosReading as CosmosReadingType } from "./types";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacName } from "@/lib/zodiac";
+import { ShareCosmosSheet } from "./ShareCosmosSheet";
 
 interface CosmosReadingProps {
   reading: CosmosReadingType;
@@ -53,6 +54,11 @@ export const CosmosReadingDisplay = ({
         </div>
 
         <div className="relative p-6 text-center space-y-3">
+          {/* Share button */}
+          <div className="absolute top-4 right-4">
+            <ShareCosmosSheet reading={reading} />
+          </div>
+
           {/* Month and season */}
           <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em]">
             {formatMonthYear(reading.monthYear)}
