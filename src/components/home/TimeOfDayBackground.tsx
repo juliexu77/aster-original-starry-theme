@@ -1,11 +1,13 @@
+import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
+
 interface TimeOfDayBackgroundProps {
   children: React.ReactNode;
 }
 
 export const TimeOfDayBackground = ({ children }: TimeOfDayBackgroundProps) => {
   return (
-    <div className="relative min-h-screen">
+    <NightSkyBackground forceMidnight>
       {children}
-    </div>
+    </NightSkyBackground>
   );
 };
