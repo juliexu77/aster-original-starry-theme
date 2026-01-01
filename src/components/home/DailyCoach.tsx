@@ -4,6 +4,7 @@ import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 import { HomeIntroOverlay } from "./HomeIntroOverlay";
+import { ShareChildSheet } from "./ShareChildSheet";
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCalibrationPrompt, isCalibrationStale } from "@/hooks/useCalibrationPrompt";
 import { CalibrationCheckInModal } from "@/components/calibration/CalibrationCheckInModal";
@@ -46,6 +47,37 @@ const getAgeInMonths = (birthday?: string): number => {
   return Math.max(0, months);
 };
 
+const getAgeLabel = (ageInWeeks: number): string => {
+  if (ageInWeeks < 4) return `${ageInWeeks} week${ageInWeeks !== 1 ? 's' : ''} old`;
+  const months = Math.floor(ageInWeeks / 4.33);
+  if (months < 24) return `${months} month${months !== 1 ? 's' : ''} old`;
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  if (remainingMonths === 0) return `${years} year${years !== 1 ? 's' : ''} old`;
+  return `${years} year${years !== 1 ? 's' : ''} ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''} old`;
+};
+
+const getCurrentPhase = (ageInWeeks: number): string => {
+  if (ageInWeeks < 4) return "Fourth trimester";
+  if (ageInWeeks < 8) return "Awakening";
+  if (ageInWeeks < 12) return "Social smiling";
+  if (ageInWeeks < 16) return "Reaching out";
+  if (ageInWeeks < 26) return "Rolling days";
+  if (ageInWeeks < 39) return "Finding rhythm";
+  if (ageInWeeks < 52) return "On the move";
+  if (ageInWeeks < 78) return "First steps";
+  if (ageInWeeks < 104) return "Exploring all";
+  if (ageInWeeks < 130) return "Language burst";
+  if (ageInWeeks < 156) return "Imagination";
+  if (ageInWeeks < 208) return "Why phase";
+  if (ageInWeeks < 260) return "Making friends";
+  if (ageInWeeks < 312) return "School ready";
+  if (ageInWeeks < 364) return "Growing up";
+  if (ageInWeeks < 416) return "Finding self";
+  if (ageInWeeks < 468) return "Pre-teen shift";
+  return "Becoming";
+};
+
 export const DailyCoach = ({ 
   babyName, 
   babyBirthday,
@@ -57,6 +89,8 @@ export const DailyCoach = ({
 }: DailyCoachProps) => {
   const ageInWeeks = getAgeInWeeks(babyBirthday);
   const ageInMonths = getAgeInMonths(babyBirthday);
+  const ageLabel = getAgeLabel(ageInWeeks);
+  const currentPhase = getCurrentPhase(ageInWeeks);
   const displayName = babyName || "your baby";
   
   // Fetch calibration data for this baby
@@ -177,15 +211,29 @@ export const DailyCoach = ({
       <TimeOfDayBackground>
         {/* Sticky Profile Card */}
         <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-foreground/5">
-          <BabyProfileCard 
-            babyName={displayName} 
-            babyBirthday={babyBirthday}
-            babies={babies}
-            activeBabyId={activeBabyId}
-            onSwitchBaby={onSwitchBaby}
-            onTapProfile={handleTapProfile}
-            isCalibrationStale={staleCalibration}
-          />
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <BabyProfileCard 
+                babyName={displayName} 
+                babyBirthday={babyBirthday}
+                babies={babies}
+                activeBabyId={activeBabyId}
+                onSwitchBaby={onSwitchBaby}
+                onTapProfile={handleTapProfile}
+                isCalibrationStale={staleCalibration}
+              />
+            </div>
+            {babyBirthday && (
+              <div className="pt-6 pr-5">
+                <ShareChildSheet 
+                  name={displayName}
+                  birthday={babyBirthday}
+                  ageLabel={ageLabel}
+                  phase={currentPhase}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="pb-24 space-y-4 pt-4">

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, Download, Loader2 } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
@@ -300,21 +300,12 @@ export const ShareDynamicSheet = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-4 border-t border-foreground/5">
-          <Button
-            onClick={handleDownload}
-            disabled={isGenerating}
-            variant="outline"
-            className="flex-1 h-12 gap-2"
-          >
-            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-            Download
-          </Button>
+        {/* Action Button */}
+        <div className="pt-4 border-t border-foreground/5">
           <Button
             onClick={handleShare}
             disabled={isGenerating}
-            className="flex-1 h-12 gap-2"
+            className="w-full h-12 gap-2"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
             Share
