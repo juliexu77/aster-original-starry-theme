@@ -83,9 +83,10 @@ const Family = () => {
                 onClick={() => setViewMode('child')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'child' 
-                    ? 'text-foreground/80 border-foreground/40' 
+                    ? 'text-gold border-gold/50' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
+                style={viewMode === 'child' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
               >
                 Child
               </button>
@@ -93,9 +94,10 @@ const Family = () => {
                 onClick={() => setViewMode('family')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'family' 
-                    ? 'text-foreground/80 border-foreground/40' 
+                    ? 'text-gold border-gold/50' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
+                style={viewMode === 'family' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
               >
                 Family
               </button>
@@ -103,9 +105,10 @@ const Family = () => {
                 onClick={() => setViewMode('cosmos')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
                   viewMode === 'cosmos' 
-                    ? 'text-amber-300/80 border-amber-300/40' 
+                    ? 'text-gold border-gold/50' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
+                style={viewMode === 'cosmos' ? { textShadow: '0 0 12px hsl(var(--gold) / 0.5)' } : undefined}
               >
                 Cosmos
               </button>
