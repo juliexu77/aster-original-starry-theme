@@ -229,8 +229,8 @@ export const RelationshipMap = ({
   onConnectionTap,
   centerId 
 }: RelationshipMapProps) => {
-  const width = 500;
-  const height = 500;
+  const width = 400;
+  const height = 400;
   const centerX = width * 0.50;
   const centerY = height * 0.50;
   
