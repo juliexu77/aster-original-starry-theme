@@ -152,7 +152,7 @@ export const CosmosReadingDisplay = ({
       </motion.div>
 
       {/* Content Sections */}
-      {reading.sections.map((section, index) => (
+      {(reading.sections || []).map((section, index) => (
         <motion.div
           key={section.title}
           initial={{ opacity: 0, y: 20 }}
@@ -184,7 +184,7 @@ export const CosmosReadingDisplay = ({
       ))}
 
       {/* Significant Dates */}
-      {reading.significantDates.length > 0 && (
+      {(reading.significantDates || []).length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -202,7 +202,7 @@ export const CosmosReadingDisplay = ({
           </h4>
           
           <ul className="space-y-2">
-            {reading.significantDates.map((date, i) => (
+            {(reading.significantDates || []).map((date, i) => (
               <li key={i} className="text-[13px] text-foreground/70 flex items-start gap-2">
                 <span className="text-amber-300/50">•</span>
                 {date}
