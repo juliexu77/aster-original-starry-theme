@@ -130,10 +130,11 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
         </SheetHeader>
         
         <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
-          {/* Preview Card */}
+          {/* Preview Card - Fixed width for consistent share image */}
           <div 
             ref={chartRef}
-            className="bg-[#0a0a12] rounded-2xl p-5 space-y-4"
+            className="bg-[#0a0a12] rounded-2xl p-5 space-y-4 mx-auto"
+            style={{ width: '360px', minWidth: '360px' }}
           >
             {/* Header */}
             <div className="text-center space-y-1">
