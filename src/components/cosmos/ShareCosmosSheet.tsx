@@ -216,12 +216,16 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
                   Key Dates
                 </p>
                 <ul className="space-y-1.5">
-                  {significantDates.map((date, i) => (
-                    <li key={i} className="text-[10px] text-white/60 flex items-start gap-2">
-                      <span className="text-amber-300/40">•</span>
-                      {date}
-                    </li>
-                  ))}
+                  {significantDates.map((date, i) => {
+                    const isObject = typeof date === 'object' && date !== null;
+                    const title: string = isObject ? (date as { title: string }).title : (date as string);
+                    return (
+                      <li key={i} className="text-[10px] text-white/60 flex items-start gap-2">
+                        <span className="text-amber-300/40">•</span>
+                        {title}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

@@ -1,9 +1,17 @@
-import { motion } from "framer-motion";
-import { Moon, Sun, Star, RefreshCw } from "lucide-react";
-import { CosmosReading as CosmosReadingType } from "./types";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Moon, Sun, Star, RefreshCw, ChevronRight } from "lucide-react";
+import { CosmosReading as CosmosReadingType, SignificantDate } from "./types";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacName } from "@/lib/zodiac";
 import { ShareCosmosSheet } from "./ShareCosmosSheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 const getChineseZodiacEmoji = (animal: string): string => {
   const emojiMap: Record<string, string> = {
@@ -32,6 +40,8 @@ export const CosmosReadingDisplay = ({
   reading,
   onRefresh
 }: CosmosReadingProps) => {
+  const [selectedDate, setSelectedDate] = useState<SignificantDate | null>(null);
+  
   // Early return if no reading data
   if (!reading) {
     return (
@@ -223,15 +233,49 @@ export const CosmosReadingDisplay = ({
           </h4>
           
           <ul className="space-y-2">
-            {significantDates.map((date, i) => (
-              <li key={i} className="text-[13px] text-foreground/70 flex items-start gap-2">
-                <span className="text-amber-300/50">•</span>
-                {date}
-              </li>
-            ))}
+            {significantDates.map((date, i) => {
+              // Handle both string format (legacy) and object format (new)
+              const isObject = typeof date === 'object' && date !== null;
+              const title: string = isObject ? (date as SignificantDate).title : (date as string);
+              const hasDetails = isObject && (date as SignificantDate).details;
+              
+              return (
+                <li key={i}>
+                  {hasDetails ? (
+                    <button
+                      onClick={() => setSelectedDate(date as SignificantDate)}
+                      className="w-full text-left text-[13px] text-foreground/70 flex items-center gap-2 py-2 px-3 -mx-3 rounded-lg hover:bg-foreground/5 active:bg-foreground/10 transition-colors group"
+                    >
+                      <span className="text-amber-300/50">•</span>
+                      <span className="flex-1">{title}</span>
+                      <ChevronRight className="w-4 h-4 text-foreground/30 group-hover:text-foreground/50 transition-colors" />
+                    </button>
+                  ) : (
+                    <div className="text-[13px] text-foreground/70 flex items-start gap-2">
+                      <span className="text-amber-300/50">•</span>
+                      {title}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </motion.div>
       )}
+
+      {/* Date Detail Dialog */}
+      <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
+        <DialogContent className="bg-background/95 backdrop-blur-xl border-foreground/10 max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-foreground/90 text-base font-medium">
+              {selectedDate?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-foreground/70 text-sm leading-relaxed">
+            {selectedDate?.details}
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
 
       {/* Actions */}
       <motion.div
