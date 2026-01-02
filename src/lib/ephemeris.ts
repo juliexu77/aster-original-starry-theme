@@ -267,16 +267,16 @@ function calculateAscendant(
   const latRad = latitude * Math.PI / 180;
   const lstRad = LST * Math.PI / 180;
   
-  // Standard ascendant formula
-  // ASC = atan2(-cos(LST), sin(LST) * cos(ε) + tan(φ) * sin(ε))
-  // This gives the ecliptic longitude of the ascending point
+  // Standard ascendant formula from astronomical references
+  // ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
   const sinLST = Math.sin(lstRad);
   const cosLST = Math.cos(lstRad);
   const sinObl = Math.sin(oblRad);
   const cosObl = Math.cos(oblRad);
   const tanLat = Math.tan(latRad);
   
-  let ascendant = Math.atan2(-cosLST, sinLST * cosObl + tanLat * sinObl);
+  // Note: atan2(y, x) where y = cos(LST), x = -(sin(LST)*cos(ε) + tan(φ)*sin(ε))
+  let ascendant = Math.atan2(cosLST, -(sinLST * cosObl + tanLat * sinObl));
   
   // Convert from radians to degrees
   ascendant = ascendant * 180 / Math.PI;
