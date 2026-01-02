@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacName, ZodiacSign } from "@/lib/zodiac";
@@ -29,6 +29,11 @@ export const ChartIntroOverlay = ({
   const [isReady, setIsReady] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
+
+  // Swipe handling
+  const touchStartRef = useRef<number | null>(null);
+  const touchEndRef = useRef<number | null>(null);
+  const minSwipeDistance = 50;
 
   const signs: SignInfo[] = [
     {
@@ -80,6 +85,28 @@ export const ChartIntroOverlay = ({
     }
   };
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndRef.current = null;
+    touchStartRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndRef.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartRef.current || !touchEndRef.current) return;
+    const distance = touchStartRef.current - touchEndRef.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handleBack();
+    }
+  };
+
   const currentSign = !isOnFamilySlide ? signs[currentIndex] : null;
 
   if (!isReady) return null;
@@ -93,6 +120,9 @@ export const ChartIntroOverlay = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
           <div className="flex-1 flex items-center justify-center w-full">
             <AnimatePresence mode="wait">
