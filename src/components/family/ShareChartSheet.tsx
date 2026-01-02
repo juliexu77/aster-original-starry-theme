@@ -235,8 +235,8 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
 
             {/* Chart Synthesis */}
             <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">How {firstName}'s Chart Works Together</p>
-              <p className="text-[9px] text-white/30 mb-2">Chart synthesis · Light & shadow</p>
+              <p className="text-[10px] text-white/40 uppercase tracking-wider mb-3">{firstName}'s Inner Balance</p>
+              <p className="text-[9px] text-white/30 mb-2">Strengths & growth areas</p>
               
               <div className="space-y-3">
                 <div>
