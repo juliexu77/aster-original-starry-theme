@@ -13,9 +13,10 @@ import { useCosmosReading } from "@/hooks/useCosmosReading";
 import { 
   getZodiacFromBirthday, 
   getMoonSignFromBirthDateTime, 
-  getRisingSign,
-  getZodiacName 
+  getZodiacName,
+  ZodiacSign
 } from "@/lib/zodiac";
+import { calculateBirthChart } from "@/lib/ephemeris";
 import { ChartSelectorSheet } from "@/components/family/ChartSelectorSheet";
 import { toast } from "sonner";
 
@@ -125,11 +126,17 @@ export const CosmosView = ({
       selectedMember.birth_time, 
       selectedMember.birth_location
     );
-    const rising = getRisingSign(
-      selectedMember.birthday, 
-      selectedMember.birth_time, 
-      selectedMember.birth_location
-    );
+    
+    // Use ephemeris calculation for rising sign (more accurate)
+    let rising: ZodiacSign | null = null;
+    if (selectedMember.birth_time && selectedMember.birth_location) {
+      const birthChart = calculateBirthChart(
+        selectedMember.birthday,
+        selectedMember.birth_time,
+        selectedMember.birth_location
+      );
+      rising = birthChart?.ascendantSign ?? null;
+    }
     
     return { sun, moon, rising };
   }, [selectedMember]);

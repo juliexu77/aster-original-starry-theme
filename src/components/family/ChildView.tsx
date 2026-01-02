@@ -9,10 +9,10 @@ import { ShareChartSheet } from "./ShareChartSheet";
 import { 
   getZodiacFromBirthday, 
   getMoonSignFromBirthDateTime, 
-  getRisingSign, 
   getZodiacName,
   ZodiacSign 
 } from "@/lib/zodiac";
+import { calculateBirthChart } from "@/lib/ephemeris";
 
 interface Baby {
   id: string;
@@ -201,11 +201,17 @@ export const ChildView = ({
       selectedMember.birth_time, 
       selectedMember.birth_location
     );
-    const rising = getRisingSign(
-      selectedMember.birthday, 
-      selectedMember.birth_time, 
-      selectedMember.birth_location
-    );
+    
+    // Use ephemeris calculation for rising sign (more accurate)
+    let rising: ZodiacSign | null = null;
+    if (selectedMember.birth_time && selectedMember.birth_location) {
+      const birthChart = calculateBirthChart(
+        selectedMember.birthday,
+        selectedMember.birth_time,
+        selectedMember.birth_location
+      );
+      rising = birthChart?.ascendantSign ?? null;
+    }
     
     console.log('[ChildView] Calculated signs for', selectedMember.name, ':', { sun, moon, rising });
     return { sun, moon, rising };
