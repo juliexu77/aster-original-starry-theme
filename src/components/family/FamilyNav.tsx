@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sparkles, Users, Settings, Moon } from "lucide-react";
+import { Sparkles, Users, Settings } from "lucide-react";
+import { IconZodiacSagittarius } from "@tabler/icons-react";
 
 export const FamilyNav = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export const FamilyNav = () => {
           onClick={() => navigate("/cosmos")}
           className="flex flex-col items-center gap-1 px-4 py-1"
         >
-          <Moon className={`w-5 h-5 ${isCosmos ? "text-foreground" : "text-muted-foreground"}`} />
+          <IconZodiacSagittarius className={`w-5 h-5 ${isCosmos ? "text-foreground" : "text-muted-foreground"}`} strokeWidth={1.5} />
           <span className={`text-[10px] ${isCosmos ? "text-foreground" : "text-muted-foreground"}`}>
             Cosmos
           </span>
