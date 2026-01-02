@@ -285,10 +285,10 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "${isChild ? 'Daily Rhythms' : 'Home & Heart'}", "content": "2-3 paragraphs on practical daily life, sleep/feeding for children, family dynamics for adults."},
     {"title": "Guidance", "content": "2-3 paragraphs with 3-5 specific suggestions. Frame as astrological wisdom, not advice from a form."},
     {"title": "Shadows to Navigate", "content": "1-2 paragraphs on challenges ahead. Be honest but compassionate."},
-    {"title": "${isChild ? 'What\'s Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"}${isYearly ? `,
+    {"title": "${isChild ? 'Whats Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"}${isYearly ? `,
     {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
   ],
-  "significantDates": ["${isYearly ? 'Key dates across the year with specific cosmic events' : 'Specific dates this month with planetary aspects'}"]
+  "significantDates": ["Include 5-8 SPECIFIC dates with personalized planetary transits. Format each as: Month Day - Planet event affecting their chart. Include: planetary ingresses into signs that aspect theirs, Mercury/Venus/Mars retrogrades with personal impact, New and Full Moons in relevant houses, major aspects (trines, squares, conjunctions) to their Sun sign, ${zodiacSystem !== 'western' ? 'and Chinese zodiac auspicious or challenging days for their animal' : 'and outer planet (Jupiter, Saturn, Uranus) transits creating themes'}. Make each date specific to THIS person based on their birthday, not generic astronomical events."]
 }
 
 Remember: You KNOW this person. Speak from that knowing.`;
