@@ -4,7 +4,6 @@ import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 import { HomeIntroOverlay } from "./HomeIntroOverlay";
-import { AstrologyGrid } from "@/components/family/AstrologyGrid";
 
 import { useCalibration } from "@/hooks/useCalibration";
 import { useCalibrationPrompt, isCalibrationStale } from "@/hooks/useCalibrationPrompt";
@@ -12,7 +11,6 @@ import { CalibrationCheckInModal } from "@/components/calibration/CalibrationChe
 import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
 import { CalibrationData } from "@/components/calibration/CalibrationFlow";
 import { useHousehold } from "@/hooks/useHousehold";
-import { getZodiacFromBirthday, getMoonSignFromBirthDateTime, getRisingSign, ZodiacSign } from "@/lib/zodiac";
 
 interface Baby {
   id: string;
@@ -24,8 +22,6 @@ interface Baby {
 interface DailyCoachProps {
   babyName?: string;
   babyBirthday?: string;
-  babyBirthTime?: string | null;
-  babyBirthLocation?: string | null;
   babyId?: string;
   babyCreatedAt?: string;
   babies?: Baby[];
@@ -85,8 +81,6 @@ const getCurrentPhase = (ageInWeeks: number): string => {
 export const DailyCoach = ({ 
   babyName, 
   babyBirthday,
-  babyBirthTime,
-  babyBirthLocation,
   babyId,
   babyCreatedAt,
   babies = [],
@@ -98,11 +92,6 @@ export const DailyCoach = ({
   const ageLabel = getAgeLabel(ageInWeeks);
   const currentPhase = getCurrentPhase(ageInWeeks);
   const displayName = babyName || "your baby";
-  
-  // Calculate zodiac signs
-  const sunSign = getZodiacFromBirthday(babyBirthday);
-  const moonSign = getMoonSignFromBirthDateTime(babyBirthday, babyBirthTime, babyBirthLocation);
-  const risingSign = getRisingSign(babyBirthday, babyBirthTime, babyBirthLocation);
   
   // Fetch calibration data for this baby
   const { calibration, saveCalibration, updateCalibration, dismissPrompt, refetch } = useCalibration(babyId);
@@ -243,20 +232,6 @@ export const DailyCoach = ({
         </div>
 
         <div className="pb-24 space-y-4 pt-4">
-          {/* Astrology Context */}
-          {sunSign && (
-            <div className="px-4">
-              <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.25em] font-light text-center mb-3">
-                {displayName}'s Chart
-              </p>
-              <AstrologyGrid 
-                sunSign={sunSign} 
-                moonSign={moonSign} 
-                risingSign={risingSign} 
-              />
-            </div>
-          )}
-
           {/* Development Domains */}
           <DevelopmentTable 
             ageInWeeks={ageInWeeks} 

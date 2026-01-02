@@ -97,8 +97,6 @@ const Index = () => {
               <DailyCoach 
                 babyName={activeBaby.name} 
                 babyBirthday={activeBaby.birthday || undefined}
-                babyBirthTime={activeBaby.birth_time}
-                babyBirthLocation={activeBaby.birth_location}
                 babyId={activeBaby.id}
                 babyCreatedAt={activeBaby.created_at}
                 babies={babies}
