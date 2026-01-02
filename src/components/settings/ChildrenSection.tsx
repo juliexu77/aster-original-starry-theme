@@ -17,14 +17,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Baby as BabyType } from "@/hooks/useBabies";
 import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
-import { useCalibration } from "@/hooks/useCalibration";
+import { CalibrationFlow } from "@/components/calibration/CalibrationFlow";
+import { ChartGenerating } from "@/components/calibration/ChartGenerating";
+import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
 import { useHousehold } from "@/hooks/useHousehold";
 import { formatLastCalibrated } from "@/hooks/useCalibrationPrompt";
-import { CalibrationData } from "@/components/calibration/CalibrationFlow";
 
 interface ChildrenSectionProps {
   babies: BabyType[];
-  onAddBaby: (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => Promise<void>;
+  onAddBaby: (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => Promise<BabyType>;
   onUpdateBaby: (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => Promise<void>;
   onArchiveBaby: (babyId: string) => Promise<void>;
 }
@@ -47,6 +48,8 @@ const getAgeLabel = (birthday: string | null): string => {
   return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''} old`;
 };
 
+type AddPhase = 'form' | 'calibration' | 'generating';
+
 export const ChildrenSection = ({ 
   babies, 
   onAddBaby, 
@@ -65,14 +68,24 @@ export const ChildrenSection = ({
   const [birthLocation, setBirthLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   
+  // New child calibration flow state
+  const [addPhase, setAddPhase] = useState<AddPhase>('form');
+  const [newBabyId, setNewBabyId] = useState<string | null>(null);
+  const [newBabyName, setNewBabyName] = useState("");
+  const [newBabyBirthday, setNewBabyBirthday] = useState("");
+  
   // Calibration hook for selected baby
   const { calibration, saveCalibration, refetch } = useCalibration(selectedBaby?.id);
+  
+  // Calibration hook for new baby
+  const { saveCalibration: saveNewBabyCalibration } = useCalibration(newBabyId || undefined);
 
   const handleOpenAdd = () => {
     setName("");
     setBirthday("");
     setBirthTime("");
     setBirthLocation("");
+    setAddPhase('form');
     setShowAddModal(true);
   };
 
@@ -90,9 +103,22 @@ export const ChildrenSection = ({
     
     setIsSaving(true);
     try {
-      await onAddBaby(name.trim(), birthday || undefined, birthTime || undefined, birthLocation || undefined);
-      toast({ title: `${name} added`, duration: 3000 });
-      setShowAddModal(false);
+      const newBaby = await onAddBaby(name.trim(), birthday || undefined, birthTime || undefined, birthLocation || undefined);
+      
+      // Store baby info for calibration
+      setNewBabyId(newBaby.id);
+      setNewBabyName(name.trim());
+      setNewBabyBirthday(birthday);
+      
+      // If birthday is set, go to calibration
+      if (birthday) {
+        setShowAddModal(false);
+        setAddPhase('calibration');
+      } else {
+        toast({ title: `${name} added`, duration: 3000 });
+        setShowAddModal(false);
+        resetAddState();
+      }
     } catch (error: any) {
       toast({ 
         title: "Error", 
@@ -102,6 +128,33 @@ export const ChildrenSection = ({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCalibrationComplete = async (data: CalibrationData, emergingFlags: Record<string, boolean>) => {
+    if (newBabyId && household?.id) {
+      try {
+        await saveNewBabyCalibration(newBabyId, household.id, data, emergingFlags);
+      } catch (error) {
+        console.error("Error saving calibration:", error);
+      }
+    }
+    setAddPhase('generating');
+  };
+
+  const handleCalibrationSkip = () => {
+    setAddPhase('generating');
+  };
+
+  const handleGeneratingComplete = () => {
+    toast({ title: `${newBabyName} added`, duration: 3000 });
+    resetAddState();
+  };
+
+  const resetAddState = () => {
+    setAddPhase('form');
+    setNewBabyId(null);
+    setNewBabyName("");
+    setNewBabyBirthday("");
   };
 
   const handleUpdate = async () => {
@@ -140,6 +193,28 @@ export const ChildrenSection = ({
       });
     }
   };
+
+  // Render calibration flow for new baby
+  if (addPhase === 'calibration' && newBabyBirthday) {
+    return (
+      <CalibrationFlow
+        babyName={newBabyName}
+        babyBirthday={newBabyBirthday}
+        onComplete={handleCalibrationComplete}
+        onSkip={handleCalibrationSkip}
+      />
+    );
+  }
+
+  // Render generating screen for new baby
+  if (addPhase === 'generating') {
+    return (
+      <ChartGenerating
+        babyName={newBabyName}
+        onComplete={handleGeneratingComplete}
+      />
+    );
+  }
 
   return (
     <>

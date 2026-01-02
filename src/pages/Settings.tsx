@@ -251,7 +251,7 @@ export const Settings = () => {
   };
 
   const handleAddBaby = async (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => {
-    await addBaby(name, birthday, birthTime, birthLocation);
+    return await addBaby(name, birthday, birthTime, birthLocation);
   };
 
   const handleUpdateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null }) => {

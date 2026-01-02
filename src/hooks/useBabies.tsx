@@ -98,7 +98,7 @@ export const useBabies = () => {
 
   const activeBaby = babies.find(b => b.id === activeBabyId) || babies[0] || null;
 
-  const addBaby = async (name: string, birthday?: string, birthTime?: string, birthLocation?: string) => {
+  const addBaby = async (name: string, birthday?: string, birthTime?: string, birthLocation?: string): Promise<Baby> => {
     if (!user || !householdId) throw new Error('No household');
 
     const { data, error } = await supabase
@@ -117,7 +117,7 @@ export const useBabies = () => {
 
     await fetchBabies();
     setActiveBabyId(data.id);
-    return data;
+    return data as Baby;
   };
 
   const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => {
