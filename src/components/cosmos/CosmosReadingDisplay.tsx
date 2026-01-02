@@ -242,11 +242,16 @@ export const CosmosReadingDisplay = ({
       >
         {onRefresh && (
           <button
-            onClick={onRefresh}
-            className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRefresh();
+            }}
+            className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all active:scale-[0.98]"
           >
             <RefreshCw className="w-4 h-4" />
-            Update my reading
+            Get Another Reading
           </button>
         )}
       </motion.div>
