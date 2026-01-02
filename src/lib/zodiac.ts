@@ -296,6 +296,12 @@ export const getRisingSign = (
 ): ZodiacSign | null => {
   if (!birthday || !birthTime) return null;
   
+  // Debug for specific test case
+  const shouldDebug = debug || (birthday === '2022-02-11' && birthTime?.startsWith('15:4'));
+  if (shouldDebug) {
+    console.log('[Rising] Calculating for:', { birthday, birthTime, birthLocation });
+  }
+  
   // Parse date components directly from string to avoid timezone issues
   // birthday format: "YYYY-MM-DD"
   const dateParts = birthday.split('-');
@@ -318,12 +324,9 @@ export const getRisingSign = (
   // Get DST-aware timezone offset for the birth date
   const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
-  if (debug) {
-    console.log('=== ASCENDANT CALCULATION DEBUG ===');
-    console.log('Input:', { birthday, birthTime, birthLocation });
-    console.log('Parsed date:', { year, month: month + 1, day });
-    console.log('Local time (decimal hours):', hours);
-    console.log('City data:', { timezoneOffset, longitude, latitude });
+  if (shouldDebug) {
+    console.log('[Rising] Parsed:', { year, month: month + 1, day, hours });
+    console.log('[Rising] City data:', { timezoneOffset, longitude, latitude });
   }
   
   // Convert local time to UTC
@@ -344,8 +347,8 @@ export const getRisingSign = (
     utcDay -= 1;
   }
   
-  if (debug) {
-    console.log('UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
+  if (shouldDebug) {
+    console.log('[Rising] UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
   }
   
   // Calculate Julian Day Number (JD)
@@ -359,16 +362,11 @@ export const getRisingSign = (
   // JD = JDN + (hour - 12) / 24
   const jd = jdn + (utcHours - 12) / 24;
   
-  if (debug) {
-    console.log('Julian Day Number (JDN):', jdn);
-    console.log('Julian Date (JD):', jd);
-  }
-  
   // Calculate centuries since J2000.0 (Jan 1, 2000, 12:00 TT)
   const T = (jd - 2451545.0) / 36525;
   
-  if (debug) {
-    console.log('Centuries since J2000.0 (T):', T);
+  if (shouldDebug) {
+    console.log('[Rising] Julian Date:', jd, 'T:', T);
   }
   
   // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
@@ -376,27 +374,18 @@ export const getRisingSign = (
   let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
   gmst = ((gmst % 360) + 360) % 360;
   
-  if (debug) {
-    console.log('Greenwich Mean Sidereal Time (GMST):', gmst, 'degrees');
-  }
-  
   // Calculate Local Sidereal Time (LST)
   // LST = GMST + East Longitude (negative for West)
   let lst = gmst + longitude;
   lst = ((lst % 360) + 360) % 360;
   
-  if (debug) {
-    console.log('Local Sidereal Time (LST):', lst, 'degrees');
-    console.log('LST in hours:', lst / 15);
+  if (shouldDebug) {
+    console.log('[Rising] GMST:', gmst, 'LST:', lst);
   }
   
   // Obliquity of the ecliptic (epsilon)
   // More accurate formula including T correction
   const epsilon = 23.439291 - 0.0130042 * T;
-  
-  if (debug) {
-    console.log('Obliquity of ecliptic (ε):', epsilon, 'degrees');
-  }
   
   // Convert to radians for trigonometric calculations
   const lstRad = (lst * Math.PI) / 180;
@@ -429,13 +418,6 @@ export const getRisingSign = (
   let ascendant = (ascendantRad * 180) / Math.PI;
   ascendant = ((ascendant % 360) + 360) % 360;
   
-  if (debug) {
-    console.log('y (numerator = cos(LST)):', ascY);
-    console.log('x (denominator):', ascX);
-    console.log('Ascendant:', ascendant, 'degrees');
-    console.log('Ascendant degree within sign:', ascendant % 30);
-  }
-  
   // Convert to zodiac sign (30 degrees each)
   // Aries = 0-30°, Taurus = 30-60°, etc.
   const signIndex = Math.floor(ascendant / 30);
@@ -449,10 +431,8 @@ export const getRisingSign = (
   
   const resultSign = signs[signIndex % 12];
   
-  if (debug) {
-    console.log('Sign index:', signIndex);
-    console.log('Result:', `${Math.floor(degreeInSign)}° ${resultSign.charAt(0).toUpperCase() + resultSign.slice(1)}`);
-    console.log('=== END DEBUG ===');
+  if (shouldDebug) {
+    console.log('[Rising] Ascendant:', ascendant, '° -> sign index:', signIndex, '=', resultSign);
   }
   
   return resultSign;
