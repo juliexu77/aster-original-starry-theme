@@ -8,9 +8,8 @@ import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { ChildView } from "@/components/family/ChildView";
 import { FamilyView } from "@/components/family/FamilyView";
-import { CosmosView } from "@/components/cosmos/CosmosView";
 
-type ViewMode = 'child' | 'family' | 'cosmos';
+type ViewMode = 'child' | 'family';
 
 const Family = () => {
   const { user, loading: authLoading } = useAuth();
@@ -77,7 +76,7 @@ const Family = () => {
               Your Chart
             </p>
             
-            {/* View Toggle - Now with 3 options */}
+            {/* View Toggle - 2 options */}
             <div className="flex items-center justify-center gap-6">
               <button
                 onClick={() => setViewMode('child')}
@@ -101,17 +100,6 @@ const Family = () => {
               >
                 Family
               </button>
-              <button
-                onClick={() => setViewMode('cosmos')}
-                className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
-                  viewMode === 'cosmos' 
-                    ? 'text-foreground/90 border-foreground/30' 
-                    : 'text-foreground/30 border-transparent hover:text-foreground/50'
-                }`}
-                style={viewMode === 'cosmos' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
-              >
-                Cosmos
-              </button>
             </div>
           </div>
 
@@ -124,18 +112,11 @@ const Family = () => {
               onSelectMember={setSelectedMemberId}
               onAddChild={handleAddChild}
             />
-          ) : viewMode === 'family' ? (
+          ) : (
             <FamilyView
               babies={babies}
               userProfile={userProfile}
               onBirthdaySaved={handleBirthdaySaved}
-            />
-          ) : (
-            <CosmosView
-              babies={babies}
-              userProfile={userProfile}
-              selectedMemberId={selectedMemberId}
-              onSelectMember={setSelectedMemberId}
             />
           )}
 

@@ -1,12 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sparkles, Users, Settings } from "lucide-react";
+import { Sparkles, Users, Settings, Moon } from "lucide-react";
 
 export const FamilyNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const isFamily = location.pathname === "/family";
-  const isChart = location.pathname === "/" || location.pathname === "/app";
+  const isGrowth = location.pathname === "/" || location.pathname === "/app";
+  const isChart = location.pathname === "/family";
+  const isCosmos = location.pathname === "/cosmos";
   const isSettings = location.pathname === "/settings";
 
   return (
@@ -14,27 +15,37 @@ export const FamilyNav = () => {
       <div className="flex items-center justify-around py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <button 
           onClick={() => navigate("/")}
-          className="flex flex-col items-center gap-1 px-6 py-1"
+          className="flex flex-col items-center gap-1 px-4 py-1"
         >
-          <Users className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
+          <Users className={`w-5 h-5 ${isGrowth ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isGrowth ? "text-foreground" : "text-muted-foreground"}`}>
             Growth
           </span>
         </button>
 
         <button 
           onClick={() => navigate("/family")}
-          className="flex flex-col items-center gap-1 px-6 py-1"
+          className="flex flex-col items-center gap-1 px-4 py-1"
         >
-          <Sparkles className={`w-5 h-5 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-[10px] ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
+          <Sparkles className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
             Chart
           </span>
         </button>
 
         <button 
+          onClick={() => navigate("/cosmos")}
+          className="flex flex-col items-center gap-1 px-4 py-1"
+        >
+          <Moon className={`w-5 h-5 ${isCosmos ? "text-foreground" : "text-muted-foreground"}`} />
+          <span className={`text-[10px] ${isCosmos ? "text-foreground" : "text-muted-foreground"}`}>
+            Cosmos
+          </span>
+        </button>
+
+        <button 
           onClick={() => navigate("/settings")}
-          className="flex flex-col items-center gap-1 px-6 py-1"
+          className="flex flex-col items-center gap-1 px-4 py-1"
         >
           <Settings className={`w-5 h-5 ${isSettings ? "text-foreground" : "text-muted-foreground"}`} />
           <span className={`text-[10px] ${isSettings ? "text-foreground" : "text-muted-foreground"}`}>
