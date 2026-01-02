@@ -289,14 +289,28 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
   ],
   "significantDates": [
-    {"title": "Jan 15 - Venus enters Pisces", "details": "2-3 sentences explaining how this transit specifically affects their chart and what to expect or do"},
-    {"title": "Jan 21 - Full Moon in Leo", "details": "2-3 sentences on this lunar event's personal significance for them"}
+    {"title": "Venus conjunct your Sun (Feb 3-10)", "details": "2-3 sentences explaining why this aspect matters for THEIR specific chart - which house it activates, what themes arise, what to do or avoid"},
+    {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "2-3 sentences on how this challenges their emotional nature specifically, with practical guidance"},
+    {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "2-3 sentences on expansion in their identity/first house, specific opportunities to watch for"}
   ]
   
-  Include 5-8 significant dates as objects with "title" (Month Day - Transit Name) and "details" (personalized explanation of impact). Include: planetary ingresses into signs that aspect theirs, Mercury/Venus/Mars retrogrades with personal impact, New and Full Moons in relevant houses, major aspects (trines, squares, conjunctions) to their Sun sign, ${zodiacSystem !== 'western' ? 'and Chinese zodiac auspicious or challenging days for their animal' : 'and outer planet (Jupiter, Saturn, Uranus) transits creating themes'}. Make each date specific to THIS person based on their birthday, not generic astronomical events.
+  CRITICAL for significantDates: Do NOT list generic astronomical events. Instead, identify 5-8 KEY PLANETARY TRANSITS TO THEIR PERSONAL CHART:
+  
+  1. Calculate which transiting planets will aspect THEIR natal Sun, Moon, and Rising during the ${isYearly ? 'year' : 'month'}
+  2. For each significant transit, use format: "Planet aspect their Planet/Point (date range)" 
+  3. Examples of what TO include:
+     - "Mars conjunct your Sun (date range)" - when Mars crosses their Sun sign degree
+     - "Saturn square your Moon (date range)" - challenging aspect to their lunar nature  
+     - "Jupiter entering your 10th house (date range)" - major house ingress
+     - "Venus retrograde in your 7th house (date range)" - retrograde in relationship sector
+     - "New Moon in your 1st house (date)" - lunations in personal houses
+     - "North Node conjunct your Venus (date range)" - nodal contacts
+  4. For each, the "details" must explain: which house/area of life is activated, why this matters for their chart specifically, and what to embrace or navigate
+  5. Focus on the 5-8 MOST impactful transits - quality over quantity
+  ${zodiacSystem !== 'western' ? `6. For Chinese astrology: Include timing based on their animal's relationship to monthly/daily pillars, clash days to avoid, and harmonious periods with allied animals` : ''}
 }
 
-Remember: You KNOW this person. Speak from that knowing.`;
+Remember: You KNOW this person. The dates section should feel like you've studied their chart and identified the most pivotal cosmic moments ahead, not a generic ephemeris.`;
 
     console.log('Sending prompt with context items:', contextData.length);
 
