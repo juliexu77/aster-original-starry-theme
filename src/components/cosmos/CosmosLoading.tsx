@@ -254,30 +254,37 @@ export const CosmosLoading = () => {
             );
           })}
 
-          {/* Natal planets (fixed, gentle pulse) */}
-          {NATAL_POSITIONS.map((planet, i) => {
-            const pos = getPosition(planet.angle, natalRadius - 15);
-            return (
-              <motion.text
-                key={`natal-${i}`}
-                x={pos.x}
-                y={pos.y}
-                textAnchor="middle"
-                dominantBaseline="central"
-                className="fill-foreground/40 select-none"
-                style={{ fontFamily: 'serif', fontSize: '10px' }}
-                animate={{ opacity: [0.3, 0.5, 0.3] }}
-                transition={{
-                  duration: 3 + i * 0.5,
-                  repeat: Infinity,
-                  delay: i * 0.4,
-                  ease: "easeInOut",
-                }}
-              >
-                {planet.symbol}
-              </motion.text>
-            );
-          })}
+          {/* Orbiting planets around center */}
+          <motion.g
+            animate={{ rotate: 360 }}
+            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${centerX}px ${centerY}px` }}
+          >
+            {NATAL_POSITIONS.map((planet, i) => {
+              const orbitRadius = 25 + (i * 8);
+              const pos = getPosition(planet.angle, orbitRadius);
+              return (
+                <motion.text
+                  key={`natal-${i}`}
+                  x={pos.x}
+                  y={pos.y}
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-foreground/50 select-none"
+                  style={{ fontFamily: 'serif', fontSize: '11px' }}
+                  animate={{ opacity: [0.4, 0.7, 0.4] }}
+                  transition={{
+                    duration: 3 + i * 0.5,
+                    repeat: Infinity,
+                    delay: i * 0.4,
+                    ease: "easeInOut",
+                  }}
+                >
+                  {planet.symbol}
+                </motion.text>
+              );
+            })}
+          </motion.g>
 
           {/* Floating aspect lines - ethereal connections */}
           {[0, 1, 2].map((i) => {
