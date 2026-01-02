@@ -13,8 +13,6 @@ import {
   IconZodiacCapricorn,
   IconZodiacAquarius,
   IconZodiacPisces,
-  IconMoon,
-  IconSun,
 } from "@tabler/icons-react";
 import { ZodiacSign } from "@/lib/zodiac";
 
@@ -34,44 +32,24 @@ const ZODIAC_SIGNS: { sign: ZodiacSign; Icon: typeof IconZodiacAries }[] = [
   { sign: 'pisces', Icon: IconZodiacPisces },
 ];
 
-// Planet symbols for text rendering (keeping these as they match the chart)
+// Planet symbols for text rendering
 const PLANET_SYMBOLS = {
   moon: '☽',
   mercury: '☿',
   venus: '♀',
   sun: '☉',
   mars: '♂',
-  jupiter: '♃',
-  saturn: '♄',
 };
 
-// Planet data with orbital speeds
-const PLANETS = [
-  { symbol: PLANET_SYMBOLS.moon, name: 'Moon', speed: 12, orbitRadius: 0.85 },
-  { symbol: PLANET_SYMBOLS.mercury, name: 'Mercury', speed: 8, orbitRadius: 0.75 },
-  { symbol: PLANET_SYMBOLS.venus, name: 'Venus', speed: 6, orbitRadius: 0.65 },
-  { symbol: PLANET_SYMBOLS.sun, name: 'Sun', speed: 4, orbitRadius: 0.55 },
-  { symbol: PLANET_SYMBOLS.mars, name: 'Mars', speed: 2, orbitRadius: 0.45 },
-];
-
-// Natal planet positions (fixed, dimmer)
+// Natal planet positions (fixed positions on the chart)
 const NATAL_POSITIONS = [
-  { symbol: PLANET_SYMBOLS.sun, angle: 45 },
-  { symbol: PLANET_SYMBOLS.moon, angle: 130 },
-  { symbol: PLANET_SYMBOLS.mercury, angle: 75 },
-  { symbol: PLANET_SYMBOLS.venus, angle: 200 },
-  { symbol: PLANET_SYMBOLS.mars, angle: 280 },
-  { symbol: PLANET_SYMBOLS.jupiter, angle: 320 },
-  { symbol: PLANET_SYMBOLS.saturn, angle: 160 },
-];
-
-// Aspect angles (major aspects)
-const ASPECTS = [
-  { angle: 0, name: 'conjunction', orb: 10 },
-  { angle: 60, name: 'sextile', orb: 6 },
-  { angle: 90, name: 'square', orb: 8 },
-  { angle: 120, name: 'trine', orb: 8 },
-  { angle: 180, name: 'opposition', orb: 10 },
+  { symbol: '☉', angle: 45 },
+  { symbol: '☽', angle: 130 },
+  { symbol: '☿', angle: 75 },
+  { symbol: '♀', angle: 200 },
+  { symbol: '♂', angle: 280 },
+  { symbol: '♃', angle: 320 },
+  { symbol: '♄', angle: 160 },
 ];
 
 const LOADING_MESSAGES = [
@@ -82,28 +60,18 @@ const LOADING_MESSAGES = [
   "Consulting the ephemeris...",
 ];
 
-interface AspectLine {
-  id: string;
-  fromAngle: number;
-  toAngle: number;
-  fromRadius: number;
-  toRadius: number;
-  createdAt: number;
-}
+// Silver color matching the birth chart
+const CHART_COLOR = '#E0E0E0';
 
 export const CosmosLoading = () => {
   const [messageIndex, setMessageIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
-  const [planetAngles, setPlanetAngles] = useState<number[]>(() => 
-    PLANETS.map((_, i) => (i * 72) % 360) // Evenly distribute starting positions
-  );
-  const [aspectLines, setAspectLines] = useState<AspectLine[]>([]);
   
-  const chartSize = 240;
+  const chartSize = 260;
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
-  const outerRadius = chartSize / 2 - 10;
-  const zodiacRadius = outerRadius - 15;
-  const natalRadius = outerRadius - 40;
+  const outerRadius = chartSize / 2 - 12;
+  const zodiacRadius = outerRadius - 18;
+  const natalRadius = outerRadius - 45;
 
   // Rotate loading messages
   useEffect(() => {
@@ -113,71 +81,9 @@ export const CosmosLoading = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Animate planet positions
-  useEffect(() => {
-    let animationFrame: number;
-    let lastTime = performance.now();
-
-    const animate = (currentTime: number) => {
-      const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
-      lastTime = currentTime;
-
-      setPlanetAngles(prev => 
-        prev.map((angle, i) => (angle + PLANETS[i].speed * deltaTime) % 360)
-      );
-
-      animationFrame = requestAnimationFrame(animate);
-    };
-
-    animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, []);
-
-  // Check for aspects and create aspect lines
-  useEffect(() => {
-    const checkAspects = () => {
-      const now = Date.now();
-      const newAspects: AspectLine[] = [];
-
-      planetAngles.forEach((transitAngle, planetIndex) => {
-        NATAL_POSITIONS.forEach((natal, natalIndex) => {
-          const angleDiff = Math.abs(((transitAngle - natal.angle) + 180) % 360 - 180);
-          
-          ASPECTS.forEach(aspect => {
-            const aspectDiff = Math.abs(angleDiff - aspect.angle);
-            if (aspectDiff < aspect.orb) {
-              const id = `${planetIndex}-${natalIndex}-${aspect.name}`;
-              // Only add if not already active
-              if (!aspectLines.some(l => l.id === id)) {
-                newAspects.push({
-                  id,
-                  fromAngle: transitAngle,
-                  toAngle: natal.angle,
-                  fromRadius: PLANETS[planetIndex].orbitRadius * natalRadius,
-                  toRadius: natalRadius,
-                  createdAt: now,
-                });
-              }
-            }
-          });
-        });
-      });
-
-      if (newAspects.length > 0) {
-        setAspectLines(prev => [...prev, ...newAspects].slice(-6)); // Keep max 6 lines
-      }
-
-      // Remove old aspect lines
-      setAspectLines(prev => prev.filter(line => now - line.createdAt < 2000));
-    };
-
-    const interval = setInterval(checkAspects, 200);
-    return () => clearInterval(interval);
-  }, [planetAngles, aspectLines]);
-
   // Calculate position from angle and radius
   const getPosition = (angle: number, radius: number) => {
-    const rad = ((angle - 90) * Math.PI) / 180; // Start from top
+    const rad = ((angle - 90) * Math.PI) / 180;
     return {
       x: centerX + Math.cos(rad) * radius,
       y: centerY + Math.sin(rad) * radius,
@@ -186,12 +92,12 @@ export const CosmosLoading = () => {
 
   // Generate starfield
   const stars = useMemo(() => 
-    [...Array(30)].map((_, i) => ({
+    [...Array(50)].map((_, i) => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 1.5 + 0.5,
-      delay: Math.random() * 3,
-      duration: 2 + Math.random() * 2,
+      size: Math.random() * 1.2 + 0.3,
+      delay: Math.random() * 5,
+      duration: 3 + Math.random() * 4,
     })), []
   );
 
@@ -202,7 +108,7 @@ export const CosmosLoading = () => {
         {stars.map((star, i) => (
           <motion.div
             key={i}
-            className="absolute rounded-full bg-foreground/40"
+            className="absolute rounded-full bg-foreground/30"
             style={{
               left: `${star.x}%`,
               top: `${star.y}%`,
@@ -210,7 +116,7 @@ export const CosmosLoading = () => {
               height: star.size,
             }}
             animate={{
-              opacity: [0.2, 0.6, 0.2],
+              opacity: [0.15, 0.5, 0.15],
             }}
             transition={{
               duration: star.duration,
@@ -223,7 +129,12 @@ export const CosmosLoading = () => {
       </div>
 
       {/* Natal Chart Animation */}
-      <div className="relative mb-10">
+      <motion.div 
+        className="relative mb-10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
         <svg
           width={chartSize}
           height={chartSize}
@@ -231,69 +142,70 @@ export const CosmosLoading = () => {
           className="drop-shadow-lg"
         >
           <defs>
-            {/* Silver/muted gradient - matching chart styling */}
+            {/* Silver gradient */}
             <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E0E0E0" />
-              <stop offset="50%" stopColor="#D0D0D0" />
-              <stop offset="100%" stopColor="#B0B0B0" />
+              <stop offset="0%" stopColor="#E8E8E8" />
+              <stop offset="50%" stopColor="#D8D8D8" />
+              <stop offset="100%" stopColor="#C0C0C0" />
             </linearGradient>
             
-            {/* Glow filter for aspect lines */}
-            <filter id="aspectGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="blur" />
+            {/* Subtle center glow */}
+            <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor={CHART_COLOR} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={CHART_COLOR} stopOpacity="0" />
+            </radialGradient>
+
+            {/* Outer glow for mystical effect */}
+            <filter id="outerGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-
-            {/* Subtle glow for center */}
-            <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#E0E0E0" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#E0E0E0" stopOpacity="0" />
-            </radialGradient>
           </defs>
 
+          {/* Slow rotating outer ring for mystical effect */}
+          <motion.g
+            animate={{ rotate: 360 }}
+            transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${centerX}px ${centerY}px` }}
+          >
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={outerRadius}
+              fill="none"
+              stroke="url(#chartGradient)"
+              strokeWidth="1.5"
+              opacity="0.85"
+            />
+          </motion.g>
+
           {/* Center glow */}
-          <circle cx={centerX} cy={centerY} r={40} fill="url(#centerGlow)" />
+          <circle cx={centerX} cy={centerY} r={50} fill="url(#centerGlow)" />
 
-          {/* Outer zodiac wheel */}
-          <circle
-            cx={centerX}
-            cy={centerY}
-            r={outerRadius}
-            fill="none"
-            stroke="url(#chartGradient)"
-            strokeWidth="1.5"
-            opacity="0.9"
-          />
-
-          {/* Inner circle */}
-          <circle
-            cx={centerX}
-            cy={centerY}
-            r={natalRadius - 10}
-            fill="none"
-            stroke="url(#chartGradient)"
-            strokeWidth="1"
-            opacity="0.7"
-          />
-
-          {/* Zodiac signs around perimeter */}
-          {ZODIAC_SIGNS.map(({ Icon }, i) => {
-            const angle = (i * 30) + 15; // 30 degrees per sign, centered
-            const pos = getPosition(angle, zodiacRadius);
-            return (
-              <g key={i} transform={`translate(${pos.x - 6}, ${pos.y - 6})`}>
-                <Icon size={12} strokeWidth={1.5} className="text-foreground/70" />
-              </g>
-            );
-          })}
+          {/* Inner circle - very slow counter-rotation */}
+          <motion.g
+            animate={{ rotate: -360 }}
+            transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${centerX}px ${centerY}px` }}
+          >
+            <circle
+              cx={centerX}
+              cy={centerY}
+              r={natalRadius}
+              fill="none"
+              stroke="url(#chartGradient)"
+              strokeWidth="1"
+              opacity="0.6"
+            />
+          </motion.g>
 
           {/* Division lines between signs */}
           {[...Array(12)].map((_, i) => {
             const angle = i * 30;
-            const inner = getPosition(angle, natalRadius);
+            const inner = getPosition(angle, natalRadius + 5);
             const outer = getPosition(angle, outerRadius - 5);
             return (
               <line
@@ -302,84 +214,99 @@ export const CosmosLoading = () => {
                 y1={inner.y}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="#E0E0E0"
+                stroke={CHART_COLOR}
                 strokeWidth="1"
-                opacity="0.6"
+                opacity="0.5"
               />
             );
           })}
 
-          {/* Aspect lines (animated) */}
-          <AnimatePresence>
-            {aspectLines.map((line) => {
-              const from = getPosition(line.fromAngle, line.fromRadius);
-              const to = getPosition(line.toAngle, line.toRadius);
-              const age = Date.now() - line.createdAt;
-              const opacity = age < 300 ? age / 300 : age > 1500 ? (2000 - age) / 500 : 1;
-              
-              return (
-                <motion.line
-                  key={line.id}
-                  x1={from.x}
-                  y1={from.y}
-                  x2={to.x}
-                  y2={to.y}
-                  stroke="#E0E0E0"
-                  strokeWidth="0.5"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: opacity * 0.25 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                />
-              );
-            })}
-          </AnimatePresence>
-
-          {/* Natal planets (fixed, dimmer) */}
-          {NATAL_POSITIONS.map((planet, i) => {
-            const pos = getPosition(planet.angle, natalRadius);
+          {/* Zodiac signs around perimeter - subtle pulse */}
+          {ZODIAC_SIGNS.map(({ Icon }, i) => {
+            const angle = (i * 30) + 15;
+            const pos = getPosition(angle, zodiacRadius);
             return (
-              <text
+              <motion.g 
+                key={i} 
+                transform={`translate(${pos.x - 7}, ${pos.y - 7})`}
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  delay: i * 0.3,
+                  ease: "easeInOut",
+                }}
+              >
+                <Icon size={14} strokeWidth={1.5} className="text-foreground/70" />
+              </motion.g>
+            );
+          })}
+
+          {/* Natal planets (fixed, gentle pulse) */}
+          {NATAL_POSITIONS.map((planet, i) => {
+            const pos = getPosition(planet.angle, natalRadius - 15);
+            return (
+              <motion.text
                 key={`natal-${i}`}
                 x={pos.x}
                 y={pos.y}
                 textAnchor="middle"
                 dominantBaseline="central"
-                className="fill-foreground/40 text-[8px] select-none"
-                style={{ fontFamily: 'serif' }}
+                className="fill-foreground/40 select-none"
+                style={{ fontFamily: 'serif', fontSize: '10px' }}
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{
+                  duration: 3 + i * 0.5,
+                  repeat: Infinity,
+                  delay: i * 0.4,
+                  ease: "easeInOut",
+                }}
               >
                 {planet.symbol}
-              </text>
+              </motion.text>
             );
           })}
 
-          {/* Transiting planets (moving, brighter) */}
-          {PLANETS.map((planet, i) => {
-            const pos = getPosition(planetAngles[i], planet.orbitRadius * natalRadius);
+          {/* Floating aspect lines - ethereal connections */}
+          {[0, 1, 2].map((i) => {
+            const startAngle = (i * 120) + 30;
+            const endAngle = startAngle + 60;
+            const start = getPosition(startAngle, natalRadius - 20);
+            const end = getPosition(endAngle, natalRadius - 20);
             return (
-              <g key={`transit-${i}`}>
-                <text
-                  x={pos.x}
-                  y={pos.y}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  className="fill-foreground/90 text-[11px] select-none"
-                  style={{ 
-                    fontFamily: 'serif',
-                  }}
-                >
-                  {planet.symbol}
-                </text>
-              </g>
+              <motion.line
+                key={`aspect-${i}`}
+                x1={start.x}
+                y1={start.y}
+                x2={end.x}
+                y2={end.y}
+                stroke={CHART_COLOR}
+                strokeWidth="0.5"
+                initial={{ opacity: 0, pathLength: 0 }}
+                animate={{ 
+                  opacity: [0, 0.2, 0.2, 0],
+                  pathLength: [0, 1, 1, 0],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  delay: i * 2,
+                  ease: "easeInOut",
+                }}
+              />
             );
           })}
 
-          {/* Center decoration - small 8-pointed star */}
-          <g transform={`translate(${centerX}, ${centerY})`}>
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+          {/* Center 8-pointed star - gentle breathing */}
+          <motion.g 
+            transform={`translate(${centerX}, ${centerY})`}
+            animate={{ scale: [1, 1.05, 1], opacity: [0.7, 0.9, 0.7] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
               const isCardinal = angle % 90 === 0;
-              const length = isCardinal ? 12 : 8;
-              const width = isCardinal ? 3 : 2;
+              const length = isCardinal ? 14 : 10;
+              const width = isCardinal ? 3.5 : 2.5;
               return (
                 <path
                   key={angle}
@@ -390,40 +317,40 @@ export const CosmosLoading = () => {
                 />
               );
             })}
-          </g>
+          </motion.g>
         </svg>
-      </div>
+      </motion.div>
 
       {/* Loading message */}
       <AnimatePresence mode="wait">
         <motion.p
           key={messageIndex}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.5 }}
-          className="text-[14px] text-foreground/60 font-serif text-center tracking-wide"
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-[14px] text-foreground/50 font-serif text-center tracking-wide"
         >
           {LOADING_MESSAGES[messageIndex]}
         </motion.p>
       </AnimatePresence>
 
-      {/* Subtle loading dots */}
-      <div className="mt-6 flex gap-1.5">
+      {/* Subtle breathing dots */}
+      <div className="mt-8 flex gap-2">
         {[0, 1, 2].map(i => (
           <motion.div
             key={i}
             animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.6, 0.3]
+              scale: [1, 1.2, 1],
+              opacity: [0.25, 0.45, 0.25]
             }}
             transition={{
-              duration: 1.4,
+              duration: 2,
               repeat: Infinity,
-              delay: i * 0.25,
+              delay: i * 0.35,
               ease: "easeInOut"
             }}
-            className="w-1.5 h-1.5 rounded-full bg-foreground/40"
+            className="w-1.5 h-1.5 rounded-full bg-foreground/30"
           />
         ))}
       </div>
