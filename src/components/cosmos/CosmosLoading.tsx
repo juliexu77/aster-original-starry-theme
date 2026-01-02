@@ -233,26 +233,32 @@ export const CosmosLoading = () => {
             );
           })}
 
-          {/* Zodiac signs centered in each segment - subtle pulse */}
-          {ZODIAC_SIGNS.map(({ Icon }, i) => {
-            const angle = (i * 30) + 15;
-            const pos = getPosition(angle, (outerRadius + innerRingRadius) / 2);
-            return (
-              <motion.g 
-                key={i} 
-                transform={`translate(${pos.x - 9}, ${pos.y - 9})`}
-                animate={{ opacity: [0.5, 0.85, 0.5] }}
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut",
-                }}
-              >
-                <Icon size={18} strokeWidth={1.25} className="text-foreground/75" />
-              </motion.g>
-            );
-          })}
+          {/* Zodiac signs centered in each segment - counter-rotating, dimmer */}
+          <motion.g
+            animate={{ rotate: -360 }}
+            transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
+            style={{ transformOrigin: `${centerX}px ${centerY}px` }}
+          >
+            {ZODIAC_SIGNS.map(({ Icon }, i) => {
+              const angle = (i * 30) + 15;
+              const pos = getPosition(angle, (outerRadius + innerRingRadius) / 2);
+              return (
+                <motion.g 
+                  key={i} 
+                  transform={`translate(${pos.x - 9}, ${pos.y - 9})`}
+                  animate={{ opacity: [0.25, 0.45, 0.25] }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    delay: i * 0.3,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Icon size={18} strokeWidth={1.25} className="text-foreground/50" />
+                </motion.g>
+              );
+            })}
+          </motion.g>
 
           {/* Orbiting planets around center */}
           <motion.g
@@ -270,9 +276,9 @@ export const CosmosLoading = () => {
                   y={pos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="fill-foreground/50 select-none"
-                  style={{ fontFamily: 'serif', fontSize: '11px' }}
-                  animate={{ opacity: [0.4, 0.7, 0.4] }}
+                  className="fill-foreground select-none"
+                  style={{ fontFamily: 'serif', fontSize: '16px', fontWeight: 500 }}
+                  animate={{ opacity: [0.7, 1, 0.7] }}
                   transition={{
                     duration: 3 + i * 0.5,
                     repeat: Infinity,
