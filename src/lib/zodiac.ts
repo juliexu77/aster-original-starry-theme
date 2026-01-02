@@ -296,11 +296,8 @@ export const getRisingSign = (
 ): ZodiacSign | null => {
   if (!birthday || !birthTime) return null;
   
-  // Debug for specific test case
-  const shouldDebug = debug || (birthday === '2022-02-11' && birthTime?.startsWith('15:4'));
-  if (shouldDebug) {
-    console.log('[Rising] Calculating for:', { birthday, birthTime, birthLocation });
-  }
+  // Always log for debugging rising sign issues
+  console.log('[Rising] Input:', { birthday, birthTime, birthLocation });
   
   // Parse date components directly from string to avoid timezone issues
   // birthday format: "YYYY-MM-DD"
@@ -324,10 +321,8 @@ export const getRisingSign = (
   // Get DST-aware timezone offset for the birth date
   const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
-  if (shouldDebug) {
-    console.log('[Rising] Parsed:', { year, month: month + 1, day, hours });
-    console.log('[Rising] City data:', { timezoneOffset, longitude, latitude });
-  }
+  console.log('[Rising] Parsed:', { year, month: month + 1, day, hours });
+  console.log('[Rising] City data:', { timezoneOffset, longitude, latitude });
   
   // Convert local time to UTC
   // Note: For locations WEST of Greenwich, offset is negative (e.g., -8 for PST)
@@ -347,9 +342,7 @@ export const getRisingSign = (
     utcDay -= 1;
   }
   
-  if (shouldDebug) {
-    console.log('[Rising] UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
-  }
+  console.log('[Rising] UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
   
   // Calculate Julian Day Number (JD)
   // Using the standard algorithm
@@ -365,9 +358,7 @@ export const getRisingSign = (
   // Calculate centuries since J2000.0 (Jan 1, 2000, 12:00 TT)
   const T = (jd - 2451545.0) / 36525;
   
-  if (shouldDebug) {
-    console.log('[Rising] Julian Date:', jd, 'T:', T);
-  }
+  console.log('[Rising] Julian Date:', jd, 'T:', T);
   
   // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
   // Formula from the Astronomical Almanac
@@ -379,9 +370,7 @@ export const getRisingSign = (
   let lst = gmst + longitude;
   lst = ((lst % 360) + 360) % 360;
   
-  if (shouldDebug) {
-    console.log('[Rising] GMST:', gmst, 'LST:', lst);
-  }
+  console.log('[Rising] GMST:', gmst, 'LST:', lst);
   
   // Obliquity of the ecliptic (epsilon)
   // More accurate formula including T correction
@@ -431,9 +420,7 @@ export const getRisingSign = (
   
   const resultSign = signs[signIndex % 12];
   
-  if (shouldDebug) {
-    console.log('[Rising] Ascendant:', ascendant, '° -> sign index:', signIndex, '=', resultSign);
-  }
+  console.log('[Rising] Ascendant:', ascendant, '° -> sign index:', signIndex, '=', resultSign);
   
   return resultSign;
 };
