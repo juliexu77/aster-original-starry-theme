@@ -522,6 +522,191 @@ export const getMoonSynthesis = (moonSign: ZodiacSign): string => {
   return syntheses[moonSign];
 };
 
+// Calculate age-appropriate developmental context
+const getAgeContext = (birthday: string | null): { 
+  ageLabel: string; 
+  developmentalFocus: string;
+  parentingLens: string;
+} => {
+  if (!birthday) {
+    return {
+      ageLabel: '',
+      developmentalFocus: 'their natural way of being',
+      parentingLens: 'honoring who they are'
+    };
+  }
+  
+  const birthDate = new Date(birthday);
+  const now = new Date();
+  const ageInMonths = Math.floor((now.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+  const ageInYears = Math.floor(ageInMonths / 12);
+  
+  if (ageInMonths < 6) {
+    return {
+      ageLabel: `at ${ageInMonths} months`,
+      developmentalFocus: 'establishing security and basic trust',
+      parentingLens: 'attuning to their sensory preferences and rhythm'
+    };
+  } else if (ageInMonths < 12) {
+    return {
+      ageLabel: `at ${ageInMonths} months`,
+      developmentalFocus: 'exploring the world through senses and movement',
+      parentingLens: 'creating a secure base for their emerging independence'
+    };
+  } else if (ageInYears < 2) {
+    return {
+      ageLabel: `at ${ageInYears === 1 ? '1 year' : `${ageInMonths} months`}`,
+      developmentalFocus: 'asserting independence while needing reassurance',
+      parentingLens: 'balancing safety with their drive to explore'
+    };
+  } else if (ageInYears < 4) {
+    return {
+      ageLabel: `at ${ageInYears}`,
+      developmentalFocus: 'imaginative play and emotional vocabulary',
+      parentingLens: 'naming feelings and setting gentle limits'
+    };
+  } else if (ageInYears < 7) {
+    return {
+      ageLabel: `at ${ageInYears}`,
+      developmentalFocus: 'social dynamics and moral development',
+      parentingLens: 'supporting friendships and building resilience'
+    };
+  } else if (ageInYears < 10) {
+    return {
+      ageLabel: `at ${ageInYears}`,
+      developmentalFocus: 'competence, comparison, and identity formation',
+      parentingLens: 'nurturing their unique strengths without pressure'
+    };
+  } else if (ageInYears < 13) {
+    return {
+      ageLabel: `at ${ageInYears}`,
+      developmentalFocus: 'pre-adolescent identity and peer belonging',
+      parentingLens: 'staying connected while giving more autonomy'
+    };
+  } else {
+    return {
+      ageLabel: `at ${ageInYears}`,
+      developmentalFocus: 'identity crystallization and emotional complexity',
+      parentingLens: 'being a steady presence they can return to'
+    };
+  }
+};
+
+// Get the integrated "So What" synthesis - the real takeaway for parents
+export const getChartIntegration = (
+  sunSign: ZodiacSign,
+  moonSign: ZodiacSign | null,
+  risingSign: ZodiacSign | null,
+  name: string,
+  birthday: string | null
+): {
+  title: string;
+  subtitle: string;
+  integration: string;
+  keyInsight: string;
+  parentingNote: string;
+} => {
+  const firstName = name.split(' ')[0];
+  const sunName = getZodiacName(sunSign);
+  const moonName = moonSign ? getZodiacName(moonSign) : null;
+  const risingName = risingSign ? getZodiacName(risingSign) : null;
+  
+  const sunElement = getElement(sunSign);
+  const moonElement = moonSign ? getElement(moonSign) : null;
+  const risingElement = risingSign ? getElement(risingSign) : null;
+  
+  const { ageLabel, developmentalFocus, parentingLens } = getAgeContext(birthday);
+  
+  // Build the core integration narrative
+  let integration = '';
+  let keyInsight = '';
+  let parentingNote = '';
+  
+  // Count elements present
+  const elements = [sunElement, moonElement, risingElement].filter(Boolean) as string[];
+  const uniqueElements = [...new Set(elements)];
+  const elementCounts = elements.reduce((acc, el) => {
+    acc[el] = (acc[el] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  // Find dominant element if any
+  const dominantElement = Object.entries(elementCounts).find(([_, count]) => count >= 2)?.[0];
+  
+  // Generate integration based on chart composition
+  if (moonSign && risingSign) {
+    // Full chart available
+    if (dominantElement) {
+      // Strong elemental emphasis
+      const elementIntegrations: Record<string, { integration: string; insight: string; note: string }> = {
+        fire: {
+          integration: `${firstName}'s chart burns bright—${sunName} sun, ${moonName} moon${dominantElement === 'fire' && risingElement === 'fire' ? `, ${risingName} rising` : ''}. This is a soul built for action, enthusiasm, and self-expression. The challenge isn't getting them to engage—it's helping them pace themselves and develop patience.`,
+          insight: `They process life by doing, not thinking. Movement is medicine. When stuck, they need physical outlet before emotional processing.`,
+          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means giving them room to lead while teaching them to pause.`
+        },
+        earth: {
+          integration: `${firstName}'s chart is deeply grounded—${sunName} sun, ${moonName} moon${dominantElement === 'earth' && risingElement === 'earth' ? `, ${risingName} rising` : ''}. This is a soul built for stability, sensory connection, and steady growth. They need things to make sense, to have purpose, to be real.`,
+          insight: `They process life through their body and senses. Routine is security. When overwhelmed, they need physical comfort and predictability before problem-solving.`,
+          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their pace and never rushing their process.`
+        },
+        air: {
+          integration: `${firstName}'s chart lives in the realm of ideas—${sunName} sun, ${moonName} moon${dominantElement === 'air' && risingElement === 'air' ? `, ${risingName} rising` : ''}. This is a mind that needs to understand, connect, and communicate. Words are how they make sense of everything.`,
+          insight: `They process life through conversation and questions. Silence isn't peace—it's disconnection. When distressed, they need to talk it through before feeling better.`,
+          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means endless conversation and never dismissing their curiosity.`
+        },
+        water: {
+          integration: `${firstName}'s chart runs deep—${sunName} sun, ${moonName} moon${dominantElement === 'water' && risingElement === 'water' ? `, ${risingName} rising` : ''}. This is a soul built for emotional depth, intuition, and profound connection. They feel everything, even what you don't say out loud.`,
+          insight: `They process life through feeling first, understanding second. Emotions aren't problems to solve—they're information to respect. When overwhelmed, they need to retreat and recharge.`,
+          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means protecting their sensitivity while teaching healthy boundaries.`
+        }
+      };
+      
+      const domData = elementIntegrations[dominantElement];
+      integration = domData.integration;
+      keyInsight = domData.insight;
+      parentingNote = domData.note;
+    } else {
+      // Diverse elemental mix - focus on sun-moon-rising interaction
+      const sunMoonDynamic = sunElement !== moonElement 
+        ? `${sunName} drive meets ${moonName} feeling—a creative tension between how they act and what they need` 
+        : `${sunName} through and through—consistent in nature, clear in needs`;
+      
+      const risingLayer = risingElement !== sunElement
+        ? `. But first impression is ${risingName}—what others see initially isn't the whole story`
+        : `. And they show up authentically—what you see is who they are`;
+      
+      integration = `${firstName}'s chart tells a nuanced story: ${sunMoonDynamic}${risingLayer}. This isn't contradiction—it's complexity. They're learning to integrate multiple ways of being.`;
+      
+      keyInsight = `Different situations will bring out different sides. The ${sunName} core leads, the ${moonName} emotions need tending, and the ${risingName} mask is how they test the waters.`;
+      
+      parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means seeing all of who they are, not just the parts that show up first.`;
+    }
+  } else if (moonSign) {
+    // Sun + Moon only
+    if (sunElement === moonElement) {
+      integration = `${firstName}'s ${sunName} sun and ${moonName} moon speak the same language. What they want and what they need align naturally. This creates consistency—and intensity.`;
+      keyInsight = `They're not conflicted inside, but their ${sunElement} nature may need balancing influences from the world around them.`;
+    } else {
+      integration = `${firstName}'s ${sunName} sun and ${moonName} moon create an interesting inner dialogue. The ${sunName} core wants one thing, while the ${moonName} heart needs another. This isn't a problem—it's their particular texture.`;
+      keyInsight = `Watch for moments when outer behavior (${sunName}) doesn't match inner state (${moonName}). Both are true, just different layers.`;
+    }
+    parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means tracking both their actions and their feelings, which may tell different stories.`;
+  } else {
+    // Sun only
+    integration = `${firstName}'s ${sunName} sun is their foundation—the core pattern around which everything else organizes. This is who they are at the deepest level.`;
+    keyInsight = `${SUN_MECHANICS[sunSign][0]}`;
+    parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} nature as it expresses through each new stage.`;
+  }
+  
+  return {
+    title: `What This Means for ${firstName}`,
+    subtitle: 'The integrated picture',
+    integration,
+    keyInsight,
+    parentingNote
+  };
+};
+
 // Get full sun-rising synthesis text
 export const getSunRisingSynthesis = (
   sunSign: ZodiacSign,
