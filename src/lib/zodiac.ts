@@ -287,21 +287,14 @@ export const getMoonSignFromBirthDateTime = (
 
 // Rising sign (Ascendant) calculation
 // Uses proper astronomical formulas with latitude consideration
-// Debug version with logging for verification
 export const getRisingSign = (
   birthday: string | null | undefined,
   birthTime: string | null | undefined,
-  birthLocation?: string | null | undefined,
-  debug: boolean = false
+  birthLocation?: string | null | undefined
 ): ZodiacSign | null => {
   if (!birthday || !birthTime) return null;
   
-  // Always log for debugging rising sign issues
-  console.log('[Rising] ====== START CALCULATION ======');
-  console.log('[Rising] Input:', { birthday, birthTime, birthLocation });
-  
   // Parse date components directly from string to avoid timezone issues
-  // birthday format: "YYYY-MM-DD"
   const dateParts = birthday.split('-');
   const year = parseInt(dateParts[0], 10);
   const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
@@ -322,12 +315,7 @@ export const getRisingSign = (
   // Get DST-aware timezone offset for the birth date
   const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
-  console.log('[Rising] Parsed:', { year, month: month + 1, day, localHours: hours });
-  console.log('[Rising] City data:', { cityData: cityData ? 'found' : 'null', timezone: cityData?.timezone, timezoneOffset, longitude, latitude });
-  
   // Convert local time to UTC
-  // Note: For locations WEST of Greenwich, offset is negative (e.g., -8 for PST)
-  // UTC = Local - Offset (for negative offset: 15 - (-8) = 23)
   let utcHours = hours - timezoneOffset;
   let utcDay = day;
   let utcMonth = month;
@@ -337,87 +325,55 @@ export const getRisingSign = (
   if (utcHours >= 24) {
     utcHours -= 24;
     utcDay += 1;
-    // Note: Simplified - doesn't handle month boundaries perfectly
   } else if (utcHours < 0) {
     utcHours += 24;
     utcDay -= 1;
   }
   
-  console.log('[Rising] UTC conversion:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
-  
   // Calculate Julian Day Number (JD)
-  // Using the standard algorithm
   const a = Math.floor((14 - (utcMonth + 1)) / 12);
   const y = utcYear + 4800 - a;
   const mm = (utcMonth + 1) + 12 * a - 3;
   const jdn = utcDay + Math.floor((153 * mm + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
   
   // Add time component to get Julian Date
-  // JD = JDN + (hour - 12) / 24
   const jd = jdn + (utcHours - 12) / 24;
   
-  // Calculate centuries since J2000.0 (Jan 1, 2000, 12:00 TT)
+  // Calculate centuries since J2000.0
   const T = (jd - 2451545.0) / 36525;
   
-  console.log('[Rising] Julian:', { jdn, jd, T });
-  
   // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
-  // Formula from the Astronomical Almanac
   let gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T - T * T * T / 38710000;
   gmst = ((gmst % 360) + 360) % 360;
   
   // Calculate Local Sidereal Time (LST)
-  // LST = GMST + East Longitude (negative for West)
   let lst = gmst + longitude;
   lst = ((lst % 360) + 360) % 360;
   
-  console.log('[Rising] Sidereal:', { gmst, lst, lstHours: lst / 15 });
-  
-  // Obliquity of the ecliptic (epsilon)
-  // More accurate formula including T correction
+  // Obliquity of the ecliptic
   const epsilon = 23.439291 - 0.0130042 * T;
   
-  // Convert to radians for trigonometric calculations
+  // Convert to radians
   const lstRad = (lst * Math.PI) / 180;
   const latRad = (latitude * Math.PI) / 180;
   const epsRad = (epsilon * Math.PI) / 180;
   
-  console.log('[Rising] Angles (deg):', { epsilon, lstDeg: lst, latDeg: latitude });
-  
-  // Calculate the Ascendant using the correct astronomical formula:
-  // ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
-  // Where LST = Local Sidereal Time (in radians)
-  // φ = geographic latitude
-  // ε = obliquity of the ecliptic
-  // Reference: https://en.wikipedia.org/wiki/Ascendant
-  
+  // Calculate the Ascendant
   const sinLst = Math.sin(lstRad);
   const cosLst = Math.cos(lstRad);
   const sinEps = Math.sin(epsRad);
   const cosEps = Math.cos(epsRad);
   const tanLat = Math.tan(latRad);
   
-  console.log('[Rising] Trig values:', { sinLst, cosLst, sinEps, cosEps, tanLat });
-  
-  // Calculate ascendant using the correct formula
-  // Numerator: cos(LST)
-  // Denominator: -(sin(LST) * cos(ε) + tan(φ) * sin(ε))
   const ascY = cosLst;
   const ascX = -(sinLst * cosEps + tanLat * sinEps);
   
-  console.log('[Rising] atan2 args:', { ascY, ascX });
-  
-  // Use atan2 for proper quadrant handling
   let ascendantRad = Math.atan2(ascY, ascX);
-  
-  // Convert to degrees and normalize to 0-360
   let ascendant = (ascendantRad * 180) / Math.PI;
   ascendant = ((ascendant % 360) + 360) % 360;
   
   // Convert to zodiac sign (30 degrees each)
-  // Aries = 0-30°, Taurus = 30-60°, etc.
   const signIndex = Math.floor(ascendant / 30);
-  const degreeInSign = ascendant % 30;
   
   const signs: ZodiacSign[] = [
     'aries', 'taurus', 'gemini', 'cancer', 
@@ -425,12 +381,7 @@ export const getRisingSign = (
     'sagittarius', 'capricorn', 'aquarius', 'pisces'
   ];
   
-  const resultSign = signs[signIndex % 12];
-  
-  console.log('[Rising] Result:', { ascendant, signIndex, degreeInSign: degreeInSign.toFixed(2), resultSign });
-  console.log('[Rising] ====== END CALCULATION ======');
-  
-  return resultSign;
+  return signs[signIndex % 12];
 };
 
 // Test DST handling by comparing summer vs winter births
@@ -480,7 +431,7 @@ export const testDSTHandling = () => {
     }
     
     // Run the ascendant calculation with debug
-    const rising = getRisingSign(date, time, location, true);
+    const rising = getRisingSign(date, time, location);
     console.log(`Rising sign result: ${rising}`);
   });
   
