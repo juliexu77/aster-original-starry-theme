@@ -66,12 +66,13 @@ const CHART_COLOR = '#E0E0E0';
 export const CosmosLoading = () => {
   const [messageIndex, setMessageIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
   
-  const chartSize = 260;
+  const chartSize = 300;
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
-  const outerRadius = chartSize / 2 - 12;
-  const zodiacRadius = outerRadius - 18;
-  const natalRadius = outerRadius - 45;
+  const outerRadius = chartSize / 2 - 10;
+  const innerRingRadius = outerRadius - 32;
+  const zodiacRadius = outerRadius - 16;
+  const natalRadius = innerRingRadius - 20;
 
   // Rotate loading messages
   useEffect(() => {
@@ -165,7 +166,7 @@ export const CosmosLoading = () => {
             </filter>
           </defs>
 
-          {/* Slow rotating outer ring for mystical effect */}
+          {/* Elegant outer ring - slow rotation */}
           <motion.g
             animate={{ rotate: 360 }}
             transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
@@ -177,15 +178,26 @@ export const CosmosLoading = () => {
               r={outerRadius}
               fill="none"
               stroke="url(#chartGradient)"
-              strokeWidth="1.5"
-              opacity="0.85"
+              strokeWidth="0.75"
+              opacity="0.9"
             />
           </motion.g>
 
-          {/* Center glow */}
-          <circle cx={centerX} cy={centerY} r={50} fill="url(#centerGlow)" />
+          {/* Inner ring - contains zodiac band */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={innerRingRadius}
+            fill="none"
+            stroke="url(#chartGradient)"
+            strokeWidth="0.75"
+            opacity="0.7"
+          />
 
-          {/* Inner circle - very slow counter-rotation */}
+          {/* Center glow */}
+          <circle cx={centerX} cy={centerY} r={55} fill="url(#centerGlow)" />
+
+          {/* Innermost circle - very slow counter-rotation */}
           <motion.g
             animate={{ rotate: -360 }}
             transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
@@ -197,16 +209,16 @@ export const CosmosLoading = () => {
               r={natalRadius}
               fill="none"
               stroke="url(#chartGradient)"
-              strokeWidth="1"
-              opacity="0.6"
+              strokeWidth="0.5"
+              opacity="0.5"
             />
           </motion.g>
 
-          {/* Division lines between signs */}
+          {/* Elegant division lines between signs - thin and complete */}
           {[...Array(12)].map((_, i) => {
             const angle = i * 30;
-            const inner = getPosition(angle, natalRadius + 5);
-            const outer = getPosition(angle, outerRadius - 5);
+            const inner = getPosition(angle, innerRingRadius);
+            const outer = getPosition(angle, outerRadius);
             return (
               <line
                 key={i}
@@ -215,21 +227,21 @@ export const CosmosLoading = () => {
                 x2={outer.x}
                 y2={outer.y}
                 stroke={CHART_COLOR}
-                strokeWidth="1"
-                opacity="0.5"
+                strokeWidth="0.5"
+                opacity="0.4"
               />
             );
           })}
 
-          {/* Zodiac signs around perimeter - subtle pulse */}
+          {/* Zodiac signs centered in each segment - subtle pulse */}
           {ZODIAC_SIGNS.map(({ Icon }, i) => {
             const angle = (i * 30) + 15;
-            const pos = getPosition(angle, zodiacRadius);
+            const pos = getPosition(angle, (outerRadius + innerRingRadius) / 2);
             return (
               <motion.g 
                 key={i} 
-                transform={`translate(${pos.x - 7}, ${pos.y - 7})`}
-                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transform={`translate(${pos.x - 9}, ${pos.y - 9})`}
+                animate={{ opacity: [0.5, 0.85, 0.5] }}
                 transition={{
                   duration: 4,
                   repeat: Infinity,
@@ -237,7 +249,7 @@ export const CosmosLoading = () => {
                   ease: "easeInOut",
                 }}
               >
-                <Icon size={14} strokeWidth={1.5} className="text-foreground/70" />
+                <Icon size={18} strokeWidth={1.25} className="text-foreground/75" />
               </motion.g>
             );
           })}
@@ -297,7 +309,7 @@ export const CosmosLoading = () => {
             );
           })}
 
-          {/* Center 8-pointed star - gentle breathing */}
+          {/* Center 8-pointed star - gentle breathing, larger */}
           <motion.g 
             transform={`translate(${centerX}, ${centerY})`}
             animate={{ scale: [1, 1.05, 1], opacity: [0.7, 0.9, 0.7] }}
@@ -305,8 +317,8 @@ export const CosmosLoading = () => {
           >
             {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
               const isCardinal = angle % 90 === 0;
-              const length = isCardinal ? 14 : 10;
-              const width = isCardinal ? 3.5 : 2.5;
+              const length = isCardinal ? 18 : 12;
+              const width = isCardinal ? 4.5 : 3;
               return (
                 <path
                   key={angle}
