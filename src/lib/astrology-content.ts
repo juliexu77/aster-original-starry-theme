@@ -633,69 +633,121 @@ export const getChartIntegration = (
   // Find dominant element if any
   const dominantElement = Object.entries(elementCounts).find(([_, count]) => count >= 2)?.[0];
   
+  // Get sign-specific key traits for personalization
+  const getSignKeyTrait = (sign: ZodiacSign): string => {
+    const traits: Record<ZodiacSign, string> = {
+      aries: 'pioneer spirit and need to lead',
+      taurus: 'need for stability and sensory grounding',
+      gemini: 'curious mind that must understand everything',
+      cancer: 'deep emotional memory and protective instincts',
+      leo: 'generous heart that needs to shine',
+      virgo: 'refined perception and drive to be useful',
+      libra: 'quest for harmony and fear of discord',
+      scorpio: 'emotional intensity and need for deep trust',
+      sagittarius: 'hunger for freedom and meaning',
+      capricorn: 'sense of responsibility and drive for achievement',
+      aquarius: 'need for independence and unique self-expression',
+      pisces: 'permeable boundaries and profound empathy'
+    };
+    return traits[sign];
+  };
+
+  const getSignChallenge = (sign: ZodiacSign): string => {
+    const challenges: Record<ZodiacSign, string> = {
+      aries: 'learning patience without losing their spark',
+      taurus: 'embracing change without losing their center',
+      gemini: 'finding focus without feeling trapped',
+      cancer: 'setting boundaries without closing their heart',
+      leo: 'sharing the spotlight without dimming their light',
+      virgo: 'accepting imperfection without losing their standards',
+      libra: 'standing firm without losing connection',
+      scorpio: 'trusting without losing their protective instincts',
+      sagittarius: 'committing without losing their freedom',
+      capricorn: 'relaxing without losing their sense of purpose',
+      aquarius: 'connecting deeply without losing their independence',
+      pisces: 'staying grounded without losing their magic'
+    };
+    return challenges[sign];
+  };
+  
   // Generate integration based on chart composition
   if (moonSign && risingSign) {
-    // Full chart available
-    if (dominantElement) {
-      // Strong elemental emphasis
-      const elementIntegrations: Record<string, { integration: string; insight: string; note: string }> = {
+    // Full chart available - create sign-specific narrative
+    
+    // Check for the "outlier" - when one placement differs from dominant element
+    const outlierSign = dominantElement 
+      ? (moonElement !== dominantElement ? moonSign : (risingElement !== dominantElement ? risingSign : null))
+      : null;
+    const outlierElement = outlierSign 
+      ? (moonElement !== dominantElement ? moonElement : risingElement)
+      : null;
+    const outlierRole = outlierSign
+      ? (moonElement !== dominantElement ? 'emotional core' : 'first impression')
+      : null;
+    
+    if (dominantElement && !outlierSign) {
+      // Triple element emphasis - all same element
+      const tripleIntegrations: Record<string, { integration: string; insight: string; note: string }> = {
         fire: {
-          integration: `${firstName}'s chart burns bright—${sunName} sun, ${moonName} moon${dominantElement === 'fire' && risingElement === 'fire' ? `, ${risingName} rising` : ''}. This is a soul built for action, enthusiasm, and self-expression. The challenge isn't getting them to engage—it's helping them pace themselves and develop patience.`,
-          insight: `They process life by doing, not thinking. Movement is medicine. When stuck, they need physical outlet before emotional processing.`,
-          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means giving them room to lead while teaching them to pause.`
+          integration: `${firstName}'s chart is pure fire—${sunName} identity, ${moonName} emotions, ${risingName} presence. Triple fire means their ${getSignKeyTrait(sunSign)} shapes everything. They lead with ${sunName}'s particular brand of courage, feel through ${moonName}'s emotional lens, and show up with ${risingName}'s unmistakable energy.`,
+          insight: `The ${sunName}-specific challenge is ${getSignChallenge(sunSign)}. Watch especially for ${moonName} emotional patterns—they process feelings fast but ${moonSign === 'aries' ? 'may not fully digest them' : moonSign === 'leo' ? 'need them witnessed' : 'run from the heavy ones'}.`,
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means channeling all that fire through ${sunName}'s natural strengths.`
         },
         earth: {
-          integration: `${firstName}'s chart is deeply grounded—${sunName} sun, ${moonName} moon${dominantElement === 'earth' && risingElement === 'earth' ? `, ${risingName} rising` : ''}. This is a soul built for stability, sensory connection, and steady growth. They need things to make sense, to have purpose, to be real.`,
-          insight: `They process life through their body and senses. Routine is security. When overwhelmed, they need physical comfort and predictability before problem-solving.`,
-          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their pace and never rushing their process.`
+          integration: `${firstName}'s chart is grounded to the core—${sunName} identity, ${moonName} emotions, ${risingName} presence. Triple earth means their ${getSignKeyTrait(sunSign)} is reinforced at every level. They need things to be real, tangible, and purposeful.`,
+          insight: `The ${sunName}-specific work is ${getSignChallenge(sunSign)}. Their ${moonName} moon means emotional security comes through ${moonSign === 'taurus' ? 'physical comfort and consistency' : moonSign === 'virgo' ? 'being useful and having order' : 'achievement and structure'}.`,
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means respecting their ${sunName} pace while gently stretching their comfort zone.`
         },
         air: {
-          integration: `${firstName}'s chart lives in the realm of ideas—${sunName} sun, ${moonName} moon${dominantElement === 'air' && risingElement === 'air' ? `, ${risingName} rising` : ''}. This is a mind that needs to understand, connect, and communicate. Words are how they make sense of everything.`,
-          insight: `They process life through conversation and questions. Silence isn't peace—it's disconnection. When distressed, they need to talk it through before feeling better.`,
-          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means endless conversation and never dismissing their curiosity.`
+          integration: `${firstName}'s chart lives in the mind—${sunName} identity, ${moonName} emotions, ${risingName} presence. Triple air means their ${getSignKeyTrait(sunSign)} expresses through constant mental activity. They need to understand, discuss, and connect ideas.`,
+          insight: `The ${sunName}-specific challenge is ${getSignChallenge(sunSign)}. With ${moonName} moon, they ${moonSign === 'gemini' ? 'process emotions by talking them through' : moonSign === 'libra' ? 'need relationship harmony to feel secure' : 'analyze feelings rather than fully experiencing them'}.`,
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} intellectual nature while helping them land in their body.`
         },
         water: {
-          integration: `${firstName}'s chart runs deep—${sunName} sun, ${moonName} moon${dominantElement === 'water' && risingElement === 'water' ? `, ${risingName} rising` : ''}. This is a soul built for emotional depth, intuition, and profound connection. They feel everything, even what you don't say out loud.`,
-          insight: `They process life through feeling first, understanding second. Emotions aren't problems to solve—they're information to respect. When overwhelmed, they need to retreat and recharge.`,
-          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means protecting their sensitivity while teaching healthy boundaries.`
+          integration: `${firstName}'s chart runs deep—${sunName} identity, ${moonName} emotions, ${risingName} presence. Triple water means their ${getSignKeyTrait(sunSign)} is felt at profound levels. They sense what others miss and carry emotions that don't easily let go.`,
+          insight: `The ${sunName}-specific work is ${getSignChallenge(sunSign)}. Their ${moonName} moon ${moonSign === 'cancer' ? 'stores every feeling with photographic precision' : moonSign === 'scorpio' ? 'feels at maximum intensity with no volume control' : 'absorbs the emotional atmosphere of any room'}.`,
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means protecting their ${sunName} sensitivity while teaching healthy emotional boundaries.`
         }
       };
       
-      const domData = elementIntegrations[dominantElement];
+      const domData = tripleIntegrations[dominantElement];
       integration = domData.integration;
       keyInsight = domData.insight;
       parentingNote = domData.note;
+    } else if (dominantElement && outlierSign && outlierElement && outlierRole) {
+      // Two same + one outlier - the common pattern
+      integration = `${firstName}'s chart has a clear theme with an important twist—${sunName} sun, ${moonName} moon, ${risingName} rising. The ${dominantElement} nature (${getSignKeyTrait(sunSign)}) is central, but the ${outlierElement} ${outlierRole} (${getZodiacName(outlierSign)}'s ${getSignKeyTrait(outlierSign)}) adds crucial depth.`;
+      
+      if (outlierRole === 'emotional core') {
+        keyInsight = `Here's what matters: while they present as ${dominantElement}, their emotional needs are actually ${outlierElement}. ${getZodiacName(outlierSign)} moon means they ${outlierElement === 'water' ? 'need more emotional processing than their surface suggests' : outlierElement === 'earth' ? 'crave more stability than their active exterior shows' : outlierElement === 'air' ? 'need to talk through feelings before acting on them' : 'have more drive inside than their calm exterior reveals'}. Don't be fooled by the ${dominantElement} wrapper.`;
+      } else {
+        keyInsight = `The ${sunName} core and ${moonName} emotional nature tell the real story—what they want and what they need. But they lead with ${risingName} rising, which is ${outlierElement} energy. Others see ${outlierElement === 'water' ? 'sensitivity and intuition' : outlierElement === 'earth' ? 'groundedness and reliability' : outlierElement === 'air' ? 'curiosity and sociability' : 'energy and initiative'} first, before discovering the ${dominantElement} depths.`;
+      }
+      
+      parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means speaking to both their ${dominantElement} nature and their ${outlierElement} ${outlierRole}.`;
     } else {
-      // Diverse elemental mix - focus on sun-moon-rising interaction
-      const sunMoonDynamic = sunElement !== moonElement 
-        ? `${sunName} drive meets ${moonName} feeling—a creative tension between how they act and what they need` 
-        : `${sunName} through and through—consistent in nature, clear in needs`;
+      // Diverse elemental mix - focus on sun-moon-rising interaction with sign specificity
+      integration = `${firstName}'s chart tells a layered story—${sunName} sun (${getSignKeyTrait(sunSign)}), ${moonName} moon (${getSignKeyTrait(moonSign!)}), ${risingName} rising (${getSignKeyTrait(risingSign!)}). These aren't contradictions—they're different instruments in the same orchestra.`;
       
-      const risingLayer = risingElement !== sunElement
-        ? `. But first impression is ${risingName}—what others see initially isn't the whole story`
-        : `. And they show up authentically—what you see is who they are`;
+      keyInsight = `The ${sunName} core is learning ${getSignChallenge(sunSign)}. When stressed, their ${moonName} moon needs ${moonElement === 'fire' ? 'action and outlet' : moonElement === 'earth' ? 'stability and comfort' : moonElement === 'air' ? 'to talk it through' : 'space to feel'}. And their ${risingName} first impression means others ${risingElement === 'fire' ? 'see boldness before depth' : risingElement === 'earth' ? 'see calm before complexity' : risingElement === 'air' ? 'see social ease before intensity' : 'sense feeling before strategy'}.`;
       
-      integration = `${firstName}'s chart tells a nuanced story: ${sunMoonDynamic}${risingLayer}. This isn't contradiction—it's complexity. They're learning to integrate multiple ways of being.`;
-      
-      keyInsight = `Different situations will bring out different sides. The ${sunName} core leads, the ${moonName} emotions need tending, and the ${risingName} mask is how they test the waters.`;
-      
-      parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means seeing all of who they are, not just the parts that show up first.`;
+      parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means seeing all three layers—not just what shows up first.`;
     }
   } else if (moonSign) {
-    // Sun + Moon only
+    // Sun + Moon only - sign-specific narrative
+    integration = `${firstName}'s ${sunName} sun and ${moonName} moon create their core dynamic. The ${sunName} identity (${getSignKeyTrait(sunSign)}) is learning ${getSignChallenge(sunSign)}, while the ${moonName} heart needs ${moonElement === 'fire' ? 'enthusiasm and movement' : moonElement === 'earth' ? 'stability and presence' : moonElement === 'air' ? 'conversation and connection' : 'emotional depth and safety'}.`;
+    
     if (sunElement === moonElement) {
-      integration = `${firstName}'s ${sunName} sun and ${moonName} moon speak the same language. What they want and what they need align naturally. This creates consistency—and intensity.`;
-      keyInsight = `They're not conflicted inside, but their ${sunElement} nature may need balancing influences from the world around them.`;
+      keyInsight = `Double ${sunElement} creates consistency—what they show and what they feel are the same language. The ${sunName}-${moonName} combination means they ${sunSign === moonSign ? `are intensely, purely ${sunName}` : `express ${sunElement} in complementary ways`}.`;
     } else {
-      integration = `${firstName}'s ${sunName} sun and ${moonName} moon create an interesting inner dialogue. The ${sunName} core wants one thing, while the ${moonName} heart needs another. This isn't a problem—it's their particular texture.`;
-      keyInsight = `Watch for moments when outer behavior (${sunName}) doesn't match inner state (${moonName}). Both are true, just different layers.`;
+      keyInsight = `The creative tension: ${sunName} wants to ${sunSign === 'aries' ? 'act' : sunSign === 'taurus' ? 'build' : sunSign === 'gemini' ? 'explore' : sunSign === 'cancer' ? 'nurture' : sunSign === 'leo' ? 'express' : sunSign === 'virgo' ? 'perfect' : sunSign === 'libra' ? 'harmonize' : sunSign === 'scorpio' ? 'transform' : sunSign === 'sagittarius' ? 'expand' : sunSign === 'capricorn' ? 'achieve' : sunSign === 'aquarius' ? 'innovate' : 'transcend'}, while ${moonName} moon needs ${getSignKeyTrait(moonSign!)}.`;
     }
-    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means tracking both their actions and their feelings, which may tell different stories.`;
+    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means tracking both what they do (${sunName}) and what they feel (${moonName}).`;
   } else {
-    // Sun only
-    integration = `${firstName}'s ${sunName} sun is their foundation—the core pattern around which everything else organizes. This is who they are at the deepest level.`;
-    keyInsight = `${SUN_MECHANICS[sunSign][0]}`;
-    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} nature as it expresses through each new stage.`;
+    // Sun only - sign-specific
+    integration = `${firstName}'s ${sunName} sun is their foundation—the ${getSignKeyTrait(sunSign)}. This is the central theme around which their personality organizes.`;
+    keyInsight = `The ${sunName}-specific work is ${getSignChallenge(sunSign)}. ${SUN_MECHANICS[sunSign][0]}`;
+    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} nature at every stage.`;
   }
   
   return {
