@@ -297,6 +297,7 @@ export const getRisingSign = (
   if (!birthday || !birthTime) return null;
   
   // Always log for debugging rising sign issues
+  console.log('[Rising] ====== START CALCULATION ======');
   console.log('[Rising] Input:', { birthday, birthTime, birthLocation });
   
   // Parse date components directly from string to avoid timezone issues
@@ -321,8 +322,8 @@ export const getRisingSign = (
   // Get DST-aware timezone offset for the birth date
   const timezoneOffset = cityData ? getTimezoneOffsetForDate(cityData.timezone, date) : 0;
   
-  console.log('[Rising] Parsed:', { year, month: month + 1, day, hours });
-  console.log('[Rising] City data:', { timezoneOffset, longitude, latitude });
+  console.log('[Rising] Parsed:', { year, month: month + 1, day, localHours: hours });
+  console.log('[Rising] City data:', { cityData: cityData ? 'found' : 'null', timezone: cityData?.timezone, timezoneOffset, longitude, latitude });
   
   // Convert local time to UTC
   // Note: For locations WEST of Greenwich, offset is negative (e.g., -8 for PST)
@@ -342,7 +343,7 @@ export const getRisingSign = (
     utcDay -= 1;
   }
   
-  console.log('[Rising] UTC time:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
+  console.log('[Rising] UTC conversion:', { utcYear, utcMonth: utcMonth + 1, utcDay, utcHours });
   
   // Calculate Julian Day Number (JD)
   // Using the standard algorithm
@@ -358,7 +359,7 @@ export const getRisingSign = (
   // Calculate centuries since J2000.0 (Jan 1, 2000, 12:00 TT)
   const T = (jd - 2451545.0) / 36525;
   
-  console.log('[Rising] Julian Date:', jd, 'T:', T);
+  console.log('[Rising] Julian:', { jdn, jd, T });
   
   // Calculate Greenwich Mean Sidereal Time (GMST) in degrees
   // Formula from the Astronomical Almanac
@@ -370,7 +371,7 @@ export const getRisingSign = (
   let lst = gmst + longitude;
   lst = ((lst % 360) + 360) % 360;
   
-  console.log('[Rising] GMST:', gmst, 'LST:', lst);
+  console.log('[Rising] Sidereal:', { gmst, lst, lstHours: lst / 15 });
   
   // Obliquity of the ecliptic (epsilon)
   // More accurate formula including T correction
@@ -380,6 +381,8 @@ export const getRisingSign = (
   const lstRad = (lst * Math.PI) / 180;
   const latRad = (latitude * Math.PI) / 180;
   const epsRad = (epsilon * Math.PI) / 180;
+  
+  console.log('[Rising] Angles (deg):', { epsilon, lstDeg: lst, latDeg: latitude });
   
   // Calculate the Ascendant using the correct astronomical formula:
   // ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
@@ -394,11 +397,15 @@ export const getRisingSign = (
   const cosEps = Math.cos(epsRad);
   const tanLat = Math.tan(latRad);
   
+  console.log('[Rising] Trig values:', { sinLst, cosLst, sinEps, cosEps, tanLat });
+  
   // Calculate ascendant using the correct formula
   // Numerator: cos(LST)
   // Denominator: -(sin(LST) * cos(ε) + tan(φ) * sin(ε))
   const ascY = cosLst;
   const ascX = -(sinLst * cosEps + tanLat * sinEps);
+  
+  console.log('[Rising] atan2 args:', { ascY, ascX });
   
   // Use atan2 for proper quadrant handling
   let ascendantRad = Math.atan2(ascY, ascX);
@@ -420,7 +427,8 @@ export const getRisingSign = (
   
   const resultSign = signs[signIndex % 12];
   
-  console.log('[Rising] Ascendant:', ascendant, '° -> sign index:', signIndex, '=', resultSign);
+  console.log('[Rising] Result:', { ascendant, signIndex, degreeInSign: degreeInSign.toFixed(2), resultSign });
+  console.log('[Rising] ====== END CALCULATION ======');
   
   return resultSign;
 };
