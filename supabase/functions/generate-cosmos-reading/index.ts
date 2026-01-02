@@ -261,11 +261,31 @@ CRITICAL: Never explicitly reference "intake responses," "app data," "calibratio
       ? `\n\n[Your intuitive sense about this client - integrate naturally, never reference directly:\n${contextData.join('\n')}]`
       : '';
 
+    // Build natal chart description using passed signs or calculated sun sign
+    const sunSign = memberData.sunSign || getSunSign(memberData.birthday);
+    const moonSign = memberData.moonSign || null;
+    const risingSign = memberData.risingSign || null;
+    
+    // Build the natal chart description for the prompt
+    let natalChartDescription = `Sun Sign: ${sunSign}`;
+    if (moonSign) {
+      natalChartDescription += `\nMoon Sign: ${moonSign} (emotional nature, inner world, instinctual responses)`;
+    }
+    if (risingSign) {
+      natalChartDescription += `\nRising Sign/Ascendant: ${risingSign} (how they present to the world, first impressions, physical vitality)`;
+    }
+    
+    console.log('Natal chart for reading:', { sunSign, moonSign, risingSign });
+
     const userPrompt = `Create a ${isYearly ? 'yearly' : 'monthly'} reading for ${memberData.name}.
 
-[Chart data you're working from:]
+[NATAL CHART - This is their personal birth chart, use it throughout the reading:]
+${natalChartDescription}
 Birthday: ${memberData.birthday}${memberData.birth_time ? `, born at ${memberData.birth_time}` : ''}${memberData.birth_location ? ` in ${memberData.birth_location}` : ''}
 ${zodiacSystem !== 'western' ? `Chinese zodiac: ${chineseZodiacInfo}` : ''}
+
+IMPORTANT: This reading MUST reflect their specific natal placements. A ${sunSign} Sun${moonSign ? ` with ${moonSign} Moon` : ''}${risingSign ? ` and ${risingSign} Rising` : ''} will experience transits differently than someone with different placements. Reference their specific signs throughout.
+
 Reading for: ${isYearly ? yearNum : `${monthName} ${yearNum}`}
 
 [${clientSession}]
@@ -350,8 +370,10 @@ Remember: You KNOW this person and what they're focused on. Every significant da
     
     const readingData = JSON.parse(jsonMatch[0]);
 
-    // Calculate signs
-    const sunSign = getSunSign(memberData.birthday);
+    // Use the signs we already calculated above
+    const finalSunSign = sunSign;
+    const finalMoonSign = moonSign;
+    const finalRisingSign = risingSign;
     
     // Calculate Chinese zodiac if needed
     let chineseData = {};
@@ -369,9 +391,9 @@ Remember: You KNOW this person and what they're focused on. Every significant da
       monthYear,
       memberName: memberData.name,
       memberType: memberData.type,
-      sunSign,
-      moonSign: null,
-      risingSign: null,
+      sunSign: finalSunSign,
+      moonSign: finalMoonSign,
+      risingSign: finalRisingSign,
       ...chineseData,
       ...readingData,
       readingPeriod: period,
