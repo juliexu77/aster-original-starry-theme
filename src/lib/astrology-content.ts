@@ -642,22 +642,22 @@ export const getChartIntegration = (
         fire: {
           integration: `${firstName}'s chart burns bright—${sunName} sun, ${moonName} moon${dominantElement === 'fire' && risingElement === 'fire' ? `, ${risingName} rising` : ''}. This is a soul built for action, enthusiasm, and self-expression. The challenge isn't getting them to engage—it's helping them pace themselves and develop patience.`,
           insight: `They process life by doing, not thinking. Movement is medicine. When stuck, they need physical outlet before emotional processing.`,
-          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means giving them room to lead while teaching them to pause.`
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means giving them room to lead while teaching them to pause.`
         },
         earth: {
           integration: `${firstName}'s chart is deeply grounded—${sunName} sun, ${moonName} moon${dominantElement === 'earth' && risingElement === 'earth' ? `, ${risingName} rising` : ''}. This is a soul built for stability, sensory connection, and steady growth. They need things to make sense, to have purpose, to be real.`,
           insight: `They process life through their body and senses. Routine is security. When overwhelmed, they need physical comfort and predictability before problem-solving.`,
-          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their pace and never rushing their process.`
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their pace and never rushing their process.`
         },
         air: {
           integration: `${firstName}'s chart lives in the realm of ideas—${sunName} sun, ${moonName} moon${dominantElement === 'air' && risingElement === 'air' ? `, ${risingName} rising` : ''}. This is a mind that needs to understand, connect, and communicate. Words are how they make sense of everything.`,
           insight: `They process life through conversation and questions. Silence isn't peace—it's disconnection. When distressed, they need to talk it through before feeling better.`,
-          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means endless conversation and never dismissing their curiosity.`
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means endless conversation and never dismissing their curiosity.`
         },
         water: {
           integration: `${firstName}'s chart runs deep—${sunName} sun, ${moonName} moon${dominantElement === 'water' && risingElement === 'water' ? `, ${risingName} rising` : ''}. This is a soul built for emotional depth, intuition, and profound connection. They feel everything, even what you don't say out loud.`,
           insight: `They process life through feeling first, understanding second. Emotions aren't problems to solve—they're information to respect. When overwhelmed, they need to retreat and recharge.`,
-          note: `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means protecting their sensitivity while teaching healthy boundaries.`
+          note: `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means protecting their sensitivity while teaching healthy boundaries.`
         }
       };
       
@@ -679,7 +679,7 @@ export const getChartIntegration = (
       
       keyInsight = `Different situations will bring out different sides. The ${sunName} core leads, the ${moonName} emotions need tending, and the ${risingName} mask is how they test the waters.`;
       
-      parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means seeing all of who they are, not just the parts that show up first.`;
+      parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means seeing all of who they are, not just the parts that show up first.`;
     }
   } else if (moonSign) {
     // Sun + Moon only
@@ -690,12 +690,12 @@ export const getChartIntegration = (
       integration = `${firstName}'s ${sunName} sun and ${moonName} moon create an interesting inner dialogue. The ${sunName} core wants one thing, while the ${moonName} heart needs another. This isn't a problem—it's their particular texture.`;
       keyInsight = `Watch for moments when outer behavior (${sunName}) doesn't match inner state (${moonName}). Both are true, just different layers.`;
     }
-    parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means tracking both their actions and their feelings, which may tell different stories.`;
+    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means tracking both their actions and their feelings, which may tell different stories.`;
   } else {
     // Sun only
     integration = `${firstName}'s ${sunName} sun is their foundation—the core pattern around which everything else organizes. This is who they are at the deepest level.`;
     keyInsight = `${SUN_MECHANICS[sunSign][0]}`;
-    parentingNote = `${ageLabel ? `Right now${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} nature as it expresses through each new stage.`;
+    parentingNote = `${ageLabel ? `Right now, ${ageLabel}, while ` : 'While '}${developmentalFocus}, ${parentingLens} means honoring their ${sunName} nature as it expresses through each new stage.`;
   }
   
   return {
