@@ -41,15 +41,16 @@ const PLANET_SYMBOLS = {
   mars: '♂',
 };
 
-// Natal planet positions (fixed positions on the chart)
+// Natal planet positions with orbital periods (relative animation speeds)
+// Faster orbits = shorter duration, scaled for visual effect
 const NATAL_POSITIONS = [
-  { symbol: '☉', angle: 45 },
-  { symbol: '☽', angle: 130 },
-  { symbol: '☿', angle: 75 },
-  { symbol: '♀', angle: 200 },
-  { symbol: '♂', angle: 280 },
-  { symbol: '♃', angle: 320 },
-  { symbol: '♄', angle: 160 },
+  { symbol: '☉', angle: 45, duration: 60 },    // Sun - baseline
+  { symbol: '☽', angle: 130, duration: 12 },   // Moon - fastest (~27 days)
+  { symbol: '☿', angle: 75, duration: 20 },    // Mercury (~88 days)
+  { symbol: '♀', angle: 200, duration: 35 },   // Venus (~225 days)
+  { symbol: '♂', angle: 280, duration: 80 },   // Mars (~687 days)
+  { symbol: '♃', angle: 320, duration: 180 },  // Jupiter (~12 years)
+  { symbol: '♄', angle: 160, duration: 300 },  // Saturn (~29 years)
 ];
 
 const LOADING_MESSAGES = [
@@ -260,18 +261,18 @@ export const CosmosLoading = () => {
             })}
           </motion.g>
 
-          {/* Orbiting planets around center */}
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-            style={{ transformOrigin: `${centerX}px ${centerY}px` }}
-          >
-            {NATAL_POSITIONS.map((planet, i) => {
-              const orbitRadius = 25 + (i * 8);
-              const pos = getPosition(planet.angle, orbitRadius);
-              return (
+          {/* Orbiting planets around center - each with unique orbital speed */}
+          {NATAL_POSITIONS.map((planet, i) => {
+            const orbitRadius = 25 + (i * 8);
+            const pos = getPosition(planet.angle, orbitRadius);
+            return (
+              <motion.g
+                key={`natal-${i}`}
+                animate={{ rotate: 360 }}
+                transition={{ duration: planet.duration, repeat: Infinity, ease: "linear" }}
+                style={{ transformOrigin: `${centerX}px ${centerY}px` }}
+              >
                 <motion.text
-                  key={`natal-${i}`}
                   x={pos.x}
                   y={pos.y}
                   textAnchor="middle"
@@ -288,9 +289,9 @@ export const CosmosLoading = () => {
                 >
                   {planet.symbol}
                 </motion.text>
-              );
-            })}
-          </motion.g>
+              </motion.g>
+            );
+          })}
 
           {/* Floating aspect lines - ethereal connections */}
           {[0, 1, 2].map((i) => {
