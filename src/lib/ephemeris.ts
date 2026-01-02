@@ -233,37 +233,53 @@ function getCityTimezone(location: string | null | undefined): string | null {
 
 /**
  * Calculate Ascendant (Rising Sign) degree
- * Uses the same formula as zodiac.ts getRisingSign but returns the degree
+ * Uses proper astronomical formula for ascendant calculation
  */
 function calculateAscendant(
   birthDate: Date,
   latitude: number,
   longitude: number
 ): number {
-  // Get Local Sidereal Time
+  // Get Julian Day
   const jd = getJulianDay(birthDate);
   const T = (jd - 2451545.0) / 36525;
   
-  // Greenwich Mean Sidereal Time at 0h UT
-  let GMST0 = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 
-              0.000387933 * T * T - T * T * T / 38710000;
-  GMST0 = ((GMST0 % 360) + 360) % 360;
+  // Greenwich Mean Sidereal Time (in degrees)
+  // Using IAU 1982 formula
+  let GMST = 280.46061837 + 
+             360.98564736629 * (jd - 2451545.0) + 
+             0.000387933 * T * T - 
+             T * T * T / 38710000;
   
-  // Local Sidereal Time
-  const hours = birthDate.getUTCHours() + birthDate.getUTCMinutes() / 60 + birthDate.getUTCSeconds() / 3600;
-  const GMST = GMST0 + hours * 15.04106858;
+  // Normalize GMST to 0-360
+  GMST = ((GMST % 360) + 360) % 360;
+  
+  // Local Sidereal Time = GMST + longitude (longitude is already in the date via UTC conversion)
+  // Since birthDate is in UTC and we already converted local time to UTC,
+  // GMST is correct for that moment. We just need to add geographic longitude.
   const LST = ((GMST + longitude) % 360 + 360) % 360;
   
-  // Calculate Ascendant using obliquity of ecliptic
-  const obliquity = 23.4393 - 0.0000004 * (jd - 2451545.0);
+  // Mean obliquity of the ecliptic (Laskar formula)
+  const obliquity = 23.439291 - 0.0130042 * T - 0.00000016 * T * T + 0.000000504 * T * T * T;
+  
+  // Convert to radians
   const oblRad = obliquity * Math.PI / 180;
   const latRad = latitude * Math.PI / 180;
   const lstRad = LST * Math.PI / 180;
   
-  // Ascendant formula
-  const y = -Math.cos(lstRad);
-  const x = Math.sin(lstRad) * Math.cos(oblRad) + Math.tan(latRad) * Math.sin(oblRad);
-  let ascendant = Math.atan2(y, x) * 180 / Math.PI;
+  // Standard ascendant formula
+  // ASC = atan2(-cos(LST), sin(LST) * cos(ε) + tan(φ) * sin(ε))
+  // This gives the ecliptic longitude of the ascending point
+  const sinLST = Math.sin(lstRad);
+  const cosLST = Math.cos(lstRad);
+  const sinObl = Math.sin(oblRad);
+  const cosObl = Math.cos(oblRad);
+  const tanLat = Math.tan(latRad);
+  
+  let ascendant = Math.atan2(-cosLST, sinLST * cosObl + tanLat * sinObl);
+  
+  // Convert from radians to degrees
+  ascendant = ascendant * 180 / Math.PI;
   
   // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
