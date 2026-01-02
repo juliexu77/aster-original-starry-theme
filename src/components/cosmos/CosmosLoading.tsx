@@ -71,8 +71,8 @@ export const CosmosLoading = () => {
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
   const outerRadius = chartSize / 2 - 10;
-  const innerRingRadius = outerRadius - 32;
-  const zodiacRadius = outerRadius - 16;
+  const innerRingRadius = outerRadius - 20; // Closer together
+  const zodiacRadius = outerRadius - 10;
   const natalRadius = innerRingRadius - 20;
 
   // Rotate loading messages
@@ -179,8 +179,8 @@ export const CosmosLoading = () => {
               r={outerRadius}
               fill="none"
               stroke="url(#chartGradient)"
-              strokeWidth="0.75"
-              opacity="0.9"
+              strokeWidth="0.5"
+              opacity="0.4"
             />
           </motion.g>
 
@@ -191,8 +191,8 @@ export const CosmosLoading = () => {
             r={innerRingRadius}
             fill="none"
             stroke="url(#chartGradient)"
-            strokeWidth="0.75"
-            opacity="0.7"
+            strokeWidth="0.5"
+            opacity="0.35"
           />
 
           {/* Center glow */}
@@ -261,10 +261,9 @@ export const CosmosLoading = () => {
             })}
           </motion.g>
 
-          {/* Orbiting planets around center - each with unique orbital speed */}
+          {/* Orbiting planets around center - each orbits at its own radius */}
           {NATAL_POSITIONS.map((planet, i) => {
             const orbitRadius = 25 + (i * 8);
-            const pos = getPosition(planet.angle, orbitRadius);
             return (
               <motion.g
                 key={`natal-${i}`}
@@ -273,8 +272,8 @@ export const CosmosLoading = () => {
                 style={{ transformOrigin: `${centerX}px ${centerY}px` }}
               >
                 <motion.text
-                  x={pos.x}
-                  y={pos.y}
+                  x={centerX + orbitRadius}
+                  y={centerY}
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="fill-foreground select-none"
