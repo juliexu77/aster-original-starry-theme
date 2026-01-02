@@ -141,6 +141,37 @@ export const useCosmosReading = (memberId: string | null) => {
     }
   }, [memberId, getHouseholdId]);
 
+  // Delete current reading
+  const deleteReading = useCallback(async () => {
+    if (!memberId) return;
+
+    try {
+      const householdId = await getHouseholdId();
+      if (!householdId) return;
+
+      const monthKey = getCurrentMonth();
+      const yearKey = getCurrentYear();
+
+      // Delete both monthly and yearly readings for this member
+      const { error: deleteError } = await supabase
+        .from('cosmos_readings')
+        .delete()
+        .eq('household_id', householdId)
+        .eq('member_id', memberId)
+        .in('month_year', [monthKey, yearKey]);
+
+      if (deleteError) {
+        console.error('Error deleting cosmos reading:', deleteError);
+        throw deleteError;
+      }
+
+      setReading(null);
+    } catch (err) {
+      console.error('Error in deleteReading:', err);
+      throw err;
+    }
+  }, [memberId, getHouseholdId]);
+
   // Update reading (for mid-month refresh)
   const refreshReading = useCallback(async (
     intakeType: 'questions' | 'voice',
@@ -168,6 +199,7 @@ export const useCosmosReading = (memberId: string | null) => {
     error,
     generateReading,
     refreshReading,
+    deleteReading,
     refetch: fetchReading,
     hasReading: !!reading
   };

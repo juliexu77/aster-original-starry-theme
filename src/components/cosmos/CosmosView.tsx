@@ -147,6 +147,7 @@ export const CosmosView = ({
     loading: readingLoading, 
     generating,
     generateReading,
+    deleteReading,
     hasReading 
   } = useCosmosReading(selectedMember?.id || null);
 
@@ -216,7 +217,12 @@ export const CosmosView = ({
     setFlowState('voice');
   };
 
-  const handleRefresh = () => {
+  const handleGetAnotherReading = async () => {
+    try {
+      await deleteReading();
+    } catch (err) {
+      console.error('Failed to delete reading:', err);
+    }
     pendingIntakeRef.current = null;
     setFlowState('intake-selection');
   };
@@ -305,7 +311,7 @@ export const CosmosView = ({
           >
             <CosmosReadingDisplay
               reading={reading!}
-              onRefresh={handleRefresh}
+              onGetAnotherReading={handleGetAnotherReading}
             />
           </motion.div>
         ) : flowState === 'intake-selection' || (!hasReading && flowState === 'reading') ? (
