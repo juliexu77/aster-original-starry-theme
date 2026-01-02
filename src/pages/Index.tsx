@@ -60,9 +60,8 @@ const Index = () => {
     );
   }
 
-  // Redirect to onboarding if not logged in (RouteGuard also handles this)
+  // RouteGuard handles redirect to onboarding if not logged in
   if (!user) {
-    navigate("/onboarding");
     return null;
   }
 
