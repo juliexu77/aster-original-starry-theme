@@ -288,7 +288,12 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "${isChild ? 'Whats Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"}${isYearly ? `,
     {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
   ],
-  "significantDates": ["Include 5-8 SPECIFIC dates with personalized planetary transits. Format each as: Month Day - Planet event affecting their chart. Include: planetary ingresses into signs that aspect theirs, Mercury/Venus/Mars retrogrades with personal impact, New and Full Moons in relevant houses, major aspects (trines, squares, conjunctions) to their Sun sign, ${zodiacSystem !== 'western' ? 'and Chinese zodiac auspicious or challenging days for their animal' : 'and outer planet (Jupiter, Saturn, Uranus) transits creating themes'}. Make each date specific to THIS person based on their birthday, not generic astronomical events."]
+  "significantDates": [
+    {"title": "Jan 15 - Venus enters Pisces", "details": "2-3 sentences explaining how this transit specifically affects their chart and what to expect or do"},
+    {"title": "Jan 21 - Full Moon in Leo", "details": "2-3 sentences on this lunar event's personal significance for them"}
+  ]
+  
+  Include 5-8 significant dates as objects with "title" (Month Day - Transit Name) and "details" (personalized explanation of impact). Include: planetary ingresses into signs that aspect theirs, Mercury/Venus/Mars retrogrades with personal impact, New and Full Moons in relevant houses, major aspects (trines, squares, conjunctions) to their Sun sign, ${zodiacSystem !== 'western' ? 'and Chinese zodiac auspicious or challenging days for their animal' : 'and outer planet (Jupiter, Saturn, Uranus) transits creating themes'}. Make each date specific to THIS person based on their birthday, not generic astronomical events.
 }
 
 Remember: You KNOW this person. Speak from that knowing.`;

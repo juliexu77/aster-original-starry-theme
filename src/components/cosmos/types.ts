@@ -34,6 +34,11 @@ export interface ReadingSection {
   content: string;
 }
 
+export interface SignificantDate {
+  title: string;
+  details: string;
+}
+
 export interface CosmosReading {
   id: string;
   monthYear: string;
@@ -48,7 +53,7 @@ export interface CosmosReading {
   lunarPhase: string;
   opening: string;
   sections: ReadingSection[];
-  significantDates: string[];
+  significantDates: (string | SignificantDate)[];
   generatedAt: string;
   readingPeriod?: ReadingPeriod;
   zodiacSystem?: ZodiacSystem;
