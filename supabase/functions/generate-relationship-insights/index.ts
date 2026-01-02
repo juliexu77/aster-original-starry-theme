@@ -76,26 +76,26 @@ Parent: ${parentDesc}
 Child: ${childDesc}
 Current developmental stage: ${developmentalContext}
 
-Generate insights in this EXACT JSON structure. Each insight should be 2-3 punchy sentences max. Be SPECIFIC to their exact signs AND the child's current age/developmental stage. Use ${child.name}'s name. The tone should feel like consulting a wise guide who knows both astrology and child development.
+Generate insights in this EXACT JSON structure. Each insight should be 2-3 punchy sentences max. Be SPECIFIC to their exact signs AND the child's current age/developmental stage. Use ${child.name}'s name and they/them pronouns. The tone should feel like consulting a wise guide who knows both astrology and child development.
 
 {
-  "currentStrength": "What's working RIGHT NOW between these two signs at this specific age. Example: 'At 8 months, your Sag adaptability helps you roll with his Aries sleep regressions. Your fire meets his fire—you get each other's restlessness.'",
+  "currentStrength": "What's working RIGHT NOW between these two signs at this specific age. Example: 'At 8 months, your Sag adaptability helps you roll with their Aries sleep regressions. Your fire meets their fire—you get each other's restlessness.'",
   
-  "currentFriction": "Where they clash RIGHT NOW given the child's developmental stage. Example: 'His Aries 'do it myself' is emerging now—your Sag tendency to swoop in and help may spark frustration. He needs to fail safely.'",
+  "currentFriction": "Where they clash RIGHT NOW given the child's developmental stage. Example: 'Their Aries 'do it myself' is emerging now—your Sag tendency to swoop in and help may spark frustration. They need to fail safely.'",
   
-  "actionableInsight": "One specific thing to try this week. Example: 'Let him lead during tummy time. He needs to feel powerful. Your job is to witness, not direct.'",
+  "actionableInsight": "One specific thing to try this week. Example: 'Let them lead during tummy time. They need to feel powerful. Your job is to witness, not direct.'",
   
-  "sleepDynamic": "How their signs interact around sleep AT THIS AGE. Example: 'His Scorpio intensity means he processes the day through dreams. Your calm Taurus presence at bedtime helps him release.'",
+  "sleepDynamic": "How their signs interact around sleep AT THIS AGE. Example: 'Their Scorpio intensity means they process the day through dreams. Your calm Taurus presence at bedtime helps them release.'",
   
-  "feedingDynamic": "How their signs interact around feeding/meals AT THIS AGE. Example: 'Aries babies want control. Let him grab the spoon. Your Virgo nature may want order—embrace the mess.'",
+  "feedingDynamic": "How their signs interact around feeding/meals AT THIS AGE. Example: 'Aries babies want control. Let them grab the spoon. Your Virgo nature may want order—embrace the mess.'",
   
-  "communicationStyle": "How they communicate AT THIS STAGE. Example: 'He's pre-verbal but his Gemini moon makes him expressive. Mirror his sounds back. Your Pisces intuition catches what he can't say.'",
+  "communicationStyle": "How they communicate AT THIS STAGE. Example: 'They're pre-verbal but their Gemini moon makes them expressive. Mirror their sounds back. Your Pisces intuition catches what they can't say.'",
   
-  "whatThisPhaseTeaches": "What THIS SPECIFIC PHASE is teaching the parent. Example: 'This is your lesson in patience. His Capricorn rising means milestones come on his schedule, not yours.'",
+  "whatThisPhaseTeaches": "What THIS SPECIFIC PHASE is teaching the parent. Example: 'This is your lesson in patience. Their Capricorn rising means milestones come on their schedule, not yours.'",
   
-  "whatsComingNext": "Predictive insight about the next 1-2 months. Example: 'Around 9 months, his Aries independence will surge. Prepare for more boundary testing. Your Sag humor will be your best tool.'",
+  "whatsComingNext": "Predictive insight about the next 1-2 months. Example: 'Around 9 months, their Aries independence will surge. Prepare for more boundary testing. Your Sag humor will be your best tool.'",
   
-  "longTermEvolution": "How this relationship will evolve over years. Example: 'Two fire signs means lifelong adventure together. The intensity that challenges you now becomes your greatest bond as he grows.'"
+  "longTermEvolution": "How this relationship will evolve over years. Example: 'Two fire signs means lifelong adventure together. The intensity that challenges you now becomes your greatest bond as they grow.'"
 }
 
 Be specific, warm, and practical. Never generic. Reference actual sign qualities. The parent should feel seen and guided.`;
