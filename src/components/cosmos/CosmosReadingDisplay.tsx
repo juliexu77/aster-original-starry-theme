@@ -240,19 +240,22 @@ export const CosmosReadingDisplay = ({
         transition={{ delay: 0.8 }}
         className="px-5 pt-4"
       >
-        {onRefresh && (
-          <button
-            type="button"
-            onClick={() => {
-              console.log('Get Another Reading tapped, calling onRefresh');
+        <button
+          type="button"
+          onClick={() => {
+            console.log('=== GET ANOTHER READING BUTTON CLICKED ===');
+            if (onRefresh) {
+              console.log('Calling onRefresh...');
               onRefresh();
-            }}
-            className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all active:scale-[0.98]"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Get Another Reading
-          </button>
-        )}
+            } else {
+              console.log('onRefresh is undefined!');
+            }
+          }}
+          className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all active:scale-[0.98]"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Get Another Reading
+        </button>
       </motion.div>
 
       {/* Footer */}
