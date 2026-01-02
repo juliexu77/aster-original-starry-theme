@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Moon, Sun, Star, RefreshCw, ChevronRight } from "lucide-react";
+import { Moon, Sun, Star, RefreshCw, ChevronRight, Volume2, Pause, Loader2 } from "lucide-react";
 import { CosmosReading as CosmosReadingType, SignificantDate } from "./types";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { getZodiacName } from "@/lib/zodiac";
 import { ShareCosmosSheet } from "./ShareCosmosSheet";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,9 @@ export const CosmosReadingDisplay = ({
   onGetAnotherReading
 }: CosmosReadingProps) => {
   const [selectedDate, setSelectedDate] = useState<SignificantDate | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   
   // Early return if no reading data
   if (!reading) {
@@ -76,6 +80,101 @@ export const CosmosReadingDisplay = ({
   const monthYear = reading?.monthYear || '';
   const generatedAt = reading?.generatedAt || new Date().toISOString();
 
+  // Build the full reading text for TTS
+  const buildReadingText = () => {
+    const parts: string[] = [];
+    
+    // Opening
+    if (opening) {
+      parts.push(opening);
+    }
+    
+    // Sections
+    sections.forEach(section => {
+      if (section.title) {
+        parts.push(section.title);
+      }
+      if (section.content) {
+        parts.push(section.content);
+      }
+    });
+    
+    // Significant dates
+    if (significantDates.length > 0) {
+      parts.push("Significant dates to note:");
+      significantDates.forEach(date => {
+        const title = typeof date === 'object' ? date.title : date;
+        parts.push(title);
+      });
+    }
+    
+    return parts.join(". ");
+  };
+
+  const handleListenToReading = async () => {
+    // If already playing, pause
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    // If we have audio loaded, resume
+    if (audioRef.current && audioRef.current.src) {
+      audioRef.current.play();
+      setIsPlaying(true);
+      return;
+    }
+
+    // Generate new audio
+    setIsLoadingAudio(true);
+    try {
+      const text = buildReadingText();
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/text-to-speech`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text, voice: 'nova' }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate audio');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Create and play audio
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+      };
+      
+      audio.onerror = () => {
+        toast.error("Error playing audio");
+        setIsPlaying(false);
+      };
+      
+      await audio.play();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('TTS error:', error);
+      toast.error("Couldn't generate audio. Please try again.");
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-8">
       {/* Header */}
@@ -110,8 +209,23 @@ export const CosmosReadingDisplay = ({
         </div>
 
         <div className="relative p-6 text-center space-y-3">
-          {/* Share button */}
-          <div className="absolute top-4 right-4">
+          {/* Header buttons */}
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            {/* Listen button */}
+            <button
+              onClick={handleListenToReading}
+              disabled={isLoadingAudio}
+              className="p-2 rounded-full bg-foreground/5 border border-foreground/10 text-foreground/50 hover:bg-foreground/10 hover:text-foreground/70 transition-all active:scale-95 disabled:opacity-50"
+              aria-label={isPlaying ? "Pause reading" : "Listen to reading"}
+            >
+              {isLoadingAudio ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+            </button>
             <ShareCosmosSheet reading={reading} />
           </div>
 
