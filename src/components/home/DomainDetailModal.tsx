@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { X, ChevronLeft, ChevronRight, Check, Circle, Minus } from "lucide-react";
 import { DomainData, getStagesForDomain } from "./DevelopmentTable";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { MilestoneConfirmationButton } from "./MilestoneConfirmationButton";
-
+import { getZodiacFromBirthday, getZodiacName } from "@/lib/zodiac";
+import { getAgeSignInsight } from "@/lib/zodiac-content";
 interface DomainDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -105,6 +106,28 @@ export const DomainDetailModal = ({
   // Find current and next stage info
   const currentStageInfo = stages.find(s => s.stage === domain.currentStage);
   const nextStageInfo = stages.find(s => s.stage === domain.currentStage + 1);
+  
+  // Get sun sign and astrological insight for this domain
+  const sunSign = getZodiacFromBirthday(birthday);
+  const ageInMonths = Math.floor(ageInWeeks / 4.33);
+  
+  const astrologyInsight = useMemo(() => {
+    if (!sunSign || !domain) return null;
+    const insight = getAgeSignInsight(sunSign, null, ageInMonths, babyName);
+    // Map domain id to the areas key
+    const domainToArea: Record<string, keyof typeof insight.areas> = {
+      physical: 'physical',
+      fine_motor: 'physical',
+      sleep: 'sleep',
+      feeding: 'feeding',
+      emotional: 'emotional',
+      social: 'emotional',
+      cognitive: 'emotional',
+      language: 'emotional',
+    };
+    const areaKey = domainToArea[domain.id] || 'physical';
+    return insight.areas[areaKey];
+  }, [sunSign, domain, ageInMonths, babyName]);
 
   // Calculate estimated time to next stage
   const getTimeToNextStage = (): string => {
@@ -159,6 +182,15 @@ export const DomainDetailModal = ({
 
           {/* Scrollable Content */}
           <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+            {/* Astrological Insight */}
+            {astrologyInsight && sunSign && (
+              <div className="bg-primary/5 border border-primary/10 rounded-lg px-4 py-3">
+                <p className="text-[13px] text-foreground/70 leading-relaxed italic">
+                  {astrologyInsight}
+                </p>
+              </div>
+            )}
+
             {/* Current Stage */}
             <div>
               <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
