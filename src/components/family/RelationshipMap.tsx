@@ -69,13 +69,13 @@ const ORBITAL_CONFIGS = [
     { angle: 1.9, distance: 135 },
     { angle: 3.8, distance: 115 },
   ],
-  // For 5 members
+  // For 5 members - spread more evenly for better tap targets
   [
     { angle: 0, distance: 0 },
-    { angle: 0.4, distance: 105 },
-    { angle: 1.5, distance: 140 },
-    { angle: 2.7, distance: 115 },
-    { angle: 4.2, distance: 130 },
+    { angle: 0.8, distance: 110 },
+    { angle: 2.0, distance: 130 },
+    { angle: 3.4, distance: 115 },
+    { angle: 5.0, distance: 125 },
   ],
   // For 6 members
   [
