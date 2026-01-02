@@ -136,8 +136,8 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name }: Astrol
       {/* CHART DYNAMICS SECTION */}
       <Section
         icon={<Sparkles size={16} strokeWidth={1.5} />}
-        title={`How ${firstName}'s Chart Works Together`}
-        subtitle="Chart synthesis · Light & shadow"
+        title={`${firstName}'s Inner Balance`}
+        subtitle="Strengths & growth areas"
       >
         <div className="space-y-4">
           {/* Strengths */}
