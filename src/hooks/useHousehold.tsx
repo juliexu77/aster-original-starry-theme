@@ -178,6 +178,38 @@ export const useHousehold = () => {
     };
   };
 
+  const addBabyToHousehold = async (
+    householdId: string,
+    babyName: string,
+    babyBirthday?: string,
+    babyBirthTime?: string,
+    babyBirthLocation?: string
+  ): Promise<Baby> => {
+    const newBabyId = crypto.randomUUID();
+
+    const { error } = await supabase
+      .from('babies')
+      .insert([{
+        id: newBabyId,
+        household_id: householdId,
+        name: babyName,
+        birthday: babyBirthday || null,
+        birth_time: babyBirthTime || null,
+        birth_location: babyBirthLocation || null
+      }] as any);
+
+    if (error) throw error;
+
+    return {
+      id: newBabyId,
+      household_id: householdId,
+      name: babyName,
+      birthday: babyBirthday || null,
+      birth_time: babyBirthTime || null,
+      photo_url: null
+    };
+  };
+
   const updateHousehold = async (updates: { baby_name?: string; baby_birthday?: string; baby_photo_url?: string; baby_sex?: string }) => {
     if (!household || !baby) throw new Error('No household or baby');
 
@@ -208,6 +240,7 @@ export const useHousehold = () => {
     loading,
     error,
     createHousehold,
+    addBabyToHousehold,
     updateHousehold,
     refetch,
     fetchHousehold
