@@ -289,28 +289,34 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
   ],
   "significantDates": [
-    {"title": "Venus conjunct your Sun (Feb 3-10)", "details": "2-3 sentences explaining why this aspect matters for THEIR specific chart - which house it activates, what themes arise, what to do or avoid"},
-    {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "2-3 sentences on how this challenges their emotional nature specifically, with practical guidance"},
-    {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "2-3 sentences on expansion in their identity/first house, specific opportunities to watch for"}
+    {"title": "Venus conjunct your Sun (Feb 3-10)", "details": "Explain the transit AND connect it directly to what they're focused on from the intake. Example: 'This activates your 5th house of creativity - ideal timing for that writing project you mentioned wanting to prioritize.'"},
+    {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "Name the challenge AND tie it to their stated concerns. Example: 'Emotional pressure in your domestic sector - this may intensify the work-life balance tension you're navigating.'"},
+    {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "Describe the opportunity AND link to their goals. Example: 'Expansion in how others perceive you - leverage this for the career transition you're contemplating.'"}
   ]
   
-  CRITICAL for significantDates: Do NOT list generic astronomical events. Instead, identify 5-8 KEY PLANETARY TRANSITS TO THEIR PERSONAL CHART:
+  CRITICAL for significantDates - CONNECT TO THEIR INTAKE:
   
-  1. Calculate which transiting planets will aspect THEIR natal Sun, Moon, and Rising during the ${isYearly ? 'year' : 'month'}
-  2. For each significant transit, use format: "Planet aspect their Planet/Point (date range)" 
-  3. Examples of what TO include:
-     - "Mars conjunct your Sun (date range)" - when Mars crosses their Sun sign degree
-     - "Saturn square your Moon (date range)" - challenging aspect to their lunar nature  
-     - "Jupiter entering your 10th house (date range)" - major house ingress
-     - "Venus retrograde in your 7th house (date range)" - retrograde in relationship sector
-     - "New Moon in your 1st house (date)" - lunations in personal houses
-     - "North Node conjunct your Venus (date range)" - nodal contacts
-  4. For each, the "details" must explain: which house/area of life is activated, why this matters for their chart specifically, and what to embrace or navigate
-  5. Focus on the 5-8 MOST impactful transits - quality over quantity
-  ${zodiacSystem !== 'western' ? `6. For Chinese astrology: Include timing based on their animal's relationship to monthly/daily pillars, clash days to avoid, and harmonious periods with allied animals` : ''}
+  Each "details" field MUST:
+  1. Name the astrological aspect and which house/area it activates
+  2. Connect it directly to something they mentioned in the intake (their focus areas, concerns, questions, observations)
+  3. Give specific guidance on what to do or watch for
+  
+  Example format: "[Transit explanation] - [connection to their stated focus]. [Actionable guidance]."
+  
+  Bad example: "Venus enters your 7th house bringing harmony to relationships."
+  Good example: "Venus enters your 7th house bringing harmony to partnerships - this is prime timing for the deeper connection with your partner you mentioned wanting to cultivate. Plan a meaningful date or conversation around Feb 14th when this energy peaks."
+  
+  Calculate 5-8 KEY PLANETARY TRANSITS TO THEIR PERSONAL CHART:
+  - Transiting planets aspecting THEIR natal Sun, Moon, Rising
+  - Format: "Planet aspect their Point (date range)"
+  - Include: conjunctions, trines, squares, oppositions to their natal placements
+  - House ingresses of Jupiter, Saturn, or outer planets
+  - Retrogrades affecting their key houses
+  - Lunations (New/Full Moons) in their personal houses
+  ${zodiacSystem !== 'western' ? `- For Chinese astrology: clash days, ally animal periods, and element balance timing` : ''}
 }
 
-Remember: You KNOW this person. The dates section should feel like you've studied their chart and identified the most pivotal cosmic moments ahead, not a generic ephemeris.`;
+Remember: You KNOW this person and what they're focused on. Every significant date should feel like you've studied their chart AND listened to their concerns, then identified the cosmic moments that matter most for THEIR specific journey.`;
 
     console.log('Sending prompt with context items:', contextData.length);
 
