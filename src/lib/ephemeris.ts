@@ -377,26 +377,44 @@ export function calculateBirthChart(
   // Convert birth time to UTC
   const utcDate = birthTimeToUTC(birthday, birthTime, birthLocation);
   
-  console.log('[Ephemeris] Calculating chart for:', {
-    birthday,
-    birthTime,
-    birthLocation,
-    utcDate: utcDate.toISOString(),
-    coordinates: { longitude, latitude }
-  });
+  console.log('[Ephemeris] ========== CALCULATING CHART ==========');
+  console.log('[Ephemeris] Input:', { birthday, birthTime, birthLocation });
+  console.log('[Ephemeris] Coordinates:', { longitude, latitude });
+  console.log('[Ephemeris] UTC Date:', utcDate.toISOString());
   
   try {
     // Get all planetary positions from ephemeris
     const result = ephemeris.getAllPlanets(utcDate, longitude, latitude, 0);
     
-    console.log('[Ephemeris] Raw result:', result.observed);
-    
     // Extract planet positions
     const observed = result.observed;
     
-    // Calculate Ascendant
+    // Calculate Ascendant with detailed logging
+    const jd = getJulianDay(utcDate);
+    const T = (jd - 2451545.0) / 36525;
+    let GMST = 280.46061837 + 
+               360.98564736629 * (jd - 2451545.0) + 
+               0.000387933 * T * T - 
+               T * T * T / 38710000;
+    GMST = ((GMST % 360) + 360) % 360;
+    const LST = ((GMST + longitude) % 360 + 360) % 360;
+    
+    console.log('[Ephemeris] Ascendant calc:', {
+      julianDay: jd,
+      GMST: GMST.toFixed(4),
+      LST: LST.toFixed(4),
+      longitude,
+      latitude
+    });
+    
     const ascendantDegree = calculateAscendant(utcDate, latitude, longitude);
     const ascendantSign = longitudeToSign(ascendantDegree);
+    
+    console.log('[Ephemeris] Ascendant result:', {
+      degree: ascendantDegree.toFixed(4),
+      sign: ascendantSign,
+      degreeInSign: getDegreeInSign(ascendantDegree).toFixed(2)
+    });
     
     // Build chart data
     const chartData: BirthChartData = {
@@ -415,11 +433,10 @@ export function calculateBirthChart(
       ascendantSign,
     };
     
-    console.log('[Ephemeris] Chart calculated:', {
-      sun: `${chartData.sun.sign} ${chartData.sun.formattedDegree}`,
-      moon: `${chartData.moon.sign} ${chartData.moon.formattedDegree}`,
-      rising: `${chartData.ascendantSign} ${formatDegree(getDegreeInSign(ascendantDegree))}`,
-    });
+    console.log('[Ephemeris] ========== CHART COMPLETE ==========');
+    console.log('[Ephemeris] Sun:', chartData.sun.sign);
+    console.log('[Ephemeris] Moon:', chartData.moon.sign);
+    console.log('[Ephemeris] Rising:', chartData.ascendantSign);
     
     return chartData;
   } catch (error) {
