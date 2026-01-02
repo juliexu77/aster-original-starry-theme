@@ -10,6 +10,7 @@ import { RouteGuard } from "@/components/RouteGuard";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import Index from "./pages/Index";
 import Family from "./pages/Family";
+import Cosmos from "./pages/Cosmos";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import BabySetup from "./pages/BabySetup";
@@ -38,6 +39,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/app" element={<Index />} />
                     <Route path="/family" element={<Family />} />
+                    <Route path="/cosmos" element={<Cosmos />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/baby-setup" element={<BabySetup />} />
                     <Route path="/settings" element={<Settings />} />
