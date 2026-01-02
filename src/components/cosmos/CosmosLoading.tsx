@@ -66,7 +66,7 @@ const CHART_COLOR = '#E0E0E0';
 export const CosmosLoading = () => {
   const [messageIndex, setMessageIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
   
-  const chartSize = 300;
+  const chartSize = 260;
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
   const outerRadius = chartSize / 2 - 10;
@@ -245,7 +245,7 @@ export const CosmosLoading = () => {
               return (
                 <motion.g 
                   key={i} 
-                  transform={`translate(${pos.x - 9}, ${pos.y - 9})`}
+                  transform={`translate(${pos.x - 7}, ${pos.y - 7})`}
                   animate={{ opacity: [0.25, 0.45, 0.25] }}
                   transition={{
                     duration: 4,
@@ -254,7 +254,7 @@ export const CosmosLoading = () => {
                     ease: "easeInOut",
                   }}
                 >
-                  <Icon size={18} strokeWidth={1.25} className="text-foreground/50" />
+                  <Icon size={14} strokeWidth={1.25} className="text-foreground/50" />
                 </motion.g>
               );
             })}
