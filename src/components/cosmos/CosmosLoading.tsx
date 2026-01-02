@@ -309,27 +309,15 @@ export const CosmosLoading = () => {
             );
           })}
 
-          {/* Center 8-pointed star - gentle breathing, larger */}
-          <motion.g 
-            transform={`translate(${centerX}, ${centerY})`}
-            animate={{ scale: [1, 1.05, 1], opacity: [0.7, 0.9, 0.7] }}
+          {/* Center dot - understated like a real star */}
+          <motion.circle
+            cx={centerX}
+            cy={centerY}
+            r={3}
+            fill="url(#chartGradient)"
+            animate={{ opacity: [0.6, 0.9, 0.6], scale: [1, 1.1, 1] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
-              const isCardinal = angle % 90 === 0;
-              const length = isCardinal ? 18 : 12;
-              const width = isCardinal ? 4.5 : 3;
-              return (
-                <path
-                  key={angle}
-                  d={`M 0 ${-length} L ${width/2} 0 L 0 ${length * 0.3} L ${-width/2} 0 Z`}
-                  fill="url(#chartGradient)"
-                  transform={`rotate(${angle})`}
-                  opacity="0.8"
-                />
-              );
-            })}
-          </motion.g>
+          />
         </svg>
       </motion.div>
 
