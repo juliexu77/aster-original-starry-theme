@@ -3,10 +3,10 @@ import {
   SUN_MECHANICS, 
   MOON_PATTERNS, 
   RISING_PRESENCE, 
-  getChartSynthesis,
   getSunRisingSynthesis,
   getSunSynthesis,
-  getMoonSynthesis
+  getMoonSynthesis,
+  getChartIntegration
 } from "@/lib/astrology-content";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { Sun, Moon, Sparkles } from "lucide-react";
@@ -16,6 +16,7 @@ interface AstrologyProfileProps {
   moonSign: ZodiacSign | null;
   risingSign: ZodiacSign | null;
   name: string;
+  birthday?: string | null;
 }
 
 interface SectionProps {
@@ -57,11 +58,11 @@ const TraitList = ({ traits }: { traits: string[] }) => (
   </ul>
 );
 
-export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name }: AstrologyProfileProps) => {
+export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name, birthday }: AstrologyProfileProps) => {
   const sunMechanics = SUN_MECHANICS[sunSign];
   const moonPatterns = moonSign ? MOON_PATTERNS[moonSign] : null;
   const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
-  const { strengths, growthEdges } = getChartSynthesis(sunSign, moonSign, risingSign);
+  const chartIntegration = getChartIntegration(sunSign, moonSign, risingSign, name, birthday || null);
   
   // Get first name for personalization
   const firstName = name.split(' ')[0];
@@ -133,39 +134,36 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name }: Astrol
         </Section>
       )}
 
-      {/* CHART DYNAMICS SECTION */}
+      {/* CHART INTEGRATION SECTION - The "So What" */}
       <Section
         icon={<Sparkles size={16} strokeWidth={1.5} />}
-        title={`${firstName}'s Inner Balance`}
-        subtitle="Strengths & growth areas"
+        title={chartIntegration.title}
+        subtitle={chartIntegration.subtitle}
       >
         <div className="space-y-4">
-          {/* Strengths */}
-          <div>
+          {/* Main Integration */}
+          <p className="text-[13px] text-foreground/60 leading-relaxed">
+            {chartIntegration.integration}
+          </p>
+
+          {/* Key Insight */}
+          <div className="pt-3 border-t border-foreground/[0.04]">
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.15em] mb-2">
-              What this creates
+              What to remember
             </p>
-            <ul className="space-y-1.5">
-              {strengths.map((s, i) => (
-                <li key={i} className="text-[13px] text-foreground/60 leading-relaxed">
-                  {s}
-                </li>
-              ))}
-            </ul>
+            <p className="text-[13px] text-foreground/50 leading-relaxed italic">
+              {chartIntegration.keyInsight}
+            </p>
           </div>
 
-          {/* Growth Edges */}
-          <div className="pt-2 border-t border-foreground/[0.04]">
+          {/* Parenting Note */}
+          <div className="pt-3 border-t border-foreground/[0.04]">
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.15em] mb-2">
-              What to watch
+              For you as parent
             </p>
-            <ul className="space-y-1.5">
-              {growthEdges.map((e, i) => (
-                <li key={i} className="text-[13px] text-foreground/50 leading-relaxed">
-                  {e}
-                </li>
-              ))}
-            </ul>
+            <p className="text-[13px] text-foreground/50 leading-relaxed">
+              {chartIntegration.parentingNote}
+            </p>
           </div>
         </div>
       </Section>
