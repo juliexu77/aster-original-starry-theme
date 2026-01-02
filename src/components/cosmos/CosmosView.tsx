@@ -197,7 +197,10 @@ export const CosmosView = ({
         type: selectedMember.type,
         birthday: selectedMember.birthday,
         birth_time: selectedMember.birth_time,
-        birth_location: selectedMember.birth_location
+        birth_location: selectedMember.birth_location,
+        sunSign: signs?.sun || null,
+        moonSign: signs?.moon || null,
+        risingSign: signs?.rising || null
       }, options);
       // Clear saved intake progress on successful generation
       clearIntakeProgress(selectedMember.id);

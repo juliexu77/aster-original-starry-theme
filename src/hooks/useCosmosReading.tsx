@@ -93,6 +93,9 @@ export const useCosmosReading = (memberId: string | null) => {
       birthday: string;
       birth_time?: string | null;
       birth_location?: string | null;
+      sunSign?: string | null;
+      moonSign?: string | null;
+      risingSign?: string | null;
     },
     options?: ReadingOptions
   ) => {
