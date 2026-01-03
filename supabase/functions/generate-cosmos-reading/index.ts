@@ -198,9 +198,19 @@ serve(async (req) => {
     // ========================================
     
     // Format intake as natural conversation the astrologer had
-    const clientSession = intakeType === 'voice' 
-      ? `The client shared: "${intakeData.transcript}"`
-      : `During the consultation, the client mentioned focusing on: ${intakeData.q1.join(', ')}. They've observed: ${intakeData.q2.join(', ')}. They're seeking: ${intakeData.q3}.${intakeData.q4 ? ` They asked: "${intakeData.q4}"` : ''}`;
+    let clientSession = '';
+    if (intakeType === 'voice' && intakeData?.transcript) {
+      clientSession = `The client shared: "${intakeData.transcript}"`;
+    } else if (intakeType === 'skip' || !intakeData) {
+      clientSession = `The client is seeking general cosmic guidance for this period.`;
+    } else {
+      // Questions intake - safely handle potentially missing arrays
+      const q1 = Array.isArray(intakeData?.q1) ? intakeData.q1.join(', ') : (intakeData?.q1 || 'general guidance');
+      const q2 = Array.isArray(intakeData?.q2) ? intakeData.q2.join(', ') : (intakeData?.q2 || 'their current state');
+      const q3 = intakeData?.q3 || 'cosmic perspective';
+      const q4 = intakeData?.q4 || '';
+      clientSession = `During the consultation, the client mentioned focusing on: ${q1}. They've observed: ${q2}. They're seeking: ${q3}.${q4 ? ` They asked: "${q4}"` : ''}`;
+    }
 
     const currentDate = new Date();
     const monthName = currentDate.toLocaleDateString('en-US', { month: 'long' });
