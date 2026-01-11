@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { BabyProfileCard } from "./BabyProfileCard";
-import { DevelopmentTable } from "./DevelopmentTable";
 import { FocusThisMonth } from "./FocusThisMonth";
 import { TimeOfDayBackground } from "./TimeOfDayBackground";
 import { HomeIntroOverlay } from "./HomeIntroOverlay";
@@ -232,17 +231,12 @@ export const DailyCoach = ({
         </div>
 
         <div className="pb-24 space-y-4 pt-4">
-          {/* Development Domains */}
-          <DevelopmentTable 
+          {/* Focus This Month */}
+          <FocusThisMonth 
+            babyName={displayName} 
             ageInWeeks={ageInWeeks} 
             birthday={babyBirthday} 
-            babyName={displayName}
-            babyId={babyId}
-            calibration={calibration}
-            onMilestoneConfirm={handleMilestoneConfirm}
           />
-
-          {/* Focus This Month */}
           <FocusThisMonth 
             babyName={displayName} 
             ageInWeeks={ageInWeeks} 

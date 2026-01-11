@@ -9,7 +9,7 @@ import { FamilyNav } from "@/components/family/FamilyNav";
 import { ChildView } from "@/components/family/ChildView";
 import { FamilyView } from "@/components/family/FamilyView";
 
-type ViewMode = 'child' | 'family';
+type ViewMode = 'chart' | 'family';
 
 const Family = () => {
   const { user, loading: authLoading } = useAuth();
@@ -17,7 +17,7 @@ const Family = () => {
   const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const navigate = useNavigate();
   
-  const [viewMode, setViewMode] = useState<ViewMode>('child');
+  const [viewMode, setViewMode] = useState<ViewMode>('chart');
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -79,15 +79,15 @@ const Family = () => {
             {/* View Toggle - 2 options */}
             <div className="flex items-center justify-center gap-6">
               <button
-                onClick={() => setViewMode('child')}
+                onClick={() => setViewMode('chart')}
                 className={`text-[13px] uppercase tracking-[0.1em] pb-1 transition-all border-b ${
-                  viewMode === 'child' 
+                  viewMode === 'chart' 
                     ? 'text-foreground/90 border-foreground/30' 
                     : 'text-foreground/30 border-transparent hover:text-foreground/50'
                 }`}
-                style={viewMode === 'child' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
+                style={viewMode === 'chart' ? { textShadow: '0 0 6px rgba(255, 250, 240, 0.5), 0 0 16px rgba(255, 235, 200, 0.25)' } : undefined}
               >
-                Child
+                Chart
               </button>
               <button
                 onClick={() => setViewMode('family')}
@@ -104,7 +104,7 @@ const Family = () => {
           </div>
 
           {/* Content based on view mode */}
-          {viewMode === 'child' ? (
+          {viewMode === 'chart' ? (
             <ChildView
               babies={babies}
               userProfile={userProfile}
