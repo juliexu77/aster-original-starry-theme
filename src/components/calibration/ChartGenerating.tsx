@@ -16,10 +16,10 @@ export function ChartGenerating({ babyName, onComplete }: ChartGeneratingProps) 
       setDots(prev => (prev % 3) + 1);
     }, 400);
 
-    // Complete after deliberate delay (only if onComplete provided)
+    // Complete after deliberate delay to feel more custom (only if onComplete provided)
     const timer = onComplete ? setTimeout(() => {
       onComplete();
-    }, 5000) : undefined;
+    }, 8000) : undefined;
 
     return () => {
       clearInterval(dotInterval);
