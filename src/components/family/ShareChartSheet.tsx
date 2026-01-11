@@ -132,9 +132,9 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
               })()}</p>
             </div>
 
-            {/* Birth Chart Diagram - Larger size */}
-            <div className="flex justify-center py-3">
-              <div className="w-[300px]">
+            {/* Birth Chart Diagram - Fixed aspect ratio container */}
+            <div className="flex justify-center">
+              <div className="w-[280px] h-[280px] flex items-center justify-center">
                 <BirthChartDiagram
                   sunSign={sunSign}
                   moonSign={moonSign}
