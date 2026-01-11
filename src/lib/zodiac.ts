@@ -206,18 +206,26 @@ const getTimezoneOffsetForDate = (timezone: string, date: Date): number => {
 };
 
 // Get city data from location string
+// Uses best match strategy - prioritizes longer city name matches
 const getCityData = (birthLocation: string | null | undefined): CityData | null => {
   if (!birthLocation) return null;
   
   const normalizedLocation = birthLocation.toLowerCase().trim();
   
+  let bestMatch: CityData | null = null;
+  let bestMatchLength = 0;
+  
   for (const [city, data] of Object.entries(CITY_DATA)) {
     if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
-      return data;
+      // Prefer longer city name matches (more specific)
+      if (city.length > bestMatchLength) {
+        bestMatch = data;
+        bestMatchLength = city.length;
+      }
     }
   }
   
-  return null;
+  return bestMatch;
 };
 
 // Get timezone offset from city name for a specific date (returns hours from UTC)

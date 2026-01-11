@@ -168,19 +168,28 @@ const CITY_DATA: Record<string, CityData> = {
 
 /**
  * Get city coordinates from location string
+ * Uses best match strategy - prioritizes exact matches and longer city name matches
  */
 function getCityCoordinates(location: string | null | undefined): { longitude: number; latitude: number } | null {
   if (!location) return null;
   
   const normalizedLocation = location.toLowerCase().trim();
   
+  // Find the best matching city (longest match wins to avoid "new york" matching before "smithtown")
+  let bestMatch: { longitude: number; latitude: number } | null = null;
+  let bestMatchLength = 0;
+  
   for (const [city, data] of Object.entries(CITY_DATA)) {
     if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
-      return { longitude: data.longitude, latitude: data.latitude };
+      // Prefer longer city name matches (more specific)
+      if (city.length > bestMatchLength) {
+        bestMatch = { longitude: data.longitude, latitude: data.latitude };
+        bestMatchLength = city.length;
+      }
     }
   }
   
-  return null;
+  return bestMatch;
 }
 
 /**
@@ -218,19 +227,26 @@ function getTimezoneOffsetForDate(timezone: string, date: Date): number {
 
 /**
  * Get city timezone from location string
+ * Uses best match strategy - prioritizes longer city name matches
  */
 function getCityTimezone(location: string | null | undefined): string | null {
   if (!location) return null;
   
   const normalizedLocation = location.toLowerCase().trim();
   
+  let bestMatch: string | null = null;
+  let bestMatchLength = 0;
+  
   for (const [city, data] of Object.entries(CITY_DATA)) {
     if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
-      return data.timezone;
+      if (city.length > bestMatchLength) {
+        bestMatch = data.timezone;
+        bestMatchLength = city.length;
+      }
     }
   }
   
-  return null;
+  return bestMatch;
 }
 
 /**
