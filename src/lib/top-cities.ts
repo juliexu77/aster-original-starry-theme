@@ -2,6 +2,7 @@
 export const TOP_CITIES = [
   // USA - Major cities
   { name: "New York", region: "New York", country: "USA", lat: 40.7128, lon: -74.0060 },
+  { name: "Smithtown", region: "New York", country: "USA", lat: 40.8559, lon: -73.2004 },
   { name: "Los Angeles", region: "California", country: "USA", lat: 34.0522, lon: -118.2437 },
   { name: "Chicago", region: "Illinois", country: "USA", lat: 41.8781, lon: -87.6298 },
   { name: "Houston", region: "Texas", country: "USA", lat: 29.7604, lon: -95.3698 },
