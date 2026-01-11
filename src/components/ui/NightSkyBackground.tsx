@@ -1,13 +1,23 @@
-import { useMemo, ReactNode } from "react";
+import { useMemo, ReactNode, useEffect, useState } from "react";
 
 interface NightSkyBackgroundProps {
   children: ReactNode;
   starCount?: number;
 }
 
+interface Star {
+  x: number;
+  y: number;
+  size: number;
+  opacity: number;
+  hasFlare: boolean;
+  twinkleDelay: number;
+  twinkleDuration: number;
+}
+
 // Generate random background stars for night sky effect
-const generateBackgroundStars = (count: number) => {
-  const stars = [];
+const generateBackgroundStars = (count: number): Star[] => {
+  const stars: Star[] = [];
   for (let i = 0; i < count; i++) {
     // Varied sizes - mostly tiny pinpricks
     const sizeRoll = Math.random();
@@ -48,6 +58,8 @@ const generateBackgroundStars = (count: number) => {
       size,
       opacity,
       hasFlare,
+      twinkleDelay: Math.random() * 8, // Random start delay 0-8s
+      twinkleDuration: 2 + Math.random() * 4, // 2-6s twinkle cycle
     });
   }
   return stars;
@@ -55,6 +67,13 @@ const generateBackgroundStars = (count: number) => {
 
 export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgroundProps) => {
   const backgroundStars = useMemo(() => generateBackgroundStars(starCount), [starCount]);
+  const [mounted, setMounted] = useState(false);
+
+  // Delay animation start to prevent flash
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -112,11 +131,11 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
       />
       
       
-      {/* Scattered star dots */}
+      {/* Scattered star dots with twinkling */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
         {backgroundStars.map((star, i) => (
             <div key={`night-star-${i}`}>
-              {/* Base star - warm white/cream color */}
+              {/* Base star - warm white/cream color with twinkling */}
               <div
                 className="absolute rounded-full"
                 style={{
@@ -125,12 +144,14 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
                   width: `${star.size}px`,
                   height: `${star.size}px`,
                   backgroundColor: star.hasFlare ? '#fffef8' : '#f8f6f0',
-                  opacity: star.opacity,
+                  opacity: mounted ? star.opacity : 0,
                   boxShadow: star.hasFlare 
                     ? `0 0 ${star.size * 4}px ${star.size * 1.5}px rgba(255,252,240,0.4), 0 0 ${star.size * 8}px ${star.size * 2}px rgba(255,250,235,0.15)` 
                     : star.size > 1 
                       ? `0 0 ${star.size * 2}px ${star.size * 0.5}px rgba(255,250,240,0.2)`
                       : undefined,
+                  animation: mounted ? `twinkle ${star.twinkleDuration}s ease-in-out ${star.twinkleDelay}s infinite` : 'none',
+                  transition: 'opacity 0.3s ease-out',
                 }}
               />
               {/* Cross flare for featured stars */}

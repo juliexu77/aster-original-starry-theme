@@ -143,16 +143,16 @@ export const CosmosQuestionsFlow = ({
           <ArrowLeft className="w-5 h-5 text-foreground/50" />
         </button>
         
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           {[0, 1, 2, 3].map(i => (
             <div
               key={i}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              className={`transition-all duration-300 ${
                 i === currentQuestion 
-                  ? 'w-6 bg-amber-400/80' 
+                  ? 'w-1.5 h-1.5 rounded-full bg-foreground/60' 
                   : i < currentQuestion 
-                    ? 'bg-amber-400/40' 
-                    : 'bg-foreground/10'
+                    ? 'w-1 h-1 rounded-full bg-foreground/30' 
+                    : 'w-1 h-1 rounded-full bg-foreground/10'
               }`}
             />
           ))}

@@ -38,7 +38,7 @@ const Onboarding = () => {
                   delay: index * 0.15,
                   ease: [0.23, 1, 0.32, 1],
                 }}
-                className="text-[28px] text-foreground/30 uppercase inline-block"
+                className="text-[28px] text-foreground/60 uppercase inline-block"
                 style={{
                   transformStyle: 'preserve-3d',
                   letterSpacing: '0.2em',
@@ -59,7 +59,7 @@ const Onboarding = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-                className="text-[10px] text-center uppercase tracking-[0.2em] text-foreground/30"
+                className="text-[11px] text-center uppercase tracking-[0.2em] text-foreground/50"
               >
                 Your baby's development, guided by the cosmos
               </motion.h1>
@@ -76,7 +76,7 @@ const Onboarding = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 1.1, ease: "easeOut" }}
                 onClick={handleGetStarted}
-                className="relative px-8 py-3 rounded-full text-[10px] font-medium uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 text-foreground/60"
+                className="relative px-8 py-3 rounded-full text-[11px] font-medium uppercase tracking-[0.2em] transition-all duration-300 hover:scale-105 active:scale-95 text-foreground/70"
                 style={{ 
                   background: 'rgba(255, 255, 255, 0.05)',
                 }}
