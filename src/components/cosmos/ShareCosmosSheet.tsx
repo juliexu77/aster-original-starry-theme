@@ -8,6 +8,24 @@ import { CosmosReading } from "./types";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
+const getChineseZodiacEmoji = (animal: string): string => {
+  const emojiMap: Record<string, string> = {
+    'Rat': '🐀',
+    'Ox': '🐂',
+    'Tiger': '🐅',
+    'Rabbit': '🐇',
+    'Dragon': '🐉',
+    'Snake': '🐍',
+    'Horse': '🐴',
+    'Goat': '🐐',
+    'Monkey': '🐒',
+    'Rooster': '🐓',
+    'Dog': '🐕',
+    'Pig': '🐷'
+  };
+  return emojiMap[animal] || '✨';
+};
+
 interface ShareCosmosSheetProps {
   reading: CosmosReading;
 }
@@ -28,6 +46,10 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
   const astrologicalSeason = reading?.astrologicalSeason || '';
   const lunarPhase = reading?.lunarPhase || '';
   const opening = reading?.opening || '';
+  const chineseZodiac = reading?.chineseZodiac;
+  const chineseElement = reading?.chineseElement;
+  const hasChineseZodiac = chineseZodiac && chineseElement;
+  const isYearly = reading?.readingPeriod === 'year';
 
   const formatMonthYear = (my: string) => {
     if (!my || !my.includes('-')) {
@@ -124,17 +146,18 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
           <div 
             ref={readingRef}
             className="bg-gradient-to-br from-[#0a0a12] via-[#0f0a18] to-[#0a0a12] rounded-2xl p-5 space-y-4"
+            style={{ width: '380px', minWidth: '380px', margin: '0 auto' }}
           >
-            {/* Header with cosmic styling */}
+            {/* Header with cosmic styling - matching CosmosReadingDisplay */}
             <div className="relative text-center space-y-2 pb-4">
               {/* Decorative stars */}
               <div className="absolute inset-0 opacity-30">
-                {[...Array(8)].map((_, i) => (
+                {[...Array(12)].map((_, i) => (
                   <div
                     key={i}
                     className="absolute w-1 h-1 bg-amber-200 rounded-full"
                     style={{
-                      left: `${15 + Math.random() * 70}%`,
+                      left: `${10 + Math.random() * 80}%`,
                       top: `${10 + Math.random() * 80}%`,
                       opacity: 0.3 + Math.random() * 0.5
                     }}
@@ -142,33 +165,49 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
                 ))}
               </div>
 
-              <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.3em]">
-                Cosmic Guidance
-              </p>
-              <h2 className="text-xl font-serif text-white">{memberName}</h2>
-              <p className="text-[13px] text-white/60">{formatMonthYear(monthYear)}</p>
+              {/* Year header for yearly readings */}
+              {isYearly && (
+                <p className="text-[11px] text-amber-300/70 uppercase tracking-[0.3em]">
+                  {monthYear}
+                </p>
+              )}
               
-              <div className="flex items-center justify-center gap-2 text-[11px] text-purple-300/60 pt-1">
+              {/* Season title */}
+              <h2 className="text-xl font-serif text-white relative z-10">{astrologicalSeason}</h2>
+              
+              {/* Lunar phase subtitle */}
+              <div className="flex items-center justify-center gap-2 text-[11px] text-purple-300/60">
                 <Moon className="w-3 h-3" />
-                {astrologicalSeason} • {lunarPhase}
+                {lunarPhase}
               </div>
 
-              {/* Signs row */}
-              <div className="flex items-center justify-center gap-4 pt-3">
-                <div className="flex flex-col items-center">
-                  <ZodiacIcon sign={sunSign} size={20} className="text-amber-300/70" />
-                  <span className="text-[9px] text-white/40">{getZodiacName(sunSign)}</span>
+              {/* Signs row - matching the UI layout */}
+              <div className="flex items-center justify-center gap-5 pt-4">
+                {/* Western signs */}
+                <div className="flex flex-col items-center gap-1">
+                  <ZodiacIcon sign={sunSign} size={24} className="text-amber-300/70" />
+                  <span className="text-[10px] text-white/50">{getZodiacName(sunSign)}</span>
                 </div>
                 {moonSign && (
-                  <div className="flex flex-col items-center">
-                    <ZodiacIcon sign={moonSign} size={20} className="text-purple-300/70" />
-                    <span className="text-[9px] text-white/40">{getZodiacName(moonSign)} ☽</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <ZodiacIcon sign={moonSign} size={24} className="text-purple-300/70" />
+                    <span className="text-[10px] text-white/50">{getZodiacName(moonSign)} Moon</span>
                   </div>
                 )}
                 {risingSign && (
-                  <div className="flex flex-col items-center">
-                    <ZodiacIcon sign={risingSign} size={20} className="text-indigo-300/70" />
-                    <span className="text-[9px] text-white/40">{getZodiacName(risingSign)} ↑</span>
+                  <div className="flex flex-col items-center gap-1">
+                    <ZodiacIcon sign={risingSign} size={24} className="text-indigo-300/70" />
+                    <span className="text-[10px] text-white/50">{getZodiacName(risingSign)} Rising</span>
+                  </div>
+                )}
+                
+                {/* Chinese zodiac with emoji */}
+                {hasChineseZodiac && (
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-2xl">{getChineseZodiacEmoji(chineseZodiac)}</span>
+                    <span className="text-[10px] text-white/50">
+                      {chineseElement} {chineseZodiac}
+                    </span>
                   </div>
                 )}
               </div>
@@ -184,7 +223,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
             {/* Opening */}
             <div className="bg-white/5 rounded-xl p-4">
               <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.15em] mb-2">
-                Overview
+                {isYearly ? `${memberName}'s Year Ahead` : 'Overview'}
               </p>
               <p className="text-[12px] text-white/80 leading-relaxed font-serif">
                 {opening}
