@@ -75,7 +75,7 @@ export const AstrologyGrid = ({ sunSign, moonSign, risingSign }: AstrologyGridPr
         traits={data.strengths}
       />
       <GridRow
-        label="Growth Edges"
+        label="Growth Areas"
         icon={<TrendingUp size={18} strokeWidth={1.5} />}
         traits={data.growthEdges}
         isLast

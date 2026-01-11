@@ -30,19 +30,19 @@ interface SectionProps {
 const Section = ({ icon, title, subtitle, children, isFirst }: SectionProps) => (
   <div className={`px-4 py-5 ${isFirst ? '' : 'border-t border-foreground/[0.06]'}`}>
     <div className="flex items-start gap-3 mb-3">
-      <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center text-foreground/40 mt-0.5">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-foreground/[0.04] flex items-center justify-center text-foreground/50 mt-0.5">
         {icon}
       </div>
       <div className="flex-1">
-        <h3 className="text-[13px] font-medium text-foreground/80 tracking-wide uppercase">
+        <h3 className="text-[13px] font-medium text-foreground/80 tracking-wide">
           {title}
         </h3>
-        <p className="text-[10px] text-foreground/30 tracking-[0.1em] mt-0.5">
+        <p className="text-[10px] text-foreground/30 tracking-[0.1em] mt-0.5 uppercase">
           {subtitle}
         </p>
       </div>
     </div>
-    <div className="pl-10">
+    <div className="pl-11">
       {children}
     </div>
   </div>
@@ -71,9 +71,9 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name, birthday
     <div className="bg-foreground/[0.02] border border-foreground/[0.06] rounded-xl overflow-hidden">
       {/* SUN SECTION */}
       <Section
-        icon={<Sun size={16} strokeWidth={1.5} />}
+        icon={<Sun size={18} strokeWidth={1.5} />}
         title={`${firstName}'s Sun in ${getZodiacName(sunSign)}`}
-        subtitle="Essential self · Core identity"
+        subtitle="Core identity"
         isFirst
       >
         <div className="space-y-3">
@@ -93,9 +93,9 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name, birthday
       {/* MOON SECTION */}
       {moonSign && moonPatterns && (
         <Section
-          icon={<ZodiacIcon sign={moonSign} size={16} strokeWidth={1.5} />}
+          icon={<Moon size={18} strokeWidth={1.5} />}
           title={`${firstName}'s Moon in ${getZodiacName(moonSign)}`}
-          subtitle="Emotional needs · Inner world"
+          subtitle="Emotional needs"
         >
           <div className="space-y-3">
             <p className="text-[13px] text-foreground/60 leading-relaxed">
@@ -115,9 +115,9 @@ export const AstrologyProfile = ({ sunSign, moonSign, risingSign, name, birthday
       {/* RISING SECTION */}
       {risingSign && risingPresence && (
         <Section
-          icon={<ZodiacIcon sign={risingSign} size={16} strokeWidth={1.5} />}
+          icon={<ZodiacIcon sign={risingSign} size={18} strokeWidth={1.5} />}
           title={`${firstName}'s ${getZodiacName(risingSign)} Rising`}
-          subtitle="First impression · Instinctual response"
+          subtitle="First impression"
         >
           <div className="space-y-3">
             <p className="text-[13px] text-foreground/60 leading-relaxed">

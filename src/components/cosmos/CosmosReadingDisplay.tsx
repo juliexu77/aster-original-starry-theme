@@ -116,7 +116,7 @@ export const CosmosReadingDisplay = ({
           </div>
 
           {/* Month and season */}
-          <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em]">
+          <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.3em] font-sans">
             {formatMonthYear(monthYear)}
           </p>
           
@@ -125,7 +125,7 @@ export const CosmosReadingDisplay = ({
           </h2>
           
           {/* Lunar phase */}
-          <div className="flex items-center justify-center gap-2 text-[12px] text-foreground/50">
+          <div className="flex items-center justify-center gap-2 text-[12px] text-foreground/50 font-sans">
             <Moon className="w-4 h-4 text-purple-300/60" />
             {lunarPhase}
           </div>
@@ -174,7 +174,7 @@ export const CosmosReadingDisplay = ({
         transition={{ duration: 0.5, delay: 0.2 }}
         className="px-5"
       >
-        <h3 className="text-[11px] text-amber-300/60 uppercase tracking-[0.2em] mb-3">
+        <h3 className="text-[11px] text-amber-300/60 uppercase tracking-[0.2em] mb-3 font-sans">
           {isYearly ? `${memberName}'s Year Ahead` : `This Month for ${memberName}`}
         </h3>
         <p className="text-[14px] text-foreground/80 leading-relaxed font-serif">
@@ -198,14 +198,14 @@ export const CosmosReadingDisplay = ({
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
           </div>
 
-          <h4 className="text-[12px] text-purple-300/70 uppercase tracking-[0.15em] mb-3">
+          <h4 className="text-[12px] text-purple-300/70 uppercase tracking-[0.15em] mb-3 font-sans">
             {section.title}
           </h4>
           
           <div className="space-y-3">
             {(section.content || '').split('\n\n').map((paragraph, pIndex) => (
               paragraph.trim() && (
-                <p key={pIndex} className="text-[13px] text-foreground/70 leading-relaxed">
+                <p key={pIndex} className="text-[13px] text-foreground/70 leading-relaxed font-serif">
                   {paragraph}
                 </p>
               )
@@ -228,7 +228,7 @@ export const CosmosReadingDisplay = ({
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
           </div>
 
-          <h4 className="text-[12px] text-purple-300/70 uppercase tracking-[0.15em] mb-3">
+          <h4 className="text-[12px] text-purple-300/70 uppercase tracking-[0.15em] mb-3 font-sans">
             Significant Dates
           </h4>
           

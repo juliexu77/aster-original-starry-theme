@@ -132,10 +132,10 @@ const Auth = () => {
           <AnimatePresence mode="wait">
           <motion.div 
             key={mode}
-            initial={{ opacity: 0, x: mode === 'signup' ? -20 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: mode === 'signup' ? 20 : -20 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
             className="bg-card/20 backdrop-blur-sm rounded-xl p-6 space-y-6"
           >
             {mode === 'signup' ? (
@@ -171,7 +171,7 @@ const Auth = () => {
                     placeholder="Your name"
                     required
                     disabled={isLoading}
-                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                    className="text-[13px] bg-foreground/5 border border-foreground/10 rounded-lg px-4 py-3 h-auto focus-visible:ring-1 focus-visible:ring-foreground/20 focus-visible:border-foreground/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -183,7 +183,7 @@ const Auth = () => {
                     placeholder="you@example.com"
                     required
                     disabled={isLoading}
-                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                    className="text-[13px] bg-foreground/5 border border-foreground/10 rounded-lg px-4 py-3 h-auto focus-visible:ring-1 focus-visible:ring-foreground/20 focus-visible:border-foreground/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -195,7 +195,7 @@ const Auth = () => {
                     placeholder="••••••••"
                     required
                     disabled={isLoading}
-                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                    className="text-[13px] bg-foreground/5 border border-foreground/10 rounded-lg px-4 py-3 h-auto focus-visible:ring-1 focus-visible:ring-foreground/20 focus-visible:border-foreground/20"
                   />
                 </div>
                 <div className="pt-2">
@@ -241,7 +241,7 @@ const Auth = () => {
                     placeholder="you@example.com"
                     required
                     disabled={isLoading}
-                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                    className="text-[13px] bg-foreground/5 border border-foreground/10 rounded-lg px-4 py-3 h-auto focus-visible:ring-1 focus-visible:ring-foreground/20 focus-visible:border-foreground/20"
                   />
                 </div>
                 <div className="space-y-2">
@@ -253,7 +253,7 @@ const Auth = () => {
                     placeholder="••••••••"
                     required
                     disabled={isLoading}
-                    className="text-[13px] bg-transparent border-0 border-b border-border/30 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground/40"
+                    className="text-[13px] bg-foreground/5 border border-foreground/10 rounded-lg px-4 py-3 h-auto focus-visible:ring-1 focus-visible:ring-foreground/20 focus-visible:border-foreground/20"
                   />
                 </div>
                 <div className="pt-2">
