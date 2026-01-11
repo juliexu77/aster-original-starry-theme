@@ -303,9 +303,10 @@ function calculateAscendant(
   const tanLat = Math.tan(latRad);
   
   // Calculate ascendant using the proper formula
-  // The y component is cos(LST), x component is the denominator
-  const y = cosLST;
-  const x = -(sinLST * cosObl + tanLat * sinObl);
+  // ASC = atan2(-cos(LST), sin(LST) * cos(ε) + tan(φ) * sin(ε))
+  // Note: The signs are flipped from some references to get the correct quadrant
+  const y = -cosLST;
+  const x = sinLST * cosObl + tanLat * sinObl;
   
   let ascendant = Math.atan2(y, x);
   
