@@ -6,33 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocationInput } from "@/components/ui/LocationInput";
-import { CalibrationFlow } from "@/components/calibration/CalibrationFlow";
-import { ChartGenerating } from "@/components/calibration/ChartGenerating";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useHousehold } from "@/hooks/useHousehold";
-import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
 import { useToast } from "@/hooks/use-toast";
-
-type SetupPhase = 'details' | 'calibration' | 'generating';
 
 interface ChildData {
   name: string;
   birthday: string;
   birthTime: string;
   birthLocation: string;
-  babyId?: string;
-  calibrated?: boolean;
 }
 
 const BabySetup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { createHousehold, addBabyToHousehold } = useHousehold();
-  const { saveCalibration } = useCalibration();
   const { toast } = useToast();
   
-  const [phase, setPhase] = useState<SetupPhase>('details');
   const [isLoading, setIsLoading] = useState(false);
   
   // Multi-child support
@@ -43,10 +34,6 @@ const BabySetup = () => {
     birthLocation: ""
   }]);
   const [currentChildIndex, setCurrentChildIndex] = useState(0);
-  const [calibrationChildIndex, setCalibrationChildIndex] = useState(0);
-  
-  // Store created household ID
-  const [createdHouseholdId, setCreatedHouseholdId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -87,37 +74,32 @@ const BabySetup = () => {
         firstChild.birthLocation || undefined
       );
       
-      setCreatedHouseholdId(result.household.id);
-      
-      // Update first child with baby ID
-      const updatedChildren = [...children];
-      updatedChildren[0] = { ...updatedChildren[0], babyId: result.baby.id };
-      
       // Add additional children if any
       for (let i = 1; i < children.length; i++) {
         const child = children[i];
         if (child.name.trim()) {
-          const baby = await addBabyToHousehold(
+          await addBabyToHousehold(
             result.household.id,
             child.name,
             child.birthday || undefined,
             child.birthTime || undefined,
             child.birthLocation || undefined
           );
-          updatedChildren[i] = { ...updatedChildren[i], babyId: baby.id };
         }
       }
-      
-      setChildren(updatedChildren);
 
-      // Check if any child has a birthday (needs calibration)
-      const childrenWithBirthday = updatedChildren.filter(c => c.birthday && c.babyId);
-      if (childrenWithBirthday.length > 0) {
-        setCalibrationChildIndex(0);
-        setPhase('calibration');
-      } else {
-        finishSetup();
-      }
+      // Finish setup
+      const names = children.filter(c => c.name.trim()).map(c => c.name);
+      const message = names.length === 1 
+        ? `${names[0]}'s chart is set`
+        : `Charts set for ${names.join(' & ')}`;
+      
+      toast({
+        title: "Ready",
+        description: message,
+        duration: 3000,
+      });
+      navigate("/");
     } catch (error: any) {
       console.error("Error creating baby profile:", error);
       toast({
@@ -130,97 +112,7 @@ const BabySetup = () => {
     }
   };
 
-  const getChildrenNeedingCalibration = () => {
-    return children.filter(c => c.birthday && c.babyId && !c.calibrated);
-  };
-
-  const handleCalibrationComplete = async (
-    data: CalibrationData, 
-    emergingFlags: Record<string, boolean>
-  ) => {
-    const childrenNeedingCalibration = getChildrenNeedingCalibration();
-    const currentCalibrationChild = childrenNeedingCalibration[calibrationChildIndex];
-    
-    if (currentCalibrationChild?.babyId && createdHouseholdId) {
-      try {
-        await saveCalibration(currentCalibrationChild.babyId, createdHouseholdId, data, emergingFlags);
-        
-        // Mark this child as calibrated
-        setChildren(prev => prev.map(c => 
-          c.babyId === currentCalibrationChild.babyId ? { ...c, calibrated: true } : c
-        ));
-      } catch (error) {
-        console.error("Error saving calibration:", error);
-      }
-    }
-    
-    // Check if there are more children to calibrate
-    if (calibrationChildIndex < childrenNeedingCalibration.length - 1) {
-      setCalibrationChildIndex(prev => prev + 1);
-    } else {
-      setPhase('generating');
-    }
-  };
-
-  const handleCalibrationSkip = () => {
-    const childrenNeedingCalibration = getChildrenNeedingCalibration();
-    
-    // Mark current child as calibrated (skipped)
-    const currentCalibrationChild = childrenNeedingCalibration[calibrationChildIndex];
-    if (currentCalibrationChild) {
-      setChildren(prev => prev.map(c => 
-        c.babyId === currentCalibrationChild.babyId ? { ...c, calibrated: true } : c
-      ));
-    }
-    
-    // Check if there are more children to calibrate
-    if (calibrationChildIndex < childrenNeedingCalibration.length - 1) {
-      setCalibrationChildIndex(prev => prev + 1);
-    } else {
-      setPhase('generating');
-    }
-  };
-
-  const finishSetup = () => {
-    const names = children.filter(c => c.name.trim()).map(c => c.name);
-    const message = names.length === 1 
-      ? `${names[0]}'s chart is set`
-      : `Charts set for ${names.join(' & ')}`;
-    
-    toast({
-      title: "Ready",
-      description: message,
-      duration: 3000,
-    });
-    navigate("/");
-  };
-
   const currentChild = children[currentChildIndex];
-  const childrenNeedingCalibration = getChildrenNeedingCalibration();
-  const calibrationChild = childrenNeedingCalibration[calibrationChildIndex];
-
-  // Render calibration phase
-  if (phase === 'calibration' && calibrationChild?.birthday) {
-    return (
-      <CalibrationFlow
-        babyName={calibrationChild.name}
-        babyBirthday={calibrationChild.birthday}
-        onComplete={handleCalibrationComplete}
-        onSkip={handleCalibrationSkip}
-      />
-    );
-  }
-
-  if (phase === 'generating') {
-    const firstName = children.find(c => c.name.trim())?.name || "Baby";
-    return (
-      <ChartGenerating
-        babyName={firstName}
-        onComplete={finishSetup}
-      />
-    );
-  }
-
   const canContinue = children.every(c => c.name.trim());
   const isFirstChildValid = children[0].name.trim();
 
@@ -272,8 +164,8 @@ const BabySetup = () => {
               className="text-center"
             >
               <p className="text-[13px] text-foreground/50 leading-[1.7]">
-                We'll create their birth chart and track<br />
-                developmental milestones against it.
+                We'll create their birth chart and show<br />
+                their astrological profile.
               </p>
             </motion.div>
 
