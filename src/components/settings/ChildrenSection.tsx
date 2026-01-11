@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Baby, Plus, RefreshCw } from "lucide-react";
+import { Baby, Plus } from "lucide-react";
 import { SettingsSection } from "@/components/settings/SettingsSection";
 import { SettingsRow } from "@/components/settings/SettingsRow";
 import { SwipeableRow } from "@/components/settings/SwipeableRow";
@@ -16,12 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Baby as BabyType } from "@/hooks/useBabies";
-import { RecalibrationSheet } from "@/components/calibration/RecalibrationSheet";
-import { CalibrationFlow } from "@/components/calibration/CalibrationFlow";
-import { ChartGenerating } from "@/components/calibration/ChartGenerating";
-import { useCalibration, CalibrationData } from "@/hooks/useCalibration";
-import { useHousehold } from "@/hooks/useHousehold";
-import { formatLastCalibrated } from "@/hooks/useCalibrationPrompt";
 
 interface ChildrenSectionProps {
   babies: BabyType[];
@@ -48,8 +42,6 @@ const getAgeLabel = (birthday: string | null): string => {
   return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''} old`;
 };
 
-type AddPhase = 'form' | 'calibration' | 'generating';
-
 export const ChildrenSection = ({ 
   babies, 
   onAddBaby, 
@@ -57,35 +49,20 @@ export const ChildrenSection = ({
   onArchiveBaby 
 }: ChildrenSectionProps) => {
   const { toast } = useToast();
-  const { household } = useHousehold();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showRecalibration, setShowRecalibration] = useState(false);
   const [selectedBaby, setSelectedBaby] = useState<BabyType | null>(null);
   const [name, setName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [birthTime, setBirthTime] = useState("");
   const [birthLocation, setBirthLocation] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  
-  // New child calibration flow state
-  const [addPhase, setAddPhase] = useState<AddPhase>('form');
-  const [newBabyId, setNewBabyId] = useState<string | null>(null);
-  const [newBabyName, setNewBabyName] = useState("");
-  const [newBabyBirthday, setNewBabyBirthday] = useState("");
-  
-  // Calibration hook for selected baby
-  const { calibration, saveCalibration, refetch } = useCalibration(selectedBaby?.id);
-  
-  // Calibration hook for new baby
-  const { saveCalibration: saveNewBabyCalibration } = useCalibration(newBabyId || undefined);
 
   const handleOpenAdd = () => {
     setName("");
     setBirthday("");
     setBirthTime("");
     setBirthLocation("");
-    setAddPhase('form');
     setShowAddModal(true);
   };
 
@@ -103,22 +80,9 @@ export const ChildrenSection = ({
     
     setIsSaving(true);
     try {
-      const newBaby = await onAddBaby(name.trim(), birthday || undefined, birthTime || undefined, birthLocation || undefined);
-      
-      // Store baby info for calibration
-      setNewBabyId(newBaby.id);
-      setNewBabyName(name.trim());
-      setNewBabyBirthday(birthday);
-      
-      // If birthday is set, go to calibration
-      if (birthday) {
-        setShowAddModal(false);
-        setAddPhase('calibration');
-      } else {
-        toast({ title: `${name} added`, duration: 3000 });
-        setShowAddModal(false);
-        resetAddState();
-      }
+      await onAddBaby(name.trim(), birthday || undefined, birthTime || undefined, birthLocation || undefined);
+      toast({ title: `${name} added`, duration: 3000 });
+      setShowAddModal(false);
     } catch (error: any) {
       toast({ 
         title: "Error", 
@@ -128,33 +92,6 @@ export const ChildrenSection = ({
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const handleCalibrationComplete = async (data: CalibrationData, emergingFlags: Record<string, boolean>) => {
-    if (newBabyId && household?.id) {
-      try {
-        await saveNewBabyCalibration(newBabyId, household.id, data, emergingFlags);
-      } catch (error) {
-        console.error("Error saving calibration:", error);
-      }
-    }
-    setAddPhase('generating');
-  };
-
-  const handleCalibrationSkip = () => {
-    setAddPhase('generating');
-  };
-
-  const handleGeneratingComplete = () => {
-    toast({ title: `${newBabyName} added`, duration: 3000 });
-    resetAddState();
-  };
-
-  const resetAddState = () => {
-    setAddPhase('form');
-    setNewBabyId(null);
-    setNewBabyName("");
-    setNewBabyBirthday("");
   };
 
   const handleUpdate = async () => {
@@ -193,28 +130,6 @@ export const ChildrenSection = ({
       });
     }
   };
-
-  // Render calibration flow for new baby
-  if (addPhase === 'calibration' && newBabyBirthday) {
-    return (
-      <CalibrationFlow
-        babyName={newBabyName}
-        babyBirthday={newBabyBirthday}
-        onComplete={handleCalibrationComplete}
-        onSkip={handleCalibrationSkip}
-      />
-    );
-  }
-
-  // Render generating screen for new baby
-  if (addPhase === 'generating') {
-    return (
-      <ChartGenerating
-        babyName={newBabyName}
-        onComplete={handleGeneratingComplete}
-      />
-    );
-  }
 
   return (
     <>
@@ -354,25 +269,6 @@ export const ChildrenSection = ({
             <p className="text-[10px] text-foreground/30">
               Time & location help calculate moon sign accurately
             </p>
-            
-            {/* Developmental Baseline */}
-            <div className="pt-2 border-t border-foreground/5">
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setShowRecalibration(true);
-                }}
-                className="w-full flex items-center justify-between py-3 text-left"
-              >
-                <div>
-                  <p className="text-[13px] text-foreground/80">Update developmental baseline</p>
-                  <p className="text-[11px] text-foreground/40">
-                    Last updated: {formatLastCalibrated(calibration)}
-                  </p>
-                </div>
-                <RefreshCw className="w-4 h-4 text-foreground/30" />
-              </button>
-            </div>
           </div>
           <DialogFooter>
             <Button 
@@ -385,23 +281,6 @@ export const ChildrenSection = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
-      {/* Recalibration Sheet */}
-      {selectedBaby?.birthday && (
-        <RecalibrationSheet
-          open={showRecalibration}
-          onOpenChange={setShowRecalibration}
-          babyName={selectedBaby.name}
-          babyBirthday={selectedBaby.birthday}
-          calibration={calibration}
-          onComplete={async (data: CalibrationData, emergingFlags: Record<string, boolean>) => {
-            if (!selectedBaby?.id || !household?.id) return;
-            await saveCalibration(selectedBaby.id, household.id, data, emergingFlags);
-            await refetch();
-          }}
-        />
-      )}
     </>
   );
 };
