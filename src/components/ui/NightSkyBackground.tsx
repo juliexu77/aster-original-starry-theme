@@ -1,4 +1,4 @@
-import { useMemo, ReactNode, useEffect, useState } from "react";
+import { useMemo, ReactNode, useEffect, useState, useCallback } from "react";
 
 interface NightSkyBackgroundProps {
   children: ReactNode;
@@ -13,6 +13,14 @@ interface Star {
   hasFlare: boolean;
   twinkleDelay: number;
   twinkleDuration: number;
+}
+
+interface ShootingStar {
+  id: number;
+  startX: number;
+  startY: number;
+  angle: number;
+  duration: number;
 }
 
 // Generate random background stars for night sky effect
@@ -65,14 +73,49 @@ const generateBackgroundStars = (count: number): Star[] => {
   return stars;
 };
 
+// Generate a random shooting star
+const createShootingStar = (): ShootingStar => ({
+  id: Date.now() + Math.random(),
+  startX: Math.random() * 80 + 10, // 10-90% from left
+  startY: Math.random() * 40, // Top 40% of screen
+  angle: 25 + Math.random() * 20, // 25-45 degree angle
+  duration: 0.6 + Math.random() * 0.4, // 0.6-1s duration
+});
+
 export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgroundProps) => {
   const backgroundStars = useMemo(() => generateBackgroundStars(starCount), [starCount]);
   const [mounted, setMounted] = useState(false);
+  const [shootingStars, setShootingStars] = useState<ShootingStar[]>([]);
 
   // Delay animation start to prevent flash
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 50);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Spawn shooting stars occasionally
+  useEffect(() => {
+    const spawnShootingStar = () => {
+      setShootingStars(prev => [...prev, createShootingStar()]);
+      
+      // Schedule next shooting star (random interval 4-12 seconds)
+      const nextDelay = 4000 + Math.random() * 8000;
+      return setTimeout(spawnShootingStar, nextDelay);
+    };
+
+    // Initial delay before first shooting star (2-6 seconds)
+    const initialDelay = 2000 + Math.random() * 4000;
+    const initialTimer = setTimeout(() => {
+      const recurringTimer = spawnShootingStar();
+      return () => clearTimeout(recurringTimer);
+    }, initialDelay);
+
+    return () => clearTimeout(initialTimer);
+  }, []);
+
+  // Clean up old shooting stars
+  const removeShootingStar = useCallback((id: number) => {
+    setShootingStars(prev => prev.filter(s => s.id !== id));
   }, []);
 
   return (
@@ -130,6 +173,28 @@ export const NightSkyBackground = ({ children, starCount = 400 }: NightSkyBackgr
         }}
       />
       
+      {/* Shooting stars */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -2 }}>
+        {shootingStars.map((star) => (
+          <div
+            key={star.id}
+            className="absolute"
+            style={{
+              left: `${star.startX}%`,
+              top: `${star.startY}%`,
+              width: '100px',
+              height: '2px',
+              background: `linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,252,240,0.9) 50%, rgba(255,255,255,0.3) 100%)`,
+              borderRadius: '2px',
+              transform: `rotate(${star.angle}deg)`,
+              transformOrigin: 'left center',
+              animation: `shootingStar ${star.duration}s ease-out forwards`,
+              boxShadow: '0 0 6px 2px rgba(255,252,240,0.4)',
+            }}
+            onAnimationEnd={() => removeShootingStar(star.id)}
+          />
+        ))}
+      </div>
       
       {/* Scattered star dots with twinkling */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
