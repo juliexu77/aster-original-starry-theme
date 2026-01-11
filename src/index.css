@@ -517,6 +517,22 @@
     }
   }
   
+  /* Shooting star animation */
+  @keyframes shootingStar {
+    0% {
+      opacity: 0;
+      transform: rotate(var(--angle, 35deg)) translateX(0) scaleX(0.3);
+    }
+    10% {
+      opacity: 1;
+      transform: rotate(var(--angle, 35deg)) translateX(20px) scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(var(--angle, 35deg)) translateX(300px) scaleX(0.5);
+    }
+  }
+  
   /* Today's Story animations */
   @keyframes story-shimmer {
     0%, 100% {
