@@ -302,11 +302,12 @@ function calculateAscendant(
   const cosObl = Math.cos(oblRad);
   const tanLat = Math.tan(latRad);
   
-  // Calculate ascendant using the proper formula
-  // ASC = atan2(-cos(LST), sin(LST) * cos(ε) + tan(φ) * sin(ε))
-  // Note: The signs are flipped from some references to get the correct quadrant
-  const y = -cosLST;
-  const x = sinLST * cosObl + tanLat * sinObl;
+  // Standard ascendant formula: ASC = atan2(cos(LST), -(sin(LST) * cos(ε) + tan(φ) * sin(ε)))
+  // atan2(y, x) where:
+  //   y = cos(LST) 
+  //   x = -(sin(LST) * cos(ε) + tan(φ) * sin(ε))
+  const y = cosLST;
+  const x = -(sinLST * cosObl + tanLat * sinObl);
   
   let ascendant = Math.atan2(y, x);
   
