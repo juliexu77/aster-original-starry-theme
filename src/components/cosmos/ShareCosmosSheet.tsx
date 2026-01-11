@@ -33,11 +33,10 @@ interface ShareCosmosSheetProps {
 export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const readingRef = useRef<HTMLDivElement>(null);
+  const storyRef = useRef<HTMLDivElement>(null);
 
   // Safely access reading properties with defaults
   const sections = reading?.sections || [];
-  const significantDates = reading?.significantDates || [];
   const memberName = reading?.memberName || '';
   const monthYear = reading?.monthYear || '';
   const sunSign = reading?.sunSign || 'aries';
@@ -60,11 +59,17 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
+  // Truncate text to fit story format
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
   const generateImageBlob = async (): Promise<Blob | null> => {
-    if (!readingRef.current) return null;
+    if (!storyRef.current) return null;
     
     try {
-      const canvas = await html2canvas(readingRef.current, {
+      const canvas = await html2canvas(storyRef.current, {
         backgroundColor: '#0a0a12',
         scale: 2,
         useCORS: true,
@@ -85,7 +90,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
     try {
       const blob = await generateImageBlob();
       if (!blob) {
-        toast.error("Couldn't generate reading image");
+        toast.error("Couldn't generate story image");
         setIsGenerating(false);
         return;
       }
@@ -102,7 +107,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
         toast.success("Shared!");
       } else {
         downloadBlob(blob, fileName);
-        toast.success("Reading downloaded!");
+        toast.success("Story downloaded!");
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
@@ -110,9 +115,9 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
         const blob = await generateImageBlob();
         if (blob) {
           downloadBlob(blob, `${memberName}-cosmos-${monthYear}.png`);
-          toast.success("Reading downloaded!");
+          toast.success("Story downloaded!");
         } else {
-          toast.error("Couldn't share reading");
+          toast.error("Couldn't share story");
         }
       }
     } finally {
@@ -129,6 +134,9 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
     URL.revokeObjectURL(url);
   };
 
+  // Get first meaningful section for the story card
+  const firstSection = sections[0];
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -138,144 +146,142 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl bg-background border-foreground/10">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-center text-foreground/90">Share {memberName}'s Reading</SheetTitle>
+          <SheetTitle className="text-center text-foreground/90">Share to Story</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
-          {/* Full Reading Card */}
+        <div className="flex flex-col items-center overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
+          {/* Story Card - 9:16 aspect ratio for Instagram/TikTok */}
           <div 
-            ref={readingRef}
-            className="bg-gradient-to-br from-[#0a0a12] via-[#0f0a18] to-[#0a0a12] rounded-2xl p-5 space-y-4"
-            style={{ width: '380px', minWidth: '380px', margin: '0 auto' }}
+            ref={storyRef}
+            className="relative overflow-hidden"
+            style={{ 
+              width: '270px', 
+              height: '480px',
+              background: 'linear-gradient(160deg, #0f0818 0%, #1a0a24 30%, #0d0614 60%, #080410 100%)',
+              borderRadius: '12px'
+            }}
           >
-            {/* Header with cosmic styling - matching CosmosReadingDisplay */}
-            <div className="relative text-center space-y-2 pb-4">
-              {/* Decorative stars */}
-              <div className="absolute inset-0 opacity-30">
-                {[...Array(12)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute w-1 h-1 bg-amber-200 rounded-full"
-                    style={{
-                      left: `${10 + Math.random() * 80}%`,
-                      top: `${10 + Math.random() * 80}%`,
-                      opacity: 0.3 + Math.random() * 0.5
-                    }}
-                  />
-                ))}
-              </div>
+            {/* Decorative star field */}
+            <div className="absolute inset-0 opacity-40">
+              {[...Array(30)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    left: `${5 + Math.random() * 90}%`,
+                    top: `${5 + Math.random() * 90}%`,
+                    width: `${1 + Math.random() * 2}px`,
+                    height: `${1 + Math.random() * 2}px`,
+                    opacity: 0.2 + Math.random() * 0.6
+                  }}
+                />
+              ))}
+            </div>
 
-              {/* Year header for yearly readings */}
-              {isYearly && (
-                <p className="text-[11px] text-amber-300/70 uppercase tracking-[0.3em]">
-                  {monthYear}
+            {/* Gradient overlays for depth */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse 80% 50% at 50% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 70%)',
+              }}
+            />
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse 60% 40% at 30% 80%, rgba(251, 191, 36, 0.08) 0%, transparent 60%)',
+              }}
+            />
+
+            {/* Content */}
+            <div className="relative h-full flex flex-col p-6">
+              {/* Top: Month/Year */}
+              <div className="text-center mb-2">
+                <p className="text-[9px] text-amber-300/70 uppercase tracking-[0.4em] font-sans">
+                  {isYearly ? monthYear : formatMonthYear(monthYear)}
                 </p>
-              )}
-              
-              {/* Season title */}
-              <h2 className="text-xl font-serif text-white relative z-10">{astrologicalSeason}</h2>
-              
-              {/* Lunar phase subtitle */}
-              <div className="flex items-center justify-center gap-2 text-[11px] text-purple-300/60">
-                <Moon className="w-3 h-3" />
-                {lunarPhase}
               </div>
 
-              {/* Signs row - matching the UI layout */}
-              <div className="flex items-center justify-center gap-5 pt-4">
-                {/* Western signs */}
-                <div className="flex flex-col items-center gap-1">
-                  <ZodiacIcon sign={sunSign} size={24} className="text-amber-300/70" />
-                  <span className="text-[10px] text-white/50">{getZodiacName(sunSign)}</span>
+              {/* Season Title */}
+              <div className="text-center mb-4">
+                <h2 className="text-lg font-serif text-white/90 leading-tight">
+                  {astrologicalSeason}
+                </h2>
+                <div className="flex items-center justify-center gap-1.5 mt-2 text-[10px] text-purple-300/60">
+                  <Moon className="w-3 h-3" />
+                  <span>{lunarPhase}</span>
+                </div>
+              </div>
+
+              {/* Signs Row */}
+              <div className="flex items-center justify-center gap-4 mb-5">
+                <div className="flex flex-col items-center gap-0.5">
+                  <ZodiacIcon sign={sunSign} size={22} className="text-amber-300/80" />
+                  <span className="text-[8px] text-white/40">{getZodiacName(sunSign)}</span>
                 </div>
                 {moonSign && (
-                  <div className="flex flex-col items-center gap-1">
-                    <ZodiacIcon sign={moonSign} size={24} className="text-purple-300/70" />
-                    <span className="text-[10px] text-white/50">{getZodiacName(moonSign)} Moon</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <ZodiacIcon sign={moonSign} size={22} className="text-purple-300/80" />
+                    <span className="text-[8px] text-white/40">{getZodiacName(moonSign)}</span>
                   </div>
                 )}
                 {risingSign && (
-                  <div className="flex flex-col items-center gap-1">
-                    <ZodiacIcon sign={risingSign} size={24} className="text-indigo-300/70" />
-                    <span className="text-[10px] text-white/50">{getZodiacName(risingSign)} Rising</span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <ZodiacIcon sign={risingSign} size={22} className="text-indigo-300/80" />
+                    <span className="text-[8px] text-white/40">{getZodiacName(risingSign)}</span>
                   </div>
                 )}
-                
-                {/* Chinese zodiac with emoji */}
                 {hasChineseZodiac && (
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="text-2xl">{getChineseZodiacEmoji(chineseZodiac)}</span>
-                    <span className="text-[10px] text-white/50">
-                      {chineseElement} {chineseZodiac}
-                    </span>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span className="text-xl">{getChineseZodiacEmoji(chineseZodiac)}</span>
+                    <span className="text-[8px] text-white/40">{chineseElement}</span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
-              <Star className="w-3 h-3 text-amber-300/30" />
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
-            </div>
+              {/* Divider */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+                <Star className="w-2.5 h-2.5 text-amber-300/40" />
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+              </div>
 
-            {/* Opening */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.15em] mb-2">
-                {isYearly ? `${memberName}'s Year Ahead` : 'Overview'}
+              {/* Name */}
+              <p className="text-center text-[10px] text-amber-300/60 uppercase tracking-[0.2em] mb-3 font-sans">
+                {memberName}'s {isYearly ? 'Year' : 'Month'}
               </p>
-              <p className="text-[12px] text-white/80 leading-relaxed font-serif">
-                {opening}
-              </p>
-            </div>
 
-            {/* All Sections */}
-            {sections.map((section, index) => (
-              <div key={index} className="bg-white/5 rounded-xl p-4">
-                <p className="text-[10px] text-purple-300/60 uppercase tracking-[0.1em] mb-2">
-                  {section.title}
+              {/* Opening - Main content */}
+              <div className="flex-1 overflow-hidden">
+                <p className="text-[11px] text-white/75 leading-relaxed font-serif text-center">
+                  {truncateText(opening, 280)}
                 </p>
-                <div className="space-y-2">
-                  {(section.content || '').split('\n\n').map((paragraph, pIndex) => (
-                    paragraph.trim() && (
-                      <p key={pIndex} className="text-[11px] text-white/70 leading-relaxed">
-                        {paragraph}
-                      </p>
-                    )
-                  ))}
+              </div>
+
+              {/* Key insight from first section */}
+              {firstSection && (
+                <div className="mt-4 pt-3 border-t border-white/10">
+                  <p className="text-[9px] text-purple-300/60 uppercase tracking-[0.15em] mb-1.5 font-sans">
+                    {firstSection.title}
+                  </p>
+                  <p className="text-[10px] text-white/60 leading-relaxed font-serif">
+                    {truncateText(firstSection.content?.split('\n\n')[0] || '', 120)}
+                  </p>
                 </div>
-              </div>
-            ))}
+              )}
 
-            {/* All Significant Dates */}
-            {significantDates.length > 0 && (
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-[10px] text-amber-300/50 uppercase tracking-[0.1em] mb-2">
-                  Key Dates
+              {/* Footer */}
+              <div className="mt-auto pt-4 text-center">
+                <p className="text-[8px] text-white/25 uppercase tracking-[0.25em]">
+                  ✦ Aster ✦
                 </p>
-                <ul className="space-y-1.5">
-                  {significantDates.map((date, i) => {
-                    const isObject = typeof date === 'object' && date !== null;
-                    const title: string = isObject ? (date as { title: string }).title : (date as string);
-                    return (
-                      <li key={i} className="text-[10px] text-white/60 flex items-start gap-2">
-                        <span className="text-amber-300/40">•</span>
-                        {title}
-                      </li>
-                    );
-                  })}
-                </ul>
               </div>
-            )}
-
-            {/* Footer */}
-            <div className="text-center pt-3">
-              <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">
-                Generated with Aster
-              </p>
             </div>
           </div>
+
+          {/* Preview label */}
+          <p className="text-[11px] text-foreground/40 mt-4">
+            Optimized for Instagram & TikTok Stories
+          </p>
         </div>
 
         {/* Action Button */}
@@ -286,7 +292,7 @@ export const ShareCosmosSheet = ({ reading }: ShareCosmosSheetProps) => {
             className="w-full h-12 gap-2"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-            Share Reading
+            Share to Story
           </Button>
         </div>
       </SheetContent>

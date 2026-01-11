@@ -477,46 +477,41 @@ export const getChartSynthesis = (
   return { strengths: strengths.slice(0, 3), growthEdges: edges.slice(0, 3) };
 };
 
-// Get sun sign synthesis paragraph
+// Get sun sign synthesis paragraph - using second person for deeper resonance
 export const getSunSynthesis = (sunSign: ZodiacSign): string => {
-  const sunName = getZodiacName(sunSign);
-  const element = getElement(sunSign);
-  
   const syntheses: Record<ZodiacSign, string> = {
-    aries: `${sunName} core: impulse is intelligence. Action creates clarity—movement over deliberation.`,
-    taurus: `${sunName} core: stability is non-negotiable. Change happens on their timeline, not yours.`,
-    gemini: `${sunName} core: curiosity drives everything. The mind runs faster than most can follow.`,
-    cancer: `${sunName} core: feeling is remembering. Home isn't a place—it's a feeling they carry.`,
-    leo: `${sunName} core: being seen is being real. Warmth and generosity expand with attention.`,
-    virgo: `${sunName} core: improvement is instinctual. They make things better because imperfection feels wrong.`,
-    libra: `${sunName} core: harmony is essential. Their needs often get lost in service of peace.`,
-    scorpio: `${sunName} core: depth is default. What they love, they love completely.`,
-    sagittarius: `${sunName} core: expansion is oxygen. Optimism isn't naive—it refuses to accept limitation.`,
-    capricorn: `${sunName} core: responsibility is identity. Achievement isn't ambition; it's security.`,
-    aquarius: `${sunName} core: difference is destiny. Conformity feels like erasure.`,
-    pisces: `${sunName} core: boundaries are permeable. They feel what others feel, dream what others can't.`
+    aries: `Your impulse is your intelligence. You create clarity through action—movement before deliberation feels right because it is right for you.`,
+    taurus: `Stability is non-negotiable for you. Change happens on your timeline. What others call stubbornness, you experience as self-trust.`,
+    gemini: `Curiosity drives everything you do. Your mind runs faster than most can follow. Stillness without input feels like starvation.`,
+    cancer: `Feeling is remembering for you. Home isn't a place—it's a feeling you carry. Your loyalty runs deeper than most will ever know.`,
+    leo: `Being seen is being real. Your warmth and generosity expand with appreciation. Hiding your light genuinely hurts.`,
+    virgo: `Improvement is instinctual for you. You make things better because imperfection feels wrong. Your critique is a form of care.`,
+    libra: `Harmony is essential. Your needs often get lost in service of peace. You sense imbalance the way others sense temperature.`,
+    scorpio: `Depth is your default. What you love, you love completely. Your intensity is a feature, not a flaw.`,
+    sagittarius: `Expansion is oxygen for you. Your optimism comes from refusing to accept limitation as permanent. Confinement feels wrong because it is.`,
+    capricorn: `Responsibility is woven into your identity. Achievement isn't ambition for you—it's security. You were born knowing things have to get done.`,
+    aquarius: `Difference is destiny for you. Conformity feels like erasure. Your unconventional perspective is exactly what makes you valuable.`,
+    pisces: `Your boundaries are permeable. You feel what others feel, dream what others can't. This is both your gift and your weight.`
   };
   
   return syntheses[sunSign];
 };
 
-// Get moon sign synthesis paragraph
+// Get moon sign synthesis paragraph - using second person
 export const getMoonSynthesis = (moonSign: ZodiacSign): string => {
-  const moonName = getZodiacName(moonSign);
-  
   const syntheses: Record<ZodiacSign, string> = {
-    aries: `${moonName} moon: emotions arrive sudden and intense. They need to move, not sit with it.`,
-    taurus: `${moonName} moon: emotions need anchoring. What they feel today, they'll still feel next month.`,
-    gemini: `${moonName} moon: emotions need words. Silence in distress isn't calm—it's confusion.`,
-    cancer: `${moonName} moon: emotions are memory. They need to feel safe before anything else.`,
-    leo: `${moonName} moon: emotions need witness. Pride protects a tender heart.`,
-    virgo: `${moonName} moon: emotions need organizing. Useful when helping, anxious when not.`,
-    libra: `${moonName} moon: emotions need balance. Their needs get filed under 'later.'`,
-    scorpio: `${moonName} moon: emotions run at full volume. No dimmer switch, only on and off.`,
-    sagittarius: `${moonName} moon: emotions need room. Heaviness converts to humor, sadness to philosophy.`,
-    capricorn: `${moonName} moon: emotions need purpose. Vulnerability is exposure; productivity is safety.`,
-    aquarius: `${moonName} moon: emotions need distance. They process privately before sharing.`,
-    pisces: `${moonName} moon: emotions have no edges. Their feelings tangle with everyone else's.`
+    aries: `Your emotions arrive sudden and intense. You need to move, not sit with it. Physical action is emotional processing.`,
+    taurus: `Your emotions need anchoring. What you feel today, you'll likely still feel next month. This is steadiness, not stubbornness.`,
+    gemini: `Your emotions need words. Silence in distress isn't calm—it's confusion. Talking it through is how you find your way.`,
+    cancer: `Your emotions are memory. You need to feel safe before anything else. The past stays emotionally present in ways others don't understand.`,
+    leo: `Your emotions need witness. Pride protects a tender heart. Being overlooked wounds more than criticism ever could.`,
+    virgo: `Your emotions need organizing. Useful when helping, anxious when not. Your inner critic rarely rests.`,
+    libra: `Your emotions need balance. Your needs get filed under 'later' while you attend to others. Peace sometimes costs too much.`,
+    scorpio: `Your emotions run at full volume. There's no dimmer switch—only on and off. You feel things others only skim.`,
+    sagittarius: `Your emotions need room. Heaviness converts to humor, sadness to philosophy. Containment creates panic.`,
+    capricorn: `Your emotions need purpose. Vulnerability feels like exposure; productivity feels like safety. You learned this young.`,
+    aquarius: `Your emotions need distance first. You process privately before sharing. This isn't coldness—it's self-preservation.`,
+    pisces: `Your emotions have no edges. Your feelings tangle with everyone else's. Knowing what's yours takes effort.`
   };
   
   return syntheses[moonSign];
@@ -759,54 +754,53 @@ export const getChartIntegration = (
   };
 };
 
-// Get full sun-rising synthesis text
+// Get full sun-rising synthesis text - using second person
 export const getSunRisingSynthesis = (
   sunSign: ZodiacSign,
   risingSign: ZodiacSign
 ): string => {
   const sunName = getZodiacName(sunSign);
   const risingName = getZodiacName(risingSign);
-  const rising = RISING_PRESENCE[risingSign];
   
   // Generate specific synthesis based on element combinations
   const sunElement = getElement(sunSign);
   const risingElement = getElement(risingSign);
   
   if (sunElement === risingElement) {
-    return `${risingName} rising amplifies ${sunName}. Double ${sunElement}—what you see is what you get.`;
+    return `Your ${risingName} rising amplifies your ${sunName} sun. Double ${sunElement}—what people see is who you are. No mask required.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'fire')) {
-    return `${risingName} rising fans ${sunName}'s flames. Thinks fast, acts faster.`;
+    return `Your ${risingName} rising fans your ${sunName} flames. You think fast and act faster. Ideas become action almost immediately.`;
   }
   
   if ((sunElement === 'earth' && risingElement === 'water') || 
       (sunElement === 'water' && risingElement === 'earth')) {
-    return `${risingName} rising grounds ${sunName}'s depths. Feelings have roots, instincts are reliable.`;
+    return `Your ${risingName} rising grounds your ${sunName} depths. Your feelings have roots. Your instincts are reliable.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'water') || 
       (sunElement === 'water' && risingElement === 'fire')) {
-    return `${risingName} rising creates steam with ${sunName}. Emotional intensity others feel before they understand.`;
+    return `Your ${risingName} rising creates steam with your ${sunName} core. There's an emotional intensity others feel before they understand it.`;
   }
   
   if ((sunElement === 'earth' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'earth')) {
-    return `${risingName} rising intellectualizes ${sunName}'s groundedness. Practical meets idealistic.`;
+    return `Your ${risingName} rising intellectualizes your ${sunName} groundedness. Practical meets idealistic in you—you can see both sides.`;
   }
   
   if ((sunElement === 'fire' && risingElement === 'earth') || 
       (sunElement === 'earth' && risingElement === 'fire')) {
-    return `${risingName} rising channels ${sunName}'s drive. Ambition meets patience.`;
+    return `Your ${risingName} rising channels your ${sunName} drive. Ambition meets patience. You build things that last.`;
   }
   
   if ((sunElement === 'water' && risingElement === 'air') || 
       (sunElement === 'air' && risingElement === 'water')) {
-    return `${risingName} rising frames ${sunName}'s feelings. Understands emotions while feeling them deeply.`;
+    return `Your ${risingName} rising frames your ${sunName} feelings. You understand your emotions while feeling them deeply.`;
   }
   
-  return `${risingName} rising modifies ${sunName}. What you see first isn't the whole story.`;
+  return `Your ${risingName} rising modifies your ${sunName} sun. What others see first isn't the whole story—but it's still authentically you.`;
 };
 
 const getElement = (sign: ZodiacSign): string => {

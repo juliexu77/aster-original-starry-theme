@@ -1,11 +1,10 @@
 import { useState, useRef } from "react";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Sun, Moon, Sparkles } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ZodiacSign, getZodiacName } from "@/lib/zodiac";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
-import { SUN_MECHANICS, MOON_PATTERNS, RISING_PRESENCE, getChartSynthesis } from "@/lib/astrology-content";
-import { BirthChartDiagram } from "./BirthChartDiagram";
+import { getChartSynthesis } from "@/lib/astrology-content";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
@@ -19,22 +18,19 @@ interface ShareChartSheetProps {
   risingSign: ZodiacSign | null;
 }
 
-export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunSign, moonSign, risingSign }: ShareChartSheetProps) => {
+export const ShareChartSheet = ({ name, birthday, sunSign, moonSign, risingSign }: ShareChartSheetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const chartRef = useRef<HTMLDivElement>(null);
+  const storyRef = useRef<HTMLDivElement>(null);
   
   const firstName = name.split(' ')[0];
-  const sunMechanics = SUN_MECHANICS[sunSign];
-  const moonPatterns = moonSign ? MOON_PATTERNS[moonSign] : null;
-  const risingPresence = risingSign ? RISING_PRESENCE[risingSign] : null;
   const { strengths, growthEdges } = getChartSynthesis(sunSign, moonSign, risingSign);
 
   const generateImageBlob = async (): Promise<Blob | null> => {
-    if (!chartRef.current) return null;
+    if (!storyRef.current) return null;
     
     try {
-      const canvas = await html2canvas(chartRef.current, {
+      const canvas = await html2canvas(storyRef.current, {
         backgroundColor: '#0a0a12',
         scale: 2,
         useCORS: true,
@@ -63,7 +59,6 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
       const fileName = `${firstName}-birth-chart.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
 
-      // Check if Web Share API with files is supported
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
@@ -72,12 +67,10 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
         });
         toast.success("Shared!");
       } else {
-        // Fallback: download the image
         downloadBlob(blob, fileName);
         toast.success("Chart downloaded!");
       }
     } catch (error) {
-      // User cancelled share or error occurred
       if ((error as Error).name !== 'AbortError') {
         console.error('Share error:', error);
         const blob = await generateImageBlob();
@@ -102,6 +95,12 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
     URL.revokeObjectURL(url);
   };
 
+  const formatBirthday = (bd: string) => {
+    const [year, month, day] = bd.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
@@ -111,148 +110,135 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] rounded-t-3xl bg-background border-foreground/10">
         <SheetHeader className="pb-4">
-          <SheetTitle className="text-center text-foreground/90">Share {firstName}'s Chart</SheetTitle>
+          <SheetTitle className="text-center text-foreground/90">Share to Story</SheetTitle>
         </SheetHeader>
         
-        <div className="space-y-4 overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
-          {/* Preview Card - Fixed width for consistent share image */}
+        <div className="flex flex-col items-center overflow-y-auto max-h-[calc(90vh-140px)] pb-4">
+          {/* Story Card - 9:16 aspect ratio */}
           <div 
-            ref={chartRef}
-            className="bg-[#0a0a12] rounded-2xl p-6 space-y-5 mx-auto"
-            style={{ width: '380px', minWidth: '380px' }}
+            ref={storyRef}
+            className="relative overflow-hidden"
+            style={{ 
+              width: '270px', 
+              height: '480px',
+              background: 'linear-gradient(160deg, #0a0612 0%, #140a1a 30%, #0a0810 60%, #060408 100%)',
+              borderRadius: '12px'
+            }}
           >
-            {/* Header */}
-            <div className="text-center space-y-1">
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">Birth Chart</p>
-              <h2 className="text-2xl font-light text-white">{name}</h2>
-              <p className="text-[12px] text-white/40">{(() => {
-                const [year, month, day] = birthday.split('-').map(Number);
-                const date = new Date(year, month - 1, day);
-                return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-              })()}</p>
-            </div>
-
-            {/* Birth Chart Diagram - Fixed aspect ratio container */}
-            <div className="flex justify-center">
-              <div className="w-[280px] h-[280px] flex items-center justify-center">
-                <BirthChartDiagram
-                  sunSign={sunSign}
-                  moonSign={moonSign}
-                  risingSign={risingSign}
-                  birthday={birthday}
-                  birthTime={birthTime}
-                  birthLocation={birthLocation}
+            {/* Decorative star field */}
+            <div className="absolute inset-0 opacity-40">
+              {[...Array(25)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    left: `${5 + Math.random() * 90}%`,
+                    top: `${5 + Math.random() * 90}%`,
+                    width: `${1 + Math.random() * 2}px`,
+                    height: `${1 + Math.random() * 2}px`,
+                    opacity: 0.2 + Math.random() * 0.5
+                  }}
                 />
-              </div>
+              ))}
             </div>
 
-            {/* Signs Grid - Below diagram with proper spacing */}
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              {/* Sun */}
-              <div className="bg-white/5 rounded-xl p-3 text-center">
-                <ZodiacIcon sign={sunSign} size={28} className="mx-auto mb-1.5 text-amber-400/80" />
-                <p className="text-[9px] text-white/40 uppercase tracking-wider">Sun</p>
-                <p className="text-[14px] text-white/90">{getZodiacName(sunSign)}</p>
+            {/* Gradient overlays */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse 70% 40% at 50% 25%, rgba(251, 191, 36, 0.1) 0%, transparent 60%)',
+              }}
+            />
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse 60% 50% at 50% 75%, rgba(139, 92, 246, 0.08) 0%, transparent 60%)',
+              }}
+            />
+
+            {/* Content */}
+            <div className="relative h-full flex flex-col p-5">
+              {/* Header */}
+              <div className="text-center mb-4">
+                <p className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-sans mb-1">
+                  Birth Chart
+                </p>
+                <h2 className="text-xl font-serif text-white/90">{name}</h2>
+                <p className="text-[10px] text-white/40 mt-1">{formatBirthday(birthday)}</p>
               </div>
-              
-              {/* Moon */}
-              {moonSign && (
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <ZodiacIcon sign={moonSign} size={28} className="mx-auto mb-1.5 text-blue-300/80" />
-                  <p className="text-[9px] text-white/40 uppercase tracking-wider">Moon</p>
-                  <p className="text-[14px] text-white/90">{getZodiacName(moonSign)}</p>
-                </div>
-              )}
-              
-              {/* Rising */}
-              {risingSign && (
-                <div className="bg-white/5 rounded-xl p-3 text-center">
-                  <ZodiacIcon sign={risingSign} size={28} className="mx-auto mb-1.5 text-purple-300/80" />
-                  <p className="text-[9px] text-white/40 uppercase tracking-wider">Rising</p>
-                  <p className="text-[14px] text-white/90">{getZodiacName(risingSign)}</p>
-                </div>
-              )}
-            </div>
 
-            {/* Sun Section */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[11px] text-white/50 uppercase tracking-wider mb-1">{firstName}'s Sun in {getZodiacName(sunSign)}</p>
-              <p className="text-[9px] text-white/30 mb-3">Essential self · Core identity</p>
-              <ul className="space-y-2.5">
-                {sunMechanics?.map((trait, i) => (
-                  <li key={i} className="text-[12px] text-white/75 leading-relaxed pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
-                    {trait}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Moon Section */}
-            {moonPatterns && moonSign && (
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-[11px] text-white/50 uppercase tracking-wider mb-1">{firstName}'s Moon in {getZodiacName(moonSign)}</p>
-                <p className="text-[9px] text-white/30 mb-3">Emotional needs · Inner world</p>
-                <ul className="space-y-2.5">
-                  {moonPatterns.map((trait, i) => (
-                    <li key={i} className="text-[12px] text-white/75 leading-relaxed pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
-                      {trait}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Rising Section */}
-            {risingPresence && risingSign && (
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-[11px] text-white/50 uppercase tracking-wider mb-1">{firstName}'s {getZodiacName(risingSign)} Rising</p>
-                <p className="text-[9px] text-white/30 mb-3">First impression · Instinctual response</p>
-                <p className="text-[12px] text-white/75 leading-relaxed mb-3">{risingPresence.instinct}</p>
-                <ul className="space-y-2.5">
-                  {risingPresence.modification.map((trait, i) => (
-                    <li key={i} className="text-[12px] text-white/75 leading-relaxed pl-4 relative before:content-['•'] before:absolute before:left-0 before:text-white/30">
-                      {trait}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Chart Synthesis */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[11px] text-white/50 uppercase tracking-wider mb-1">{firstName}'s Inner Balance</p>
-              <p className="text-[9px] text-white/30 mb-3">Strengths & growth areas</p>
-              
-              <div className="space-y-4">
-                <div>
-                  <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2">Natural Gifts</p>
-                  <div className="space-y-1.5">
-                    {strengths.map((strength, i) => (
-                      <div key={i} className="text-[11px] bg-white/10 text-white/75 px-3 py-1.5 rounded-lg">
-                        {strength}
-                      </div>
-                    ))}
-                  </div>
+              {/* Signs - Visual Display */}
+              <div className="flex items-center justify-center gap-3 mb-5">
+                {/* Sun */}
+                <div className="flex flex-col items-center gap-1 bg-white/5 rounded-xl px-3 py-2">
+                  <Sun size={20} className="text-amber-400/80" />
+                  <ZodiacIcon sign={sunSign} size={24} className="text-amber-300/90" />
+                  <span className="text-[8px] text-white/40 uppercase tracking-wider">Sun</span>
+                  <span className="text-[11px] text-white/80">{getZodiacName(sunSign)}</span>
                 </div>
                 
-                <div>
-                  <p className="text-[9px] text-white/30 uppercase tracking-wider mb-2">Growth Edges</p>
-                  <div className="space-y-1.5">
-                    {growthEdges.map((edge, i) => (
-                      <div key={i} className="text-[11px] bg-white/10 text-white/75 px-3 py-1.5 rounded-lg">
-                        {edge}
-                      </div>
-                    ))}
+                {/* Moon */}
+                {moonSign && (
+                  <div className="flex flex-col items-center gap-1 bg-white/5 rounded-xl px-3 py-2">
+                    <Moon size={20} className="text-blue-300/80" />
+                    <ZodiacIcon sign={moonSign} size={24} className="text-blue-300/90" />
+                    <span className="text-[8px] text-white/40 uppercase tracking-wider">Moon</span>
+                    <span className="text-[11px] text-white/80">{getZodiacName(moonSign)}</span>
                   </div>
+                )}
+                
+                {/* Rising */}
+                {risingSign && (
+                  <div className="flex flex-col items-center gap-1 bg-white/5 rounded-xl px-3 py-2">
+                    <Sparkles size={20} className="text-purple-300/80" />
+                    <ZodiacIcon sign={risingSign} size={24} className="text-purple-300/90" />
+                    <span className="text-[8px] text-white/40 uppercase tracking-wider">Rising</span>
+                    <span className="text-[11px] text-white/80">{getZodiacName(risingSign)}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Strengths */}
+              <div className="mb-4">
+                <p className="text-[9px] text-amber-300/60 uppercase tracking-[0.15em] mb-2 font-sans">
+                  Strengths
+                </p>
+                <div className="space-y-1.5">
+                  {strengths.slice(0, 3).map((s, i) => (
+                    <div key={i} className="text-[10px] text-white/70 bg-white/5 px-3 py-1.5 rounded-lg">
+                      {s}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <p className="text-[11px] text-white/25 text-center pt-3 uppercase tracking-[0.2em]">
-              Generated with Aster
-            </p>
+              {/* Growth Areas */}
+              <div className="flex-1">
+                <p className="text-[9px] text-purple-300/60 uppercase tracking-[0.15em] mb-2 font-sans">
+                  Growth Areas
+                </p>
+                <div className="space-y-1.5">
+                  {growthEdges.slice(0, 2).map((e, i) => (
+                    <div key={i} className="text-[10px] text-white/60 bg-white/5 px-3 py-1.5 rounded-lg">
+                      {e}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-auto pt-4 text-center">
+                <p className="text-[8px] text-white/25 uppercase tracking-[0.25em]">
+                  ✦ Aster ✦
+                </p>
+              </div>
+            </div>
           </div>
+
+          {/* Preview label */}
+          <p className="text-[11px] text-foreground/40 mt-4">
+            Optimized for Instagram & TikTok Stories
+          </p>
         </div>
 
         {/* Action Button */}
@@ -263,7 +249,7 @@ export const ShareChartSheet = ({ name, birthday, birthTime, birthLocation, sunS
             className="w-full h-12 gap-2"
           >
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-            Share
+            Share to Story
           </Button>
         </div>
       </SheetContent>
