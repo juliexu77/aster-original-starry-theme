@@ -8,7 +8,8 @@ import { ChartIntroOverlay } from "./ChartIntroOverlay";
 import { ShareChartSheet } from "./ShareChartSheet";
 import { 
   getZodiacFromBirthday, 
-  getMoonSignFromBirthDateTime, 
+  getMoonSignFromBirthDateTime,
+  getRisingSign, 
   getZodiacName,
   ZodiacSign 
 } from "@/lib/zodiac";
@@ -201,18 +202,28 @@ export const ChildView = ({
     
     // Use ephemeris calculation for rising sign (more accurate)
     let rising: ZodiacSign | null = null;
+    let debugInfo = '';
+    
     if (selectedMember.birth_time && selectedMember.birth_location) {
       const birthChart = calculateBirthChart(
         selectedMember.birthday,
         selectedMember.birth_time,
         selectedMember.birth_location
       );
-      console.log('[ChildView] Birth chart for', selectedMember.name, ':', 
-        birthChart ? { asc: birthChart.ascendantDegree, sign: birthChart.ascendantSign } : 'null');
-      rising = birthChart?.ascendantSign ?? null;
+      
+      // Also test with getRisingSign for comparison
+      const risingFromZodiac = getRisingSign(
+        selectedMember.birthday,
+        selectedMember.birth_time,
+        selectedMember.birth_location
+      );
+      
+      debugInfo = `E:${birthChart?.ascendantSign || 'null'}(${birthChart?.ascendantDegree?.toFixed(0) || '?'}°) Z:${risingFromZodiac || 'null'}`;
+      
+      rising = birthChart?.ascendantSign ?? risingFromZodiac;
     }
     
-    return { sun, moon, rising };
+    return { sun, moon, rising, debugInfo };
   }, [selectedMember]);
 
   const getSignsSubtitle = (): string => {
@@ -308,6 +319,13 @@ export const ChildView = ({
           <p className="text-[11px] text-foreground/40 mt-1 text-center">
             {getSignsSubtitle()}
           </p>
+          
+          {/* Debug output - temporary */}
+          {selectedMember.birth_location && (
+            <p className="text-[9px] text-amber-400/60 mt-1 text-center font-mono">
+              {signs.debugInfo || 'no debug'}
+            </p>
+          )}
           
           {/* Missing data prompts */}
           {!signs.moon && (
