@@ -44,13 +44,13 @@ const PLANET_SYMBOLS = {
 // Natal planet positions with orbital periods (faster for visual appeal)
 // Each planet orbits at its own speed around the center
 const NATAL_POSITIONS = [
-  { symbol: '☽', duration: 4, radius: 25 },    // Moon - fastest, innermost
-  { symbol: '☿', duration: 6, radius: 33 },    // Mercury
-  { symbol: '♀', duration: 8, radius: 41 },    // Venus
-  { symbol: '☉', duration: 10, radius: 49 },   // Sun
-  { symbol: '♂', duration: 14, radius: 57 },   // Mars
-  { symbol: '♃', duration: 20, radius: 65 },   // Jupiter
-  { symbol: '♄', duration: 28, radius: 73 },   // Saturn - slowest, outermost
+  { symbol: '☽', duration: 12, radius: 25 },   // Moon - fastest, innermost
+  { symbol: '☿', duration: 18, radius: 33 },   // Mercury
+  { symbol: '♀', duration: 24, radius: 41 },   // Venus
+  { symbol: '☉', duration: 30, radius: 49 },   // Sun
+  { symbol: '♂', duration: 40, radius: 57 },   // Mars
+  { symbol: '♃', duration: 55, radius: 65 },   // Jupiter
+  { symbol: '♄', duration: 75, radius: 73 },   // Saturn - slowest, outermost
 ];
 
 const LOADING_MESSAGES = [
@@ -278,34 +278,16 @@ export const CosmosLoading = () => {
                 style={{ transformOrigin: `${centerX}px ${centerY}px` }}
               >
                 {/* Planet positioned at its orbital radius on the x-axis, rotation moves it in circle */}
-                <motion.text
+                <text
                   x={centerX + planet.radius}
                   y={centerY}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="fill-foreground select-none"
+                  className="fill-foreground/70 select-none"
                   style={{ fontFamily: 'serif', fontSize: '14px', fontWeight: 500 }}
-                  animate={{ 
-                    opacity: [0.65, 1, 0.65],
-                    // Counter-rotate to keep symbols upright as they orbit
-                    rotate: [startAngle * -1, (startAngle + 360) * -1]
-                  }}
-                  transition={{
-                    opacity: {
-                      duration: 2 + i * 0.3,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
-                    rotate: {
-                      duration: planet.duration,
-                      repeat: Infinity,
-                      ease: "linear",
-                      repeatType: "loop"
-                    }
-                  }}
                 >
                   {planet.symbol}
-                </motion.text>
+                </text>
               </motion.g>
             );
           })}
