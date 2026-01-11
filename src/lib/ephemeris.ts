@@ -314,6 +314,10 @@ function calculateAscendant(
   // Convert from radians to degrees
   ascendant = ascendant * 180 / Math.PI;
   
+  // Add 180° to get the ascending point (eastern horizon), not the descending
+  // This is because atan2 with these arguments gives the IC, we need to rotate to ASC
+  ascendant = ascendant + 180;
+  
   // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
   
