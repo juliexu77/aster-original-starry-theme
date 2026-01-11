@@ -268,15 +268,16 @@ export const CosmosLoading = () => {
             return (
               <motion.g
                 key={`natal-${i}`}
-                initial={{ rotate: startAngle }}
-                animate={{ rotate: startAngle + 360 }}
+                animate={{ rotate: [startAngle, startAngle + 360] }}
                 transition={{ 
                   duration: planet.duration, 
                   repeat: Infinity, 
-                  ease: "linear" 
+                  ease: "linear",
+                  repeatType: "loop"
                 }}
                 style={{ transformOrigin: `${centerX}px ${centerY}px` }}
               >
+                {/* Planet positioned at its orbital radius on the x-axis, rotation moves it in circle */}
                 <motion.text
                   x={centerX + planet.radius}
                   y={centerY}
@@ -284,11 +285,23 @@ export const CosmosLoading = () => {
                   dominantBaseline="central"
                   className="fill-foreground select-none"
                   style={{ fontFamily: 'serif', fontSize: '14px', fontWeight: 500 }}
-                  animate={{ opacity: [0.65, 1, 0.65] }}
+                  animate={{ 
+                    opacity: [0.65, 1, 0.65],
+                    // Counter-rotate to keep symbols upright as they orbit
+                    rotate: [startAngle * -1, (startAngle + 360) * -1]
+                  }}
                   transition={{
-                    duration: 2 + i * 0.3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+                    opacity: {
+                      duration: 2 + i * 0.3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    },
+                    rotate: {
+                      duration: planet.duration,
+                      repeat: Infinity,
+                      ease: "linear",
+                      repeatType: "loop"
+                    }
                   }}
                 >
                   {planet.symbol}
