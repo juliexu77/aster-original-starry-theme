@@ -39,17 +39,17 @@ const generateBackgroundStars = (count: number): Star[] => {
       size = 0.3 + Math.random() * 0.3;
     }
     
-    // Varied brightness - some very dim, some bright
+    // Varied brightness - more prominent overall
     const brightnessRoll = Math.random();
     let opacity: number;
-    if (brightnessRoll > 0.92) {
-      opacity = 0.6 + Math.random() * 0.35; // Bright stars
-    } else if (brightnessRoll > 0.7) {
-      opacity = 0.25 + Math.random() * 0.25; // Medium stars
-    } else if (brightnessRoll > 0.4) {
-      opacity = 0.10 + Math.random() * 0.12; // Dim stars
+    if (brightnessRoll > 0.88) {
+      opacity = 0.75 + Math.random() * 0.25; // Bright stars
+    } else if (brightnessRoll > 0.6) {
+      opacity = 0.4 + Math.random() * 0.3; // Medium stars
+    } else if (brightnessRoll > 0.3) {
+      opacity = 0.2 + Math.random() * 0.2; // Dim stars
     } else {
-      opacity = 0.04 + Math.random() * 0.05; // Very faint stars
+      opacity = 0.08 + Math.random() * 0.1; // Faint stars
     }
     
     stars.push({
@@ -58,8 +58,8 @@ const generateBackgroundStars = (count: number): Star[] => {
       size,
       opacity,
       hasFlare,
-      twinkleDelay: Math.random() * 8, // Random start delay 0-8s
-      twinkleDuration: 2 + Math.random() * 4, // 2-6s twinkle cycle
+      twinkleDelay: Math.random() * 5, // Random start delay 0-5s
+      twinkleDuration: 1.5 + Math.random() * 2.5, // 1.5-4s twinkle cycle (faster)
     });
   }
   return stars;
