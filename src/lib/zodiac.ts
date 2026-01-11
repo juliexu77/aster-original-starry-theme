@@ -187,7 +187,9 @@ const getTimezoneOffsetForDate = (timezone: string, date: Date): number => {
         const sign = match[1] === '+' ? 1 : -1;
         const hours = parseInt(match[2], 10);
         const minutes = parseInt(match[3], 10);
-        return sign * (hours + minutes / 60);
+        const offset = sign * (hours + minutes / 60);
+        console.log('[Zodiac] getTimezoneOffsetForDate:', { timezone, date: date.toISOString(), offset });
+        return offset;
       }
       // Handle "GMT" (UTC+0)
       if (offsetPart.value === 'GMT') {
@@ -198,7 +200,9 @@ const getTimezoneOffsetForDate = (timezone: string, date: Date): number => {
     // Fallback: use a different method
     const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
     const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
-    return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
+    const offset = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60 * 60);
+    console.log('[Zodiac] getTimezoneOffsetForDate (fallback):', { timezone, offset });
+    return offset;
   } catch (e) {
     console.warn(`Failed to get timezone offset for ${timezone}:`, e);
     return 0;
