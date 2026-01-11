@@ -1,5 +1,5 @@
 import { Heart, Sparkles, AlertTriangle, Lightbulb } from "lucide-react";
-import { GlassCard } from "@/components/home/GlassCard";
+import { Card } from "@/components/ui/card";
 import { CompatibilityResult } from "@/lib/zodiac";
 
 interface CompatibilityCardProps {
@@ -49,7 +49,7 @@ export const CompatibilityCard = ({
   };
 
   return (
-    <GlassCard className="overflow-hidden">
+    <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border/30">
       {/* Header with names */}
       <div className="px-4 py-3 border-b border-border/30">
         <div className="flex items-center justify-center gap-3">
@@ -128,6 +128,6 @@ export const CompatibilityCard = ({
           </ul>
         </div>
       </div>
-    </GlassCard>
+    </Card>
   );
 };

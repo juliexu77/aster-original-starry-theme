@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Calendar, Clock, MapPin, Sparkles, User, Users, ChevronDown } from "lucide-react";
-import { GlassCard } from "@/components/home/GlassCard";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,7 +63,7 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
   const hasAnyData = birthday || partnerBirthday;
 
   return (
-    <GlassCard>
+    <Card className="bg-card/50 backdrop-blur-sm border-border/30">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border/30">
         <div className="flex items-center gap-3">
@@ -244,6 +244,6 @@ export const ParentBirthdayPrompt = ({ onSaved }: { onSaved?: () => void }) => {
           )}
         </AnimatePresence>
       </div>
-    </GlassCard>
+    </Card>
   );
 };

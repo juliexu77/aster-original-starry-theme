@@ -8,7 +8,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RouteGuard } from "@/components/RouteGuard";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import Index from "./pages/Index";
 import Family from "./pages/Family";
 import Cosmos from "./pages/Cosmos";
 import Auth from "./pages/Auth";
@@ -36,8 +35,8 @@ const App = () => (
               <BrowserRouter>
                 <RouteGuard>
                   <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/app" element={<Index />} />
+                    <Route path="/" element={<Family />} />
+                    <Route path="/app" element={<Family />} />
                     <Route path="/family" element={<Family />} />
                     <Route path="/cosmos" element={<Cosmos />} />
                     <Route path="/onboarding" element={<Onboarding />} />

@@ -1,13 +1,12 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Sparkles, Sun, Settings } from "lucide-react";
+import { Sparkles, Settings } from "lucide-react";
 import { IconZodiacSagittarius } from "@tabler/icons-react";
 
 export const FamilyNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const isGrowth = location.pathname === "/" || location.pathname === "/app";
-  const isChart = location.pathname === "/family";
+  const isChart = location.pathname === "/" || location.pathname === "/app" || location.pathname === "/family";
   const isCosmos = location.pathname === "/cosmos";
   const isSettings = location.pathname === "/settings";
 
@@ -16,16 +15,6 @@ export const FamilyNav = () => {
       <div className="flex items-center justify-around py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <button 
           onClick={() => navigate("/")}
-          className="flex flex-col items-center gap-1 px-4 py-1"
-        >
-          <Sun className={`w-5 h-5 ${isGrowth ? "text-foreground" : "text-muted-foreground"}`} />
-          <span className={`text-[10px] ${isGrowth ? "text-foreground" : "text-muted-foreground"}`}>
-            Growth
-          </span>
-        </button>
-
-        <button 
-          onClick={() => navigate("/family")}
           className="flex flex-col items-center gap-1 px-4 py-1"
         >
           <Sparkles className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
