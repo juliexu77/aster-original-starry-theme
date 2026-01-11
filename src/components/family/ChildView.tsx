@@ -190,10 +190,7 @@ export const ChildView = ({
   }, [allMembers, selectedMemberId]);
 
   const signs = useMemo(() => {
-    if (!selectedMember?.birthday) {
-      console.log('[ChildView] No selectedMember or birthday for signs calculation');
-      return null;
-    }
+    if (!selectedMember?.birthday) return null;
     
     const sun = getZodiacFromBirthday(selectedMember.birthday);
     const moon = getMoonSignFromBirthDateTime(
@@ -210,10 +207,11 @@ export const ChildView = ({
         selectedMember.birth_time,
         selectedMember.birth_location
       );
+      console.log('[ChildView] Birth chart for', selectedMember.name, ':', 
+        birthChart ? { asc: birthChart.ascendantDegree, sign: birthChart.ascendantSign } : 'null');
       rising = birthChart?.ascendantSign ?? null;
     }
     
-    console.log('[ChildView] Calculated signs for', selectedMember.name, ':', { sun, moon, rising });
     return { sun, moon, rising };
   }, [selectedMember]);
 

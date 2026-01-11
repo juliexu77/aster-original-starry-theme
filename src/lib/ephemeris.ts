@@ -178,6 +178,7 @@ function getCityCoordinates(location: string | null | undefined): { longitude: n
   // Find the best matching city (longest match wins to avoid "new york" matching before "smithtown")
   let bestMatch: { longitude: number; latitude: number } | null = null;
   let bestMatchLength = 0;
+  let bestMatchCity = '';
   
   for (const [city, data] of Object.entries(CITY_DATA)) {
     if (normalizedLocation.includes(city) || city.includes(normalizedLocation)) {
@@ -185,9 +186,17 @@ function getCityCoordinates(location: string | null | undefined): { longitude: n
       if (city.length > bestMatchLength) {
         bestMatch = { longitude: data.longitude, latitude: data.latitude };
         bestMatchLength = city.length;
+        bestMatchCity = city;
       }
     }
   }
+  
+  console.log('[Ephemeris] getCityCoordinates:', { 
+    input: location, 
+    normalized: normalizedLocation,
+    matchedCity: bestMatchCity, 
+    coords: bestMatch 
+  });
   
   return bestMatch;
 }
@@ -293,14 +302,20 @@ function calculateAscendant(
   const cosObl = Math.cos(oblRad);
   const tanLat = Math.tan(latRad);
   
-  // Note: atan2(y, x) where y = cos(LST), x = -(sin(LST)*cos(ε) + tan(φ)*sin(ε))
-  let ascendant = Math.atan2(cosLST, -(sinLST * cosObl + tanLat * sinObl));
+  // Calculate ascendant using the proper formula
+  // The y component is cos(LST), x component is the denominator
+  const y = cosLST;
+  const x = -(sinLST * cosObl + tanLat * sinObl);
+  
+  let ascendant = Math.atan2(y, x);
   
   // Convert from radians to degrees
   ascendant = ascendant * 180 / Math.PI;
   
   // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
+  
+  console.log('[Ephemeris] Ascendant calc:', { LST, latitude, ascendant, sign: Math.floor(ascendant / 30) });
   
   return ascendant;
 }
@@ -346,10 +361,10 @@ function birthTimeToUTC(
   const month = parseInt(dateParts[1], 10) - 1; // 0-indexed
   const day = parseInt(dateParts[2], 10);
   
-  // Parse time parts
-  const [hoursStr, minutesStr] = birthTime.split(':');
-  const hours = parseInt(hoursStr, 10);
-  const minutes = parseInt(minutesStr, 10) || 0;
+  // Parse time parts (handle HH:MM or HH:MM:SS format)
+  const timeParts = birthTime.split(':');
+  const hours = parseInt(timeParts[0], 10);
+  const minutes = parseInt(timeParts[1], 10) || 0;
   
   // Create local date for timezone calculation
   const localDate = new Date(year, month, day, hours, minutes);
@@ -365,6 +380,17 @@ function birthTimeToUTC(
   // Convert to UTC
   const utcHours = hours - offsetHours;
   const utcDate = new Date(Date.UTC(year, month, day, Math.floor(utcHours), minutes + (utcHours % 1) * 60));
+  
+  console.log('[Ephemeris] birthTimeToUTC:', {
+    birthday,
+    birthTime,
+    birthLocation,
+    timezone,
+    offsetHours,
+    localHours: hours,
+    utcHours,
+    utcDateISO: utcDate.toISOString()
+  });
   
   return utcDate;
 }
@@ -394,6 +420,14 @@ export function calculateBirthChart(
   // Convert birth time to UTC
   const utcDate = birthTimeToUTC(birthday, birthTime, birthLocation);
   
+  console.log('[Ephemeris] calculateBirthChart:', { 
+    birthday, 
+    birthTime, 
+    birthLocation,
+    coords,
+    utcDate: utcDate.toISOString()
+  });
+  
   try {
     // Get all planetary positions from ephemeris
     const result = ephemeris.getAllPlanets(utcDate, longitude, latitude, 0);
@@ -404,6 +438,13 @@ export function calculateBirthChart(
     // Calculate Ascendant
     const ascendantDegree = calculateAscendant(utcDate, latitude, longitude);
     const ascendantSign = longitudeToSign(ascendantDegree);
+    
+    console.log('[Ephemeris] Ascendant calculated:', { 
+      ascendantDegree, 
+      ascendantSign,
+      latitude,
+      longitude
+    });
     
     // Build chart data
     const chartData: BirthChartData = {
