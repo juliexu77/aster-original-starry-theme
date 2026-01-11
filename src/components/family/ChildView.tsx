@@ -202,7 +202,6 @@ export const ChildView = ({
     
     // Use ephemeris calculation for rising sign (more accurate)
     let rising: ZodiacSign | null = null;
-    let debugInfo = '';
     
     if (selectedMember.birth_time && selectedMember.birth_location) {
       const birthChart = calculateBirthChart(
@@ -218,12 +217,10 @@ export const ChildView = ({
         selectedMember.birth_location
       );
       
-      debugInfo = `E:${birthChart?.ascendantSign || 'null'}(${birthChart?.ascendantDegree?.toFixed(0) || '?'}°) UTC:${(birthChart as any)?.debugUTC?.substring(11, 16) || '?'}`;
-      
       rising = birthChart?.ascendantSign ?? risingFromZodiac;
     }
     
-    return { sun, moon, rising, debugInfo };
+    return { sun, moon, rising };
   }, [selectedMember]);
 
   const getSignsSubtitle = (): string => {
@@ -320,12 +317,6 @@ export const ChildView = ({
             {getSignsSubtitle()}
           </p>
           
-          {/* Debug output - temporary */}
-          {selectedMember.birth_location && (
-            <p className="text-[9px] text-amber-400/60 mt-1 text-center font-mono">
-              {signs.debugInfo || 'no debug'}
-            </p>
-          )}
           
           {/* Missing data prompts */}
           {!signs.moon && (

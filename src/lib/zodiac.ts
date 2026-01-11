@@ -398,59 +398,6 @@ export const getRisingSign = (
   return signs[signIndex % 12];
 };
 
-// Test DST handling by comparing summer vs winter births
-export const testDSTHandling = () => {
-  const testCases = [
-    // Winter (PST = UTC-8, no DST)
-    { date: '2022-01-15', time: '15:00', location: 'San Francisco', label: 'Winter (Jan 15, 3PM SF)' },
-    // Summer (PDT = UTC-7, DST active)
-    { date: '2022-07-15', time: '15:00', location: 'San Francisco', label: 'Summer (Jul 15, 3PM SF)' },
-    // Compare with Phoenix (no DST ever)
-    { date: '2022-01-15', time: '15:00', location: 'Phoenix', label: 'Winter (Jan 15, 3PM Phoenix)' },
-    { date: '2022-07-15', time: '15:00', location: 'Phoenix', label: 'Summer (Jul 15, 3PM Phoenix)' },
-    // Sydney (Southern Hemisphere - DST in Jan, not in Jul)
-    { date: '2022-01-15', time: '15:00', location: 'Sydney', label: 'Sydney Summer (Jan 15, 3PM)' },
-    { date: '2022-07-15', time: '15:00', location: 'Sydney', label: 'Sydney Winter (Jul 15, 3PM)' },
-    // New Bay Area cities
-    { date: '2025-04-15', time: '05:00', location: 'Redwood City', label: 'Redwood City (Apr 15, 5AM)' },
-    { date: '2025-04-15', time: '05:00', location: 'Palo Alto', label: 'Palo Alto (Apr 15, 5AM)' },
-    // Original test case that was previously failing
-    { date: '1988-12-16', time: '21:30', location: 'Shanghai', label: 'Shanghai (Dec 16 1988, 9:30PM)' },
-  ];
-
-  console.log('=== DST HANDLING TEST ===\n');
-  
-  testCases.forEach(({ date, time, location, label }) => {
-    console.log(`\n--- ${label} ---`);
-    
-    // Parse date correctly (same way as the actual functions now do)
-    const dateParts = date.split('-');
-    const year = parseInt(dateParts[0], 10);
-    const month = parseInt(dateParts[1], 10) - 1;
-    const day = parseInt(dateParts[2], 10);
-    const birthDate = new Date(year, month, day);
-    
-    console.log(`Parsed date: ${year}-${month + 1}-${day}`);
-    
-    const cityData = getCityData(location);
-    
-    if (cityData) {
-      const offset = getTimezoneOffsetForDate(cityData.timezone, birthDate);
-      console.log(`City found: ${location}`);
-      console.log(`Timezone: ${cityData.timezone}`);
-      console.log(`Coordinates: lat ${cityData.latitude}, lon ${cityData.longitude}`);
-      console.log(`Offset for ${date}: UTC${offset >= 0 ? '+' : ''}${offset}`);
-    } else {
-      console.log(`⚠️ City NOT found: ${location}`);
-    }
-    
-    // Run the ascendant calculation with debug
-    const rising = getRisingSign(date, time, location);
-    console.log(`Rising sign result: ${rising}`);
-  });
-  
-  console.log('\n=== END DST TEST ===');
-};
 
 // Helper to get full ascendant info with degree
 export const getAscendantWithDegree = (
