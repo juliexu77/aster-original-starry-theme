@@ -60,6 +60,8 @@ const CITY_DATA: Record<string, CityData> = {
   // North America
   'new york': { timezone: 'America/New_York', longitude: -74.006, latitude: 40.7128 },
   'nyc': { timezone: 'America/New_York', longitude: -74.006, latitude: 40.7128 },
+  'smithtown': { timezone: 'America/New_York', longitude: -73.2004, latitude: 40.8559 },
+  'smithtown ny': { timezone: 'America/New_York', longitude: -73.2004, latitude: 40.8559 },
   'manhattan': { timezone: 'America/New_York', longitude: -73.9712, latitude: 40.7831 },
   'brooklyn': { timezone: 'America/New_York', longitude: -73.9442, latitude: 40.6782 },
   'los angeles': { timezone: 'America/Los_Angeles', longitude: -118.2437, latitude: 34.0522 },
