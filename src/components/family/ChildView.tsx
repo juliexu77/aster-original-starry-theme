@@ -218,7 +218,7 @@ export const ChildView = ({
         selectedMember.birth_location
       );
       
-      debugInfo = `E:${birthChart?.ascendantSign || 'null'}(${birthChart?.ascendantDegree?.toFixed(0) || '?'}°) Z:${risingFromZodiac || 'null'}`;
+      debugInfo = `E:${birthChart?.ascendantSign || 'null'}(${birthChart?.ascendantDegree?.toFixed(0) || '?'}°) UTC:${(birthChart as any)?.debugUTC?.substring(11, 16) || '?'}`;
       
       rising = birthChart?.ascendantSign ?? risingFromZodiac;
     }

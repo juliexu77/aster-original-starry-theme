@@ -317,7 +317,25 @@ function calculateAscendant(
   // Normalize to 0-360
   ascendant = ((ascendant % 360) + 360) % 360;
   
-  console.log('[Ephemeris] Ascendant calc:', { LST, latitude, ascendant, sign: Math.floor(ascendant / 30) });
+  // Debug: Log all intermediate values
+  console.log('[Ephemeris] Ascendant FULL DEBUG:', {
+    birthDateUTC: birthDate.toISOString(),
+    jd,
+    T,
+    GMST,
+    longitude,
+    LST,
+    latitude,
+    obliquity,
+    sinLST: sinLST.toFixed(6),
+    cosLST: cosLST.toFixed(6),
+    tanLat: tanLat.toFixed(6),
+    y: y.toFixed(6),
+    x: x.toFixed(6),
+    atan2Result: Math.atan2(y, x).toFixed(6),
+    ascendantDeg: ascendant.toFixed(2),
+    sign: ZODIAC_ORDER[Math.floor(ascendant / 30)]
+  });
   
   return ascendant;
 }
@@ -448,8 +466,8 @@ export function calculateBirthChart(
       longitude
     });
     
-    // Build chart data
-    const chartData: BirthChartData = {
+    // Build chart data with debug info
+    const chartData: BirthChartData & { debugLST?: number } = {
       sun: createPlanetPosition('Sun', observed.sun.apparentLongitudeDd, observed.sun.is_retrograde),
       moon: createPlanetPosition('Moon', observed.moon.apparentLongitudeDd, observed.moon.is_retrograde),
       mercury: createPlanetPosition('Mercury', observed.mercury.apparentLongitudeDd, observed.mercury.is_retrograde),
@@ -463,7 +481,9 @@ export function calculateBirthChart(
       chiron: observed.chiron ? createPlanetPosition('Chiron', observed.chiron.apparentLongitudeDd, observed.chiron.is_retrograde) : undefined,
       ascendantDegree,
       ascendantSign,
-    };
+      // Debug: expose UTC date for UI debugging
+      debugUTC: utcDate.toISOString(),
+    } as any;
     
     return chartData
   } catch (error) {
