@@ -41,16 +41,16 @@ const PLANET_SYMBOLS = {
   mars: '♂',
 };
 
-// Natal planet positions with orbital periods (relative animation speeds)
-// Faster orbits = shorter duration, scaled for visual effect
+// Natal planet positions with orbital periods (faster for visual appeal)
+// Each planet orbits at its own speed around the center
 const NATAL_POSITIONS = [
-  { symbol: '☉', angle: 45, duration: 60 },    // Sun - baseline
-  { symbol: '☽', angle: 130, duration: 12 },   // Moon - fastest (~27 days)
-  { symbol: '☿', angle: 75, duration: 20 },    // Mercury (~88 days)
-  { symbol: '♀', angle: 200, duration: 35 },   // Venus (~225 days)
-  { symbol: '♂', angle: 280, duration: 80 },   // Mars (~687 days)
-  { symbol: '♃', angle: 320, duration: 180 },  // Jupiter (~12 years)
-  { symbol: '♄', angle: 160, duration: 300 },  // Saturn (~29 years)
+  { symbol: '☽', duration: 4, radius: 25 },    // Moon - fastest, innermost
+  { symbol: '☿', duration: 6, radius: 33 },    // Mercury
+  { symbol: '♀', duration: 8, radius: 41 },    // Venus
+  { symbol: '☉', duration: 10, radius: 49 },   // Sun
+  { symbol: '♂', duration: 14, radius: 57 },   // Mars
+  { symbol: '♃', duration: 20, radius: 65 },   // Jupiter
+  { symbol: '♄', duration: 28, radius: 73 },   // Saturn - slowest, outermost
 ];
 
 const LOADING_MESSAGES = [
@@ -261,28 +261,33 @@ export const CosmosLoading = () => {
             })}
           </motion.g>
 
-          {/* Orbiting planets around center - each orbits at its own radius */}
+          {/* Orbiting planets - each planet travels in a circle at its own radius and speed */}
           {NATAL_POSITIONS.map((planet, i) => {
-            const orbitRadius = 25 + (i * 8);
+            // Random starting angle for visual variety
+            const startAngle = (i * 51) % 360; // Offset each planet
             return (
               <motion.g
                 key={`natal-${i}`}
-                animate={{ rotate: 360 }}
-                transition={{ duration: planet.duration, repeat: Infinity, ease: "linear" }}
+                initial={{ rotate: startAngle }}
+                animate={{ rotate: startAngle + 360 }}
+                transition={{ 
+                  duration: planet.duration, 
+                  repeat: Infinity, 
+                  ease: "linear" 
+                }}
                 style={{ transformOrigin: `${centerX}px ${centerY}px` }}
               >
                 <motion.text
-                  x={centerX + orbitRadius}
+                  x={centerX + planet.radius}
                   y={centerY}
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="fill-foreground select-none"
-                  style={{ fontFamily: 'serif', fontSize: '16px', fontWeight: 500 }}
-                  animate={{ opacity: [0.7, 1, 0.7] }}
+                  style={{ fontFamily: 'serif', fontSize: '14px', fontWeight: 500 }}
+                  animate={{ opacity: [0.65, 1, 0.65] }}
                   transition={{
-                    duration: 3 + i * 0.5,
+                    duration: 2 + i * 0.3,
                     repeat: Infinity,
-                    delay: i * 0.4,
                     ease: "easeInOut",
                   }}
                 >
