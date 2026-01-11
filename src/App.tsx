@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { RouteGuard } from "@/components/RouteGuard";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import Family from "./pages/Family";
+import FamilyRelationships from "./pages/FamilyRelationships";
 import Cosmos from "./pages/Cosmos";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -38,6 +39,7 @@ const App = () => (
                     <Route path="/" element={<Family />} />
                     <Route path="/app" element={<Family />} />
                     <Route path="/family" element={<Family />} />
+                    <Route path="/relationships" element={<FamilyRelationships />} />
                     <Route path="/cosmos" element={<Cosmos />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/baby-setup" element={<BabySetup />} />

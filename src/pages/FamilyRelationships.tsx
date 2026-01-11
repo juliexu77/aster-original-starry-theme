@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useBabies } from "@/hooks/useBabies";
@@ -6,43 +5,16 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
 import { FamilyNav } from "@/components/family/FamilyNav";
-import { ChildView } from "@/components/family/ChildView";
+import { FamilyView } from "@/components/family/FamilyView";
 
-const Family = () => {
+const FamilyRelationships = () => {
   const { user, loading: authLoading } = useAuth();
   const { babies, loading: babiesLoading } = useBabies();
-  const { userProfile, loading: profileLoading } = useUserProfile();
+  const { userProfile, loading: profileLoading, fetchUserProfile } = useUserProfile();
   const navigate = useNavigate();
-  
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (babies.length === 0) return;
-    
-    const storedId = localStorage.getItem('chart-selected-member-id');
-    const isValidBabyId = storedId && babies.some(b => b.id === storedId && b.birthday);
-    const isValidParentId = storedId === 'parent' || storedId === 'partner';
-    const storedIdIsValid = isValidBabyId || isValidParentId;
-    
-    if (storedIdIsValid) {
-      setSelectedMemberId(storedId);
-    } else {
-      const firstWithBirthday = babies.find(b => b.birthday);
-      if (firstWithBirthday) {
-        setSelectedMemberId(firstWithBirthday.id);
-        localStorage.setItem('chart-selected-member-id', firstWithBirthday.id);
-      }
-    }
-  }, [babies]);
-
-  useEffect(() => {
-    if (selectedMemberId) {
-      localStorage.setItem('chart-selected-member-id', selectedMemberId);
-    }
-  }, [selectedMemberId]);
-
-  const handleAddChild = () => {
-    navigate('/baby-setup');
+  const handleBirthdaySaved = () => {
+    fetchUserProfile();
   };
 
   if (authLoading || babiesLoading || profileLoading) {
@@ -65,17 +37,15 @@ const Family = () => {
           {/* Header */}
           <div className="px-5 pt-8 pb-2">
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em] text-center mb-6">
-              Your Chart
+              Family Dynamics
             </p>
           </div>
 
-          {/* Chart Content */}
-          <ChildView
+          {/* Family View Content */}
+          <FamilyView
             babies={babies}
             userProfile={userProfile}
-            selectedMemberId={selectedMemberId}
-            onSelectMember={setSelectedMemberId}
-            onAddChild={handleAddChild}
+            onBirthdaySaved={handleBirthdaySaved}
           />
 
           {/* Minimal Footer */}
@@ -92,4 +62,4 @@ const Family = () => {
   );
 };
 
-export default Family;
+export default FamilyRelationships;
