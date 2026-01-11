@@ -8,6 +8,7 @@ import { GuideSectionView } from "@/components/GuideSectionView";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { FamilyNav } from "@/components/family/FamilyNav";
 import { NightSkyBackground } from "@/components/ui/NightSkyBackground";
+
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { 

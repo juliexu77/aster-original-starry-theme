@@ -435,6 +435,7 @@ export function testEphemeris(): void {
   
   // Test case: Known birth data
   const testCases = [
+    { birthday: '1989-10-07', time: '06:00', location: 'Smithtown', label: 'User Test (Oct 7 1989, 6AM, Smithtown NY) - Expected: Aries Rising ~4°22\'' },
     { birthday: '2025-04-15', time: '05:00', location: 'Redwood City', label: 'Caleb (Apr 15 2025, 5AM, Redwood City)' },
     { birthday: '1988-12-16', time: '21:30', location: 'Shanghai', label: 'Shanghai Test (Dec 16 1988, 9:30PM)' },
     { birthday: '2000-01-01', time: '12:00', location: 'London', label: 'Y2K London Noon' },
@@ -456,7 +457,7 @@ export function testEphemeris(): void {
       console.log(`  Uranus: ${chart.uranus.sign} ${chart.uranus.formattedDegree}${chart.uranus.isRetrograde ? ' ℞' : ''}`);
       console.log(`  Neptune: ${chart.neptune.sign} ${chart.neptune.formattedDegree}${chart.neptune.isRetrograde ? ' ℞' : ''}`);
       console.log(`  Pluto: ${chart.pluto.sign} ${chart.pluto.formattedDegree}${chart.pluto.isRetrograde ? ' ℞' : ''}`);
-      console.log(`  Ascendant: ${chart.ascendantSign} ${formatDegree(getDegreeInSign(chart.ascendantDegree))}`);
+      console.log(`  Ascendant: ${chart.ascendantSign} ${formatDegree(getDegreeInSign(chart.ascendantDegree))} (${chart.ascendantDegree.toFixed(2)}°)`);
     } else {
       console.log('  Failed to calculate chart');
     }
