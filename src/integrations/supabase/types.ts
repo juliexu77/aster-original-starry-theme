@@ -174,6 +174,53 @@ export type Database = {
           },
         ]
       }
+      family_dynamics: {
+        Row: {
+          created_at: string
+          dynamics: Json
+          element_balance: Json | null
+          generated_at: string
+          household_id: string
+          id: string
+          member_profiles: Json | null
+          member_signatures: string
+          modality_balance: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dynamics: Json
+          element_balance?: Json | null
+          generated_at?: string
+          household_id: string
+          id?: string
+          member_profiles?: Json | null
+          member_signatures: string
+          modality_balance?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dynamics?: Json
+          element_balance?: Json | null
+          generated_at?: string
+          household_id?: string
+          id?: string
+          member_profiles?: Json | null
+          member_signatures?: string
+          modality_balance?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_dynamics_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           household_id: string

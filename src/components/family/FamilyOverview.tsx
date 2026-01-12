@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronDown, ChevronUp, Heart, Flame, AlertCircle, Lightbulb } from "lucide-react";
+import { Sparkles, ChevronDown, ChevronUp, Heart, Flame, AlertCircle, Lightbulb, RefreshCw } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday, ZODIAC_DATA } from "@/lib/zodiac";
 import { useFamilyDynamics } from "@/hooks/useFamilyDynamics";
@@ -97,9 +97,19 @@ const getFamilyDynamicInsight = (elementBalance: ReturnType<typeof getElementBal
 
 export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
   const [showAIInsights, setShowAIInsights] = useState(false);
-  const [hasGenerated, setHasGenerated] = useState(false);
   const { household } = useHousehold();
-  const { dynamics, loading, error, generateDynamics } = useFamilyDynamics();
+  const { 
+    dynamics, 
+    loading, 
+    fetching,
+    error, 
+    isCached,
+    generatedAt,
+    fetchCachedDynamics, 
+    generateDynamics,
+    refreshDynamics,
+    hasDynamics 
+  } = useFamilyDynamics();
 
   const memberSigns = useMemo(() => {
     return members
@@ -130,18 +140,40 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
     [elementBalance]
   );
 
+  // Fetch cached dynamics on mount
+  useEffect(() => {
+    if (household?.id && members.length >= 2 && !hasDynamics && !fetching) {
+      fetchCachedDynamics(household.id, members).then((cached) => {
+        if (cached) {
+          setShowAIInsights(true);
+        }
+      });
+    }
+  }, [household?.id, members, hasDynamics, fetching, fetchCachedDynamics]);
+
   const handleGenerateInsights = async () => {
-    if (!household?.id || hasGenerated) {
+    if (!household?.id) return;
+
+    // If already have dynamics, toggle visibility
+    if (hasDynamics) {
       setShowAIInsights(!showAIInsights);
       return;
     }
 
     try {
       await generateDynamics(household.id, members);
-      setHasGenerated(true);
       setShowAIInsights(true);
     } catch (err) {
       console.error('Failed to generate insights:', err);
+    }
+  };
+
+  const handleRefreshInsights = async () => {
+    if (!household?.id) return;
+    try {
+      await refreshDynamics(household.id, members);
+    } catch (err) {
+      console.error('Failed to refresh insights:', err);
     }
   };
 
@@ -221,9 +253,9 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
           <Sparkles className="w-4 h-4 text-purple-400" />
         )}
         <span className="text-[11px] font-medium text-purple-300">
-          {loading ? 'Consulting the stars...' : hasGenerated ? (showAIInsights ? 'Hide Deep Insights' : 'Show Deep Insights') : 'Generate Deep Insights'}
+          {loading ? 'Consulting the stars...' : hasDynamics ? (showAIInsights ? 'Hide Deep Insights' : 'Show Deep Insights') : 'Generate Deep Insights'}
         </span>
-        {!loading && hasGenerated && (
+        {!loading && hasDynamics && (
           showAIInsights ? <ChevronUp className="w-3 h-3 text-purple-400" /> : <ChevronDown className="w-3 h-3 text-purple-400" />
         )}
       </motion.button>
@@ -237,12 +269,31 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4 overflow-hidden"
           >
-            {/* Headline */}
-            <div className="text-center py-3">
-              <p className="text-sm font-medium text-foreground/80 italic">
+            {/* Header with refresh button */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex-1" />
+              <p className="text-sm font-medium text-foreground/80 italic text-center flex-[3]">
                 "{dynamics.headline}"
               </p>
+              <div className="flex-1 flex justify-end">
+                <motion.button
+                  onClick={handleRefreshInsights}
+                  disabled={loading}
+                  className="p-2 rounded-lg hover:bg-foreground/5 transition-colors"
+                  whileTap={{ scale: 0.95 }}
+                  title="Regenerate insights"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-foreground/30 ${loading ? 'animate-spin' : ''}`} />
+                </motion.button>
+              </div>
             </div>
+
+            {/* Cache indicator */}
+            {isCached && generatedAt && (
+              <p className="text-[9px] text-foreground/25 text-center">
+                Generated {new Date(generatedAt).toLocaleDateString()}
+              </p>
+            )}
 
             {/* Overview */}
             <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/5">
