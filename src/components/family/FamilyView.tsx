@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { ParentBirthdayPrompt } from "./ParentBirthdayPrompt";
 import { RelationshipMap } from "./RelationshipMap";
 import { RelationshipDetail } from "./RelationshipDetail";
+import { FamilyOverview } from "./FamilyOverview";
 import { ZodiacSign, getZodiacFromBirthday } from "@/lib/zodiac";
 
 interface Baby {
@@ -180,13 +181,9 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
         </div>
       )}
 
-      {/* Subtle hint about evolving content */}
+      {/* Family Overview - shown when no connection selected */}
       {familyMembers.length >= 2 && !selectedConnection && (
-        <div className="px-5 text-center">
-          <p className="text-[10px] text-foreground/20 tracking-wide">
-            Insights evolve monthly with your child's growth
-          </p>
-        </div>
+        <FamilyOverview members={familyMembers} />
       )}
     </div>
   );
