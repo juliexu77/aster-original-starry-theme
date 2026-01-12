@@ -261,14 +261,13 @@ export const CosmosLoading = () => {
             })}
           </motion.g>
 
-          {/* Orbiting planets - each planet travels in a circle at its own radius and speed */}
+          {/* Orbiting planets - each planet travels in a circle (opposite direction to zodiac) */}
           {NATAL_POSITIONS.map((planet, i) => {
-            // Random starting angle for visual variety
-            const startAngle = (i * 51) % 360; // Offset each planet
+            const startAngle = (i * 51) % 360; // Offset each planet for variety
             return (
               <motion.g
                 key={`natal-${i}`}
-                animate={{ rotate: [startAngle, startAngle + 360] }}
+                animate={{ rotate: [startAngle, startAngle - 360] }}
                 transition={{ 
                   duration: planet.duration, 
                   repeat: Infinity, 
@@ -277,17 +276,29 @@ export const CosmosLoading = () => {
                 }}
                 style={{ transformOrigin: `${centerX}px ${centerY}px` }}
               >
-                {/* Planet positioned at its orbital radius on the x-axis, rotation moves it in circle */}
-                <text
+                {/* Planet symbol with counter-rotation to keep text upright while orbiting */}
+                <motion.text
                   x={centerX + planet.radius}
                   y={centerY}
                   textAnchor="middle"
                   dominantBaseline="central"
                   className="fill-foreground/70 select-none"
-                  style={{ fontFamily: 'serif', fontSize: '14px', fontWeight: 500 }}
+                  style={{ 
+                    fontFamily: 'serif', 
+                    fontSize: '14px', 
+                    fontWeight: 500,
+                    transformOrigin: `${centerX + planet.radius}px ${centerY}px`
+                  }}
+                  animate={{ rotate: [0 - startAngle, 360 - startAngle] }}
+                  transition={{ 
+                    duration: planet.duration, 
+                    repeat: Infinity, 
+                    ease: "linear",
+                    repeatType: "loop"
+                  }}
                 >
                   {planet.symbol}
-                </text>
+                </motion.text>
               </motion.g>
             );
           })}
