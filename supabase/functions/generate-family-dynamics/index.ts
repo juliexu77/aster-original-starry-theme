@@ -46,18 +46,68 @@ const getModality = (sign: string): string => {
   return modalities[sign] || 'cardinal';
 };
 
+// Generate a signature from member data to detect changes
+const generateMemberSignature = (members: any[]): string => {
+  const sorted = members
+    .filter((m: any) => m.birthday)
+    .map((m: any) => `${m.id}:${m.birthday}`)
+    .sort()
+    .join('|');
+  return sorted;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { householdId, members } = await req.json();
+    const { householdId, members, forceRegenerate } = await req.json();
+
+    // Get auth header for user context
+    const authHeader = req.headers.get('Authorization');
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Generate member signature for cache lookup
+    const memberSignature = generateMemberSignature(members);
+
+    console.log('Checking cache for household:', householdId);
+    console.log('Member signature:', memberSignature);
+
+    // Check for cached dynamics (unless force regenerate)
+    if (!forceRegenerate) {
+      const { data: cached, error: cacheError } = await supabase
+        .from('family_dynamics')
+        .select('*')
+        .eq('household_id', householdId)
+        .eq('member_signatures', memberSignature)
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (cached && !cacheError) {
+        console.log('Returning cached family dynamics');
+        return new Response(
+          JSON.stringify({
+            dynamics: cached.dynamics,
+            elementBalance: cached.element_balance,
+            modalityBalance: cached.modality_balance,
+            memberProfiles: cached.member_profiles,
+            cached: true,
+            generatedAt: cached.generated_at,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    console.log('Generating family dynamics for household:', householdId);
+    console.log('Generating new family dynamics for household:', householdId);
     console.log('Members:', members.map((m: any) => m.name));
 
     // Build member profiles with astrological data
@@ -191,12 +241,61 @@ Remember: This is THEIR family, not a generic reading. Reference specific member
 
     console.log('Generated family dynamics successfully');
 
+    // Save to database cache
+    const { error: insertError } = await supabase
+      .from('family_dynamics')
+      .upsert({
+        household_id: householdId,
+        member_signatures: memberSignature,
+        dynamics: dynamics,
+        member_profiles: memberProfiles,
+        element_balance: elementCounts,
+        modality_balance: modalityCounts,
+        generated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'household_id,member_signatures',
+        ignoreDuplicates: false,
+      });
+
+    if (insertError) {
+      // If upsert fails due to no unique constraint, try insert with delete
+      console.log('Upsert failed, trying delete then insert:', insertError.message);
+      
+      // Delete old entries for this household
+      await supabase
+        .from('family_dynamics')
+        .delete()
+        .eq('household_id', householdId);
+      
+      // Insert new entry
+      const { error: retryError } = await supabase
+        .from('family_dynamics')
+        .insert({
+          household_id: householdId,
+          member_signatures: memberSignature,
+          dynamics: dynamics,
+          member_profiles: memberProfiles,
+          element_balance: elementCounts,
+          modality_balance: modalityCounts,
+          generated_at: new Date().toISOString(),
+        });
+
+      if (retryError) {
+        console.error('Failed to cache family dynamics:', retryError);
+      } else {
+        console.log('Cached family dynamics after retry');
+      }
+    } else {
+      console.log('Cached family dynamics successfully');
+    }
+
     return new Response(
       JSON.stringify({ 
         dynamics,
         elementBalance: elementCounts,
         modalityBalance: modalityCounts,
-        memberProfiles 
+        memberProfiles,
+        cached: false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
