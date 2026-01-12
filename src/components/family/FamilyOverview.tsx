@@ -1,12 +1,12 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronDown, ChevronUp, Heart, Flame, AlertCircle, Lightbulb, RefreshCw } from "lucide-react";
+import { Sparkles, ChevronDown, ChevronUp, Heart, Flame, AlertCircle, Lightbulb, RefreshCw, Share2 } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday, ZODIAC_DATA } from "@/lib/zodiac";
 import { useFamilyDynamics } from "@/hooks/useFamilyDynamics";
 import { useHousehold } from "@/hooks/useHousehold";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-
+import { ShareFamilyDynamicsSheet } from "./ShareFamilyDynamicsSheet";
 // Helper to get element from sign
 const getElement = (sign: ZodiacSign): string => {
   return ZODIAC_DATA[sign]?.element || 'fire';
@@ -97,6 +97,7 @@ const getFamilyDynamicInsight = (elementBalance: ReturnType<typeof getElementBal
 
 export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
   const [showAIInsights, setShowAIInsights] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
   const { household } = useHousehold();
   const { 
     dynamics, 
@@ -269,9 +270,18 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4 overflow-hidden"
           >
-            {/* Header with refresh button */}
+            {/* Header with share and refresh buttons */}
             <div className="flex items-center justify-between py-2">
-              <div className="flex-1" />
+              <div className="flex-1 flex justify-start">
+                <motion.button
+                  onClick={() => setShowShareSheet(true)}
+                  className="p-2 rounded-lg hover:bg-foreground/5 transition-colors"
+                  whileTap={{ scale: 0.95 }}
+                  title="Share insights"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-foreground/30" />
+                </motion.button>
+              </div>
               <p className="text-sm font-medium text-foreground/80 italic text-center flex-[3]">
                 "{dynamics.headline}"
               </p>
@@ -389,6 +399,17 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
           Tap any connection above for individual insights
         </p>
       </div>
+
+      {/* Share Sheet */}
+      {dynamics && (
+        <ShareFamilyDynamicsSheet
+          open={showShareSheet}
+          onOpenChange={setShowShareSheet}
+          dynamics={dynamics}
+          members={members}
+          generatedAt={generatedAt}
+        />
+      )}
     </div>
   );
 };
