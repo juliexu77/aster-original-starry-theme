@@ -1,6 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, ChevronDown, ChevronUp, Heart, Flame, AlertCircle, Lightbulb } from "lucide-react";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { ZodiacSign, getZodiacFromBirthday, ZODIAC_DATA } from "@/lib/zodiac";
+import { useFamilyDynamics } from "@/hooks/useFamilyDynamics";
+import { useHousehold } from "@/hooks/useHousehold";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 // Helper to get element from sign
 const getElement = (sign: ZodiacSign): string => {
@@ -91,6 +96,11 @@ const getFamilyDynamicInsight = (elementBalance: ReturnType<typeof getElementBal
 };
 
 export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
+  const [showAIInsights, setShowAIInsights] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
+  const { household } = useHousehold();
+  const { dynamics, loading, error, generateDynamics } = useFamilyDynamics();
+
   const memberSigns = useMemo(() => {
     return members
       .filter(m => m.birthday)
@@ -119,6 +129,21 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
     getFamilyDynamicInsight(elementBalance), 
     [elementBalance]
   );
+
+  const handleGenerateInsights = async () => {
+    if (!household?.id || hasGenerated) {
+      setShowAIInsights(!showAIInsights);
+      return;
+    }
+
+    try {
+      await generateDynamics(household.id, members);
+      setHasGenerated(true);
+      setShowAIInsights(true);
+    } catch (err) {
+      console.error('Failed to generate insights:', err);
+    }
+  };
 
   if (memberSigns.length < 2) return null;
 
@@ -176,17 +201,141 @@ export const FamilyOverview = ({ members }: FamilyOverviewProps) => {
         ))}
       </div>
 
-      {/* Family Dynamic Insight */}
+      {/* Basic Family Dynamic Insight */}
       <div className="pt-2 border-t border-foreground/5">
         <p className="text-[11px] text-foreground/50 leading-relaxed text-center">
           {familyInsight}
         </p>
       </div>
 
+      {/* AI Insights Toggle */}
+      <motion.button
+        onClick={handleGenerateInsights}
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 hover:border-purple-500/40 transition-all"
+        whileTap={{ scale: 0.98 }}
+      >
+        {loading ? (
+          <LoadingSpinner className="w-4 h-4" />
+        ) : (
+          <Sparkles className="w-4 h-4 text-purple-400" />
+        )}
+        <span className="text-[11px] font-medium text-purple-300">
+          {loading ? 'Consulting the stars...' : hasGenerated ? (showAIInsights ? 'Hide Deep Insights' : 'Show Deep Insights') : 'Generate Deep Insights'}
+        </span>
+        {!loading && hasGenerated && (
+          showAIInsights ? <ChevronUp className="w-3 h-3 text-purple-400" /> : <ChevronDown className="w-3 h-3 text-purple-400" />
+        )}
+      </motion.button>
+
+      {/* AI-Generated Insights */}
+      <AnimatePresence>
+        {showAIInsights && dynamics && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-4 overflow-hidden"
+          >
+            {/* Headline */}
+            <div className="text-center py-3">
+              <p className="text-sm font-medium text-foreground/80 italic">
+                "{dynamics.headline}"
+              </p>
+            </div>
+
+            {/* Overview */}
+            <div className="p-4 rounded-xl bg-foreground/[0.02] border border-foreground/5">
+              <p className="text-[11px] text-foreground/60 leading-relaxed whitespace-pre-line">
+                {dynamics.overview}
+              </p>
+            </div>
+
+            {/* Strengths */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Heart className="w-3.5 h-3.5 text-pink-400" />
+                <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+                  Cosmic Strengths
+                </span>
+              </div>
+              <div className="space-y-2">
+                {dynamics.strengths.map((strength, i) => (
+                  <div key={i} className="flex gap-2 p-3 rounded-lg bg-pink-500/5 border border-pink-500/10">
+                    <Flame className="w-3 h-3 text-pink-400 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-foreground/50 leading-relaxed">{strength}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Tensions */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+                  Growth Edges
+                </span>
+              </div>
+              <div className="space-y-2">
+                {dynamics.tensions.map((tension, i) => (
+                  <div key={i} className="flex gap-2 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
+                    <AlertCircle className="w-3 h-3 text-amber-400 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-foreground/50 leading-relaxed">{tension}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Advice */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+                  Cosmic Wisdom
+                </span>
+              </div>
+              <div className="p-4 rounded-xl bg-sky-500/5 border border-sky-500/10">
+                <p className="text-[10px] text-foreground/50 leading-relaxed whitespace-pre-line">
+                  {dynamics.advice}
+                </p>
+              </div>
+            </div>
+
+            {/* Rituals */}
+            {dynamics.rituals && dynamics.rituals.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                  <span className="text-[10px] uppercase tracking-wider text-foreground/40">
+                    Family Rituals
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {dynamics.rituals.map((ritual, i) => (
+                    <div key={i} className="flex gap-2 p-3 rounded-lg bg-purple-500/5 border border-purple-500/10">
+                      <Sparkles className="w-3 h-3 text-purple-400 mt-0.5 shrink-0" />
+                      <p className="text-[10px] text-foreground/50 leading-relaxed">{ritual}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error State */}
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+          <p className="text-[10px] text-red-400 text-center">{error}</p>
+        </div>
+      )}
+
       {/* Tap Prompt */}
       <div className="text-center pt-2">
         <p className="text-[9px] text-foreground/25 tracking-wide">
-          Tap any connection above for deeper insights
+          Tap any connection above for individual insights
         </p>
       </div>
     </div>
