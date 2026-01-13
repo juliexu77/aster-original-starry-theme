@@ -150,7 +150,7 @@ export const useHousehold = () => {
     if (householdError) throw householdError;
 
     // Add user as owner
-    await supabase
+    const { error: memberError } = await supabase
       .from('household_members')
       .insert([{
         household_id: newHouseholdId,
@@ -158,8 +158,10 @@ export const useHousehold = () => {
         role: 'owner'
       }]);
 
+    if (memberError) throw memberError;
+
     // Create baby - cast to bypass type check since birth_location exists in DB but not in generated types yet
-    await supabase
+    const { error: babyError } = await supabase
       .from('babies')
       .insert([{
         id: newBabyId,
@@ -169,6 +171,8 @@ export const useHousehold = () => {
         birth_time: babyBirthTime || null,
         birth_location: babyBirthLocation || null
       }] as any);
+
+    if (babyError) throw babyError;
 
     await fetchHousehold();
 
