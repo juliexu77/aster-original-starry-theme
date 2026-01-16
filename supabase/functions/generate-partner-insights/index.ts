@@ -41,26 +41,36 @@ serve(async (req) => {
 Partner 1: ${person1Desc}
 Partner 2: ${person2Desc}
 
+WRITING STYLE (MANDATORY):
+- Never use em dashes (—). Use commas, periods, or rewrite the sentence.
+- Never use semicolons. Use separate sentences instead.
+- Avoid starting sentences with "This" or "It" when possible.
+- No colons in body text.
+- Write short sentences. Mix in longer ones sparingly.
+- Avoid words like "delve", "tapestry", "landscape", "beacon", "realm", "embark", "navigate", "embrace", "journey".
+- Avoid phrases like "it's important to", "remember that", "don't hesitate to".
+- Sound like a real person talking, not a press release.
+
 Generate insights in this EXACT JSON structure. Each insight should be 2-3 punchy sentences max. Be SPECIFIC to their exact signs. Use their names. The tone should feel like consulting a wise relationship guide who understands both cosmic dynamics and practical partnership.
 
 {
-  "currentStrength": "What's working well between these two signs as partners. Focus on their natural compatibility and what draws them together. Example: 'Your Cancer intuition meets her Sagittarius optimism—you ground her adventures while she expands your world. Together you create both safety and excitement.'",
+  "currentStrength": "What's working well between these two signs as partners. Focus on their natural compatibility and what draws them together. Example: 'Your Cancer intuition meets her Sagittarius optimism. You ground her adventures while she expands your world. Together you create both safety and excitement.'",
   
   "currentFriction": "Where they naturally clash as a couple. Be honest but constructive. Example: 'Her Aries directness can feel harsh to your Pisces sensitivity. You withdraw when she advances. Learning each other's conflict styles is key.'",
   
-  "actionableInsight": "One specific thing to try this week as partners. Example: 'Schedule 20 minutes of device-free connection tonight. Your signs both need presence—hers through action, yours through feeling.'",
+  "actionableInsight": "One specific thing to try this week as partners. Example: 'Schedule 20 minutes of device-free connection tonight. Your signs both need presence. Hers through action, yours through feeling.'",
   
-  "communicationStyle": "How their signs communicate and how to bridge differences. Example: 'She speaks in headlines; you speak in paragraphs. Meet in the middle: she gives more context, you lead with the point.'",
+  "communicationStyle": "How their signs communicate and how to bridge differences. Example: 'She speaks in headlines. You speak in paragraphs. Meet in the middle. She gives more context, you lead with the point.'",
   
   "emotionalDynamic": "How they process emotions together. Example: 'Two water signs means deep emotional currents run between you. The risk is drowning together. Name feelings out loud to stay afloat.'",
   
-  "parentingTeamwork": "How their signs complement or challenge each other as co-parents. Example: 'Your Virgo attention to detail pairs with his Leo warmth. You handle logistics; he brings the fun. Together: structured joy.'",
+  "parentingTeamwork": "How their signs complement or challenge each other as co-parents. Example: 'Your Virgo attention to detail pairs with his Leo warmth. You handle logistics. He brings the fun. Together, structured joy.'",
   
-  "stressResponse": "How they each respond to stress and how to support each other. Example: 'Under pressure, you organize and she escapes. Neither is wrong. Give her space to process, ask her to appreciate your planning.'",
+  "stressResponse": "How they each respond to stress and how to support each other. Example: 'Under pressure, you organize and she escapes. Neither is wrong. Give her space to process. Ask her to appreciate your planning.'",
   
-  "intimacyInsight": "How their signs connect emotionally and romantically. Example: 'His Taurus sensuality needs time; your Gemini mind needs variety. Slow down for him, he'll surprise you for you.'",
+  "intimacyInsight": "How their signs connect emotionally and romantically. Example: 'His Taurus sensuality needs time. Your Gemini mind needs variety. Slow down for him, he'll surprise you for you.'",
   
-  "longTermEvolution": "How this partnership will evolve over years. Example: 'Fire and earth: you'll temper each other. Early friction becomes foundation. The patience you build now compounds into deep trust.'"
+  "longTermEvolution": "How this partnership will evolve over years. Example: 'Fire and earth. You'll temper each other. Early friction becomes foundation. The patience you build now compounds into deep trust.'"
 }
 
 Be specific, warm, and practical. Never generic. Reference actual sign qualities. Both partners should feel seen and understood.`;
