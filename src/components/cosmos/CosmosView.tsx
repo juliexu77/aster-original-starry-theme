@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { CosmosIntakeSelection } from "./CosmosIntakeSelection";
@@ -8,8 +8,10 @@ import { CosmosVoiceRecorder } from "./CosmosVoiceRecorder";
 import { CosmosOptionsStep } from "./CosmosOptionsStep";
 import { CosmosLoading } from "./CosmosLoading";
 import { CosmosReadingDisplay } from "./CosmosReadingDisplay";
+import { WeeklyReadingCard } from "./WeeklyReadingCard";
 import { FamilyMember, IntakeResponses, VoiceIntakeData, ReadingOptions } from "./types";
 import { useCosmosReading } from "@/hooks/useCosmosReading";
+import { useWeeklyReading } from "@/hooks/useWeeklyReading";
 import { 
   getZodiacFromBirthday, 
   getMoonSignFromBirthDateTime, 
@@ -151,6 +153,26 @@ export const CosmosView = ({
     hasReading 
   } = useCosmosReading(selectedMember?.id || null);
 
+  // Fetch weekly auto-reading for selected member
+  const memberDataForWeekly = useMemo(() => {
+    if (!selectedMember?.birthday) return null;
+    return {
+      name: selectedMember.name,
+      type: selectedMember.type,
+      birthday: selectedMember.birthday,
+      birth_time: selectedMember.birth_time,
+      birth_location: selectedMember.birth_location,
+      sunSign: signs?.sun || null,
+      moonSign: signs?.moon || null,
+      risingSign: signs?.rising || null,
+    };
+  }, [selectedMember, signs]);
+
+  const {
+    reading: weeklyReading,
+    loading: weeklyLoading,
+  } = useWeeklyReading(selectedMember?.id || null, memberDataForWeekly);
+
   // Sync flowState with reading status when loading completes
   // This ensures that if a reading exists in the DB (e.g., after screen sleep/wake),
   // we show it instead of resetting to intake
@@ -283,7 +305,41 @@ export const CosmosView = ({
         </div>
       </div>
 
-      {/* Content based on state */}
+      {/* Weekly Auto-Reading Section - Always visible at top */}
+      {!weeklyLoading && weeklyReading && (flowState === 'reading' || !hasReading) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <WeeklyReadingCard 
+            reading={weeklyReading} 
+            memberName={selectedMember.name} 
+          />
+        </motion.div>
+      )}
+
+      {/* Weekly Loading Skeleton */}
+      {weeklyLoading && (
+        <div className="px-5 space-y-3 animate-pulse">
+          <div className="h-32 bg-foreground/5 rounded-2xl" />
+          <div className="h-16 bg-foreground/5 rounded-xl" />
+          <div className="h-24 bg-foreground/5 rounded-xl" />
+        </div>
+      )}
+
+      {/* Divider between weekly and generated readings */}
+      {weeklyReading && !weeklyLoading && (
+        <div className="px-5 py-6">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+            <Sparkles className="w-3 h-3 text-foreground/20" />
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+          </div>
+        </div>
+      )}
+
+      {/* Generated Readings Section */}
       <AnimatePresence mode="wait">
         {readingLoading ? (
           // Show loading while fetching - prevents flash of intake screen

@@ -382,6 +382,50 @@ export type Database = {
           },
         ]
       }
+      weekly_readings: {
+        Row: {
+          created_at: string
+          generated_at: string
+          household_id: string
+          id: string
+          member_id: string
+          member_type: string
+          reading_content: Json
+          updated_at: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          household_id: string
+          id?: string
+          member_id: string
+          member_type: string
+          reading_content: Json
+          updated_at?: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          household_id?: string
+          id?: string
+          member_id?: string
+          member_type?: string
+          reading_content?: Json
+          updated_at?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_readings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

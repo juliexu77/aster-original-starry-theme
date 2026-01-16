@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.generate-family-dynamics]
 verify_jwt = false
+
+[functions.generate-weekly-reading]
+verify_jwt = false
