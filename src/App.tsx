@@ -36,11 +36,11 @@ const App = () => (
               <BrowserRouter>
                 <RouteGuard>
                   <Routes>
-                    <Route path="/" element={<Family />} />
-                    <Route path="/app" element={<Family />} />
-                    <Route path="/family" element={<Family />} />
-                    <Route path="/relationships" element={<FamilyRelationships />} />
+                    <Route path="/" element={<Cosmos />} />
                     <Route path="/cosmos" element={<Cosmos />} />
+                    <Route path="/chart" element={<Family />} />
+                    <Route path="/family" element={<FamilyRelationships />} />
+                    <Route path="/relationships" element={<FamilyRelationships />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/baby-setup" element={<BabySetup />} />
                     <Route path="/settings" element={<Settings />} />

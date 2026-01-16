@@ -6,9 +6,9 @@ export const FamilyNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const isChart = location.pathname === "/" || location.pathname === "/app" || location.pathname === "/family";
-  const isFamily = location.pathname === "/relationships";
-  const isCosmos = location.pathname === "/cosmos";
+  const isCosmos = location.pathname === "/" || location.pathname === "/cosmos";
+  const isChart = location.pathname === "/chart";
+  const isFamily = location.pathname === "/family" || location.pathname === "/relationships";
   const isSettings = location.pathname === "/settings";
 
   return (
@@ -18,6 +18,16 @@ export const FamilyNav = () => {
           onClick={() => navigate("/")}
           className="flex flex-col items-center gap-1 px-4 py-1"
         >
+          <IconZodiacSagittarius className={`w-5 h-5 ${isCosmos ? "text-foreground" : "text-muted-foreground"}`} strokeWidth={1.5} />
+          <span className={`text-[10px] ${isCosmos ? "text-foreground" : "text-muted-foreground"}`}>
+            Cosmos
+          </span>
+        </button>
+
+        <button 
+          onClick={() => navigate("/chart")}
+          className="flex flex-col items-center gap-1 px-4 py-1"
+        >
           <Sparkles className={`w-5 h-5 ${isChart ? "text-foreground" : "text-muted-foreground"}`} />
           <span className={`text-[10px] ${isChart ? "text-foreground" : "text-muted-foreground"}`}>
             Chart
@@ -25,22 +35,12 @@ export const FamilyNav = () => {
         </button>
 
         <button 
-          onClick={() => navigate("/relationships")}
+          onClick={() => navigate("/family")}
           className="flex flex-col items-center gap-1 px-4 py-1"
         >
           <Users className={`w-5 h-5 ${isFamily ? "text-foreground" : "text-muted-foreground"}`} />
           <span className={`text-[10px] ${isFamily ? "text-foreground" : "text-muted-foreground"}`}>
             Family
-          </span>
-        </button>
-
-        <button 
-          onClick={() => navigate("/cosmos")}
-          className="flex flex-col items-center gap-1 px-4 py-1"
-        >
-          <IconZodiacSagittarius className={`w-5 h-5 ${isCosmos ? "text-foreground" : "text-muted-foreground"}`} strokeWidth={1.5} />
-          <span className={`text-[10px] ${isCosmos ? "text-foreground" : "text-muted-foreground"}`}>
-            Cosmos
           </span>
         </button>
 
