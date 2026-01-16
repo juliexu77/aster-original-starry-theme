@@ -16,6 +16,76 @@ function getCurrentWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
 
+// Calculate lunar phase data with dates
+function getLunarPhaseData(): { 
+  phase: string; 
+  emoji: string; 
+  isSignificant: boolean;
+  significantPhaseDate: string | null;
+} {
+  const knownNewMoon = new Date('2024-01-11').getTime();
+  const lunarCycle = 29.53 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const msSinceNew = (now - knownNewMoon) % lunarCycle;
+  const daysSinceNew = msSinceNew / (24 * 60 * 60 * 1000);
+  
+  // Calculate the start of the current lunar cycle
+  const cyclesSinceKnown = Math.floor((now - knownNewMoon) / lunarCycle);
+  const currentCycleStart = new Date(knownNewMoon + cyclesSinceKnown * lunarCycle);
+  
+  // New Moon is at cycle start
+  const newMoonDate = currentCycleStart.toISOString().split('T')[0];
+  // Full Moon is approximately 14.77 days after new moon
+  const fullMoonDate = new Date(currentCycleStart.getTime() + 14.77 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  
+  // Check if we're within 1.5 days of new or full moon (significant phases)
+  const isNewMoon = daysSinceNew < 1.85;
+  const isFullMoon = daysSinceNew >= 14.77 && daysSinceNew < 16.61;
+  const isSignificant = isNewMoon || isFullMoon;
+  
+  let phase: string;
+  let emoji: string;
+  let significantPhaseDate: string | null = null;
+  
+  if (daysSinceNew < 1.85) {
+    phase = 'New Moon';
+    emoji = '🌑';
+    significantPhaseDate = newMoonDate;
+  } else if (daysSinceNew < 7.38) {
+    phase = 'Waxing Crescent';
+    emoji = '🌒';
+  } else if (daysSinceNew < 9.23) {
+    phase = 'First Quarter';
+    emoji = '🌓';
+  } else if (daysSinceNew < 14.77) {
+    phase = 'Waxing Gibbous';
+    emoji = '🌔';
+  } else if (daysSinceNew < 16.61) {
+    phase = 'Full Moon';
+    emoji = '🌕';
+    significantPhaseDate = fullMoonDate;
+  } else if (daysSinceNew < 22.15) {
+    phase = 'Waning Gibbous';
+    emoji = '🌖';
+  } else if (daysSinceNew < 23.99) {
+    phase = 'Last Quarter';
+    emoji = '🌗';
+  } else {
+    phase = 'Waning Crescent';
+    emoji = '🌘';
+  }
+  
+  return { phase, emoji, isSignificant, significantPhaseDate };
+}
+
+// Get the cache key - either week start or lunar phase date
+function getCacheKey(lunarData: ReturnType<typeof getLunarPhaseData>): string {
+  if (lunarData.isSignificant && lunarData.significantPhaseDate) {
+    return lunarData.significantPhaseDate;
+  }
+  return getCurrentWeekStart();
+}
+
 // Get sun sign from birthday
 function getSunSign(birthday: string): string {
   const date = new Date(birthday);
@@ -52,21 +122,10 @@ function calculateAge(birthday: string): string {
   return `${years} years old`;
 }
 
-// Get current lunar phase (simplified)
+// Get current lunar phase (simplified) - kept for backward compatibility
 function getLunarPhase(): { phase: string; emoji: string } {
-  const knownNewMoon = new Date('2024-01-11').getTime();
-  const lunarCycle = 29.53 * 24 * 60 * 60 * 1000;
-  const now = Date.now();
-  const daysSinceNew = ((now - knownNewMoon) % lunarCycle) / (24 * 60 * 60 * 1000);
-  
-  if (daysSinceNew < 1.85) return { phase: 'New Moon', emoji: '🌑' };
-  if (daysSinceNew < 7.38) return { phase: 'Waxing Crescent', emoji: '🌒' };
-  if (daysSinceNew < 9.23) return { phase: 'First Quarter', emoji: '🌓' };
-  if (daysSinceNew < 14.77) return { phase: 'Waxing Gibbous', emoji: '🌔' };
-  if (daysSinceNew < 16.61) return { phase: 'Full Moon', emoji: '🌕' };
-  if (daysSinceNew < 22.15) return { phase: 'Waning Gibbous', emoji: '🌖' };
-  if (daysSinceNew < 23.99) return { phase: 'Last Quarter', emoji: '🌗' };
-  return { phase: 'Waning Crescent', emoji: '🌘' };
+  const data = getLunarPhaseData();
+  return { phase: data.phase, emoji: data.emoji };
 }
 
 // Get current planetary positions (simplified for weekly context)
@@ -106,25 +165,27 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const weekStart = getCurrentWeekStart();
+    // Get lunar phase data for cache key determination
+    const lunarData = getLunarPhaseData();
+    const cacheKey = getCacheKey(lunarData);
     
-    console.log('Generating weekly reading for:', memberId, memberData.name, 'Week:', weekStart);
+    console.log('Generating weekly reading for:', memberId, memberData.name, 'Cache key:', cacheKey, 'Lunar:', lunarData.phase, lunarData.isSignificant ? '(SIGNIFICANT)' : '');
 
-    // Check if we already have a reading for this week
+    // Check if we already have a reading for this cache key (week or lunar phase)
     if (!forceRegenerate) {
       const { data: existing } = await supabase
         .from('weekly_readings')
         .select('*')
         .eq('household_id', householdId)
         .eq('member_id', memberId)
-        .eq('week_start', weekStart)
+        .eq('week_start', cacheKey)
         .maybeSingle();
 
       if (existing) {
-        console.log('Returning existing weekly reading');
+        console.log('Returning existing reading for cache key:', cacheKey);
         return new Response(JSON.stringify({ 
           reading: existing.reading_content,
-          weekStart,
+          weekStart: cacheKey,
           cached: true 
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -133,16 +194,22 @@ serve(async (req) => {
     }
 
     // Get current cosmic context
-    const lunar = getLunarPhase();
+    const lunar = { phase: lunarData.phase, emoji: lunarData.emoji };
     const transits = getCurrentTransits();
     const sunSign = memberData.sunSign || getSunSign(memberData.birthday);
     const isChild = memberData.type === 'child';
     
-    // Build the week date range
-    const weekStartDate = new Date(weekStart);
-    const weekEndDate = new Date(weekStartDate);
-    weekEndDate.setDate(weekEndDate.getDate() + 6);
-    const weekRange = `${weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    // Build the week date range or lunar context
+    let contextRange: string;
+    if (lunarData.isSignificant) {
+      const now = new Date();
+      contextRange = `${lunarData.phase} - ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    } else {
+      const weekStartDate = new Date(cacheKey);
+      const weekEndDate = new Date(weekStartDate);
+      weekEndDate.setDate(weekEndDate.getDate() + 6);
+      contextRange = `${weekStartDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEndDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    }
 
     // Build natal info
     let natalInfo = `Sun Sign: ${sunSign}`;
@@ -176,7 +243,7 @@ CURRENT COSMIC WEATHER:
 - Lunar Phase: ${lunar.phase}
 - ${transits.join('\n- ')}
 
-This is for the week of ${weekRange}.
+This is for: ${contextRange}.${lunarData.isSignificant ? ` This is a ${lunarData.phase} reading - make it feel especially significant and appropriate for this lunar milestone.` : ''}
 
 Generate a JSON response:
 {
@@ -244,8 +311,9 @@ Keep the total text under 300 words. Be warm but concise.`;
       sunSign,
       moonSign: memberData.moonSign || null,
       risingSign: memberData.risingSign || null,
-      weekStart,
-      weekRange,
+      weekStart: cacheKey,
+      weekRange: contextRange,
+      isLunarPhaseReading: lunarData.isSignificant,
       lunarPhase: lunar.phase,
       lunarEmoji: lunar.emoji,
       generatedAt: new Date().toISOString(),
@@ -258,7 +326,7 @@ Keep the total text under 300 words. Be warm but concise.`;
         household_id: householdId,
         member_id: memberId,
         member_type: memberData.type,
-        week_start: weekStart,
+        week_start: cacheKey,
         reading_content: fullReading,
         generated_at: new Date().toISOString(),
       }, {
@@ -271,7 +339,7 @@ Keep the total text under 300 words. Be warm but concise.`;
 
     return new Response(JSON.stringify({ 
       reading: fullReading,
-      weekStart,
+      weekStart: cacheKey,
       cached: false 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

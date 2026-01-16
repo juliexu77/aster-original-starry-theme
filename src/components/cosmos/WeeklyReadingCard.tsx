@@ -47,7 +47,11 @@ export const WeeklyReadingCard = ({ reading, memberName }: WeeklyReadingCardProp
           {/* Week label */}
           <div className="flex items-center justify-between">
             <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.2em] font-sans flex items-center gap-2">
-              <Calendar className="w-3 h-3" />
+              {reading.isLunarPhaseReading ? (
+                <Moon className="w-3 h-3" />
+              ) : (
+                <Calendar className="w-3 h-3" />
+              )}
               {reading.weekRange}
             </p>
             <div className="flex items-center gap-1.5 text-[11px] text-foreground/40">
@@ -58,7 +62,10 @@ export const WeeklyReadingCard = ({ reading, memberName }: WeeklyReadingCardProp
 
           {/* Headline */}
           <h2 className="text-[11px] text-foreground/40 uppercase tracking-[0.15em] font-sans">
-            This Week for {memberName}
+            {reading.isLunarPhaseReading 
+              ? `${reading.lunarPhase} for ${memberName}`
+              : `This Week for ${memberName}`
+            }
           </h2>
           
           <h3 className="text-lg font-serif text-foreground/90">
@@ -103,7 +110,7 @@ export const WeeklyReadingCard = ({ reading, memberName }: WeeklyReadingCardProp
         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
           <p className="text-[10px] text-amber-300/60 uppercase tracking-[0.15em] mb-2 font-sans flex items-center gap-2">
             <Sparkles className="w-3 h-3" />
-            This Week's Focus
+            {reading.isLunarPhaseReading ? `${reading.lunarPhase} Focus` : "This Week's Focus"}
           </p>
           <p className="text-[13px] text-foreground/70 font-serif">
             {reading.focusArea}
