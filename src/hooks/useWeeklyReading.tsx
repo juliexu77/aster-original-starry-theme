@@ -18,6 +18,7 @@ export interface WeeklyReading {
   lunarPhase: string;
   lunarEmoji: string;
   generatedAt: string;
+  isLunarPhaseReading?: boolean;
 }
 
 // Get current week start (Monday)
@@ -27,6 +28,46 @@ function getCurrentWeekStart(): string {
   const diff = now.getDate() - day + (day === 0 ? -6 : 1);
   const monday = new Date(now.setDate(diff));
   return monday.toISOString().split('T')[0];
+}
+
+// Calculate lunar phase data with significant phase detection
+function getLunarPhaseData(): { 
+  isSignificant: boolean;
+  significantPhaseDate: string | null;
+} {
+  const knownNewMoon = new Date('2024-01-11').getTime();
+  const lunarCycle = 29.53 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const msSinceNew = (now - knownNewMoon) % lunarCycle;
+  const daysSinceNew = msSinceNew / (24 * 60 * 60 * 1000);
+  
+  // Calculate the start of the current lunar cycle
+  const cyclesSinceKnown = Math.floor((now - knownNewMoon) / lunarCycle);
+  const currentCycleStart = new Date(knownNewMoon + cyclesSinceKnown * lunarCycle);
+  
+  // New Moon is at cycle start
+  const newMoonDate = currentCycleStart.toISOString().split('T')[0];
+  // Full Moon is approximately 14.77 days after new moon
+  const fullMoonDate = new Date(currentCycleStart.getTime() + 14.77 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  
+  // Check if we're within the new or full moon phase windows
+  const isNewMoon = daysSinceNew < 1.85;
+  const isFullMoon = daysSinceNew >= 14.77 && daysSinceNew < 16.61;
+  const isSignificant = isNewMoon || isFullMoon;
+  
+  return { 
+    isSignificant, 
+    significantPhaseDate: isNewMoon ? newMoonDate : (isFullMoon ? fullMoonDate : null)
+  };
+}
+
+// Get cache key - either week start or lunar phase date
+function getCacheKey(): string {
+  const lunarData = getLunarPhaseData();
+  if (lunarData.isSignificant && lunarData.significantPhaseDate) {
+    return lunarData.significantPhaseDate;
+  }
+  return getCurrentWeekStart();
 }
 
 export const useWeeklyReading = (
@@ -77,15 +118,15 @@ export const useWeeklyReading = (
         return;
       }
 
-      const weekStart = getCurrentWeekStart();
+      const cacheKey = getCacheKey();
 
-      // First check cache in database
+      // First check cache in database using lunar-aware cache key
       const { data: cached } = await supabase
         .from('weekly_readings')
         .select('reading_content')
         .eq('household_id', householdId)
         .eq('member_id', memberId)
-        .eq('week_start', weekStart)
+        .eq('week_start', cacheKey)
         .maybeSingle();
 
       if (cached?.reading_content) {
