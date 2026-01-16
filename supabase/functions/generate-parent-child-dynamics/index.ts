@@ -51,6 +51,16 @@ serve(async (req) => {
 Parent: ${parentDesc}
 Child: ${childDesc}
 
+WRITING STYLE (MANDATORY):
+- Never use em dashes (—). Use commas, periods, or rewrite the sentence.
+- Never use semicolons. Use separate sentences instead.
+- Avoid starting sentences with "This" or "It" when possible.
+- No colons in body text.
+- Write short sentences. Mix in longer ones sparingly.
+- Avoid words like "delve", "tapestry", "landscape", "beacon", "realm", "embark", "navigate", "embrace", "journey".
+- Avoid phrases like "it's important to", "remember that", "don't hesitate to".
+- Sound like a real person talking, not a press release.
+
 Provide deeply personalized insights in this JSON structure. Use ${child.name}'s name throughout. Be warm, affirming, and specific to their exact sign combinations:
 
 {
@@ -62,12 +72,12 @@ Provide deeply personalized insights in this JSON structure. Use ${child.name}'s
   "currentPhaseInsight": "2-3 sentences about how this child's signs manifest at their current age (${ageLabel}), with specific developmental observations",
   "friction": ["List 3-4 potential friction points between these two charts and how to navigate them"],
   "deepConnection": "2-3 sentences about the profound cosmic connection between this parent-child pair",
-  "cultivationTips": ["List 5-6 specific, actionable parenting tips for cultivating this child's unique gifts based on their chart. Each tip should be practical and tied to their zodiac qualities. Examples: 'Give them solo exploration time - Aquarius needs independence to develop their unique perspective', 'Create sensory-rich experiences - their Taurus moon craves texture, taste, and touch'"],
-  "dailyRituals": ["List 3-4 simple daily rituals or practices that honor this child's astrological nature. Examples: 'Morning movement time - let their fire energy burn before expecting focus', 'Bedtime stories with imaginative elements for their Pisces dreaminess'"],
-  "signStrengthsToNurture": ["List 4-5 innate strengths from their chart that you can actively nurture, with brief how-to. Examples: 'Natural leadership (Leo Sun) - give them age-appropriate responsibilities', 'Emotional intuition (Cancer Moon) - validate their feelings without fixing'"]
+  "cultivationTips": ["List 5-6 specific, actionable parenting tips for cultivating this child's unique gifts based on their chart. Each tip should be practical and tied to their zodiac qualities. Examples: 'Give them solo exploration time. Aquarius needs independence to develop their unique perspective.', 'Create sensory-rich experiences. Their Taurus moon craves texture, taste, and touch.'"],
+  "dailyRituals": ["List 3-4 simple daily rituals or practices that honor this child's astrological nature. Examples: 'Morning movement time. Let their fire energy burn before expecting focus.', 'Bedtime stories with imaginative elements for their Pisces dreaminess.'"],
+  "signStrengthsToNurture": ["List 4-5 innate strengths from their chart that you can actively nurture, with brief how-to. Examples: 'Natural leadership (Leo Sun). Give them age-appropriate responsibilities.', 'Emotional intuition (Cancer Moon). Validate their feelings without fixing.'"]
 }
 
-Be specific to their signs, not generic. Reference the actual astrological qualities. The tone should be warm, insightful, and reassuring—helping the parent understand why they're exactly right for this child and giving them practical guidance.`;
+Be specific to their signs, not generic. Reference the actual astrological qualities. The tone should be warm, insightful, and reassuring. Help the parent understand why they're exactly right for this child. Give them practical guidance.`;
 
     console.log("Generating parent-child dynamics for:", parentDesc, "and", childDesc);
 

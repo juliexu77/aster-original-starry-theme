@@ -46,18 +46,28 @@ ${childDescriptions}
 
 IMPORTANT: 
 - Address the PARENT directly using "your children", "your kids", etc.
-- Do NOT mention zodiac signs, sun signs, moon signs, or any astrological terminology
-- Focus on personality traits, behaviors, and practical insights for the parent
-- Write as if you're describing their natural temperaments to their parent
+- Do NOT mention zodiac signs, sun signs, moon signs, or any astrological terminology.
+- Focus on personality traits, behaviors, and practical insights for the parent.
+- Write as if you're describing their natural temperaments to their parent.
+
+WRITING STYLE (MANDATORY):
+- Never use em dashes (—). Use commas, periods, or rewrite the sentence.
+- Never use semicolons. Use separate sentences instead.
+- Avoid starting sentences with "This" or "It" when possible.
+- No colons in body text.
+- Write short sentences. Mix in longer ones sparingly.
+- Avoid words like "delve", "tapestry", "landscape", "beacon", "realm", "embark", "navigate", "embrace", "journey".
+- Avoid phrases like "it's important to", "remember that", "don't hesitate to".
+- Sound like a real person talking, not a press release.
 
 Provide insights in this JSON structure:
 {
-  "currentDynamic": "2-3 sentences about how your children interact right now given their ages. Address the parent directly. Example: 'Right now, your kids are learning to share space. The older one's natural leadership helps guide the younger, while the younger one's curiosity keeps things interesting for both.'",
+  "currentDynamic": "2-3 sentences about how your children interact right now given their ages. Address the parent directly. Example: 'Right now, your kids are learning to share space. The older one's natural leadership helps guide the younger. The younger one's curiosity keeps things interesting for both.'",
   "whatEachBrings": [
     {"child": "child's name", "gifts": ["trait1", "trait2", "trait3"]}
   ],
   "compatibilityLabel": "High Harmony" or "Complementary Energy" or "Dynamic Tension" etc,
-  "compatibilityNote": "One punchy sentence about their overall connection as siblings, addressed to the parent. Example: 'These two balance each other beautifully—expect them to become each other's biggest supporters.'",
+  "compatibilityNote": "One punchy sentence about their overall connection as siblings, addressed to the parent. Example: 'These two balance each other beautifully. Expect them to become each other's biggest supporters.'",
   "earlyChildhood": "2-3 sentences about their dynamics in ages 0-5, written to the parent. Example: 'In these early years, you'll see your children develop their own private world of games and inside jokes.'",
   "schoolYears": "2-3 sentences about ages 6-12 dynamics, addressed to the parent. Example: 'As your kids enter school, expect some friendly competition. Channel it into teamwork activities.'",
   "teenYears": "2-3 sentences about teen dynamics for the parent. Example: 'The teen years may bring distance, but your children's foundation will hold. They'll rediscover each other as young adults.'"

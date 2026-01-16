@@ -76,22 +76,32 @@ Parent: ${parentDesc}
 Child: ${childDesc}
 Current developmental stage: ${developmentalContext}
 
+WRITING STYLE (MANDATORY):
+- Never use em dashes (—). Use commas, periods, or rewrite the sentence.
+- Never use semicolons. Use separate sentences instead.
+- Avoid starting sentences with "This" or "It" when possible.
+- No colons in body text.
+- Write short sentences. Mix in longer ones sparingly.
+- Avoid words like "delve", "tapestry", "landscape", "beacon", "realm", "embark", "navigate", "embrace", "journey".
+- Avoid phrases like "it's important to", "remember that", "don't hesitate to".
+- Sound like a real person talking, not a press release.
+
 Generate insights in this EXACT JSON structure. Each insight should be 2-3 punchy sentences max. Be SPECIFIC to their exact signs AND the child's current age/developmental stage. Use ${child.name}'s name and they/them pronouns. The tone should feel like consulting a wise guide who knows both astrology and child development.
 
 {
-  "currentStrength": "What's working RIGHT NOW between these two signs at this specific age. Example: 'At 8 months, your Sag adaptability helps you roll with their Aries sleep regressions. Your fire meets their fire—you get each other's restlessness.'",
+  "currentStrength": "What's working RIGHT NOW between these two signs at this specific age. Example: 'At 8 months, your Sag adaptability helps you roll with their Aries sleep regressions. Your fire meets their fire. You get each other's restlessness.'",
   
-  "currentFriction": "Where they clash RIGHT NOW given the child's developmental stage. Example: 'Their Aries 'do it myself' is emerging now—your Sag tendency to swoop in and help may spark frustration. They need to fail safely.'",
+  "currentFriction": "Where they clash RIGHT NOW given the child's developmental stage. Example: 'Their Aries do-it-myself attitude is emerging now. Your Sag tendency to swoop in and help may spark frustration. They need to fail safely.'",
   
   "actionableInsight": "One specific thing to try this week. Example: 'Let them lead during tummy time. They need to feel powerful. Your job is to witness, not direct.'",
   
   "sleepDynamic": "How their signs interact around sleep AT THIS AGE. Example: 'Their Scorpio intensity means they process the day through dreams. Your calm Taurus presence at bedtime helps them release.'",
   
-  "feedingDynamic": "How their signs interact around feeding/meals AT THIS AGE. Example: 'Aries babies want control. Let them grab the spoon. Your Virgo nature may want order—embrace the mess.'",
+  "feedingDynamic": "How their signs interact around feeding/meals AT THIS AGE. Example: 'Aries babies want control. Let them grab the spoon. Your Virgo nature may want order. Embrace the mess.'",
   
   "communicationStyle": "How they communicate AT THIS STAGE. Example: 'They're pre-verbal but their Gemini moon makes them expressive. Mirror their sounds back. Your Pisces intuition catches what they can't say.'",
   
-  "whatThisPhaseTeaches": "What THIS SPECIFIC PHASE is teaching the parent. Example: 'This is your lesson in patience. Their Capricorn rising means milestones come on their schedule, not yours.'",
+  "whatThisPhaseTeaches": "What THIS SPECIFIC PHASE is teaching the parent. Example: 'Your lesson right now is patience. Their Capricorn rising means milestones come on their schedule, not yours.'",
   
   "whatsComingNext": "Predictive insight about the next 1-2 months. Example: 'Around 9 months, their Aries independence will surge. Prepare for more boundary testing. Your Sag humor will be your best tool.'",
   
