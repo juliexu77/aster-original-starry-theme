@@ -294,7 +294,8 @@ You are sitting across from this person. Speak as if you know them.`;
     
     console.log('Natal chart for reading:', { sunSign, moonSign, risingSign });
 
-    const userPrompt = `Create a ${isYearly ? 'yearly' : 'monthly'} reading for ${memberData.name}.
+    // Different prompts for monthly vs yearly readings
+    const userPrompt = isYearly ? `Create a yearly reading for ${memberData.name}.
 
 [NATAL CHART - This is their personal birth chart, use it throughout the reading:]
 ${natalChartDescription}
@@ -303,7 +304,7 @@ ${zodiacSystem !== 'western' ? `Chinese zodiac: ${chineseZodiacInfo}` : ''}
 
 IMPORTANT: This reading MUST reflect their specific natal placements. A ${sunSign} Sun${moonSign ? ` with ${moonSign} Moon` : ''}${risingSign ? ` and ${risingSign} Rising` : ''} will experience transits differently than someone with different placements. Reference their specific signs throughout.
 
-Reading for: ${isYearly ? yearNum : `${monthName} ${yearNum}`}
+Reading for: ${yearNum}
 
 [${clientSession}]
 ${contextNarrative}
@@ -311,49 +312,91 @@ ${contextNarrative}
 Write as if speaking directly to ${isChild ? 'the parents about their child' : 'the client'}. Generate JSON:
 
 {
-  "astrologicalSeason": "${isYearly ? `Year of powerful ${zodiacSystem === 'western' ? 'transformation' : currentYearZodiac.animal + ' energy'}` : 'e.g., Capricorn Season'}",
-  "lunarPhase": "${isYearly ? 'Key lunar themes for the year' : 'Current lunar phase and meaning'}",
+  "astrologicalSeason": "Year of powerful ${zodiacSystem === 'western' ? 'transformation' : currentYearZodiac.animal + ' energy'}",
+  "lunarPhase": "Key lunar themes for the year",
   ${zodiacSystem !== 'western' ? `"chineseZodiac": "${chineseAnimal}",\n  "chineseElement": "${chineseElement}",` : ''}
   "opening": "3-4 sentences. Speak directly and warmly. Set the cosmic scene while acknowledging what you sense about their current situation - don't explain how you know, just show that you understand.",
   "sections": [
     ${zodiacSystem !== 'western' ? easternSections : ''}
-    {"title": "${isChild ? 'Their Energy Right Now' : 'Your Energy This ' + (isYearly ? 'Year' : 'Month')}", "content": "2-3 paragraphs. Describe what you see in their chart and how it's manifesting. Be specific."},
+    {"title": "${isChild ? 'Their Energy Right Now' : 'Your Energy This Year'}", "content": "2-3 paragraphs. Describe what you see in their chart and how it's manifesting. Be specific."},
     {"title": "${isChild ? 'Growth & Unfolding' : 'Purpose & Direction'}", "content": "2-3 paragraphs on development/ambition. For children, speak to their developmental moment with astrological insight."},
     {"title": "${isChild ? 'Daily Rhythms' : 'Home & Heart'}", "content": "2-3 paragraphs on practical daily life, sleep/feeding for children, family dynamics for adults."},
     {"title": "Guidance", "content": "2-3 paragraphs with 3-5 specific suggestions. Frame as astrological wisdom, not advice from a form."},
     {"title": "Shadows to Navigate", "content": "1-2 paragraphs on challenges ahead. Be honest but compassionate."},
-    {"title": "${isChild ? 'Whats Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"}${isYearly ? `,
-    {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}` : ''}
+    {"title": "${isChild ? 'Whats Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"},
+    {"title": "Seasonal Map", "content": "Quarter-by-quarter overview of the year's energies"}
   ],
   "significantDates": [
-    {"title": "Venus conjunct your Sun (Feb 3-10)", "details": "Explain the transit AND connect it directly to what they're focused on from the intake. Example: 'This activates your 5th house of creativity - ideal timing for that writing project you mentioned wanting to prioritize.'"},
-    {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "Name the challenge AND tie it to their stated concerns. Example: 'Emotional pressure in your domestic sector - this may intensify the work-life balance tension you're navigating.'"},
-    {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "Describe the opportunity AND link to their goals. Example: 'Expansion in how others perceive you - leverage this for the career transition you're contemplating.'"}
+    {"title": "Venus conjunct your Sun (Feb 3-10)", "details": "Explain the transit AND connect it directly to what they're focused on from the intake."},
+    {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "Name the challenge AND tie it to their stated concerns."},
+    {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "Describe the opportunity AND link to their goals."}
   ]
   
-  CRITICAL for significantDates - CONNECT TO THEIR INTAKE:
-  
-  Each "details" field MUST:
-  1. Name the astrological aspect and which house/area it activates
-  2. Connect it directly to something they mentioned in the intake (their focus areas, concerns, questions, observations)
-  3. Give specific guidance on what to do or watch for
-  
-  Example format: "[Transit explanation] - [connection to their stated focus]. [Actionable guidance]."
-  
-  Bad example: "Venus enters your 7th house bringing harmony to relationships."
-  Good example: "Venus enters your 7th house bringing harmony to partnerships - this is prime timing for the deeper connection with your partner you mentioned wanting to cultivate. Plan a meaningful date or conversation around Feb 14th when this energy peaks."
-  
-  Calculate 5-8 KEY PLANETARY TRANSITS TO THEIR PERSONAL CHART:
-  - Transiting planets aspecting THEIR natal Sun, Moon, Rising
-  - Format: "Planet aspect their Point (date range)"
-  - Include: conjunctions, trines, squares, oppositions to their natal placements
-  - House ingresses of Jupiter, Saturn, or outer planets
-  - Retrogrades affecting their key houses
-  - Lunations (New/Full Moons) in their personal houses
+  Calculate 5-8 KEY PLANETARY TRANSITS across the year.
   ${zodiacSystem !== 'western' ? `- For Chinese astrology: clash days, ally animal periods, and element balance timing` : ''}
 }
 
-Remember: You KNOW this person and what they're focused on. Every significant date should feel like you've studied their chart AND listened to their concerns, then identified the cosmic moments that matter most for THEIR specific journey.`;
+Remember: You KNOW this person and what they're focused on. Every significant date should feel like you've studied their chart AND listened to their concerns.`
+
+    // MONTHLY READING - More focused, transit-driven, near-term
+    : `Create a focused monthly reading for ${memberData.name}.
+
+[NATAL CHART:]
+${natalChartDescription}
+Birthday: ${memberData.birthday}${memberData.birth_time ? `, born at ${memberData.birth_time}` : ''}${memberData.birth_location ? ` in ${memberData.birth_location}` : ''}
+${zodiacSystem !== 'western' ? `Chinese zodiac: ${chineseZodiacInfo}` : ''}
+
+This is a ${sunSign} Sun${moonSign ? ` with ${moonSign} Moon` : ''}${risingSign ? ` and ${risingSign} Rising` : ''}.
+
+Reading period: ${monthName} ${yearNum} (with a peek into next month)
+
+[${clientSession}]
+${contextNarrative}
+
+CRITICAL INSTRUCTIONS FOR MONTHLY READINGS:
+- This is NOT a life overview. Focus ONLY on what's active astrologically RIGHT NOW.
+- The person is usually coming with a specific question or concern. Address THAT directly.
+- Lead with the current transits and what they mean for THIS person THIS month.
+- Be specific about dates and windows of energy.
+- Keep it focused - 2-3 main themes maximum, not a section for every life area.
+- Include what's coming in the next 4-6 weeks so they can prepare.
+
+Write as if speaking directly to ${isChild ? 'the parents about their child' : 'the client'}. Generate JSON:
+
+{
+  "astrologicalSeason": "e.g., Late Capricorn Season into Aquarius",
+  "lunarPhase": "Current lunar phase, next New/Full Moon and what it means for them",
+  ${zodiacSystem !== 'western' ? `"chineseZodiac": "${chineseAnimal}",\n  "chineseElement": "${chineseElement}",` : ''}
+  "opening": "2-3 sentences. Jump right in - acknowledge what they're dealing with and name the cosmic weather that's affecting it. No preamble.",
+  "sections": [
+    ${zodiacSystem !== 'western' ? easternSections : ''}
+    {"title": "What's Active Right Now", "content": "1-2 paragraphs. The main transit(s) hitting their chart THIS MONTH. What planet, what aspect to their natal placements, what it feels like, when it peaks. Be specific about dates."},
+    {"title": "${isChild ? 'What You Might Notice' : 'For Your Situation'}", "content": "1-2 paragraphs. Connect the current astrology DIRECTLY to what they mentioned in their intake. This is the heart of the reading - make it personal and actionable."},
+    {"title": "The Next Few Weeks", "content": "1-2 paragraphs. What's shifting, what windows are opening or closing. Include the first week or two of next month. Help them see the rhythm."},
+    {"title": "One Thing to Watch", "content": "1 short paragraph. The shadow side or potential pitfall of the current energy. Be honest and specific."}
+  ],
+  "significantDates": [
+    {"title": "Jan 18: Mars enters your 4th house", "details": "MUST connect directly to their stated concern. Example: 'Energy shifts to home/family matters - that tension with your partner you mentioned may come to a head. Best to address it directly rather than let it simmer.'"},
+    {"title": "Jan 25: Full Moon in Leo (your 10th)", "details": "Tie to their goals. Example: 'Career visibility peaks - if you've been considering that pitch you mentioned, this is your window.'"},
+    {"title": "Feb 3: Venus trine your Moon", "details": "Connect to their emotional state. Example: 'Some softening around the exhaustion you described. Good few days to reconnect with what nourishes you.'"}
+  ]
+  
+  SIGNIFICANT DATES RULES:
+  - Focus on THIS month and the first 2 weeks of next month only
+  - 4-6 dates maximum - only the ones that MATTER for their specific question/situation
+  - Each date MUST reference something from their intake
+  - Include the actual date, not just date ranges when possible
+  - Mix of opportunities and challenges - be honest about the hard ones
+  
+  Transit types to prioritize:
+  - New and Full Moons hitting their personal planets/angles
+  - Inner planet (Sun, Mercury, Venus, Mars) aspects to their natal chart
+  - Any exact aspects from outer planets to their Sun, Moon, or Rising
+  - Retrogrades starting or ending that affect their key houses
+  ${zodiacSystem !== 'western' ? `- For Chinese astrology: clash days, ally animal periods, and element balance timing` : ''}
+}
+
+Remember: They came to you with something specific on their mind. Make this reading USEFUL for that. Less is more - focused insight beats comprehensive overview.`;
 
     console.log('Sending prompt with context items:', contextData.length);
 
