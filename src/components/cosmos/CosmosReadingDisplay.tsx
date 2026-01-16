@@ -78,6 +78,25 @@ export const CosmosReadingDisplay = ({
 
   return (
     <div className="space-y-6 pb-8">
+      {/* Get Another Reading Button - at top */}
+      {onGetAnotherReading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="px-5"
+        >
+          <button
+            type="button"
+            onClick={onGetAnotherReading}
+            className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all active:scale-[0.98]"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Get Another Reading
+          </button>
+        </motion.div>
+      )}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -277,24 +296,6 @@ export const CosmosReadingDisplay = ({
         </DialogContent>
       </Dialog>
 
-      {/* Get Another Reading Button */}
-      {onGetAnotherReading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="px-5 pt-4"
-        >
-          <button
-            type="button"
-            onClick={onGetAnotherReading}
-            className="w-full py-3 rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/50 text-[12px] flex items-center justify-center gap-2 hover:bg-foreground/10 transition-all active:scale-[0.98]"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Get Another Reading
-          </button>
-        </motion.div>
-      )}
 
       {/* Footer */}
       <div className="pt-4 text-center px-5">
