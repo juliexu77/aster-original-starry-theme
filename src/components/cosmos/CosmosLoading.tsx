@@ -42,15 +42,16 @@ const PLANET_SYMBOLS = {
 };
 
 // Natal planet positions with orbital periods (faster for visual appeal)
-// Each planet orbits at its own speed around the center
+// Each planet orbits on one of the three drawn circles
+// orbitIndex: 0 = natalRadius (innermost), 1 = innerRingRadius (middle), 2 = outerRadius (outer)
 const NATAL_POSITIONS = [
-  { symbol: '☽', duration: 12, radius: 25 },   // Moon - fastest, innermost
-  { symbol: '☿', duration: 18, radius: 33 },   // Mercury
-  { symbol: '♀', duration: 24, radius: 41 },   // Venus
-  { symbol: '☉', duration: 30, radius: 49 },   // Sun
-  { symbol: '♂', duration: 40, radius: 57 },   // Mars
-  { symbol: '♃', duration: 55, radius: 65 },   // Jupiter
-  { symbol: '♄', duration: 75, radius: 73 },   // Saturn - slowest, outermost
+  { symbol: '☽', duration: 12, orbitIndex: 0 },   // Moon - fastest, innermost circle
+  { symbol: '☿', duration: 16, orbitIndex: 0 },   // Mercury - innermost circle
+  { symbol: '♀', duration: 22, orbitIndex: 1 },   // Venus - middle circle
+  { symbol: '☉', duration: 28, orbitIndex: 1 },   // Sun - middle circle
+  { symbol: '♂', duration: 36, orbitIndex: 1 },   // Mars - middle circle
+  { symbol: '♃', duration: 50, orbitIndex: 2 },   // Jupiter - outer circle
+  { symbol: '♄', duration: 70, orbitIndex: 2 },   // Saturn - slowest, outer circle
 ];
 
 const LOADING_MESSAGES = [
@@ -261,9 +262,12 @@ export const CosmosLoading = () => {
             })}
           </motion.g>
 
-          {/* Orbiting planets - each planet travels in a circle (opposite direction to zodiac) */}
+          {/* Orbiting planets - each planet travels on one of the three drawn circles */}
           {NATAL_POSITIONS.map((planet, i) => {
             const startAngle = (i * 51) % 360; // Offset each planet for variety
+            // Map orbitIndex to actual circle radii
+            const orbitRadii = [natalRadius, innerRingRadius, outerRadius];
+            const radius = orbitRadii[planet.orbitIndex];
             return (
               <motion.g
                 key={`natal-${i}`}
@@ -278,7 +282,7 @@ export const CosmosLoading = () => {
               >
                 {/* Planet symbol with counter-rotation to keep text upright while orbiting */}
                 <motion.text
-                  x={centerX + planet.radius}
+                  x={centerX + radius}
                   y={centerY}
                   textAnchor="middle"
                   dominantBaseline="central"
@@ -287,7 +291,7 @@ export const CosmosLoading = () => {
                     fontFamily: 'serif', 
                     fontSize: '14px', 
                     fontWeight: 500,
-                    transformOrigin: `${centerX + planet.radius}px ${centerY}px`
+                    transformOrigin: `${centerX + radius}px ${centerY}px`
                   }}
                   animate={{ rotate: [0 - startAngle, 360 - startAngle] }}
                   transition={{ 
