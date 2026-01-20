@@ -23,6 +23,61 @@ export const useBabies = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Auto-create household for users who don't have one (failsafe for incomplete onboarding)
+  const ensureHousehold = useCallback(async (): Promise<string | null> => {
+    if (!user) return null;
+
+    // Check existing membership first
+    const { data: memberData } = await supabase
+      .from('household_members')
+      .select('household_id')
+      .eq('user_id', user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (memberData?.household_id) {
+      return memberData.household_id;
+    }
+
+    // No household - create one automatically
+    console.log('Creating automatic household for user:', user.id);
+    
+    const newHouseholdId = crypto.randomUUID();
+
+    // Create household
+    const { error: householdError } = await supabase
+      .from('households')
+      .insert([{
+        id: newHouseholdId,
+        name: 'My Family',
+        created_by: user.id
+      }]);
+
+    if (householdError) {
+      console.error('Error creating household:', householdError);
+      return null;
+    }
+
+    // Add user as owner
+    const { error: memberError } = await supabase
+      .from('household_members')
+      .insert([{
+        household_id: newHouseholdId,
+        user_id: user.id,
+        role: 'owner'
+      }]);
+
+    if (memberError) {
+      console.error('Error adding household member:', memberError);
+      // Clean up orphaned household
+      await supabase.from('households').delete().eq('id', newHouseholdId);
+      return null;
+    }
+
+    console.log('Auto-created household:', newHouseholdId);
+    return newHouseholdId;
+  }, [user]);
+
   const fetchBabies = useCallback(async () => {
     if (!user) {
       setLoading(false);
@@ -32,35 +87,23 @@ export const useBabies = () => {
     try {
       setError(null);
 
-      // Get user's household membership
-      const { data: memberData, error: memberError } = await supabase
-        .from('household_members')
-        .select('household_id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle();
+      // Ensure user has a household (auto-create if missing)
+      const userHouseholdId = await ensureHousehold();
 
-      if (memberError) {
-        console.error('Error fetching membership:', memberError);
-        setError('Failed to load household');
-        setLoading(false);
-        return;
-      }
-
-      if (!memberData) {
+      if (!userHouseholdId) {
         setBabies([]);
         setHouseholdId(null);
         setLoading(false);
         return;
       }
 
-      setHouseholdId(memberData.household_id);
+      setHouseholdId(userHouseholdId);
 
       // Fetch all babies for this household
       const { data: babiesData, error: babiesError } = await supabase
         .from('babies')
         .select('*')
-        .eq('household_id', memberData.household_id)
+        .eq('household_id', userHouseholdId)
         .order('created_at', { ascending: true });
 
       if (babiesError) {
