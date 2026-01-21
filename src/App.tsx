@@ -13,6 +13,7 @@ import FamilyRelationships from "./pages/FamilyRelationships";
 import Cosmos from "./pages/Cosmos";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import ProfileSetup from "./pages/ProfileSetup";
 import BabySetup from "./pages/BabySetup";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -42,6 +43,7 @@ const App = () => (
                     <Route path="/family" element={<FamilyRelationships />} />
                     <Route path="/relationships" element={<FamilyRelationships />} />
                     <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/profile-setup" element={<ProfileSetup />} />
                     <Route path="/baby-setup" element={<BabySetup />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/auth" element={<Auth />} />

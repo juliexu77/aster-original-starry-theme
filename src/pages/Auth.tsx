@@ -15,14 +15,26 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN') {
         setIsLoading(false);
+        // Check if this is a new signup - if user was created recently (within last 10 seconds)
+        const user = session?.user;
+        if (user) {
+          const createdAt = new Date(user.created_at);
+          const now = new Date();
+          const diffSeconds = (now.getTime() - createdAt.getTime()) / 1000;
+
+          // If user was created very recently, this is likely a new signup
+          if (diffSeconds < 10) {
+            navigate('/profile-setup');
+          }
+        }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

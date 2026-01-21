@@ -238,6 +238,67 @@ export const useHousehold = () => {
     };
   };
 
+  const createEmptyHousehold = async (): Promise<{ household: { id: string } }> => {
+    if (!user) throw new Error('User must be authenticated');
+
+    // Check if user already has a household
+    const { data: existingHouseholds, error: checkError } = await supabase
+      .from('household_members')
+      .select('household_id')
+      .eq('user_id', user.id)
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking existing households:', checkError);
+      throw new Error('Failed to check existing family data');
+    }
+
+    if (existingHouseholds && existingHouseholds.length > 0) {
+      // User already has a household
+      await fetchHousehold();
+      return {
+        household: { id: existingHouseholds[0].household_id }
+      };
+    }
+
+    // Create new household without any children
+    const newHouseholdId = crypto.randomUUID();
+
+    const { error: householdError } = await supabase
+      .from('households')
+      .insert([{
+        id: newHouseholdId,
+        name: 'My Family',
+        created_by: user.id
+      }]);
+
+    if (householdError) {
+      console.error('Error creating household:', householdError);
+      throw new Error('Failed to create family');
+    }
+
+    // Add user as owner
+    const { error: memberError } = await supabase
+      .from('household_members')
+      .insert([{
+        household_id: newHouseholdId,
+        user_id: user.id,
+        role: 'owner'
+      }]);
+
+    if (memberError) {
+      console.error('Error adding user as household owner:', memberError);
+      await supabase.from('households').delete().eq('id', newHouseholdId);
+      throw new Error('Failed to set up family membership');
+    }
+
+    await fetchHousehold();
+
+    return {
+      household: { id: newHouseholdId }
+    };
+  };
+
   const addBabyToHousehold = async (
     householdId: string,
     babyName: string,
@@ -256,9 +317,14 @@ export const useHousehold = () => {
         birthday: babyBirthday || null,
         birth_time: babyBirthTime || null,
         birth_location: babyBirthLocation || null
-      }] as any);
+      }]);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error adding baby:', error);
+      throw new Error('Failed to add child to family');
+    }
+
+    await fetchHousehold();
 
     return {
       id: newBabyId,
@@ -300,6 +366,7 @@ export const useHousehold = () => {
     loading,
     error,
     createHousehold,
+    createEmptyHousehold,
     addBabyToHousehold,
     updateHousehold,
     refetch,

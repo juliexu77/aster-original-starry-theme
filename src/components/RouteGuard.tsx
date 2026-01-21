@@ -11,7 +11,7 @@ export const RouteGuard = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (loading) return;
 
-    const publicPaths = ["/auth", "/login", "/onboarding"];
+    const publicPaths = ["/auth", "/login", "/onboarding", "/profile-setup"];
     const isPublicPath = publicPaths.some(path => location.pathname.startsWith(path));
 
     // Redirect authenticated users away from auth/login pages
