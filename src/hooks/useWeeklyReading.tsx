@@ -91,12 +91,22 @@ export const useWeeklyReading = (
   // Get household ID from babies
   const getHouseholdId = useCallback(async () => {
     if (babies.length > 0) {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('babies')
         .select('household_id')
         .eq('id', babies[0].id)
         .single();
-      return data?.household_id;
+
+      if (fetchError) {
+        console.error('Error fetching household ID:', fetchError);
+        throw new Error('Failed to load family data. Please try again.');
+      }
+
+      if (!data?.household_id) {
+        throw new Error('No household found for this family member.');
+      }
+
+      return data.household_id;
     }
     return null;
   }, [babies]);

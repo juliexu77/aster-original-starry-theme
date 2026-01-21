@@ -266,27 +266,43 @@ Generate a JSON response:
 
 Keep the total text under 300 words. Be warm but concise.`;
 
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
     // Call AI API
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.8,
-      }),
-    });
+    let response;
+    try {
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-3-flash-preview',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.8,
+        }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
           status: 429,
@@ -304,14 +320,28 @@ Keep the total text under 300 words. Be warm but concise.`;
 
     const aiData = await response.json();
     let rawContent = aiData.choices?.[0]?.message?.content || '';
-    
+
     // Parse JSON from response
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new Error('Failed to parse AI response as JSON');
     }
-    
-    const readingContent = JSON.parse(jsonMatch[0]);
+
+    let readingContent;
+    try {
+      readingContent = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      throw new Error('Invalid response format from AI. Please try again.');
+    }
+
+    // Validate required fields
+    const requiredFields = ['headline', 'lunarContext', 'weeklyInsight', 'focusArea', 'gentleReminder'];
+    const missingFields = requiredFields.filter(field => !readingContent[field]);
+    if (missingFields.length > 0) {
+      console.error('Missing required fields in weekly reading:', missingFields);
+      throw new Error('Incomplete reading generated. Please try again.');
+    }
     
     // Add metadata
     const fullReading = {

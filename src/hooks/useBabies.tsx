@@ -164,13 +164,15 @@ export const useBabies = () => {
   };
 
   const updateBaby = async (babyId: string, updates: { name?: string; birthday?: string; birth_time?: string | null; birth_location?: string | null }) => {
-    // Cast to bypass type check since birth_location exists in DB but not in generated types yet
     const { error } = await supabase
       .from('babies')
-      .update(updates as any)
+      .update(updates)
       .eq('id', babyId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating baby:', error);
+      throw new Error('Failed to update child profile');
+    }
     await fetchBabies();
   };
 

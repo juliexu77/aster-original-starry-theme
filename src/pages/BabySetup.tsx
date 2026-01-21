@@ -59,28 +59,44 @@ const BabySetup = () => {
 
   const handleDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) return;
+
+    if (!user) {
+      toast({
+        title: "Not logged in",
+        description: "Please log in to create a family profile",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
       // Create household with first child
       const firstChild = children[0];
+
+      // Trim and validate name
+      const trimmedName = firstChild.name.trim();
+      if (!trimmedName) {
+        throw new Error('Please enter a name for your first child');
+      }
+
       const result = await createHousehold(
-        firstChild.name, 
-        firstChild.birthday || undefined, 
-        firstChild.birthTime || undefined, 
+        trimmedName,
+        firstChild.birthday || undefined,
+        firstChild.birthTime || undefined,
         firstChild.birthLocation || undefined
       );
-      
+
       // Add additional children if any
       for (let i = 1; i < children.length; i++) {
         const child = children[i];
-        if (child.name.trim()) {
+        const childName = child.name.trim();
+        if (childName) {
           await addBabyToHousehold(
             result.household.id,
-            child.name,
+            childName,
             child.birthday || undefined,
             child.birthTime || undefined,
             child.birthLocation || undefined
@@ -89,11 +105,11 @@ const BabySetup = () => {
       }
 
       // Finish setup
-      const names = children.filter(c => c.name.trim()).map(c => c.name);
-      const message = names.length === 1 
+      const names = children.filter(c => c.name.trim()).map(c => c.name.trim());
+      const message = names.length === 1
         ? `${names[0]}'s chart is set`
         : `Charts set for ${names.join(' & ')}`;
-      
+
       toast({
         title: "Ready",
         description: message,
@@ -102,11 +118,48 @@ const BabySetup = () => {
       navigate("/");
     } catch (error: any) {
       console.error("Error creating baby profile:", error);
-      toast({
-        title: "Something went wrong",
-        description: "Could not create profile",
-        variant: "destructive",
-      });
+
+      // Provide specific error messages
+      const errorMessage = error?.message || 'Unknown error';
+
+      if (errorMessage.includes('not authenticated') || errorMessage.includes('not logged in')) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to create a family profile",
+          variant: "destructive",
+        });
+        navigate('/auth');
+      } else if (errorMessage.includes('name')) {
+        toast({
+          title: "Name required",
+          description: "Please enter a name for your child",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes('birthday')) {
+        toast({
+          title: "Birthday required",
+          description: "Please enter a birthday for your child",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes('network') || errorMessage.includes('connection')) {
+        toast({
+          title: "Connection error",
+          description: "Please check your internet connection and try again",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes('household')) {
+        toast({
+          title: "Family setup error",
+          description: "Could not create family. Please try again or contact support.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error creating profile",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -410,35 +410,74 @@ Remember: They came to you with something specific on their mind. Make this read
 
     console.log('Sending prompt with context items:', contextData.length);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-      }),
-    });
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+    let response;
+    try {
+      response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+        }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
+
+      // Handle specific error codes
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please try again in a few minutes.');
+      }
+      if (response.status === 402) {
+        throw new Error('AI credits exhausted. Please try again later.');
+      }
+
       throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
     let content = data.choices[0].message.content;
-    
+
     // Extract JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON found in response');
-    
-    const readingData = JSON.parse(jsonMatch[0]);
+
+    let readingData;
+    try {
+      readingData = JSON.parse(jsonMatch[0]);
+    } catch (parseError) {
+      console.error('JSON parsing error:', parseError);
+      throw new Error('Invalid response format from AI. Please try again.');
+    }
+
+    // Validate required fields
+    const requiredFields = ['guidance', 'practices', 'affirmation'];
+    const missingFields = requiredFields.filter(field => !readingData[field]);
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      throw new Error('Incomplete reading generated. Please try again.');
+    }
 
     // Use the signs we already calculated above
     const finalSunSign = sunSign;

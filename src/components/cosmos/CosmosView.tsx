@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles, AlertCircle, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ZodiacIcon } from "@/components/ui/zodiac-icon";
 import { CosmosIntakeSelection } from "./CosmosIntakeSelection";
@@ -144,13 +144,14 @@ export const CosmosView = ({
   }, [selectedMember]);
 
   // Fetch reading for selected member
-  const { 
-    reading, 
-    loading: readingLoading, 
+  const {
+    reading,
+    loading: readingLoading,
     generating,
+    error: readingError,
     generateReading,
     deleteReading,
-    hasReading 
+    hasReading
   } = useCosmosReading(selectedMember?.id || null);
 
   // Fetch weekly auto-reading for selected member
@@ -207,12 +208,12 @@ export const CosmosView = ({
   // Called when options step completes - generate the reading
   const handleOptionsComplete = async (options: ReadingOptions) => {
     if (!selectedMember?.birthday || !pendingIntakeRef.current) return;
-    
+
     setCurrentOptions(options);
     setFlowState('loading');
-    
+
     const { type, data } = pendingIntakeRef.current;
-    
+
     try {
       await generateReading(type, data, {
         name: selectedMember.name,
@@ -229,7 +230,21 @@ export const CosmosView = ({
       pendingIntakeRef.current = null;
       setFlowState('reading');
     } catch (error) {
-      toast.error('Failed to generate reading. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate reading';
+
+      // Show specific error messages based on error type
+      if (errorMessage.includes('Rate limit')) {
+        toast.error('Too many requests. Please try again in a few minutes.');
+      } else if (errorMessage.includes('credits exhausted') || errorMessage.includes('402')) {
+        toast.error('AI credits temporarily exhausted. Please try again later.');
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('timed out')) {
+        toast.error('Request timed out. Please check your connection and try again.');
+      } else if (errorMessage.includes('No household')) {
+        toast.error('Could not find your family data. Please try logging out and back in.');
+      } else {
+        toast.error(`Failed to generate reading: ${errorMessage}`);
+      }
+
       setFlowState('options');
     }
   };
@@ -284,6 +299,9 @@ export const CosmosView = ({
     );
   }
 
+  // Check if birth data is incomplete
+  const hasIncompleteBirthData = selectedMember?.birthday && (!selectedMember.birth_time || !selectedMember.birth_location);
+
   return (
     <div className="space-y-4">
       {/* Member Selector Header */}
@@ -297,13 +315,41 @@ export const CosmosView = ({
             <span className="text-[18px] text-foreground/80">{selectedMember.name}</span>
             <ChevronDown className="w-4 h-4 text-foreground/30" />
           </button>
-          
+
           <p className="text-[11px] text-foreground/40 mt-1">
             {getZodiacName(signs.sun)}
             {signs.moon && ` • ${getZodiacName(signs.moon)} Moon`}
           </p>
         </div>
       </div>
+
+      {/* Error Display */}
+      {readingError && (
+        <div className="px-5">
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-red-200 font-medium">Error loading reading</p>
+              <p className="text-xs text-red-300/70 mt-1">{readingError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Incomplete Birth Data Warning */}
+      {hasIncompleteBirthData && (
+        <div className="px-5">
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+            <Info className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm text-amber-200 font-medium">Incomplete birth data</p>
+              <p className="text-xs text-amber-300/70 mt-1">
+                Add {selectedMember.name}'s birth time and location in Settings for Moon and Rising signs.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Weekly Auto-Reading Section - Always visible at top */}
       {!weeklyLoading && weeklyReading && (flowState === 'reading' || !hasReading) && (

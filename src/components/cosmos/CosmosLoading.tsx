@@ -66,7 +66,8 @@ const CHART_COLOR = '#E0E0E0';
 
 export const CosmosLoading = () => {
   const [messageIndex, setMessageIndex] = useState(() => Math.floor(Math.random() * LOADING_MESSAGES.length));
-  
+  const [showSlowWarning, setShowSlowWarning] = useState(false);
+
   const chartSize = 260;
   const centerX = chartSize / 2;
   const centerY = chartSize / 2;
@@ -82,6 +83,14 @@ export const CosmosLoading = () => {
       setMessageIndex(prev => (prev + 1) % LOADING_MESSAGES.length);
     }, 4000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Show warning after 30 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSlowWarning(true);
+    }, 30000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Calculate position from angle and radius
@@ -379,6 +388,22 @@ export const CosmosLoading = () => {
           />
         ))}
       </div>
+
+      {/* Slow loading warning */}
+      {showSlowWarning && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8 px-5 text-center"
+        >
+          <p className="text-xs text-amber-400/70 font-medium">
+            This is taking longer than usual...
+          </p>
+          <p className="text-xs text-foreground/40 mt-1">
+            Your reading is still being generated. Please wait a moment.
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 };

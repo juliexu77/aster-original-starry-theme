@@ -135,6 +135,48 @@ export const useHousehold = () => {
   const createHousehold = async (babyName: string, babyBirthday?: string, babyBirthTime?: string, babyBirthLocation?: string): Promise<{ household: { id: string }; baby: { id: string } }> => {
     if (!user) throw new Error('User must be authenticated');
 
+    // Check if user already has a household
+    const { data: existingHouseholds, error: checkError } = await supabase
+      .from('household_members')
+      .select('household_id')
+      .eq('user_id', user.id)
+      .limit(1);
+
+    if (checkError) {
+      console.error('Error checking existing households:', checkError);
+      throw new Error('Failed to check existing family data');
+    }
+
+    if (existingHouseholds && existingHouseholds.length > 0) {
+      // User already has a household, just add the baby to it
+      const householdId = existingHouseholds[0].household_id;
+      const newBabyId = crypto.randomUUID();
+
+      const { error: babyError } = await supabase
+        .from('babies')
+        .insert([{
+          id: newBabyId,
+          household_id: householdId,
+          name: babyName,
+          birthday: babyBirthday || null,
+          birth_time: babyBirthTime || null,
+          birth_location: babyBirthLocation || null
+        }]);
+
+      if (babyError) {
+        console.error('Error adding baby to existing household:', babyError);
+        throw new Error('Failed to add child to family');
+      }
+
+      await fetchHousehold();
+
+      return {
+        household: { id: householdId },
+        baby: { id: newBabyId }
+      };
+    }
+
+    // Create new household
     const newHouseholdId = crypto.randomUUID();
     const newBabyId = crypto.randomUUID();
 
@@ -147,7 +189,10 @@ export const useHousehold = () => {
         created_by: user.id
       }]);
 
-    if (householdError) throw householdError;
+    if (householdError) {
+      console.error('Error creating household:', householdError);
+      throw new Error('Failed to create family');
+    }
 
     // Add user as owner
     const { error: memberError } = await supabase
@@ -158,9 +203,14 @@ export const useHousehold = () => {
         role: 'owner'
       }]);
 
-    if (memberError) throw memberError;
+    if (memberError) {
+      console.error('Error adding user as household owner:', memberError);
+      // Try to clean up the household we just created
+      await supabase.from('households').delete().eq('id', newHouseholdId);
+      throw new Error('Failed to set up family membership');
+    }
 
-    // Create baby - cast to bypass type check since birth_location exists in DB but not in generated types yet
+    // Create baby
     const { error: babyError } = await supabase
       .from('babies')
       .insert([{
@@ -170,9 +220,15 @@ export const useHousehold = () => {
         birthday: babyBirthday || null,
         birth_time: babyBirthTime || null,
         birth_location: babyBirthLocation || null
-      }] as any);
+      }]);
 
-    if (babyError) throw babyError;
+    if (babyError) {
+      console.error('Error creating baby:', babyError);
+      // Try to clean up
+      await supabase.from('household_members').delete().eq('household_id', newHouseholdId);
+      await supabase.from('households').delete().eq('id', newHouseholdId);
+      throw new Error('Failed to create child profile');
+    }
 
     await fetchHousehold();
 
