@@ -151,13 +151,22 @@ export const FamilyView = ({ babies, userProfile, onBirthdaySaved }: FamilyViewP
             selectedConnection={selectedConnection}
             onConnectionTap={handleConnectionTap}
           />
+        ) : familyMembers.length === 1 ? (
+          <div className="text-center py-12">
+            <p className="text-[13px] text-foreground/40">
+              Your cosmic journey begins here.
+            </p>
+            <p className="text-[11px] text-foreground/30 mt-2">
+              Add a partner or child in Settings to explore relationship dynamics.
+            </p>
+          </div>
         ) : (
           <div className="text-center py-12">
             <p className="text-[13px] text-foreground/40">
-              Add at least two family members to see your constellation.
+              Add your birthday to see your constellation.
             </p>
             <p className="text-[11px] text-foreground/30 mt-2">
-              Add your birthday and a partner or child to get started.
+              Visit Settings to add your birth details.
             </p>
           </div>
         )}

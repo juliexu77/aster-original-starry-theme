@@ -272,7 +272,7 @@ export const CosmosView = ({
     return (
       <div className="px-5 py-12 text-center">
         <p className="text-[13px] text-foreground/40">
-          Add a family member with their birthday to receive cosmic guidance.
+          Add your birthday in Settings to receive cosmic guidance.
         </p>
       </div>
     );

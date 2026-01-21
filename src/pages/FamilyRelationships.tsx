@@ -17,6 +17,10 @@ const FamilyRelationships = () => {
     fetchUserProfile();
   };
 
+  // Check if user has any family members beyond themselves
+  const hasFamily = babies.length > 0 || userProfile?.partner_birthday;
+  const pageTitle = hasFamily ? "Family Dynamics" : "Cosmic Profile";
+
   if (authLoading || babiesLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -37,7 +41,7 @@ const FamilyRelationships = () => {
           {/* Header */}
           <div className="px-5 pt-8 pb-2">
             <p className="text-[10px] text-foreground/30 uppercase tracking-[0.3em] text-center mb-6">
-              Family Dynamics
+              {pageTitle}
             </p>
           </div>
 

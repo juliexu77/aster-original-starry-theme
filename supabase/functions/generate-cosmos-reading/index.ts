@@ -76,7 +76,10 @@ serve(async (req) => {
       .select('id, name, birthday, birth_time, birth_location')
       .eq('household_id', householdId);
 
-    if (allBabies && allBabies.length > 0) {
+    const hasChildren = allBabies && allBabies.length > 0;
+
+    // Only include family/parenting context if user has children
+    if (hasChildren) {
       // Calculate ages for all children
       const childrenWithAges = allBabies
         .filter(b => b.birthday)
@@ -85,48 +88,51 @@ serve(async (req) => {
           ageMonths: Math.floor((new Date().getTime() - new Date(b.birthday).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
         }));
 
-      // Family load assessment
-      const numChildren = childrenWithAges.length;
-      const underTwo = childrenWithAges.filter(c => c.ageMonths < 24).length;
-      const underFive = childrenWithAges.filter(c => c.ageMonths < 60).length;
-      const schoolAge = childrenWithAges.filter(c => c.ageMonths >= 60).length;
-      
-      let familyLoadDescription = '';
-      if (underTwo >= 2) {
-        familyLoadDescription = `Very demanding phase: ${underTwo} children under 2 years old - sleep deprivation likely, constant physical demands, little personal time`;
-      } else if (underTwo === 1 && underFive >= 2) {
-        familyLoadDescription = `High-demand phase: baby plus young toddler(s) - juggling infant needs with toddler energy and attention needs`;
-      } else if (underTwo === 1) {
-        familyLoadDescription = `Baby phase: one infant requiring intensive care - disrupted sleep, feeding demands, adjustment period`;
-      } else if (underFive >= 2 && schoolAge === 0) {
-        familyLoadDescription = `Active toddler/preschool phase: ${underFive} young children - high supervision needs, sibling dynamics emerging`;
-      } else if (schoolAge > 0 && underFive > 0) {
-        familyLoadDescription = `Mixed ages phase: balancing school-age independence with younger child needs - logistical complexity`;
-      } else if (schoolAge >= 2) {
-        familyLoadDescription = `Established family phase: ${schoolAge} school-age children - more independence but emotional complexity increases`;
-      } else if (numChildren === 1 && childrenWithAges[0]?.ageMonths >= 24) {
-        familyLoadDescription = `Single child beyond infancy - more focused attention possible, developing relationship deepens`;
+      // Only add family load assessment if this is a parent/adult reading
+      if (!isChild) {
+        // Family load assessment
+        const numChildren = childrenWithAges.length;
+        const underTwo = childrenWithAges.filter(c => c.ageMonths < 24).length;
+        const underFive = childrenWithAges.filter(c => c.ageMonths < 60).length;
+        const schoolAge = childrenWithAges.filter(c => c.ageMonths >= 60).length;
+
+        let familyLoadDescription = '';
+        if (underTwo >= 2) {
+          familyLoadDescription = `Very demanding phase: ${underTwo} children under 2 years old - sleep deprivation likely, constant physical demands, little personal time`;
+        } else if (underTwo === 1 && underFive >= 2) {
+          familyLoadDescription = `High-demand phase: baby plus young toddler(s) - juggling infant needs with toddler energy and attention needs`;
+        } else if (underTwo === 1) {
+          familyLoadDescription = `Baby phase: one infant requiring intensive care - disrupted sleep, feeding demands, adjustment period`;
+        } else if (underFive >= 2 && schoolAge === 0) {
+          familyLoadDescription = `Active toddler/preschool phase: ${underFive} young children - high supervision needs, sibling dynamics emerging`;
+        } else if (schoolAge > 0 && underFive > 0) {
+          familyLoadDescription = `Mixed ages phase: balancing school-age independence with younger child needs - logistical complexity`;
+        } else if (schoolAge >= 2) {
+          familyLoadDescription = `Established family phase: ${schoolAge} school-age children - more independence but emotional complexity increases`;
+        } else if (numChildren === 1 && childrenWithAges[0]?.ageMonths >= 24) {
+          familyLoadDescription = `Single child beyond infancy - more focused attention possible, developing relationship deepens`;
+        }
+
+        if (familyLoadDescription) {
+          contextData.push(`Family situation: ${familyLoadDescription}`);
+        }
+
+        contextData.push(`Total children: ${numChildren}`);
       }
 
-      if (familyLoadDescription) {
-        contextData.push(`Family situation: ${familyLoadDescription}`);
-      }
-      
-      contextData.push(`Total children: ${numChildren}`);
-
-      // Sibling info
-      const siblings = childrenWithAges.filter(b => b.id !== memberId);
-      if (siblings.length > 0) {
-        const siblingInfo = siblings.map(s => {
-          const age = calculateAge(s.birthday);
-          const sign = getSunSign(s.birthday);
-          return `${s.name} (${age}, ${sign})`;
-        }).join(', ');
-        contextData.push(`Siblings: ${siblingInfo}`);
-      }
-
-      // For the target child, calculate their exact age
+      // Sibling info (only relevant for child readings)
       if (isChild) {
+        const siblings = childrenWithAges.filter(b => b.id !== memberId);
+        if (siblings.length > 0) {
+          const siblingInfo = siblings.map(s => {
+            const age = calculateAge(s.birthday);
+            const sign = getSunSign(s.birthday);
+            return `${s.name} (${age}, ${sign})`;
+          }).join(', ');
+          contextData.push(`Siblings: ${siblingInfo}`);
+        }
+
+        // For the target child, calculate their exact age
         const targetBaby = childrenWithAges.find(b => b.id === memberId);
         if (targetBaby?.birthday) {
           const ageInfo = calculateDetailedAge(targetBaby.birthday);
@@ -330,7 +336,7 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     ${zodiacSystem !== 'western' ? easternSections : ''}
     {"title": "${isChild ? 'Their Energy Right Now' : 'Your Energy This Year'}", "content": "2-3 paragraphs. Describe what you see in their chart and how it's manifesting. Be specific."},
     {"title": "${isChild ? 'Growth & Unfolding' : 'Purpose & Direction'}", "content": "2-3 paragraphs on development/ambition. For children, speak to their developmental moment with astrological insight."},
-    {"title": "${isChild ? 'Daily Rhythms' : 'Home & Heart'}", "content": "2-3 paragraphs on practical daily life, sleep/feeding for children, family dynamics for adults."},
+    {"title": "${isChild ? 'Daily Rhythms' : hasChildren ? 'Home & Family' : 'Home & Heart'}", "content": "2-3 paragraphs on ${isChild ? 'practical daily life, sleep/feeding patterns' : hasChildren ? 'family dynamics, parenting moments, creating space for yourself amid family needs' : 'personal rhythms, self-care, creating sanctuary in daily life'}."},
     {"title": "Guidance", "content": "2-3 paragraphs with 3-5 specific suggestions. Frame as astrological wisdom, not advice from a form."},
     {"title": "Shadows to Navigate", "content": "1-2 paragraphs on challenges ahead. Be honest but compassionate."},
     {"title": "${isChild ? 'Whats Emerging' : 'Connection & Love'}", "content": "1-2 paragraphs on what's coming/relationships"},
@@ -341,7 +347,7 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "Saturn square your Moon (Mar 15-Apr 2)", "details": "Name the challenge AND tie it to their stated concerns."},
     {"title": "Jupiter trine your Rising (Apr 20-May 5)", "details": "Describe the opportunity AND link to their goals."}
   ]
-  
+
   Calculate 5-8 KEY PLANETARY TRANSITS across the year.
   ${zodiacSystem !== 'western' ? `- For Chinese astrology: clash days, ally animal periods, and element balance timing` : ''}
 }
@@ -370,6 +376,7 @@ CRITICAL INSTRUCTIONS FOR MONTHLY READINGS:
 - Be specific about dates and windows of energy.
 - Keep it focused - 2-3 main themes maximum, not a section for every life area.
 - Include what's coming in the next 4-6 weeks so they can prepare.
+${!isChild && !hasChildren ? '- This person does not have children. Focus on personal development, relationships, career, and self-care rather than parenting themes.' : ''}
 
 Write as if speaking directly to ${isChild ? 'the parents about their child' : 'the client'}. Generate JSON:
 
@@ -386,18 +393,18 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "One Thing to Watch", "content": "1 short paragraph. The shadow side or potential pitfall of the current energy. Be honest and specific."}
   ],
   "significantDates": [
-    {"title": "Jan 18: Mars enters your 4th house", "details": "MUST connect directly to their stated concern. Example: 'Energy shifts to home/family matters - that tension with your partner you mentioned may come to a head. Best to address it directly rather than let it simmer.'"},
-    {"title": "Jan 25: Full Moon in Leo (your 10th)", "details": "Tie to their goals. Example: 'Career visibility peaks - if you've been considering that pitch you mentioned, this is your window.'"},
-    {"title": "Feb 3: Venus trine your Moon", "details": "Connect to their emotional state. Example: 'Some softening around the exhaustion you described. Good few days to reconnect with what nourishes you.'"}
+    {"title": "Jan 18: Mars enters your 4th house", "details": "MUST connect directly to their stated concern. ${isChild ? 'Example: Notice more assertiveness at home - they may push boundaries more.' : hasChildren ? 'Example: Energy shifts to home/family matters - that tension with your partner you mentioned may come to a head. Best to address it directly rather than let it simmer.' : 'Example: Energy shifts to home matters - good time to address that living situation you mentioned. Act on what needs changing.'}"},
+    {"title": "Jan 25: Full Moon in Leo (your 10th)", "details": "Tie to their goals. Example: ${isChild ? 'Developmental milestone may emerge - confidence in new skills.' : 'Career visibility peaks - if you\\'ve been considering that pitch you mentioned, this is your window.'}"},
+    {"title": "Feb 3: Venus trine your Moon", "details": "Connect to their emotional state. Example: 'Some softening around the ${isChild ? 'intensity you described. Good few days for connection and ease.' : 'exhaustion you described. Good few days to reconnect with what nourishes you.'}"}
   ]
-  
+
   SIGNIFICANT DATES RULES:
   - Focus on THIS month and the first 2 weeks of next month only
   - 4-6 dates maximum - only the ones that MATTER for their specific question/situation
   - Each date MUST reference something from their intake
   - Include the actual date, not just date ranges when possible
   - Mix of opportunities and challenges - be honest about the hard ones
-  
+
   Transit types to prioritize:
   - New and Full Moons hitting their personal planets/angles
   - Inner planet (Sun, Mercury, Venus, Mars) aspects to their natal chart

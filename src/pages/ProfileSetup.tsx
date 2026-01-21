@@ -31,7 +31,7 @@ interface ChildData extends ProfileData {
 const ProfileSetup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { updateUserProfile } = useUserProfile();
+  const { userProfile: existingProfile, updateUserProfile } = useUserProfile();
   const { createHousehold, createEmptyHousehold, addBabyToHousehold } = useHousehold();
   const { toast } = useToast();
 
@@ -62,8 +62,15 @@ const ProfileSetup = () => {
   useEffect(() => {
     if (!user) {
       navigate('/auth');
+      return;
     }
-  }, [user, navigate]);
+
+    // If user already has a birthday set, they've completed profile setup
+    // Redirect them to home instead of showing this wizard again
+    if (existingProfile?.birthday) {
+      navigate('/');
+    }
+  }, [user, existingProfile, navigate]);
 
   const handleUserProfileSubmit = async () => {
     if (!user || !userProfile.birthday) {
