@@ -393,9 +393,9 @@ Write as if speaking directly to ${isChild ? 'the parents about their child' : '
     {"title": "One Thing to Watch", "content": "1 short paragraph. The shadow side or potential pitfall of the current energy. Be honest and specific."}
   ],
   "significantDates": [
-    {"title": "Jan 18: Mars enters your 4th house", "details": "MUST connect directly to their stated concern. ${isChild ? 'Example: Notice more assertiveness at home - they may push boundaries more.' : hasChildren ? 'Example: Energy shifts to home/family matters - that tension with your partner you mentioned may come to a head. Best to address it directly rather than let it simmer.' : 'Example: Energy shifts to home matters - good time to address that living situation you mentioned. Act on what needs changing.'}"},
-    {"title": "Jan 25: Full Moon in Leo (your 10th)", "details": "Tie to their goals. Example: ${isChild ? 'Developmental milestone may emerge - confidence in new skills.' : 'Career visibility peaks - if you\\'ve been considering that pitch you mentioned, this is your window.'}"},
-    {"title": "Feb 3: Venus trine your Moon", "details": "Connect to their emotional state. Example: 'Some softening around the ${isChild ? 'intensity you described. Good few days for connection and ease.' : 'exhaustion you described. Good few days to reconnect with what nourishes you.'}"}
+    {"title": "Jan 18: Mars enters your 4th house", "details": "MUST connect directly to their stated concern. ${isChild ? "Example: Notice more assertiveness at home - they may push boundaries more." : hasChildren ? "Example: Energy shifts to home/family matters - that tension with your partner you mentioned may come to a head. Best to address it directly rather than let it simmer." : "Example: Energy shifts to home matters - good time to address that living situation you mentioned. Act on what needs changing."}"},
+    {"title": "Jan 25: Full Moon in Leo (your 10th)", "details": "Tie to their goals. Example: ${isChild ? "Developmental milestone may emerge - confidence in new skills." : "Career visibility peaks - if you have been considering that pitch you mentioned, this is your window."}"},
+    {"title": "Feb 3: Venus trine your Moon", "details": "Connect to their emotional state. Example: Some softening around the ${isChild ? "intensity you described. Good few days for connection and ease." : "exhaustion you described. Good few days to reconnect with what nourishes you."}"}
   ]
 
   SIGNIFICANT DATES RULES:
@@ -438,9 +438,9 @@ Remember: They came to you with something specific on their mind. Make this read
         }),
         signal: controller.signal,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Request timed out. Please try again.');
       }
       throw error;
