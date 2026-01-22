@@ -289,9 +289,9 @@ Keep the total text under 300 words. Be warm but concise.`;
         }),
         signal: controller.signal,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Request timed out. Please try again.');
       }
       throw error;
