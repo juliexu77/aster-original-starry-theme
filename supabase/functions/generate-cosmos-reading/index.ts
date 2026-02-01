@@ -35,40 +35,6 @@ serve(async (req) => {
     const isChild = memberData.type === 'child';
     let contextData: string[] = [];
 
-    // 1. For children: Fetch calibration data (developmental info, sleep patterns, challenges)
-    if (isChild && memberId !== 'parent' && memberId !== 'partner') {
-      const { data: calibration } = await supabase
-        .from('baby_calibrations')
-        .select('*')
-        .eq('baby_id', memberId)
-        .maybeSingle();
-
-      if (calibration) {
-        console.log('Found calibration data for child:', calibration);
-        
-        if (calibration.physical_skills?.length > 0) {
-          contextData.push(`Physical skills observed: ${calibration.physical_skills.join(', ')}`);
-        }
-        if (calibration.language_sounds) {
-          contextData.push(`Language development: ${calibration.language_sounds}`);
-        }
-        if (calibration.sleep_naps) {
-          contextData.push(`Sleep pattern: ${calibration.sleep_naps}`);
-        }
-        if (calibration.feeding_solids) {
-          contextData.push(`Feeding stage: ${calibration.feeding_solids}`);
-        }
-        if (calibration.social_separation) {
-          contextData.push(`Social/separation behavior: ${calibration.social_separation}`);
-        }
-        if (calibration.current_challenge) {
-          contextData.push(`Current parenting challenge: ${calibration.current_challenge}`);
-        }
-        if (calibration.emerging_early_flags && Object.keys(calibration.emerging_early_flags).length > 0) {
-          contextData.push(`Developmental flags noted: ${JSON.stringify(calibration.emerging_early_flags)}`);
-        }
-      }
-    }
 
     // 2. Fetch all babies in household (for sibling context and family load assessment)
     const { data: allBabies } = await supabase

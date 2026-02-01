@@ -12,7 +12,6 @@ export interface Baby {
   photo_url: string | null;
   created_at: string;
   updated_at: string;
-  archived?: boolean;
 }
 
 export const useBabies = () => {

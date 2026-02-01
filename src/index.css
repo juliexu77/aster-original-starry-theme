@@ -778,72 +778,6 @@
     }
   }
 
-  /* Bar animations - slow fill with fade */
-  @keyframes story-bar-feed {
-    0% { 
-      transform: scaleX(0);
-      opacity: 0;
-    }
-    60% { 
-      opacity: 1;
-    }
-    100% { 
-      transform: scaleX(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes story-bar-nap {
-    0% { 
-      transform: scaleX(0);
-      opacity: 0;
-    }
-    60% { 
-      opacity: 1;
-    }
-    100% { 
-      transform: scaleX(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes story-bar-naptime {
-    0% { 
-      transform: scaleX(0);
-      opacity: 0;
-    }
-    60% { 
-      opacity: 1;
-    }
-    100% { 
-      transform: scaleX(1);
-      opacity: 1;
-    }
-  }
-  
-  /* Exhale glow pulse - happens once at 4s mark */
-  @keyframes story-bar-glow {
-    0%, 100% { 
-      filter: brightness(1);
-      box-shadow: none;
-    }
-    50% { 
-      filter: brightness(1.1);
-      box-shadow: 0 0 12px currentColor;
-    }
-  }
-
-  /* Wake window pulse highlight */
-  @keyframes story-window-pulse {
-    0%, 100% { 
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% { 
-      opacity: 0.75;
-      transform: scale(0.995);
-    }
-  }
 
   /* Act 3: Closure animations */
   @keyframes story-sparkle-sweep {
@@ -1002,28 +936,6 @@
     opacity: 0;
   }
 
-  /* Bar animations - slow fill during inhale, glow during exhale */
-  .animate-story-bar-feed {
-    animation: story-bar-feed 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
-               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4s;
-    transform-origin: left;
-  }
-
-  .animate-story-bar-nap {
-    animation: story-bar-nap 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
-               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4.2s;
-    transform-origin: left;
-  }
-
-  .animate-story-bar-naptime {
-    animation: story-bar-naptime 3s cubic-bezier(0.4, 0, 0.6, 1) forwards,
-               story-bar-glow 1s cubic-bezier(0.4, 0, 0.6, 1) 4.4s;
-    transform-origin: left;
-  }
-
-  .animate-story-window-pulse {
-    animation: story-window-pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
 
   /* Exhale (4-8s): Settling */
   .animate-story-sparkle-sweep {
