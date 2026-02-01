@@ -61,7 +61,7 @@ const Onboarding = () => {
                 transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
                 className="text-[11px] text-center uppercase tracking-[0.2em] text-foreground/50"
               >
-                Your baby's development, guided by the cosmos
+                Know yourself deeply, guided by the cosmos
               </motion.h1>
             )}
           </AnimatePresence>
