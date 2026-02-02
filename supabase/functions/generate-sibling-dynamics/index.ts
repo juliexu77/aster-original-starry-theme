@@ -82,7 +82,7 @@ Keep the tone warm, insightful, and practical. Always address the parent as "you
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: "You are an astrology expert specializing in family dynamics and child development. Respond only with valid JSON." },
           { role: "user", content: prompt }
